@@ -1,0 +1,500 @@
+Cuando se escribe un procedimiento, se debe definir que clase
+de valores se espera como entrada y como salida.
+
+<CODIGO_BLOCK_START>
+Ejemplo, la funcion suma tiene como entrada dos numeros
+naturales y tiene como salida un numero natural.
+Los datos en las funciones recursivas, pueden tener tambien
+definiciones recursivas que faciliten la programacion.
+<CODIGO_BLOCK_END>
+
+Tecnicas
+Existe dos tecnicas para la definicion recursiva de datos:
+1 Especificacion inductiva
+2 Especificacion mediante gramaticas.
+
+Definicion
+Se define un conjunto S , el cual es el conjunto mas pequeno que
+satisface las siguientes dos propiedades:
+1 Algunos valores especificos que deben estar en S .
+2 Si algunos valores estan en S , entonces otros valores tambien
+estan en S .
+
+Numeros pares
+1 Si n = 2 entonces n es par
+2 Si n es par, entonces n + 2 tambien es par.
+Lista de numeros
+1 empty es una lista de numeros
+2 Si n es un numero y l es una lista entonces (n l) es una lista
+de numeros.
+
+Especificacion formal
+Ahora formalmente:
+Numeros pares
+1 2 ∈ S
+2
+n ∈ S
+( n +2) ∈ S
+Lista de numeros
+1 () ∈ S
+2
+l ∈ S , n ∈ N
+(n l) ∈ S.
+
+
+<CODIGO_BLOCK_START>
+Ejemplo
+Demuestre que (1(2(3()))) es una lista de numeros.
+Solucion
+1 1 ∈ N, (2(3())) ∈ S
+2 (1(2(3()))) ∈ S
+Se puede seguir hasta llegar al caso fundamental () ∈ S.
+<CODIGO_BLOCK_END>
+
+Especificacion formal
+Ahora realicemos la especificacion inductiva de:
+1 Una lista de numero pares
+2 Multiplos de 5.
+
+Lista de numeros pares
+1 2 ∈ P
+2
+n ∈ S
+( n +2) ∈ P
+1 () ∈ S
+2
+l ∈ S , x ∈ P
+(x l) ∈ S
+Multiplos de 5
+1 5 ∈ S
+2
+n ∈ S
+( n +5) ∈ S.
+
+
+<CODIGO_BLOCK_START>
+Ejercicios
+Indique que tipo de conjuntos estan definidos por las siguiente
+reglas:
+1 (0 , 1) ∈ S ,
+( n , k ) ∈ S
+( n +1 , k +7) ∈ S
+2 (0 , 1) ∈ S , ( n , k ) ∈ S
+( n +1 , 2 k )
+3 (0 , 1 , 5) ∈ S
+( i , j , k ) ∈ S
+( i +1 , j +2 , i + j ) ∈ S
+Para cada una de las especificaciones de dos ejemplos numericos
+que las cumplan.
+<CODIGO_BLOCK_END>
+
+Una forma sencilla de especificar datos recursivos es con
+gramaticas regulares en forma Backus-Nour.
+Las gramaticas se componen de:
+1 Simbolos no terminales, que son aquellos que se componen de
+otros simbolos, son conocidos como categorias sintacticas
+2 Simbolos terminales: corresponden a elementos del alfabeto
+3 Reglas de produccion.
+
+
+<CODIGO_BLOCK_START>
+Alfabeto: Conjunto de simbolos, ejemplo P = { a , b , c , ... }
+Reglas de produccion: Construccion del lenguaje:
+Cerradura de Kleene: { a } ∗ = { ϵ, { a } , { a , a } , { a , a , a } ... }
+Cerradura positiva: { b } + = {{ b } , { b , b } , { b , b , b } ... }.
+<CODIGO_BLOCK_END>
+
+Lista numeros
+<lista-de-enteros> ::= ()
+::= (<int> <lista-de-enteros>)
+<lista-de-enteros> ::= ()|(<int> <lista-de-enteros>)
+<lista-de-enteros> ::= (<int>)*.
+
+Arbol Binario
+< arbol − b in a r io > ::= < int >
+::= ( < simbolo > < arbol − binario >< a rb o l − b in a r io
+> )
+
+<CODIGO_BLOCK_START>
+Ejemplos de arboles binarios son:
+1
+(foo 1 2)
+(foo 1 (bar 2 3) 3).
+<CODIGO_BLOCK_END>
+
+Expresion calculo λ
+<lambda-exp> ::= <identificador>
+::= (lambda (<identificador>) <lambda-exp>)
+::= (<lambda-exp> <lambda-exp>)
+<identificador> ::= <letra>+
+
+<CODIGO_BLOCK_START>
+Ejemplo de calculo λ :
+’ ( lambda
+( x )
+( x y ) )
+’ (( lambda
+( y )
+( z y ) )
+x
+)
+’ ( x y )
+’ x.
+<CODIGO_BLOCK_END>
+
+La definicion inductiva o mediante gramaticas de los
+conjuntos de datos sirve de guia para desarrollar
+procedimientos que operan sobre dichos datos
+La estructura de los programas debe seguir la estructura de
+los datos
+Para esto realizamos especificacion recursiva de programas, la
+idea es utilizar el principio del subproblema mas pequeno.
+
+
+<CODIGO_BLOCK_START>
+Ejemplo
+Una funcion estandar de Dr Racket es list-length, la cual nos
+retorna el tamano de una lista. Para el diseno de esta funcion
+debemos retornar a la especificacion recursiva de las listas
+<Lista> ::= () | (numero <Lista>)
+Se debe considerar entonces el caso base de la lista vacia, en el
+cual retornamos 0.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo
+De acuerdo a esto el diseno de list-length es:
+;; list-length : lista -> numero
+( define
+l i s t − l e n g t h
+( lambda
+( l s t )
+( i f
+( null ?
+l s t )
+0
+. . .
+)
+)
+Tomando en cuenta la segunda parte de la definicion, se debe
+sumar 1 al tamano si no encontramos la lista vacia.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo
+Por lo tanto la funcion list-length es:
+;; list-length : lista -> numero
+( define
+l i s t − l e n g t h
+( lambda
+( l s t )
+( i f
+( null ?
+l s t )
+0
+(+ 1
+( l i s t − l e n g t h
+( cdr
+l s t ) ) )
+)
+)
+De acuerdo a la especificacion recursiva de listas ¿Que se puede
+decir de este diseno?.
+<CODIGO_BLOCK_END>
+
+Un arbol binario
+Recordando la definicion de los arboles vista anteriormente:
+<arbol-binario> ::= <int>
+::= (<simbolo> <arbol-binario> <arbol-binario>)
+Este arbol sera representado asi:
+(define arbolA
+’(k (h 5 3) (t (s 10 11) 12)))
+(define arbolB 2)
+En Dr Racket el operador ’( ... ) va generar una lista, toda palabra
+sera convertida en simbolo y todo ( .. ) sera convertido en lista.
+
+Un arbol binario
+Procedimiento sum-arbol:
+( define
+sum − arbol
+( lambda
+( a r b o l )
+( i f
+( number ?
+a r b o l )
+a r b o l
+(+
+( sum − arbol
+( cadr
+a r b o l ) )
+( sum − arbol
+( caddr
+a r b o l ) )
+)
+)
+)
+).
+
+Lista numeros
+Procedimiento para generar una lista de numeros a partir de un
+arbol
+;;BNF
+;;Entrada: <arbol-binario > ::= <int > | <simbolo > <
+arbol-binario > <arbol-binario >
+;;Salida: <lista-numeros > ::= ’() | <int > <lista-numeros >
+( define
+arbol − > l i s t a
+( lambda
+( l )
+( i f
+( number ?
+l )
+( cons
+l
+empty )
+( append
+( arbol − > l i s t a
+( cadr
+l ) )
+( arbol − > l i s t a
+( caddr
+l ) )
+)
+)
+)
+).
+
+Resumen
+En el diseno de programas para datos recursivos tenga en cuenta:
+1 Identifique el caso terminal (base) o donde termina la
+especificacion recursiva
+2 La idea es pasar de estados no terminales a uno terminal
+3 La estrategia es llamar recursivamente la funcion desde un
+estado no terminal para llegar a uno terminal.
+
+
+<CODIGO_BLOCK_START>
+Ejercicio
+Tomando en cuenta la especificacion recursiva de listas, disene
+funciones:
+1 nth-element. (nth-element ’(4 5 6) 2) retorna 5.
+2 remove-first (remove-first ’(1 2 3)) retorna ’(2 3)
+La especificacion mediante gramaticas de listas de numeros es:
+<Lista> ::= () | (numero <Lista>).
+<CODIGO_BLOCK_END>
+
+El concepto de variable es fundamental en los lenguajes de
+programacion
+Una variable puede ser declarada y posteriormente ligada o
+referenciada
+Declaracion:
+( lambda
+( x )
+. . . )
+( let
+( ( x
+. . . ) )
+. . . )
+Referencia:
+x ;;Como
+valor
+( f
+x y )
+;;Como
+valor
+procedimiento.
+
+Una variable esta ligada al lugar donde se declara
+El valor ligado o referenciado por la variable es su denotacion
+Cada lenguaje de programacion tiene asociadas unas reglas de
+ligadura que determinan a que declaracion hace referencia
+cada variable
+Dependiendo del momento de aplicacion de las reglas antes o
+durante la ejecucion, los lenguajes se denominan de alcance
+estatico o alcance dinamico.
+
+Si la expresion e es una variable, la variable x ocurre libre iﬀ x
+es igual a e .
+Si la expresion e es de la forma (lambda (y) e’) entonces la
+variable x ocurre libre iﬀ y es distinto que x y x ocurre libre
+en e’.
+Si la expresion e es de la forma ( e 1 , e 2 ), entonces x ocurre
+libre iﬀsi x ocurre libre en e 1 o e 2 .
+
+Dada la definicion anterior, indique en las siguiente expresiones si x
+ocurre libre o no.
+’(lambda (x) (lambda (y) x))
+’((lambda (z) (lambda (y) x)) x)
+’((lambda (y) (lambda (y) x)) ((lambda (z) x) x)).
+
+
+<CODIGO_BLOCK_START>
+Para examinar si x ocurre libre o no en una expresion, por ejemplo:
+’ ( lambda
+( x )
+( lambda
+( y )
+z ) )
+Para el diseno debemos considerar la gramatica del calculo λ
+<lambda-exp> ::= <identificador>
+::= (lambda (<identificador>) <lambda-exp>)
+::= (<lambda-exp> <lambda-exp>)
+<identificador> ::= <letra>+.
+<CODIGO_BLOCK_END>
+
+Determinar si una variable ocurre libre
+De esta forma se disena un procedimiento que evalua si var ocurre
+libre en exp .
+( define
+occurs − free ?
+( lambda
+( var
+exp )
+( cond
+(( symbol ? exp )
+( eqv ?
+var
+exp ) )
+(( eqv ?
+( car
+exp )
+’ lambda )
+( and
+( not
+( eqv ?
+( caadr
+exp )
+var ) )
+( occurs − free ?
+var
+( caddr
+exp ) ) ) )
+( e l s e
+( or
+( occurs − free ?
+var
+( car
+exp ) )
+( occurs − free ?
+var
+( cadr
+exp ) ) ) ) ) ) ).
+
+Se define como el alcance de una variable como la region dentro del
+programa en el cual ocurren todas las referencias a dicha variable.
+( define
+x
+; Variable
+x1
+( lambda
+( x )
+; Variable
+x2
+( map
+( lambda
+( x )
+; Variable
+x3
+(+ x
+1) )
+; Ref x3
+x ) ) )
+; Ref x2
+( x
+’ (1
+2
+3) )
+; Ref x1.
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+( lambda
+( z )
+(( lambda
+( a b c )
+( a
+( lambda
+( a )
+(+ a c ) )
+b ) )
+( lambda
+( f
+x )
+( f
+( z x ) ) ) ) ).
+<CODIGO_BLOCK_END>
+
+
+<IMG_BLOCK_START>
+(lambda (z) ((lambda (a b c) (a (lambda (a) (+ a c)) b)) (lambda (f x) (£ (z x))|))
+//DESCRIPCION IMAGEN: Fórmulas matemáticas
+<IMG_BLOCK_END>
+
+Cual es el valor de la siguiente expresion:
+( let
+(( x
+3)
+( y
+4) )
+(+ ( let
+( ( x (+ y
+5) ) )
+( ∗
+x y ) )
+x )
+).
+
+Cual es el valor de la siguiente expresion:
+( let
+(( x
+6) ( y
+7) )
+( ∗
+( let
+( ( y
+8) )
+(+
+( let
+( ( x
+6)
+( y x ) )
+(+ x
+( let
+( ( y
+3)
+( x y ) ) (+ x (+ 2 y ) ) )
+)
+)
+y )
+)
+( let
+( ( x
+4) ) ( − y x ) )
+)
+).
+
+Cual es el valor de la siguiente expresion:
+( let
+(( x
+6)
+( y
+7) )
+(+ ( let
+( ( x ( − y
+6) ) )
+( ∗
+x y ) )
+x )
+).
+
+--- METADATA ---
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 1. La relacion entre la induccion y recursion Especificacion de datos

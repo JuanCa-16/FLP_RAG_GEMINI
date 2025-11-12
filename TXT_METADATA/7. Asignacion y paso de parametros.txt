@@ -1,0 +1,806 @@
+Hasta el momento, solo hemos considerado el valor producido
+por una computacion.
+No obstante, una computacion puede tambien tener efectos:
+en ella se puede leer, imprimir o alterar el estado de la
+memoria o de un archivo del sistema, etc.
+La diferencia entre producir un valor y producir un efecto es
+que un efecto es global, esto es, un efecto afecta toda la
+computacion.
+Nosotros nos concentraremos principalmente en un unico
+efecto, la asignacion de ubicaciones en memoria.
+
+Diferencias entre ligadura y asignacion:
+La ligadura de una variable es una accion local, mientras que
+la asignacion de una variable es potencialmente global.
+Una ligadura crea una nueva asociacion de un nombre con un
+valor, mientras que la asignacion cambia el valor de una
+ligadura existente.
+La ligadura comprende la asociacion de nombres con valores;
+asignacion comprende el compartimiento de valores entre
+diferentes procedimientos.
+
+Hasta el momento, las expresiones del lenguaje realizan alguna
+operacion y retornan un valor expresado.
+No obstante, para permitir la asignacion de variables es
+necesario permitir la ejecucion secuencial de expresiones.
+
+Nuestro lenguaje sera extendido para incorporar ejecucion
+secuencial de expresiones y asignacion de variables.
+El lenguaje consistira de las expresiones especificadas
+anteriormente y de expresiones para ejecucion secuencial
+begin ...; ... end y asignacion de variables set ... =
+... .
+Para este lenguaje se extiende el conjunto de valores
+expresados y denotados de la siguiente manera:
+Valor Expresado
+=
+Numero + Booleano + ProcVal
+Valor Denotado
+=
+Ref(Valor Expresado).
+
+Se anaden las siguientes producciones a la gramatica:
+⟨ expresion ⟩
+::=
+set ⟨ identificador ⟩ = ⟨ expresion ⟩
+varassign-exp (ids rhs-exp)
+::=
+begin ⟨ expresion ⟩{ ; ⟨ expresion ⟩} ∗ end
+begin-exp (exp exps).
+
+Se deben anadir las siguientes producciones a la especificacion de
+la gramatica:
+( e x p r e s s i o n
+( "begin"
+e x p r e s s i o n
+( arbno
+";"
+e x p r e s s i o n )
+"
+end" )
+begin = exp )
+( e x p r e s s i o n
+( "set"
+i d e n t i f i e r
+"="
+e x p r e s s i o n )
+set = exp ).
+
+De esta manera se puedan crear programas como:
+let m = 0
+in
+begin
+set m = add1 (m) ;
+set m = * (m,
+2) ;
+m
+end
+let x = 100
+in
+let p = proc
+( x )
+begin
+set x = add1 ( x ) ;
+x
+end
+in
++((p x ) ,
+( p x ) ).
+
+Para determinar el valor de una expresion begin(exp exps)
+se debe evaluar la expresion exp y cada una de las expresiones
+exps .
+Si exps es una lista vacia de expresiones se debe retornar el
+valor de la expresion exp . En caso contrario, se debe retornar
+el valor de la ultima expresion en exps .
+
+Para evaluar una expresion de asignacion de variables ( set ) se
+debe evaluar la expresion de la parte derecha de la asignacion.
+Luego, se debe modificar el contenido correspondiente a la
+variable con identificador igual a la parte izquierda de la
+asignacion por este valor.
+El resultado de la expresion de asignacion original es cualquier
+valor simbolico dado que esta expresion solo causa un efecto
+pero no produce un valor.
+
+Un ambiente es un tipo de dato que asigna valores a variables.
+Cuando se incluyeron los procedimientos, se encontro el
+problema de que el estado del ambiente no era guardado en el
+momento de la aplicacion de procedimientos y esto
+ocasionaba el retorno de un valor errado.
+
+Con la inclusion de la asignacion de variables surge otro
+problema. Cuando se crea un procedimiento se guarda el
+estado del ambiente, por esta razon al hacer un llamado al
+procedimiento, este se ejecuta sobre el ambiente que tiene
+almacenado y por ende no es sensible a los cambios en las
+variables del ambiente.
+
+let
+z = 0
+in
+let
+f = proc
+( x )
+z
+in
+begin
+set
+z = 1 ;
+( f
+2)
+end
+La expresion anterior tiene como valor 0, en vez de 1.
+Esto se debe a que en el momento de la asignacion de z a 1, el valor
+de dicha variable en el ambiente no cambio; lo que cambio fue el
+valor de la asociacion creada en la ligadura local.
+Luego en el llamado al procedimiento, la evaluacion se realiza en el
+ambiente almacenado (donde z tiene el valor de 0), por lo que se
+retorna 0.
+
+Para evitar el problema anterior, cada identificador debe
+denotar la direccion de una ubicacion en memoria (la memoria
+es tambien llamada store ).
+Dicha direccion se denomina referencia y lo que hace la
+asignacion es modificar su contenido.
+Las referencias o ubicaciones son tambien llamadas L-valores
+(valores que se asocian con variables que aparecen al lado
+izquierdo ( Left en ingles) de la declaracion de asignacion).
+De forma analoga, los valores expresados (que aparecen en el
+lado derecho ( Right ) de la declaracion de asignacion) son
+llamados R-valores .
+
+Una referencia es un tipo de dato que contiene dos campos:
+un entero y un vector.
+El entero corresponde a la posicion en el vector del valor
+asociado a la referencia.
+La interfaz del tipo de dato referencia consta de un
+procedimiento constructor y dos procedimientos observadores
+deref y setref! .
+
+a-ref (n v) : crea una referencia.
+deref (r) : retorna el valor almacenado en la referencia.
+setref!(r v) : cambia el valor almacenado por la referencia.
+
+La siguiente figura muestra una referencia a una ubicacion en un
+vector que contiene el valor 7.
+0
+1
+2
+3
+7
+0
+1
+2
+3
+7
+a−ref
+2.
+
+Definicion de la interfaz del tipo de dato referencia:
+( define-datatype
+r e f e r e n c e
+r e f e r e n c e ?
+( a = ref
+( position
+i n t e g e r ?)
+( vec
+vector ?) ) ).
+
+( define
+d e r e f
+( lambda
+( r e f )
+( p r i m i t i v e = d e r e f
+r e f ) ) )
+( define
+p r i m i t i v e = d e r e f
+( lambda
+( r e f )
+( cases
+r e f e r e n c e
+r e f
+( a = ref
+( pos
+vec )
+( v e c t o r = r e f
+vec
+pos ) ) ) ) ).
+
+( define
+s e t r e f !
+( lambda
+( r e f
+v a l )
+( p r i m i t i v e = s e t r e f !
+r e f
+v a l ) ) )
+( define
+p r i m i t i v e = s e t r e f !
+( lambda
+( r e f
+v a l )
+( cases
+r e f e r e n c e
+r e f
+( a = ref
+( pos
+vec )
+( vector = set !
+vec
+pos
+v a l ) ) ) ) ).
+
+Para implementar asignacion, es necesario retomar el concepto
+de ambiente.
+Un ambiente puede verse como una estructura similar a la de
+la siguiente figura: lista de simbolos
+a
+b
+c
+c
+11 22 33
+x
+66 77
+columna
+vector de valores.
+
+El tipo de dato ambiente esta definido de la siguiente manera:
+( define-datatype
+environment
+environment ?
+( empty = env = record )
+( extended = env = record
+( syms
+( l i s t = o f
+symbol ?) )
+( vec
+vector ?)
+( env
+environment ?) ) ).
+
+( define empty = env
+( lambda
+()
+( empty = env = record ) ) )
+( define
+extend = env
+( lambda
+( syms
+v a l s
+env )
+( extended = env = record
+syms
+( l i s t = > vector
+v a l s )
+env ) ) ).
+
+( define
+extend = env = recursively
+( lambda
+( proc = names
+i d s s
+b o d i e s
+old = env )
+( let
+(( l e n
+( length
+proc = names ) ) )
+( let
+(( vec
+( make = vector
+l e n ) ) )
+( let
+(( env
+( extended = env = record
+proc = names
+vec
+old = env ) ) )
+( for = each
+( lambda
+( pos
+i d s
+body )
+( vector = set !
+vec
+pos
+( c l o s u r e
+i d s
+body
+env ) ) )
+( i o t a
+l e n )
+i d s s
+b o d i e s )
+env ) ) ) ) ).
+
+( define
+i o t a
+( lambda
+( end )
+( let
+loop
+(( next
+0) )
+( if ( > = next
+end )
+’ ()
+( cons
+next
+( loop (+ 1
+next ) ) ) ) ) ) ).
+
+Asi mismo, se incluira la operacion apply-env-ref a la
+interfaz de ambiente para que cuando se encuentre un
+identificador, se retorne la referencia en vez de su valor.
+El procedimiento apply-env se reescribira en terminos de
+apply-env-ref y deref .
+
+( define
+apply = env
+( lambda
+( env sym )
+( d e r e f
+( apply = env = ref
+env sym ) ) ) )
+( define
+apply = env = ref
+( lambda
+( env sym )
+( cases
+environment
+env
+( empty = env = record
+()
+( eopl : error
+’ apply = env = ref
+"No
+binding
+for ~s" sym ) )
+( extended = env = record
+( syms
+v a l s
+env )
+( let
+(( pos
+( r i b = f i n d = p o s i t i o n
+sym syms ) ) )
+( if
+( number ?
+pos )
+( a = ref
+pos
+v a l s )
+( apply = env = ref
+env sym ) ) ) ) ) ) ).
+
+El comportamiento de las expresiones de asignacion de variables y
+de ejecucion secuencial se obtiene agregando las siguientes
+clausulas en el procedimiento eval-expression :
+( varassign = exp
+( i d
+rhs = exp )
+( begin
+( s e t r e f !
+( apply = env = ref
+env
+i d )
+( e v a l = e x p r e s s i o n
+rhs = exp
+env ) )
+1) ).
+
+( begin = exp
+( exp
+exps )
+( let
+loop
+(( acc
+( e v a l = e x p r e s s i o n
+exp
+env ) )
+( exps
+exps ) )
+( if
+( null ?
+exps )
+acc
+( loop
+( e v a l = e x p r e s s i o n
+( car
+exps )
+env )
+( cdr
+exps ) ) ) ) ).
+
+let
+x=2
+in
+set x= 3
+El valor de esta expresion es 1.
+
+let
+x=2
+in
+begin
+set x= 3 ;
+x
+end
+El valor de esta expresion es 3.
+
+let
+x = 100
+in
+let
+p = proc
+( x )
+begin
+set x = add1 ( x ) ;
+x
+end
+in
++((p x ) ,
+( p x ) )
+El valor de esta expresion es 202.
+
+En el lenguaje que se ha definido hasta el momento, en cada
+llamado a un procedimiento se crea una nueva referencia para
+cada parametro formal.
+Esta politica es conocida como llamado o paso por valor .
+Cuando se hace una asignacion a un parametro formal, la
+asignacion es local al procedimiento.
+
+Considere la expresion:
+let
+p = proc ( x )
+set x = 4
+in
+let
+a = 3
+in
+begin
+( p a ) ;
+a
+end.
+
+Cuando se hace el llamado al procedimiento p (expresion (p
+a) ) se evalua la expresion a y se crea una nueva referencia
+que contiene el valor de a (en un nuevo ambiente).
+La expresion de asignacion en el cuerpo de p (la expresion set
+x = 4 ) se evalua en el ambiente creado. Esta asignacion
+afecta la nueva referencia que inicialmente almacena el valor 3.
+
+El nuevo contenido de la referencia interna en el
+procedimiento p es 4.
+No obstante, la ultima expresion de la expresion begin es la
+expresion a . Esta expresion se evalua en el ambiente creado en
+el let que contiene la declaracion de a y por ende su valor es
+3.
+Finalmente, el valor de toda la expresion es 3.
+
+Si se asume que la expresion anterior se evalua en un ambiente
+env 0 , la siguiente figura muestra los ambientes creados en la
+evaluacion de esta expresion:.
+
+
+<IMG_BLOCK_START>
+9
+vec(3) env_p envo veci ( closure (x) set x = 4 env0)) env2
+//DESCRIPCION IMAGEN: Fórmulas matemáticas
+<IMG_BLOCK_END>
+
+Algunas veces es deseable que se permita pasar a un
+procedimiento variables con el objetivo de que estas sean
+asignadas por dicho procedimiento.
+Eso significa que el valor de las variables cambia tanto en el
+interior del procedimiento como en el llamado al
+procedimiento.
+Lo anterior se realiza pasando al procedimiento una referencia
+a la ubicacion de la variable y no su contenido.
+Este mecanismo es denominado llamado o paso por referencia .
+
+Cuando se anade paso por referencia, los identificadores aun
+denotan referencias a valores expresados, luego los conjuntos
+no cambian:
+Valor Expresado
+=
+Numero + Booleano + ProcVal
+Valor Denotado
+=
+Ref(Valor Expresado).
+
+Sin embargo, el cambio ocurre cuando se crean nuevas referencias.
+En los llamados por valor, una nueva referencia es creada para
+cada evaluacion de un operando.
+En los llamados por referencia, una nueva referencia es creada
+para cada evaluacion de un operando distinto a una variable.
+
+Para la implementacion del llamado por referencia, una
+referencia sera (como en llamado por valor) una pareja de una
+ubicacion y un vector.
+La diferencia esta en el contenido del vector, este puede ser:
+Valores expresados ( blancos directos )
+Referencias a valores expresados ( blancos indirectos ).
+
+Blanco directo: El comportamiento del programa es igual al de
+paso por valor.
+Blanco indirecto: Corresponde al nuevo comportamiento del
+llamado por referencia, en el cual no son creadas nuevas
+ubicaciones.
+
+Un blanco ( target ) es un tipo de dato definido de la siguiente
+manera:
+( define-datatype
+t a r g e t
+t a r g e t ?
+( d i r e c t = t a r g e t
+( e x p v a l
+e x p v a l ?) )
+( i n d i r e c t = t a r g e t
+( r e f
+ref = to = direct = target ?) ) ).
+
+Los procedimientos correspondientes al tipo de dato target son:
+expval? : Retorna true si la entrada es un valor expresado,
+esto es, un numero o un procedimiento.
+ref-to-direct-target? : Retorna true si la entrada es una
+referencia a un valor.
+
+( define
+e x p v a l ?
+( lambda
+( x )
+( or
+( number ? x )
+( p r o c v a l ? x ) ) ) )
+( define
+ref = to = direct = target ?
+( lambda
+( x )
+( and
+( r e f e r e n c e ? x )
+( cases
+r e f e r e n c e
+x
+( a = ref
+( pos
+vec )
+( cases
+t a r g e t
+( v e c t o r = r e f
+vec
+pos )
+( d i r e c t = t a r g e t
+( v ) #t )
+( i n d i r e c t = t a r g e t
+( v ) #f ) ) ) ) ) ) ).
+
+La implementacion (procedimientos deref y setref! ) de la
+interfaz para el tipo de dato referencia cambian.
+Las nuevas definiciones observan el tipo de blanco almacenado
+en la referencia para determinar el valor expresado a retornar o
+la ubicacion a cambiar.
+
+La implementacion del procedimiento deref tiene en cuenta
+que una referencia puede tener distintos blancos.
+Si el blanco es directo se retorna su valor.
+Si el blanco es indirecto (corresponde a una referencia a otra
+referencia) se busca el valor de la referencia interna.
+
+( define
+d e r e f
+( lambda
+( r e f )
+( cases
+t a r g e t
+( p r i m i t i v e = d e r e f
+r e f )
+( d i r e c t = t a r g e t
+( e x p v a l )
+e x p v a l )
+( i n d i r e c t = t a r g e t
+( r e f 1 )
+( cases
+t a r g e t
+( p r i m i t i v e = d e r e f
+r e f 1 )
+( d i r e c t = t a r g e t
+( e x p v a l )
+e x p v a l )
+( i n d i r e c t = t a r g e t
+( p )
+( eopl : error
+’ d e r e f
+"Illegal
+reference: ~s"
+r e f 1 ) )
+) ) ) ) ).
+
+La implementacion del procedimiento setref! tambien tiene
+en cuenta que una referencia puede tener distintos blancos.
+Si el blanco es indirecto (corresponde a una referencia a otra
+referencia) se modifica el valor de la referencia interna.
+Si el blanco es directo se modifica la referencia de la entrada.
+En ambos casos el nuevo valor se almacena como un blanco
+directo.
+
+( define
+s e t r e f !
+( lambda
+( r e f
+e x p v a l )
+( let
+(( r e f
+( cases
+t a r g e t
+( p r i m i t i v e = d e r e f
+r e f )
+( d i r e c t = t a r g e t
+( expval1 )
+r e f )
+( i n d i r e c t = t a r g e t
+( r e f 1 )
+r e f 1 ) ) ) )
+( p r i m i t i v e = s e t r e f !
+r e f
+( d i r e c t = t a r g e t
+e x p v a l )
+) ) ) ).
+
+Para aplicaciones de primitivas, solo se necesita evaluar las
+subexpresiones y pasar los valores al procedimiento
+apply-primitive .
+Se cambia la clausula correspondiente en el procedimiento
+eval-expression por:
+( primapp = exp
+( prim
+rands )
+( let
+(( args
+( eval = primapp = exp = rands
+rands
+env ) ) )
+( a p p l y = p r i m i t i v e
+prim
+args ) ) ).
+
+El procedimiento eval-primapp-exp-rands esta definido de la
+siguiente manera
+( define
+eval = primapp = exp = rands
+( lambda
+( rands
+env )
+( map
+( lambda
+( x )
+( e v a l = e x p r e s s i o n
+x
+env ) )
+rands ) ) ).
+
+Para ligadura local (expresiones let ), se mantiene el
+comportamiento de los llamados por valor pero se hacen las
+modificaciones correspondientes para que los valores
+almacenados correspondan a blancos directos.
+Se cambia la clausula correspondiente en el procedimiento
+eval-expression por:
+( let = exp
+( i d s
+rands
+body )
+( let
+(( args
+( eval = let = exp = rands
+rands
+env ) ) )
+( e v a l = e x p r e s s i o n
+body
+( extend = env
+i d s
+args
+env
+) ) ) ).
+
+Los procedimientos eval-let-exp-rands y eval-let-exp-rand
+estan definidos de la siguiente manera
+( define
+eval = let = exp = rands
+( lambda
+( rands
+env )
+( map
+( lambda
+( x )
+( eval = let = exp = rand
+x
+env ) )
+rands ) ) )
+( define
+eval = let = exp = rand
+( lambda
+( rand
+env )
+( d i r e c t = t a r g e t
+( e v a l = e x p r e s s i o n
+rand
+env ) ) ) ).
+
+Para la aplicacion de procedimientos, se evalua cada operando
+usando el procedimiento eval-rand .
+Si el operando no es una variable, entonces se crea una nueva
+ubicacion retornando el blanco directo.
+Si el operando es una variable, esta denota una ubicacion que
+contiene un valor expresado, luego se retorna un blanco
+indirecto que apunta a dicha ubicacion.
+Si la variable esta ligada a una ubicacion que contiene un
+blanco directo, entonces una referencia a la ubicacion es
+retornada. Pero si la variable esta ligada a otra referencia,
+entonces dicha referencia es retornada.
+
+Los procedimientos eval-rand esta definido de la siguiente manera
+( define
+eval = rand
+( lambda
+( rand
+env )
+( cases
+e x p r e s s i o n
+rand
+( var = exp
+( i d )
+( i n d i r e c t = t a r g e t
+( let
+(( r e f
+( apply = env = ref
+env
+i d ) ) )
+( cases
+t a r g e t
+( p r i m i t i v e = d e r e f
+r e f )
+( d i r e c t = t a r g e t
+( e x p v a l )
+r e f )
+( i n d i r e c t = t a r g e t
+( r e f 1 )
+r e f 1 ) ) ) ) )
+( else
+( d i r e c t = t a r g e t
+( e v a l = e x p r e s s i o n
+rand
+env ) ) ) ) ) ).
+
+Considere nuevamente la expresion:
+let
+p = proc ( x )
+set x = 4
+in
+let
+a = 3
+in
+begin
+( p a ) ;
+a
+end
+Con paso por referencia, el valor de esta expresion es 4.
+
+Luego, los ambientes creados en la evaluacion de esta expresion se
+pueden visualizar asi:.
+
+
+<IMG_BLOCK_START>
+10) envi veci direct-target( ®) (dosure (x) set x = 4 env0) ) )
+vec (indirect-target (..) ) ‘@
+veci direct-target (3) )
+//DESCRIPCION IMAGEN: Fórmulas matemáticas
+<IMG_BLOCK_END>
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 7. Asignacion y paso de parametros
