@@ -1,0 +1,32 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se presenta una explicación sobre la sintaxis abstracta:
+
+La **sintaxis abstracta** es un concepto fundamental en los lenguajes de programación. Los *datatypes* que representan estructuras como "árbol" o "struct" se conocen como **árboles de sintaxis abstracta (AST)**.
+
+Dada una gramática (por ejemplo, para las expresiones de cálculo lambda), cada expresión se puede representar usando un tipo de dato. Esta representación inicial, tal como el programador la escribe, se denomina **sintaxis concreta** o representación externa del código. Sin embargo, para que el código sea ejecutado durante el proceso de compilación o interpretación, se utiliza una **representación interna** o **sintaxis abstracta**. Esta sintaxis especial se genera a partir de la gramática y permite verificar rápidamente si la expresión está correctamente escrita.
+
+Para crear una sintaxis abstracta a partir de una sintaxis concreta, se deben nombrar cada regla de producción de la sintaxis concreta y cada ocurrencia de un símbolo no terminal. Por ejemplo, en las expresiones se tienen producciones como: `identifier`, `var expression id`, `lambda identifier expression`, `lambda expression id cuerpo`, `expression expression id ram`. Asignar nombres a estas producciones facilita su administración y procesamiento.
+
+Consideremos la expresión lambda: `(lambda x (f (f x)))`. Para esta expresión, podemos construir el AST de la siguiente manera:
+*   La expresión principal es un `lambda expression`, que se compone de un `id` (el parámetro `x`) y un `cuerpo` (la expresión `(f (f x))`).
+*   El `cuerpo` `(f (f x))` es una aplicación de función, que puede representarse como un `application expression` con dos partes: el `rator` (operador/función) y el `rand` (operando/argumento).
+*   El `rator` es `f`, que es un `var expression` con `id` `f`.
+*   El `rand` es `(f x)`, que a su vez es otro `application expression`.
+*   Dentro de este `application expression` anidado:
+    *   El `rator` es `f` (un `var expression` con `id` `f`).
+    *   El `rand` es `x` (un `var expression` con `id` `x`).
+Este proceso descompone la expresión hasta sus elementos terminales, formando el árbol.
+
+La capacidad de construir el Árbol de Sintaxis Abstracta (AST) de una expresión significa que la expresión es sintácticamente correcta y, por lo tanto, puede ser ejecutada. Los lenguajes de programación utilizan los ASTs, también conocidos como "Abstract Syntax Tree", para verificar la validez del código. Muchas pruebas y análisis de la validez del código se realizan directamente sobre el AST, ya que este árbol representa la sintaxis de un programa correctamente estructurado, eliminando las ambigüedades del código concreto.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=E_IR22Uw7_o
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,31 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se presenta un análisis de la generación de ambientes.
+
+Consideremos una expresión donde el ambiente inicial es el vacío.
+
+1.  **Ambiente Inicial (M0)**: Contiene la variable `P`, que es un *direct target* a una clausura con `X`. Esta clausura guarda el ambiente vacío en un estado `TN`.
+2.  **Declaración de A**: Posteriormente, se declara la variable `A` con el valor `3`. `A` es un *direct target* porque su valor (`3`) está asignado directamente.
+3.  **Evaluación de PDA en Ambiente 1**:
+    *   Al pasar `P` como argumento a `PDA`, y dado que `P` es una variable, se crea un *indirect target*.
+    *   **Definiciones**:
+        *   Un *direct target* (DT) apunta directamente a un valor.
+        *   Un *indirect target* (ID) apunta a una referencia de otra variable.
+    *   En este caso, el *indirect target* creado para `P` contendrá una referencia hacia `A`.
+4.  **Ejecución del Procedimiento (`set X = 4`)**:
+    *   Cuando el procedimiento ejecuta `set X = 4`, dado que `X` (dentro de la clausura referenciada por `P`) es un *indirect target* que apunta a `A`, la modificación de `X` implica la modificación de la variable `A`.
+    *   Como resultado, `A` se actualiza y se convierte en un *direct target* con el valor `4`.
+5.  **Retorno de la Expresión**: Al finalizar, la expresión `PDA` retorna el valor `4`.
+
+Este ejemplo ilustra el comportamiento y la diferencia entre un *direct target* y un *indirect target* en la gestión de ambientes y referencias de variables.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Rdvff81e2IY
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

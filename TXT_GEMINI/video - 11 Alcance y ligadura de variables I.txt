@@ -1,0 +1,57 @@
+Aquí tienes la transcripción limpia y formateada para estudio:
+
+---
+
+### Variables en Lenguajes de Programación
+
+Una variable es un concepto fundamental en los lenguajes de programación. Su comportamiento y definición pueden variar según el paradigma del lenguaje.
+
+#### Ligadura vs. Referencia
+
+1.  **Ligadura (Binding):** Es la asociación directa de un valor a un identificador, sin la necesidad de un paso intermedio de memoria.
+    *   **Características:**
+        *   El identificador se "nombra" directamente con un valor.
+        *   Ejemplo: `define x 5` en Racket. Al consultar `x`, se obtiene directamente `5`.
+        *   Generalmente, el valor asociado es inmutable; la ligadura no puede cambiar una vez establecida. Si se intenta cambiar, a menudo se crea una nueva ligadura.
+
+2.  **Referencia (Reference):** Es la asociación de un identificador a una dirección de memoria, donde se almacena el valor.
+    *   **Características:**
+        *   El identificador (`x`) guarda una dirección de memoria.
+        *   Ejemplo: `int x = 8` en C++. Al consultar `x`, se accede al valor guardado en la dirección de memoria apuntada por `x`.
+        *   La dirección de memoria a la que apunta el identificador (`x`) no cambia, pero el *contenido* de esa dirección de memoria sí puede ser modificado. Esto permite la mutabilidad del valor.
+
+**Mutabilidad:** Se refiere a si el contenido de una estructura de datos puede cambiar después de su creación.
+*   **Dato Mutable:** Sus miembros internos pueden modificarse (ej. las listas en Python).
+*   **Dato Inmutable:** Sus miembros internos no pueden modificarse una vez creados (ej. las tuplas en Python).
+La inmutabilidad de una ligadura significa que la asociación entre el nombre y el valor es fija, no que el valor en sí no pueda ser reemplazado por una nueva ligadura.
+
+#### Alcance de Variables (Scope)
+
+Las reglas de alcance definen dónde una variable es visible y accesible en el código. Se clasifican principalmente en estático y dinámico.
+
+1.  **Alcance Estático (Lexical Scope):** La visibilidad de una variable se determina en el momento de la escritura del código, basándose en su ubicación dentro del texto.
+    *   **Características:**
+        *   Una variable declarada dentro de un bloque o función solo es visible dentro de ese ámbito.
+    *   **Tipos de Alcance Estático:**
+        *   **Alcance de Bloque (Block Scope):** La visibilidad de una variable se limita al bloque de código donde es declarada, delimitado usualmente por llaves (`{}`).
+            *   Ejemplos: C++, Java. En estos lenguajes, si se declara `int x = 8` dentro de un `if`, `while` o `for`, `x` solo existe dentro de ese bloque. JavaScript con `let` también usa alcance de bloque. C# también maneja alcance de bloque.
+        *   **Alcance de Función (Function Scope):** La visibilidad de una variable se extiende a toda la función en la que fue declarada, sin importar si está dentro de bloques internos como `if` o `for`.
+            *   Ejemplos: Python (variables locales), JavaScript con `var`. En Python, una variable declarada dentro de un `if` es visible fuera de ese `if` dentro de la misma función.
+
+2.  **Alcance Dinámico (Dynamic Scope):** La visibilidad de una variable se determina en tiempo de ejecución, basándose en la secuencia de llamadas a funciones.
+    *   **Características:**
+        *   Una variable puede ser accesible incluso si no fue declarada explícitamente en el ámbito actual, sino en la cadena de llamadas.
+    *   Ejemplos: Octave, MATLAB.
+
+**Lenguajes Híbridos:** Algunos lenguajes, como Python, permiten manejar variables de alcance global con palabras clave específicas (ej. `global`), haciendo que una variable dentro de una función sea visible en todo el código. JavaScript combina alcance de bloque (`let`) y alcance de función (`var`).
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=zj2QEeqNyLo
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

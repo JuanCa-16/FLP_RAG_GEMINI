@@ -1,0 +1,56 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se presenta la implementación de la aplicación de procedimientos:
+
+**1. Contexto de Implementación de Procedimientos**
+
+Al implementar la aplicación, consideremos el ejemplo `F(2, 28)`. Esto implica la creación de un ambiente que contenga las variables `E` y `Z` con valores 2 y 28, respectivamente. El cuerpo del procedimiento se evaluará en este ambiente.
+
+**2. Extensión del Ambiente**
+
+El ambiente de un procedimiento se extiende desde el punto donde fue creado, no desde donde fue llamado. Es crucial recordar que la extensión del ambiente se define por el contexto de creación del procedimiento.
+
+**3. Aplicación de Procedimientos**
+
+Para la aplicación de procedimientos, implementaremos la función `evaluar_expresion`, específicamente la sección que maneja los procedimientos, la cual inicialmente había sido dejada vacía.
+
+**4. Evaluación de Argumentos**
+
+Primero, se evalúan los `RANDs` (argumentos). Estos argumentos se transforman en sus valores mediante un `map` que aplica `evaluar_expresion` a cada uno en el ambiente actual. Esto se realiza dentro de un bloque `let` para manejar la sintaxis abstracta.
+
+**5. Evaluación de la Expresión del Procedimiento**
+
+Luego, la expresión del procedimiento en sí (denominada 'radar') debe ser evaluada. Se le asignará el nombre `PROC_B`. Esta evaluación es un `evaluar_expresion` del 'radar' en el ambiente actual. Esto es necesario porque la entrada es una expresión (`struct`), pero se espera una clausura. Si, por ejemplo, llega una `var_expresion x`, esta debe buscarse en el ambiente donde la clausura debe estar almacenada.
+
+**6. Verificación de Tipo del Procedimiento**
+
+Es indispensable verificar si `PROC_B` es efectivamente un procedimiento (`PROC`). Si no lo es, se debe generar un error, ya que solo los valores de procedimiento pueden ser evaluados. Se puede incluir el 'radar' o su valor evaluado en el mensaje de error para informar al usuario sobre la equivocación.
+
+**7. Evaluación del Cuerpo del Procedimiento en un Ambiente Extendido**
+
+Una vez confirmado que `PROC_B` es un procedimiento, se procede a evaluar su cuerpo. `PROC_B` se manejará con una estructura `CASES` que extrae la clausura. La clausura contiene los identificadores (`LIDs` - parámetros formales), el cuerpo del procedimiento, y el ambiente de creación.
+
+La evaluación se realiza invocando `evaluar_expresion` sobre el cuerpo del procedimiento, pero en un ambiente extendido. Este ambiente extendido conecta los `LIDs` (parámetros formales) con los `LRAMs` (valores de los argumentos evaluados) y se extiende desde el ambiente donde fue creado el procedimiento.
+
+**8. Manejo de Errores por Cantidad de Argumentos**
+
+Después de cerrar las estructuras `IF` y `LET`, y corregir errores de sintaxis como paréntesis, se procede a probar la implementación. Si se intenta llamar al procedimiento con un número incorrecto de argumentos, se produce un error. Para prevenir esto, es esencial añadir una condición que valide que el número de `LIDs` (parámetros formales) sea igual al número de `LRAMs` (argumentos proporcionados).
+
+Se introduce una sentencia `IF` utilizando la función `LENGTH` para comparar la longitud de los `LIDs` con la de los `LRAMs`. Si no coinciden, se lanza un error (`EOPLR`) indicando que el "número de argumentos no es correcto" y especificando el número de argumentos esperados (basado en `LENGTH(LIDs)`).
+
+**9. Mensajes de Error Mejorados**
+
+Finalmente, se mejora el mensaje de error para que sea más informativo. En lugar de solo decir "debe enviar X", se añade "y usted ha enviado Y" (utilizando `LENGTH(RANTS)` para los argumentos enviados). Esto proporciona una retroalimentación clara al usuario, por ejemplo: "El número de argumentos no es correcto: debe enviar 1, y usted ha enviado 3."
+
+Con esto, la implementación básica de los procedimientos está completa. Se explorarán ejemplos a nivel de ambientes y S-Code en futuras sesiones.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=VeDViGXrwrQ
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,64 @@
+Este texto detalla la implementación de un interpretador para un lenguaje orientado a objetos, centrándose en la representación de clases y la aplicación de métodos.
+
+---
+
+**1. Correcciones Terminológicas Iniciales**
+
+Se realizarán correcciones en la terminología del interpretador. Anteriormente, se utilizaron nombres en inglés como `classD` para "declaración de clase" e `identifier`. Es necesario estandarizar el uso de "identificador" en lugar de `identifier` a lo largo del código. Esto aplica a todas las instancias de `identifier` y `expresión web`.
+
+En la función "evaluar expresión", la variable `en` debe ser referida como "ambiente". Además, al construir un objeto con `new object`, este procedimiento interactúa con `elaborar declaración de clase`, la cual configura la variable de ambiente de clases.
+
+**2. Representación de Clases Basada en Partes**
+
+Para implementar la representación de clases basada en partes, se define una 'parte'. Una parte posee un nombre y un vector que contiene el estado del objeto. Cada posición del vector se asocia con un valor actual del objeto. Inicialmente, este vector se llena con ceros, lo que representa los valores por defecto de los campos o atributos no inicializados.
+
+La construcción de un objeto implica crear una lista de partes, a partir de un nombre de clase. El proceso es recursivo:
+*   Si el nombre de la clase es 'Object', indica el final de la cadena de herencia, y se retorna una lista vacía.
+*   En caso contrario, se busca la declaración de la clase correspondiente. La lista resultante tiene como primer elemento la 'parte' de la clase actual, y su cola se construye recursivamente con la superclase. Este proceso se repite, agregando cada clase de la jerarquía (desde la clase actual hasta 'Object') a la lista.
+
+El procedimiento `newObject` implementa esta construcción:
+*   Si encuentra 'Object', devuelve una lista vacía.
+*   De lo contrario, crea la primera parte (`makeFirstPart`) y realiza una llamada recursiva a `newObject` con el nombre de la superclase. Este método construye la cadena de herencia, agregando cada clase (desde la actual hasta 'Object') a una lista.
+
+La función `makeFirstPart` construye una parte individual. Toma el nombre de la clase (`className`) y crea un vector inicializado a ceros, cuyo tamaño corresponde al número de campos (`fields`) de la clase.
+
+**3. Extractores de Declaraciones de Clase y Métodos**
+
+Se implementa el método `newObject`. Para su funcionamiento, es necesario implementar extractores de declaraciones de clase, como:
+*   `classDeclarationSuperName`: extrae el nombre de la superclase.
+*   `classDeclarationFields`: extrae los campos.
+*   `classDeclarationName`: extrae el nombre de la clase.
+
+Estos extractores son esenciales para obtener la información relevante de la declaración de una clase. Similarmente, se requieren extractores para los métodos:
+*   `methodName`: extrae el nombre del método.
+*   `methodBody`: extrae el cuerpo del método.
+*   `methodNames`: para la lista de nombres de métodos.
+
+Estos extractores se basan en la gramática definida para los tipos de datos.
+
+**4. Aplicación de Métodos (`findMethodAndApply`)**
+
+El procedimiento `findMethodAndApply` busca un método a lo largo de la cadena de herencia hasta encontrar la declaración del método cuyo nombre coincida. Este procedimiento recibe el nombre del método, el nombre de la clase (como `hostname`), el objeto `self` (representación del objeto), y los argumentos.
+
+*   Si la búsqueda alcanza 'Object' sin encontrar el método, se indica que el método no existe.
+*   Si se encuentra la declaración del método en la clase actual, se procede a ejecutar `applyMethod`.
+*   Si no se encuentra en la clase actual, se realiza una llamada recursiva a `findMethodAndApply` con la superclase (`className.superName`).
+
+La ejecución de un método implica la creación de un ambiente extendido.
+
+**5. Construcción del Ambiente para Aplicación de Métodos**
+
+Para aplicar un método, se construye un ambiente que liga las variables a sus valores apropiados. Este ambiente incluye ligaduras para `super`, `self`, los parámetros formales del método, y los campos visibles desde el método (aquellos que son accesibles desde la clase `hostname` en adelante).
+
+Como ejemplo, se considera la llamada `o3.M1(7,8)` en un objeto `o3` de tipo `C3`. Si `M1` no está declarado en `C3`, se busca en su superclase, digamos `C2`. Durante la ejecución, el objeto `self` es una lista de partes, representando la jerarquía de herencia (e.g., `C3`, `C2`, `C1`). La construcción del ambiente incluirá los campos de `C3`, `C2` y `C1`.
+
+Un aspecto a considerar es que esta representación puede generar redundancia, ya que cada parte de la lista podría contener información repetida de los campos. Esta redundancia en la información de las partes es una limitación de la implementación actual, ya que consume una cantidad significativa de memoria. Por ejemplo, los objetos en Java a menudo ocupan menos espacio que en C++ debido a la optimización de la información de los campos, evitando esta redundancia en objetos simples. La próxima implementación buscará reducir este consumo de espacio.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=yXIqoR2-FL0
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

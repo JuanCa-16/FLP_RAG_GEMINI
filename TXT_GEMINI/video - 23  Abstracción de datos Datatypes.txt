@@ -1,0 +1,35 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Para el diseño de interfaces de Tipos Abstractos de Datos (TADs) recursivos, se debe seguir una receta que incluye: un constructor para cada variante o regla de producción, un predicado para verificar cada tipo de datos, y un extractor para cada uno de los diferentes tipos de datos.
+
+Esta implementación se puede realizar directamente con la función de interfaz `define-data-type` en Dr. Racket. Dr. Racket facilita esta tarea, ya que `define-data-type` genera automáticamente los constructores, observadores y extractores en un solo paso.
+
+La sintaxis de `define-data-type` requiere especificar el nombre del tipo, el nombre del predicado (para preguntar si es un tipo de dato específico), el nombre de cada variante, y los nombres de los campos de cada variante.
+
+**Recomendaciones importantes:**
+*   Los nombres de los tipos y de las variantes deben ser únicos, incluso si pertenecen a tipos diferentes.
+*   Para cada variante, se genera un procedimiento constructor.
+*   Si una variante tiene N campos, su constructor recibe N argumentos.
+Este mecanismo construye las funciones automáticamente a partir de la definición proporcionada.
+
+Consideremos un `define-data-type` para `ls-expression`. Este tipo puede incluir variantes como:
+*   `body-expression` con un campo `identifier`.
+*   `land-expression` con campos `identifier` y `body-ls-expression` (que es otra `ls-expression`).
+*   `app-expression` con campos `radar` y `run`.
+
+Es importante recordar que los nombres de los elementos (tipos, predicados, variantes, campos) son configurables, aunque se recomienda utilizar nombres descriptivos para facilitar la comprensión. Además, `define-data-type` proporciona un mecanismo para verificar que los datos de entrada son del tipo esperado, una funcionalidad avanzada respecto a implementaciones anteriores.
+
+Analicemos el caso de un `s-list`, que representa una lista de símbolos. Un `s-list` puede ser un símbolo o una lista de símbolos, y sus variantes podrían incluir `first` y `rest` para manejar su estructura recursiva.
+
+A continuación, se presentará un ejemplo práctico de cómo construir estos tipos de datos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=wGuA726RKUM
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

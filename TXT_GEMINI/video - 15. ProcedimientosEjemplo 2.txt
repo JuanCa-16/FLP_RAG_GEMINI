@@ -1,0 +1,33 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se revisa un ejemplo para ilustrar cómo la representación de ambientes resuelve problemas de alcance de variables.
+
+1.  **Ambiente Inicial:** Cuando no se especifica, el ambiente inicial es vacío.
+2.  **Ambiente 0:** Se establece un ambiente 0 donde `x = 5`.
+3.  **Definición de Clausura f:** Se define una clausura `f` que toma los parámetros `y` y `z`. Esta clausura captura el ambiente en el que fue creada, que es el ambiente 0.
+4.  **Ambiente 1:** El valor de `x` se actualiza a 28, lo que en este contexto crea o modifica el ambiente accesible en el punto de la llamada, denominado ambiente 1.
+5.  **Evaluación de f(2, x):**
+    *   El valor actual de `x` es 28, por lo que la llamada se traduce en `f(2, 28)`.
+    *   La invocación del procedimiento `f` crea un nuevo ambiente. En este ambiente, las variables `y` se vincula a 2 y `z` a 28.
+    *   Este nuevo ambiente extiende del ambiente almacenado en la clausura de `f`, es decir, del ambiente 0.
+    *   El cuerpo de `f` calcula la expresión `y + (z - x)`.
+    *   **Resolución de la expresión:**
+        *   `y` es 2 (del ambiente actual de `f`).
+        *   `z` es 28 (del ambiente actual de `f`).
+        *   `x` no se encuentra en el ambiente actual de `f`. Por lo tanto, se busca en el ambiente padre que `f` capturó (ambiente 0), donde `x` es 5.
+        *   La evaluación final es `2 + (28 - 5) = 2 + 23 = 25`.
+
+Este resultado se puede verificar con el siguiente código en un intérprete:
+`let x = 5 in let f = procedure(y, z) (y + (z - x)) in x = 28; f(2, x)`
+La ejecución de este código produce el valor 25.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=2Dnxwstls1c
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

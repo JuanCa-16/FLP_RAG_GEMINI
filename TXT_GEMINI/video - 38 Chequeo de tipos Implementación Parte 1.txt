@@ -1,0 +1,67 @@
+Aquí se presenta la implementación del chequeo de tipos en un interpretador, tomando como base un interpretador de asignación.
+
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Requisitos del Chequeo de Tipos y Modificaciones Gramaticales
+
+En lenguajes con chequeo de tipos, es fundamental que todas las variables sean explícitamente especificadas por el programador. Esto implica cambios en la gramática, particularmente en la forma en que se declaran los procedimientos (`proc expression`) y los procedimientos recursivos (`let-rec expression`).
+
+**Modificaciones Propuestas:**
+
+1.  **Procedimientos (`proc expression`):**
+    *   Ahora recibirán el tipo de cada parámetro antes de su identificador.
+    *   **Ejemplo:** `proc int x int y { ... }` (donde `int x` y `int y` especifican que `x` e `y` son de tipo entero).
+
+2.  **Procedimientos Recursivos (`let-rec expression`):**
+    *   Requerirán la especificación del tipo de retorno antes del identificador de la función, seguido por los tipos de los parámetros.
+    *   **Ejemplo:** `let-rec int f int x { ... }` (aquí, `int` es el tipo de retorno para la función `f`, y `int x` es el parámetro).
+
+Estas modificaciones se añadirán a la especificación gramatical para permitir la expresión de `type expression` en los argumentos de entrada de procedimientos y procedimientos recursivos.
+
+### Justificación del Tipo de Retorno en Recursiones
+
+Es crucial especificar el tipo de retorno en los procedimientos recursivos al inicio de su declaración. Esto se debe a que, durante la evaluación recursiva de la función, el intérprete necesita conocer el tipo de la función misma. Si el tipo de retorno no se declara explícitamente, el intérprete tendría que evaluar la recursión hasta su punto base para inferir el tipo, lo cual es ineficiente y, en algunos casos, inviable. Esta práctica es consistente con lenguajes como C++, donde el tipo de retorno de una función (frecuentemente recursiva) se declara explícitamente por esta razón.
+
+### Definición de Tipos de Expresiones
+
+Se definen los siguientes tipos de expresiones disponibles en la gramática:
+
+*   **`IntTypeExpression`**: Representa el tipo entero.
+*   **`BoolTypeExpression`**: Representa el tipo booleano.
+*   **`ProcTypeExpression`**: Representa el tipo de un procedimiento. Su estructura general es:
+    `(TipoArgumento1 * TipoArgumento2 * ... -> TipoRetorno)`
+    Donde `TipoArgumentoX` son los tipos de los parámetros de entrada (separados por asteriscos), y `TipoRetorno` es el tipo del valor que el procedimiento devuelve.
+
+**Ejemplo de uso:** `proc (int x, int y) -> int { x + y }`
+Este ejemplo muestra un procedimiento que recibe dos enteros (`x` e `y`) y cuyo resultado de evaluación será un entero. Es importante diferenciar entre la *declaración* del tipo de la función (ej., `(int, int) -> int`) y la *evaluación* de su cuerpo, cuyo resultado debe coincidir con el tipo de retorno declarado.
+
+### Representación Interna de Tipos (Data Type)
+
+Para que el intérprete pueda manipular y verificar los tipos, se implementará un tipo de dato (`data type`) interno que diferenciará entre:
+
+1.  **`AtomicType`**: Representa tipos directos y simples como `int` o `boolean`. Internamente, almacena un símbolo (`'int'`, `'boolean'`) para identificar el tipo.
+2.  **`ProcType`**: Representa un tipo de procedimiento y contiene:
+    *   `arg_types`: Una lista de objetos `Type` (la representación interna de los tipos) para los argumentos de entrada.
+    *   `return_type`: Un objeto `Type` para el valor de retorno del procedimiento.
+
+**Definición de Tipos Específicos:**
+
+*   `IntType` se define como `AtomicType('int')`.
+*   `BoolType` se define como `AtomicType('boolean')`.
+
+Estos `AtomicType` son las representaciones internas de los `IntTypeExpression` y `BoolTypeExpression` sintácticos.
+
+En resumen, la implementación del chequeo de tipos implica modificaciones sintácticas para la declaración explícita de tipos en procedimientos y recursiones, y la introducción de un sistema de tipos interno para su representación y verificación. La especificación explícita de tipos de retorno en recursiones es esencial para una evaluación eficiente y clara.
+
+Habiendo definido la representación interna de los tipos, el siguiente paso es integrar estos cambios en la lógica del interpretador para realizar la verificación de tipos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=J8kdPqy64gc
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

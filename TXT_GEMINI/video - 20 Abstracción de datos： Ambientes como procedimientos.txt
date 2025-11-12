@@ -1,0 +1,59 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Representación Basada en Procedimientos
+
+Se utilizará una representación de datos basada en procedimientos. En esta representación, las funciones o el propio tipo de dato devuelven la información necesaria.
+
+#### Definición de `make-env`
+
+Se define `make-env`, una función que no recibe argumentos y devuelve otra función. Esta función interna recibe una "señal" (un selector numérico) para gestionar las operaciones:
+*   Si la señal es `0`: se pregunta si es un ambiente vacío (`is-empty-env?`).
+*   Si la señal es `1`: devuelve el extractor de ID (`env-id`).
+*   Si la señal es `2`: devuelve el extractor de valor (`env-value`).
+*   Si la señal es `3`: devuelve el ambiente anterior (`env-old-env`).
+
+Este proceso genera un tipo de dato que, aunque no es directamente visible, es la estructura fundamental que se manipulará.
+
+#### Observadores: Predicados
+
+Los predicados permiten verificar las propiedades de un ambiente:
+*   **`is-empty-env?`**: Recibe un ambiente y le pregunta (usando la señal `0`) si es un ambiente vacío.
+*   **`make-empty-env`**: Define un ambiente vacío. Este ambiente, cuando es consultado con la señal `0`, devuelve `true`.
+*   **`is-extended-env?`**: Se utiliza para verificar si un ambiente es un ambiente extendido.
+
+#### Observadores: Extractores
+
+Los extractores permiten obtener componentes específicos de un ambiente:
+*   **`env-id`**: Recibe un ambiente y extrae el identificador (ID) usando la señal `1`.
+*   **`env-value`**: Recibe un ambiente y extrae el valor usando la señal `2`.
+*   **`env-old-env`**: Recibe un ambiente y extrae el ambiente antiguo o padre usando la señal `3`.
+
+#### Prueba de Funciones
+
+Al probar las funciones con un ambiente de ejemplo:
+*   `env-id` sobre un ambiente que contiene `x` devuelve `x`.
+*   `env-value` sobre un ambiente que contiene el valor `3` devuelve `3`.
+*   `env-old-env` devuelve un procedimiento, ya que los ambientes son implementados como procedimientos.
+
+#### Aplicación y Abstracción
+
+Al aplicar la función `apply-env` a un ambiente, se observa:
+*   Buscar `x` devuelve `3`.
+*   Buscar `y` devuelve `4`.
+*   Buscar `w` devuelve `9`.
+*   Buscar `m` (un símbolo no presente en el ambiente) produce un error: "El símbolo m no se encuentra en el ambiente".
+
+Se ha demostrado que la función `apply-env` no se ve afectada por el cambio de representación interna del ambiente (pasando de una implementación basada en listas a una basada en procedimientos). Este es un objetivo fundamental de la abstracción: las funciones del programador permanecen inalteradas a pesar de los cambios en la implementación subyacente. Esta filosofía será explorada en el taller relacionado con el tema.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=5ymi1j8FQuI
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

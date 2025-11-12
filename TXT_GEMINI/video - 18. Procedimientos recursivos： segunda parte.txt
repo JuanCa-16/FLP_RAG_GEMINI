@@ -1,0 +1,78 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+## Implementación de Ambientes Recursivos en un Intérprete
+
+Para implementar ambientes recursivos, los cuales están especializados en procedimientos que se conocen a sí mismos, se requiere extender la definición de la primitiva de ambiente.
+
+Originalmente, la primitiva de ambiente se define con `ambiente base` y `ambiente extendido`. Se introduce una nueva variante: `ambiente extendido recursivo`.
+
+### Definición de `ambiente extendido recursivo`
+
+El `ambiente extendido recursivo` contendrá la siguiente información:
+*   **`prod_names`**: Una lista de símbolos que representan los nombres de los procedimientos.
+*   **`args_list`**: Una lista de listas de símbolos, donde cada sublista contiene los nombres de los argumentos de un procedimiento.
+*   **`bodies`**: Una lista de expresiones que corresponden a los cuerpos de los procedimientos.
+*   **`env`**: El ambiente anterior del cual este ambiente extiende.
+
+### Modificación de la función `apply-env`
+
+La modificación del tipo de dato de ambiente implica cambiar la función `apply-env`.
+
+*   **Comportamiento existente:**
+    *   Para un ambiente vacío, `apply-env` lanza un error.
+    *   Para un `ambiente extendido`, busca una variable; si la encuentra, devuelve su valor; si no, busca en el ambiente anterior.
+
+*   **Nueva variante para `ambiente extendido recursivo`:**
+    Se agrega una variante para el `ambiente extendido recursivo`. Cuando se busca una variable (un `prod_name`) en este ambiente, si se encuentra, se devuelve una clausura. Esta clausura contendrá el ID (lista de argumentos), el cuerpo correspondiente al procedimiento y el ambiente actual.
+
+#### Creación de clausuras a nivel de ejecución
+
+Una característica clave es que las clausuras para procedimientos recursivos se crean a nivel de ejecución, no de declaración. Esto permite dos aspectos fundamentales:
+1.  **Auto-referencia:** El procedimiento puede conocerse a sí mismo al guardar el ambiente actual.
+2.  **Variación de argumentos:** El valor de entrada puede cambiar con cada llamada (ej. `fact(6)` llama a `fact(5)`, creando un nuevo ambiente para `x=5`). Cada llamada a una función recursiva generará un nuevo ambiente extendido y, por ende, una nueva clausura.
+
+#### Lógica de búsqueda en `ambiente extendido recursivo`
+
+La lógica de búsqueda es similar a la del `ambiente extendido`. Se buscará el `prod_name` (símbolo) dentro de la lista de procedimientos del `ambiente extendido recursivo`.
+*   Si lo encuentra, se construye y devuelve la clausura. Se aprovecha la correspondencia posicional entre `prod_names`, `args_list` y `bodies` para extraer eficientemente los argumentos (`car` de la lista de IDs), el cuerpo (`car` de la lista de cuerpos) y el ambiente actual. El ambiente actual es crucial para que el procedimiento se conozca a sí mismo y a su entorno.
+*   Si no lo encuentra, la búsqueda continúa en el ambiente anterior.
+
+### Modificación de la función `eval-expression` para `let-rec`
+
+El siguiente paso es modificar la función `eval-expression`. Después de manejar los procedimientos regulares, se añade el caso para `let-rec-expression`.
+
+Un `let-rec-expression` recibe:
+*   **`prod_names`**: Nombres de los procedimientos a definir.
+*   **`args_list`**: Una lista de listas de símbolos, representando los argumentos de cada procedimiento.
+*   **`bodies`**: Cuerpos de los procedimientos.
+*   **`let_rec_body`**: El cuerpo principal del `let-rec` que se evaluará.
+
+Para `let-rec-expression`, se evalúa el `let_rec_body` dentro de un `ambiente extendido recursivo` que contiene los `prod_names`, `args_list`, `bodies` y el ambiente actual.
+
+### Ejemplo: Cálculo de Factorial con `let-rec`
+
+Se presenta un ejemplo de `let-rec` para calcular el factorial:
+
+```
+(let-rec
+    ((fact (x))
+        (if (> x 0)
+            (* x (fact (- x 1)))
+            1))
+    (fact 6))
+```
+
+Al declarar un `let-rec`, se evalúa su cuerpo (`let_rec_body`) en un `ambiente extendido recursivo`. Este ambiente permite generar una clausura distinta en cada llamada recursiva (ej. para `fact(6)`, `fact(5)`, ..., `fact(0)`). Esta implementación es necesaria en lenguajes funcionales para manejar la recursión de forma explícita, a diferencia de los lenguajes orientados a objetos donde la auto-referencia y la recursión a menudo se gestionan internamente a nivel de compilador.
+
+A continuación, se presentarán ejemplos para consolidar el entendimiento de este tema.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=i9J-ekNcLOQ
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,43 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se presenta el análisis de la función `doble`, diseñada para calcular el doble de un número.
+
+**1. Inicialización del Ambiente y Función `lettrec`**
+
+Dado que no se especifica un ambiente inicial, se asume un ambiente vacío. La ejecución comienza con una construcción `lettrec`. Esta genera un ambiente extendido de recursivos (R0), el cual es distinto de un ambiente normal. Este ambiente asocia el proname `doble` con su parámetro `x` y el cuerpo de la función, extendiendo el ambiente vacío.
+
+**2. Evaluación de `doble(3)`**
+
+Se procede a evaluar `doble(3)`. Esta evaluación genera un ambiente (m1) que extiende el ambiente `lettrec`, ligando la variable `x` al valor `3`.
+
+Dentro de este ambiente, se evalúa el cuerpo de la función. Dado que `x` (3) es mayor que cero, se ejecuta la rama verdadera del condicional, lo que implica la evaluación de `doble(x-1) + 2`. Esto se traduce en la llamada `doble(2) + 2`.
+
+**3. Llamadas Recursivas**
+
+*   **`doble(2)`**: Se crea un nuevo ambiente (m2) que extiende el anterior, ligando `x` a `2`. Como `x` sigue siendo mayor que cero, se evalúa `doble(x-1) + 2`, resultando en `doble(1) + 2`.
+*   **`doble(1)`**: Se crea un ambiente (m3) con `x=1`. Al ser `x` mayor que cero, se evalúa `doble(x-1) + 2`, lo que produce `doble(0) + 2`.
+*   **`doble(0)`**: Se llega al caso base de la recursión. La función devuelve `0`.
+
+**4. Reconstrucción de Resultados**
+
+Se reconstruyen los resultados de las llamadas recursivas:
+
+*   `doble(0)` devuelve `0`.
+*   `doble(1)` evalúa `doble(0) + 2`, resultando en `0 + 2 = 2`.
+*   `doble(2)` evalúa `doble(1) + 2`, resultando en `2 + 2 = 4`.
+*   `doble(3)` evalúa `doble(2) + 2`, resultando en `4 + 2 = 6`.
+
+**5. Verificación y Conclusión**
+
+El resultado final de `doble(3)` es `6`, lo cual verifica que la función calcula correctamente el doble del número. Este comportamiento se mantiene con otros ejemplos, como `doble(30)` que resulta en `60`, demostrando que la función siempre devuelve el doble de su argumento. A continuación, se explorará un ejemplo más complejo.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=XhQKzTxORlo
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

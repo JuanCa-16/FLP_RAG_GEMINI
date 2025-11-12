@@ -1,0 +1,38 @@
+A continuación, se presenta la limpieza de la transcripción de clase, manteniendo solo las explicaciones conceptuales, definiciones y pasos técnicos relevantes.
+
+---
+
+**Análisis de Cálculos y Verificación en DrRacket**
+
+La secuencia de cálculos es la siguiente:
+1.  Se define una expresión inicial que resulta en `2y = 5`.
+2.  Posteriormente, se establece `x = 6`, lo que lleva a que `y` también tome el valor de `6`.
+3.  La suma de `6 + 5` da como resultado `11`.
+4.  El valor de `x` se confirma como `6`.
+5.  La suma `11 + 6` produce `17`.
+6.  Se asigna `y = 8`.
+7.  La operación `7 + 8` resulta en `25`.
+8.  Finalmente, se establece `x = 4`. Se realiza la operación `7 - 4 = 3`. Este resultado se multiplica por `25`, dando `3 * 25 = 75`.
+
+Para la verificación de estos cálculos, se utiliza el entorno de programación DrRacket. La implementación del código se describe mediante las siguientes estructuras `let`:
+*   Se definen variables iniciales: `let x`, `let x6`, `x7`.
+*   Un `port` de definiciones configura el área de trabajo, comenzando con `let x8`.
+*   El área de trabajo incluye una expresión `más let`, donde `x6` se iguala a `x`, y se realiza la operación `x + x`.
+*   Se define `let y3`, aplicando `x` e `y` sobre una expresión.
+*   Posteriormente, se introduce otra expresión `más x`, la cual puede simplificarse a `x dot y`.
+*   Se cierran los bloques `let` correspondientes (el `let` inicial, el `más`, y el `let` principal).
+*   Se incluye una definición para `y` con su valor.
+*   Finalmente, queda un `port` que define `let x4` sobre una expresión `menos x`.
+*   Este proceso completa la implementación, incluyendo la multiplicación y la definición del primer `let`.
+*   Al ejecutar el programa para comprobar los resultados, se espera obtener `75`. La ejecución muestra un valor inicial de `70...`
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=e_DfC91mtas
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

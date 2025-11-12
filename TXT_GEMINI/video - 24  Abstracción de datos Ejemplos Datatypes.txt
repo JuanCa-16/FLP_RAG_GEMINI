@@ -1,0 +1,46 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Definición y Construcción de un Árbol Binario mediante `datatype`
+
+Para construir el `datatype` de un árbol binario, se define `árbol B` con su predicado asociado, `árbol B?`. Este `datatype` tendrá dos variantes principales:
+
+1.  **`leaf`**: Representa una hoja del árbol y recibe un único dato numérico (`num`).
+2.  **`node`**: Representa un nodo interno del árbol y recibe tres elementos:
+    *   `key`: Un símbolo que actúa como la clave del nodo.
+    *   `left`: Un subárbol izquierdo, que es también un `árbol B` (estableciendo la recursividad de la definición).
+    *   `right`: Un subárbol derecho, que igualmente es un `árbol B`.
+
+#### Construcción de Ejemplos de Árboles
+
+Para construir instancias de árboles, se utilizan los constructores generados automáticamente por el `datatype`.
+
+*   **Ejemplo de `árbol 1` (una hoja):**
+    ```
+    (leaf 5)
+    ```
+
+*   **Ejemplo de `árbol 2` (un nodo complejo):**
+    ```
+    (node 'K
+          (node 'P (leaf 5) (leaf 7))
+          (node 'J (leaf 4) (leaf 7)))
+    ```
+
+Estos ejemplos demuestran la construcción de diferentes estructuras de árboles. Al inspeccionar estas instancias, se observa que el `datatype` genera automáticamente estructuras (`struct`) que representan un árbol de sintaxis abstracto.
+
+#### Beneficios de `define datatype`
+
+El uso de `define datatype` simplifica significativamente el proceso de implementación, ya que genera automáticamente los constructores, observadores y predicados necesarios para el tipo de dato definido en un solo paso. Esto evita la necesidad de definirlos manualmente.
+
+A continuación, se explorará cómo extraer y gestionar esta información a través de funciones.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=hwvWxpp6TXo
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

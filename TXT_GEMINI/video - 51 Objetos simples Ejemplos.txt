@@ -1,0 +1,140 @@
+Aquí tienes la transcripción de clase limpia y formateada:
+
+---
+
+### Interpretación de Código con Objetos
+
+Este documento detalla la interpretación de código objeto a través de ejemplos que ilustran la creación de ambientes, el despacho dinámico de métodos y la gestión del estado.
+
+---
+
+### Ejemplo 1: Ejecución de un Método Simple (`send O1 M1`)
+
+1.  **Declaración Inicial:**
+    *   Se inicia con un ambiente vacío.
+    *   Se define un ambiente que contiene `O1`, que es una lista de partes (un vector que representa una instancia de objeto).
+
+2.  **Ejecución: `send O1 M1`**
+    *   Se ejecuta el método `M1` sobre el objeto `O1`. Dado que `M1` no recibe argumentos, se crea un ambiente de ejecución que contiene:
+        *   `super`: Se refiere a `Object`.
+        *   `self`: Es la representación del objeto `O1`.
+    *   La representación de `self` (`O1`) es una lista de partes. La primera parte es una instancia de la clase `C1`.
+    *   `C1` inicialmente contiene las variables `X` e `Y` con valores `0,0`.
+    *   El ambiente de `C1` extiende de un ambiente vacío (que representa `Object`).
+
+3.  **Construcción del Objeto (`new C1`):**
+    *   Al construir `new C1`, se ejecuta el método `initialize`.
+    *   `initialize` asigna valores a `X` e `Y`: `X=1, Y=2`.
+    *   La vista del objeto `O1` ahora muestra `X=1, Y=2`.
+
+4.  **Ejecución del Cuerpo de `M1`:**
+    *   El cuerpo de `M1` busca la variable `X`.
+    *   Al buscar `X` en el ambiente de `O1`, se encuentra el valor `1`.
+    *   El método `M1` retorna `1`.
+
+---
+
+### Ejemplo 2: Despacho Dinámico con Herencia (`send O2 M2`)
+
+1.  **Declaraciones Iniciales:**
+    *   Se parte de un ambiente principal (vacío).
+    *   Este ambiente se extiende con `O1` y `O2`, ambos representando listas de partes (instancias de objetos).
+
+2.  **Representación del Objeto `O1`:**
+    *   `O1` es una lista de partes con una única parte de clase `C1`.
+    *   `C1` extiende de `Object`.
+    *   `C1` contiene variables `X` e `Y`.
+    *   Al inicializar, se ejecuta `initialize(1,2)`. Si no se inicializara, sus valores serían `0,0`.
+
+3.  **Representación del Objeto `O2`:**
+    *   `O2` contiene una instancia de `C2`.
+    *   `C2` tiene `X=9, Y=10`.
+    *   `C2` extiende de `C1`. `C1` internamente tiene `X=1, Y=2` (debido a la llamada a `super.initialize()`). Si no se llamara a `super.initialize()`, `C1` tendría `X=0, Y=0`.
+    *   Finalmente, extiende a un ambiente vacío (`Object`).
+
+4.  **Ejecución: `send O2 M2`**
+    *   `M2` es un método de la clase `C1`.
+    *   Se crea un ambiente de ejecución para `M2` sobre `O2`:
+        *   `super`: Es `Object` (ya que `M2` pertenece a `C1` y `C1` extiende de `Object`).
+        *   `self`: Es la representación de `O2`.
+        *   No hay parámetros.
+    *   Este ambiente de ejecución extiende de la vista de `C1` (el ancestro de `O2` que define `M2`). Esta vista de `C1` contiene `X=1, Y=2`.
+    *   Este ambiente, a su vez, extiende de un ambiente vacío (Object).
+
+5.  **Cuerpo de `M2`: `send self M1`**
+    *   El cuerpo de `M2` ejecuta `send self M1`.
+    *   Dado que `self` en este contexto es `O2`, la llamada se resuelve a `send O2 M1`.
+    *   Se crea un **nuevo ambiente de ejecución** para `M1` sobre `O2`:
+        *   `super`: Es `C1` (ya que `M1` es un método de `C1`).
+        *   `self`: Es la representación de `O2`.
+        *   No hay parámetros.
+    *   La vista del objeto para esta llamada se construye a partir de `O2` y su cadena de herencia:
+        *   Ambiente de `C2`: Contiene `X=9, Y=10`.
+        *   Ambiente de `C1`: Contiene `X=1, Y=2`.
+        *   Ambiente vacío (`Object`).
+
+6.  **Cuerpo de `M1`: Retornar `X`**
+    *   El cuerpo de `M1` devuelve el valor de `X`.
+    *   La búsqueda de `X` se realiza en la cadena de ambientes. Primero se encuentra en el ambiente de `C2` (el más cercano a `self` en la cadena de herencia de `O2`).
+    *   Por lo tanto, se retorna `9`.
+
+---
+
+### Ejemplo 3: Manipulación de Estado y Múltiples Llamadas
+
+1.  **Declaraciones Iniciales:**
+    *   Ambiente principal (`let`) que contiene un ambiente cero.
+    *   El ambiente cero tiene las variables `T1`, `T2` y `O1`. `O1` es una lista de partes.
+    *   `T1` y `T2` se inicializan a `(0,0)`.
+
+2.  **Representación del Objeto `O1`:**
+    *   `O1` es una instancia de la clase `C1`.
+    *   `C1` tiene variables `I` y `J`.
+    *   Inicialmente `I=0, J=0`, pero tras la inicialización, se establecen en `I=3, J=-3`.
+    *   El ambiente de `C1` extiende de un ambiente vacío (`Object`).
+
+3.  **Llamada 1: `T1 = send O1 getState`**
+    *   Ambiente de ejecución para `getState`:
+        *   `super`: `Object`.
+        *   `self`: `O1`.
+        *   No hay parámetros.
+    *   La vista del objeto (`O1`) contiene `I=3, J=-3`.
+    *   `getState` devuelve una lista con los valores de `I` y `J`.
+    *   El método retorna `(3, -3)`.
+    *   `T1` se actualiza a `(3, -3)`.
+
+4.  **Llamada 2: `send O1 app(d=2)`**
+    *   Este método modifica el estado de `O1`.
+    *   Ambiente de ejecución para `app`:
+        *   `super`: `Object`.
+        *   `self`: `O1`.
+        *   Parámetro: `d=2`.
+    *   Los llamados a métodos de objetos son encapsulados y tienen sus propios ambientes.
+    *   El cuerpo de `app` realiza las operaciones: `I = I + d` y `J = J - d`.
+    *   Valores anteriores: `I=3, J=-3`.
+    *   Nuevos valores con `d=2`: `I = 3+2=5`, `J = -3-2=-5`.
+    *   Este cambio es **reflejado directamente en `O1`** porque los valores están conectados por referencias (estado compartido). El objeto `O1` ahora tiene `I=5, J=-5`.
+    *   El método retorna `1` (un valor de éxito típico para operaciones que modifican estado).
+
+5.  **Llamada 3: `T2 = send O1 getState`**
+    *   Ambiente de ejecución para `getState` (similar a la Llamada 1):
+        *   `super`: `Object`.
+        *   `self`: `O1`.
+        *   No hay parámetros.
+    *   La vista del objeto (`O1`) ahora muestra los valores actualizados: `I=5, J=-5`.
+    *   `getState` devuelve `list(I, J)`.
+    *   El método retorna `(5, -5)`.
+    *   `T2` se actualiza a `(5, -5)`.
+
+6.  **Resultado Final:**
+    *   Se crea una lista con los valores de `T1` y `T2`.
+    *   El resultado es `((3, -3), (5, -5))`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=LpBRO1CbfZA
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

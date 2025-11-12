@@ -1,0 +1,38 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Se explorarán estrategias para la representación de datos, haciendo énfasis en cómo la abstracción de datos permite a los programas tener independencia de la representación. Se ilustrarán estas estrategias usando el tipo de datos "ambiente".
+
+Un tipo de datos ambiente asocia un valor con cada elemento de un conjunto finito de variables. En la implementación de un lenguaje de programación, el ambiente se usa para asociar variables con sus valores.
+
+Las variables pueden ser representadas de diversas maneras (símbolos, referencias a tablas hash, números), siempre que sea posible verificar la igualdad entre ellas.
+
+**Definición de Ambiente:**
+Un ambiente es una función cuyo dominio es un conjunto finito de variables y cuyo rango (codominio) son los valores asociados.
+
+**Procedimientos Fundamentales del Tipo de Datos Ambiente:**
+
+El tipo de datos ambiente tiene tres procedimientos fundamentales:
+*   **NTL:** Crea una representación del ambiente vacío.
+*   **Applian:** Busca el valor de una variable dada dentro de la representación de un ambiente.
+*   **Stenent:** Produce una nueva representación de un ambiente extendido, que contiene una variable y su valor, y hace referencia a un ambiente previo.
+
+**Ejemplo de Definición de un Ambiente:**
+Al definir un ambiente, este puede contener variables con sus valores. Por ejemplo: D=6, Y=8, X=7, Y=14. El ambiente vacío es la condición de parada en una definición recursiva de ambientes.
+
+**Estructura Gramatical para Construir Ambientes:**
+La representación de ambientes puede realizarse mediante estructuras de datos, siguiendo una gramática que define:
+*   Un ambiente vacío.
+*   Un ambiente extendido, compuesto por un identificador (variable), un valor y una referencia a otro ambiente (el ambiente base del que se extiende).
+
+Se explorarán dos estrategias de implementación para estos ambientes: una basada en listas y otra basada en procedimientos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=oq0ZwXqmJT0
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

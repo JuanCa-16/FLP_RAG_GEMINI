@@ -1,0 +1,76 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se detallan las reglas y procedimientos para la creación y tipado de procedimientos y primitivas.
+
+### Reglas de Creación de Procedimientos
+
+La regla de creación de procedimientos establece que cada argumento tendrá un tipo asociado, y el tipo de salida depende del tipo de la expresión interna.
+
+### Procedimiento `tie-or-proc-expression`
+
+Se creará un procedimiento auxiliar llamado `tie-or-proc-expression`. Este recibe una expresión de tipo `proc t1 x1 t2 x2 ... tn xn` y realiza las siguientes acciones:
+
+1.  Convierte los tipos `t1...tn` en una lista de `art-ties`.
+2.  Revisa el cuerpo en el ambiente especificado y liga el procedimiento a `result-tie`.
+3.  Construye un procedimiento de tipo con las partes apropiadas.
+
+La lógica interna de `tie-or-proc-expression` es:
+*   Los `art-ties` se obtienen aplicando `tie-or-expression`, lo que resulta en una lista de expresiones.
+*   El `result-tie` toma el cuerpo y lo calcula sobre un ambiente extendido de tipos, que incluye los IDs, los `art-ties` y el ambiente actual.
+*   Finalmente, devuelve un `proc-tie` con los `art-ties` y el `result-tie`.
+
+### Implementación de `proc-expression` y `tie-proc-expression`
+
+Para la implementación, se comenzará por la regla en `tie-or-expression`. Luego, en `proc-expression` (que recibe una lista de expresiones, IDs y un cuerpo), se invocará la función `tie-of-expression`.
+Posteriormente, se creará la función `tie-proc-expression`, la cual devolverá un `proc-tie` con los tipos de los argumentos y el tipo del resultado.
+
+### Regla General de Tipado
+
+La regla de tipado para primitivas o procedimientos es `t1, t2, ..., tn -> t_resultante`.
+
+### `tie-expression` y `tie-application`
+
+`tie-expression` identifica el tipo del operador y luego invoca al procedimiento auxiliar `tie-application` para aplicar la regla de tipado.
+
+`tie-application` funciona de la siguiente manera:
+1.  Verifica si el tipo del operador es un procedimiento (`prototype`).
+2.  Comprueba si el número de argumentos esperados por el procedimiento es igual al número de argumentos proporcionados.
+3.  Para cada argumento, revisa si su tipo esperado coincide con el tipo del operando correspondiente.
+4.  Si todas las revisiones tienen éxito, el tipo de la aplicación es el tipo de resultado del procedimiento.
+5.  En caso de no coincidir los tipos, se emite un mensaje de error detallando lo esperado y lo recibido.
+Este proceso implica una verificación de los tipos (`check equal type`).
+
+### Uso en `app-expression`
+
+Para determinar el tipo del operador en `type-of-application`, se debe modificar `type-of-expression` para manejar los casos de `prototype` en `app-expression`. La `app-expression` recibe un operador (`rator`) y una lista de argumentos (`rands`). Se invoca `type-of-application`, pasándole:
+1.  El tipo del operador (calculado con `type-of-expression(rator)`). Este debe ser un `prototype`.
+2.  Los tipos de los argumentos (calculados con `type-of-expression(rands)`).
+3.  El operador (`rator`) y los argumentos (`rands`) originales para su contextualización.
+
+### Tipado de Primitivas
+
+Las primitivas (ej. `+`, `>`) se tratan como procedimientos. Se crea un procedimiento `type-of-primitive` que recibe un valor de tipo primitivo y construye un `prototype` acorde.
+
+A diferencia de las restricciones comunes que limitan las primitivas a un número fijo de argumentos (ej. dos), la implementación actual permite un número variable. Para manejar esto, se utiliza una función recursiva `define-primitive-numeric(rands)` para construir dinámicamente la lista de tipos de argumentos:
+*   Si `rands` es nulo, devuelve una lista vacía.
+*   De lo contrario, hace `cons(IN_TYPE, define-primitive-numeric(cdr rands))`.
+*   Esto asegura que todos los argumentos sean de tipo entero (`IN_TYPE`).
+
+Para primitivas numéricas con `N` argumentos, el tipo resultante será `prototype(primitive-numeric(rands), IN_TYPE)`.
+*   **Ejemplo:** Para el operador `>` (mayor que), que recibe dos enteros y devuelve un booleano: `prototype(list(IN_TYPE, IN_TYPE), BOOLEAN_TYPE)`.
+*   **Ejemplo:** Para operadores unarios como `add` (incremento) o `decrement`, se restringe a un solo argumento: `prototype(list(IN_TYPE), IN_TYPE)`.
+
+### `type-of-expressions`
+
+La función `type-of-expressions` es un `map` que aplica `type-expression` a cada elemento de una lista de expresiones.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=tTJVA-uCnWw
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

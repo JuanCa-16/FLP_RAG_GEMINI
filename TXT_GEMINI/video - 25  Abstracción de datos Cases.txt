@@ -1,0 +1,74 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Para trabajar con tipos de datos definidos por el usuario (data types), se utilizan las expresiones `cases`. Estas expresiones permiten extraer, descomponer y manejar la información encapsulada dentro de las diferentes variantes de un tipo de dato.
+
+### Sintaxis de `cases`
+
+La sintaxis general de una expresión `cases` es la siguiente:
+
+```
+cases expresión of
+  NombreVariante1 (Campo1, Campo2, ...) -> expresión_consecuente1;
+  NombreVariante2 (CampoA, CampoB, ...) -> expresión_consecuente2;
+  ...
+  [else -> expresión_por_defecto]
+```
+
+La cláusula `else` es opcional y se utiliza para especificar un comportamiento por defecto si la expresión evaluada no coincide con ninguna de las variantes listadas, o si se desea un manejo genérico para variantes no explícitamente cubiertas.
+
+### Evaluación de una expresión `cases`
+
+El funcionamiento es el siguiente:
+
+1.  La expresión `cases` evalúa la *expresión* inicial.
+2.  Si el resultado es un valor `b` de tipo `NombreTipo` (el tipo al que pertenecen las variantes), la expresión `cases` verifica con qué `NombreVariante` específico coincide `b`.
+3.  Si hay una coincidencia con un `NombreVariante`:
+    *   Los campos definidos en la variante (por ejemplo, `Campo1`, `Campo2`) se asocian a los valores correspondientes extraídos de `b`.
+    *   Se evalúa la *expresión_consecuente* asociada a esa variante.
+    *   El valor resultante de la *expresión_consecuente* es retornado como el resultado final de la expresión `cases`.
+4.  Si no hay coincidencia y existe una cláusula `else`, se evalúa la *expresión_por_defecto* y su valor es retornado.
+
+Este mecanismo es fundamental, especialmente en la construcción de intérpretes y compiladores, donde se necesita procesar y actuar de manera diferente según la estructura de un árbol de sintaxis abstracta (AST) o cualquier tipo de dato compuesto.
+
+### Ejemplo con Expresiones de Cálculo Lambda
+
+Consideremos un tipo de dato `LambdaExpression` para representar expresiones de cálculo lambda, definido con variantes como `VarExpression` (variable), `LambdaExpression` (abstracción) y `AppExpression` (aplicación):
+
+```
+define data type LambdaExpression =
+  VarExpression (name: String)
+| LambdaExpression (param: String, body: LambdaExpression)
+| AppExpression (func: LambdaExpression, arg: LambdaExpression)
+```
+
+Para procesar una expresión de este tipo utilizando `cases`, se haría lo siguiente:
+
+```
+cases mi_expresion_lambda of
+  VarExpression (nombre_variable) ->
+    -- Lógica para una variable. Por ejemplo, devolver su nombre.
+    nombre_variable
+  LambdaExpression (parametro, cuerpo) ->
+    -- Lógica para una abstracción. Por ejemplo, procesar el cuerpo.
+    procesar(cuerpo)
+  AppExpression (funcion, argumento) ->
+    -- Lógica para una aplicación. Por ejemplo, evaluar la función y el argumento.
+    evaluar(funcion, argumento)
+```
+
+Aquí, `VarExpression` tiene un campo (`nombre_variable`), mientras que `LambdaExpression` (parámetro y cuerpo) y `AppExpression` (función y argumento) tienen dos campos cada una. Estos campos son extraídos y utilizados en las expresiones consecuentes para definir el comportamiento específico para cada variante.
+
+### Próximo Ejemplo
+
+A continuación, se explorará otro ejemplo utilizando un árbol binario.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=-axhDvoZYQ0
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

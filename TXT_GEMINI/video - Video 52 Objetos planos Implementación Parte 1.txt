@@ -1,0 +1,62 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+## Objetos Planos: Una Implementación Eficiente
+
+La implementación de objetos planos se presenta como una alternativa para superar las ineficiencias de la representación de objetos simples. La representación previa, que reconstruía completamente la vista del objeto cada vez que se invocaba un método, resultaba particularmente lenta para objetos complejos, con múltiples características o largas cadenas de herencia. Los objetos planos buscan corregir esta deficiencia.
+
+### Características de los Objetos Planos
+
+1.  **Uso del tipo de dato "on-chain"**: En contraste con la lista de partes utilizada anteriormente, los objetos planos emplean un tipo de dato denominado "on-chain". Este datatype se compone de un símbolo y una serie de campos.
+2.  **Almacenamiento de campos de herencia**: Los campos del tipo "on-chain" almacenan todos los atributos de la cadena de herencia. La recolección de estos campos se realiza desde la superclase más antigua (la parte más lejana de la cadena de herencia) hacia las clases descendientes, priorizando los campos de las clases ancestrales.
+
+### Ejemplo de Gestión de Herencia y Campos
+
+Consideremos el siguiente ejemplo de jerarquía de clases:
+
+*   **Clase C1**: Atributos `AX`, `AY`.
+*   **Clase C2**: Extiende de `C1`, atributo `AY`.
+*   **Clase C3**: Extiende de `C2`, atributos `X`, `Z`.
+
+Cuando se instancia un objeto de `C3`, los campos almacenados serían, en orden de herencia (de más antigua a más reciente): `AX` (de C1), `AY` (de C1), `AY` (de C2), `X` (de C3), `Z` (de C3).
+
+El desafío principal radica en la disambiguación de atributos con el mismo nombre pero provenientes de diferentes niveles de la jerarquía (ej. `X` de C1 vs. `X` de C3, o `Y` de C1 vs. `Y` de C2). Para resolver esto, es necesario delimitar con precisión en qué segmento del vector de campos se definen los atributos de cada clase.
+
+### Resolución de Ambigüedad: Métodos `RefinePosition` y `FindLastPosition`
+
+Para gestionar la ambigüedad de los campos, se utilizan los métodos `RefinePosition` y `FindLastPosition`. El método `RefinePosition` toma el nombre de la clase y sus elementos, y determina la última posición de los atributos de esa clase dentro del vector de campos global. Por ejemplo:
+
+*   Para la clase C1, la posición inicial de sus campos es 0.
+*   Para la clase C2, la posición inicial de sus campos sería 2 (después de los campos de C1).
+*   Para la clase C3, la posición inicial de sus campos sería 3 (después de los campos de C1 y C2).
+
+Estos métodos son esenciales para ubicar correctamente los atributos en el vector de campos del objeto.
+
+### Cambios en el Interpretador
+
+La implementación de objetos planos en el interpretador requiere las siguientes modificaciones:
+
+1.  **Eliminación de componentes de objetos simples**: Se eliminan todas las funciones y estructuras relacionadas con la gestión de "partes" (e.g., `MakeFibsPart`, `NewObject` para partes, y la vista del objeto simple), así como la construcción del ambiente asociada a dicho modelo.
+2.  **Modificación de la representación del objeto**: La representación del objeto se adapta al modelo de objetos planos. Las funciones `RefinePosition` y `FindLastPosition` son fundamentales para determinar los límites de los campos de cada clase dentro del vector de campos del objeto.
+
+### Declaración de Objetos Planos (`newJet`)
+
+La declaración de un objeto de tipo plano se realiza mediante la función `newJet`. Esta función:
+
+1.  Recibe el nombre de la clase a instanciar.
+2.  Crea un objeto de la clase `WESPER` (o similar, según el sistema).
+3.  Crea un vector de campos cuyo tamaño es la sumatoria de todos los campos presentes en la cadena de herencia de la clase. Por ejemplo, para un objeto de C3 (que hereda de C1 y C2), el vector resultante tendría el tamaño de los campos de C1 + los campos de C2 + los campos de C3.
+
+La implementación de `newJet` dentro del interpretador explora la cadena de herencia para calcular la longitud total necesaria del vector de campos. Los objetos creados son de un tipo de dato `newJet`, que encapsula el nombre de la clase y este vector de campos. El vector se inicializa con ceros; el método inicializador de la clase es el responsable de asignar los valores apropiados a estos campos.
+
+A continuación, se abordarán aspectos relacionados con los métodos en el contexto de objetos planos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Dn_pnE-UGm8
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

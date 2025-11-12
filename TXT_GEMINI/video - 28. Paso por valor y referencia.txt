@@ -1,0 +1,47 @@
+Aquí tienes la transcripción de clase limpia y formateada:
+
+---
+
+**Paso de Parámetros en Funciones: Paso por Valor vs. Paso por Referencia**
+
+El paso de parámetros en funciones, al invocar una función (por ejemplo, f(x), f(5)), ha sido implementado hasta ahora de la siguiente manera:
+
+Cuando la función recibe el parámetro (por ejemplo, si la función es `product(a)`), se genera una nueva variable 'a' que contiene una copia del valor de la variable original. Esto ocurre al evaluar la expresión; si es una variable con un valor (ej. 8 o 5), se evalúa y se envía directamente durante la expansión de la clausura en la aplicación de la expresión para ejecutar el procedimiento. Se crea una nueva variable en un ambiente extendido.
+
+Al crear esta nueva referencia o variable, esta es completamente nueva e independiente de la original. Este mecanismo es conocido como **paso por valor**.
+
+**Ejemplo de Paso por Valor:**
+
+Consideremos el siguiente ejemplo:
+```
+let p = prot x (set x 4) in
+let a = 3 in
+begin
+  p(a);
+  a
+end
+```
+Al generar el ambiente, se crea una clausura para `p` que toma `x` y guarda el ambiente actual. Se inicializa `a` con el valor 3.
+
+Al ejecutar `p(a)`, se genera un nuevo ambiente donde `x` toma una copia del valor de `a` (es decir, 3). Dentro del procedimiento `p`, `x` se modifica a 4 (`set x 4`). Sin embargo, al regresar del procedimiento, la variable `a` original sigue valiendo 3.
+
+Este es el caso de paso por valor porque `x` es una referencia completamente nueva e independiente de `a`.
+
+**Introducción al Paso por Referencia:**
+
+En contraste, en el **paso por referencia**, se busca conectar la variable pasada como parámetro con la variable interna del procedimiento. Esto significa que cualquier modificación hecha a `x` dentro del procedimiento (`set x 4`) afectará también a la variable `a` original, forzando a que `a` también valga 4.
+
+En ciertos escenarios, es deseable que las variables pasadas como parámetros a un procedimiento puedan ser modificadas dentro de este. Si una variable pasada por parámetro está conectada, un cambio en su valor dentro del procedimiento debería afectar a la variable original.
+
+Para lograr esto, en lugar de pasar el *contenido* de la variable, se pasa su *dirección* o *ubicación* en memoria. De esta forma, al crear el nuevo ambiente, en lugar de pasar una copia del valor (ej. 3 para `x`), se establece una conexión entre la variable original y la variable del procedimiento. Esto se verá a continuación.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=gswgFVuh48Q
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

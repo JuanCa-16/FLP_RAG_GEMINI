@@ -1,0 +1,75 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Se implementará un lenguaje fuerte y estáticamente tipado, tomando como base el interpretador de asignación.
+
+Un lenguaje **fuerte** no permite errores de tipo. Un lenguaje **estáticamente tipado** requiere que los tipos de las variables se especifiquen desde el principio. Ante cualquier error de tipo, el sistema emitirá un mensaje al programador para que revise su código.
+
+Ejemplos de errores de tipo incluyen:
+*   Aplicar un entero o booleano como argumento de una función o procedimiento.
+*   Aplicar un procedimiento o primitiva con un número incorrecto de argumentos (e.g., si espera 10, debe recibir 10).
+*   Aplicar una primitiva que espera un entero a un valor no entero.
+*   Usar un valor no booleano en la prueba de una expresión condicional.
+En las expresiones condicionales, la pregunta debe ser booleana. En el caso de las primitivas, los argumentos deben ser del tipo entero si así lo esperan.
+Errores como la división por cero no son considerados errores de tipo, sino errores de uso de tipos.
+
+### Procedimiento `type_of_expression`
+
+Se define un procedimiento `type_of_expression(s, tm)` donde `s` es una expresión y `tm` es un ambiente de tipos que asocia cada variable con un tipo. Este ambiente `tm` almacena los tipos de cada variable.
+
+`type_of_expression` asigna a una expresión un tipo `t` con la propiedad de que, si la expresión se ejecuta en un ambiente donde cada variable tiene el tipo especificado por `tm`, el valor resultante tendrá el tipo `t`. Por ejemplo, si una variable en `tm` es de tipo entero, su evaluación por `type_of_expression` también debe resultar en un entero.
+
+El análisis se basa en el principio de que, conociendo los tipos de los valores de cada variable en una expresión, se puede inferir el tipo del valor de la expresión resultante.
+
+El procedimiento `type_of_expression` se comporta de la siguiente manera:
+*   Si la expresión es un número, el resultado es un entero.
+*   Si la expresión es un booleano (`true` o `false`), el resultado es un booleano.
+*   Si la expresión es una variable (`id`), el resultado es el tipo especificado por el ambiente de tipos `tm` para esa variable (e.g., `tm(id)`).
+
+### Reglas de Tipado
+
+Para la evaluación de tipos en expresiones, se utilizan las reglas de tipado. Estas reglas consisten en un conjunto de condiciones (`condición_1, ..., condición_n`) que, si se cumplen, implican una consecuencia sobre el tipo. Una regla de tipado se expresa como: `Si condición_1 Y ... Y condición_n ENTONCES consecuencia`.
+
+#### Regla de tipado para aplicación de procedimientos (PP expression)
+
+Si una expresión tiene la forma `(operador rand_1 ... rand_n)`, el tipo del resultado se infiere del tipo del `operador` y los `rand_i`.
+1.  El `operador` debe ser obligatoriamente de tipo procedimiento.
+2.  Si el tipo del `operador` es `(t_1 * t_2 * ... * t_n -> t)`, entonces debe haber exactamente `n` operandos.
+3.  Los tipos de los operandos deben coincidir con los tipos esperados por el procedimiento: `rand_1` debe ser de tipo `t_1`, `rand_2` de tipo `t_2`, ..., `rand_n` de tipo `t_n`.
+Si todas estas condiciones se cumplen, el tipo del resultado de la expresión es `t` (el tipo de salida del procedimiento).
+
+Ejemplo: Si `p` es un procedimiento de tipo `(t_1 * t_2 -> t_n)` y se aplica `(p x y)`, donde `x` es de tipo `t_1` e `y` es de tipo `t_2`, la evaluación de `(p x y)` resultará en un valor de tipo `t_n`.
+
+#### Regla de tipado para expresiones condicionales
+
+Para una expresión condicional (e.g., `if test_expr then true_expr else false_expr`):
+1.  `test_expr` debe ser de tipo booleano.
+2.  `true_expr` y `false_expr` deben ser del mismo tipo `t`.
+Si estas condiciones se cumplen, la expresión condicional completa es de tipo `t`.
+
+#### Regla de tipado para definición de procedimientos (Proc expression)
+
+Para un procedimiento con la forma `proc (x_1: t_1, x_2: t_2, ..., x_n: t_n) body_expr`:
+1.  Cada parámetro `x_i` tiene un tipo asociado `t_i`.
+2.  El cuerpo del procedimiento (`body_expr`) debe tener un tipo `t`.
+El tipo resultante del procedimiento es `(t_1 * t_2 * ... * t_n -> t)`.
+
+### Estrategias para determinar tipos en procedimientos
+
+La regla anterior presenta un problema: ¿cómo determinar los tipos de los parámetros (`x_1, x_2, ...`) y el tipo de retorno de un procedimiento si estos no están explícitamente definidos? Inferir estos tipos directamente del cuerpo del procedimiento o de sus usos es complejo con el sistema actual.
+
+Para abordar este problema, se emplean dos estrategias:
+1.  **Chequeo de tipos estático:** El programador debe proporcionar explícitamente la información de los tipos. Por ejemplo, al definir un procedimiento, se especificaría `proc (int x, int y): int` para indicar los tipos de los parámetros y el tipo de retorno.
+2.  **Inferencia de tipos (usada en tipado dinámico):** El analizador infiere automáticamente los tipos analizando la expresión dentro del procedimiento. Esta estrategia requiere un análisis adicional por parte del interpretador y, aunque tiene limitaciones, se buscará implementar cierta capacidad de inferencia en este interpretador académico.
+
+A continuación, se abordará la implementación del chequeo de tipos en el lenguaje de programación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=KS3IishsjUM
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

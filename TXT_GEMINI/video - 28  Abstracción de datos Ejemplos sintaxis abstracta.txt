@@ -1,0 +1,35 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, analizaremos si las sentencias generan un árbol de sintaxis correctamente, según las definiciones de árbol B.
+
+1.  **Sentencia `list(5)`:**
+    La sentencia `list(5)` genera una estructura (ST) compuesta por un elemento 'lia' y el número '5'. Por ejemplo, `Arbol1` representa `stru(5)`.
+
+2.  **Sentencia `Arbol2`:**
+    `Arbol2` es un nodo que consta de tres partes:
+    *   Una clave (`key`), que en este caso es 'ca'.
+    *   Un hijo izquierdo (`left`).
+    *   Un hijo derecho (`right`).
+
+    El hijo izquierdo (`left`) es también un nodo y posee tres elementos:
+    *   Una clave (`key`) 'p'.
+    *   Una lista (`list`) con el número '5'.
+    *   Otra lista (`list`) con el número '7'.
+
+    El hijo derecho (`right`) es igualmente un nodo con tres componentes:
+    *   Una clave (`key`) 'j'.
+    *   Una lista (`list`) con el número '4'.
+    *   Finalmente, otra lista (`list`) con el número '7'.
+
+Este análisis detallado nos permite verificar la correcta estructura y conformidad del código con la especificación gramatical. La capacidad de generar un árbol de sintaxis correcto implica automáticamente que el código cumple con las reglas de la gramática definida, lo cual es fundamental para su validación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=tkfnonZyeZ0
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

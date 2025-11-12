@@ -1,0 +1,67 @@
+A continuación, se presenta un texto limpio y coherente sobre la semántica de los lenguajes de programación, enfocado en la interpretación y la compilación.
+
+---
+
+El front-end de un compilador se compone de los procesos de Scanning y Parsing.
+
+### Scanning
+El Scanning tiene como objetivo crear unidades léxicas (tokens) a partir del código fuente. Estas unidades son significativas para la ejecución del programa y se definen según la especificación léxica.
+
+El Scanning procesa el código fuente (texto, números, espacios) para generar una lista de unidades léxicas, lemas o tokens. Cada token es una unidad significativa.
+
+**Ejemplo de tokens generados:**
+Para el código `INT A; INT B; INT C = B + 1;` el escáner produciría:
+*   `INT`: Tipo de dato, línea 1.
+*   `A`: Identificador, línea 1.
+*   `INT`: Tipo de dato, línea 1.
+*   `B`: Identificador, línea 1.
+*   `INT`: Tipo de dato, línea 2.
+*   `C`: Identificador, línea 2.
+*   `=`: Operador, línea 2.
+*   `B`: Identificador, línea 2.
+*   `+`: Operador, línea 2.
+*   `1`: Número, línea 2.
+
+Esta lista de tokens es la entrada para el Parsing. El escáner extrae los elementos importantes del código.
+
+Durante el Scanning, elementos como comentarios, espacios en blanco y otros símbolos sin importancia sintáctica son ignorados.
+
+La especificación léxica de un lenguaje define cómo se tratan y estructuran las unidades significativas, clasificando cada una (por ejemplo, tipo de dato, cadena, identificador). El escáner recibe el código fuente y genera una lista de estas unidades significativas (tokens).
+
+**Reglas léxicas del lenguaje objetivo:**
+*   Las secuencias de espacios en blanco y nuevas líneas se tratan como un único espacio.
+*   Los comentarios comienzan con el símbolo de porcentaje (`%`) y se extienden hasta el final de la línea. El escáner los ignora.
+*   Un identificador es una secuencia de letras y números que debe comenzar con una letra. Se utiliza para nombrar variables y procedimientos.
+
+**Ejemplo de procesamiento léxico:**
+Si el código contiene `FUBAR % Este es un comentario`, el escáner procesaría:
+*   `FUB`: Identificador, línea 1.
+*   (Espacios en blanco ignorados)
+*   `BAR`: Identificador, línea 1.
+*   (El resto de la línea a partir de `%` es un comentario y se ignora).
+
+Los comentarios son anotaciones para el entendimiento humano y no afectan la ejecución del código. Además de identificadores, el escáner también reconoce palabras clave y símbolos de puntuación.
+
+Cuando el escáner encuentra un token, devuelve una estructura de datos que incluye:
+*   **Clase del token:** Describe el tipo de token (ej., número, cadena, identificador).
+*   **Valor del token:** El token particular en sí (ej., para el identificador "A", el valor es "A"; para el número "1", el valor es "1").
+*   **Ubicación del token:** La posición en la entrada (ej., número de línea).
+
+### Parsing
+El Parsing, por su parte, convierte las unidades léxicas en un Árbol de Sintaxis Abstracta (AST). El AST obedece a la gramática del lenguaje de programación y facilita la ejecución del código.
+
+El Parsing toma la secuencia de tokens y los estructura en un Árbol de Sintaxis Abstracta (AST). El AST depende de la gramática del lenguaje. Si el código no corresponde a la gramática especificada, se generará un error de parseo y el AST no podrá ser construido.
+
+Tradicionalmente, se usa `define datatype` para especificar las gramáticas. Sin embargo, en este curso se utilizará la librería CLG de Dr. Racket, la cual permite generar estas estructuras automáticamente y simplificar la integración con el parser. Las gramáticas deben ser completas y coherentes, incluyendo sus símbolos terminales.
+
+### Próximos pasos
+En la próxima sesión, se profundizará en la librería CLG de Dr. Racket y se explicará por qué se usa este lenguaje de programación en el curso. Esta librería, desarrollada por los autores del libro de texto, automatiza muchas tareas que de otro modo requerirían implementación manual en lenguajes como Java o C++. Una vez comprendido su funcionamiento, se procederá con la implementación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=npoh_p9PFlw
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

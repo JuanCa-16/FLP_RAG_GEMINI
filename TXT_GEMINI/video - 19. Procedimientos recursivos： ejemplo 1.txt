@@ -1,0 +1,60 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se presenta un análisis conceptual de la evaluación de una función recursiva definida con `letrec`, utilizando el ejemplo del factorial.
+
+### Análisis Conceptual de `letrec` y Evaluación de Funciones Recursivas
+
+1.  **Ambiente Inicial:** La evaluación comienza en el ambiente vacío (tm).
+
+2.  **Creación del Ambiente `letrec`:**
+    *   Al encontrar una construcción `letrec`, se establece un nuevo ambiente recursivo, denominado `mr`.
+    *   Este ambiente almacena el identificador de la función (ej. `fat`), su cuerpo (la lógica del procedimiento), y lo más importante, se extiende a sí mismo (`mr`). Esta auto-referencia es fundamental para la recursión.
+
+3.  **Evaluación de la llamada inicial (`fat(6)`):**
+    *   Cuando se invoca `fat(6)`, se genera una clausura (closure).
+    *   Esta clausura captura la lógica del procedimiento y extiende el ambiente actual, que es `mr`.
+    *   Se crea un nuevo ambiente (`nf1`) donde el parámetro `x` se enlaza al valor `6`. Este ambiente extiende `mr`.
+    *   La condición `x > 0` (6 > 0) se evalúa como verdadera.
+    *   Se ejecuta la expresión `x * fat(x - 1)`, resultando en `6 * fat(5)`.
+
+4.  **Llamadas Recursivas (`fat(5)` hasta `fat(0)`):**
+    *   Cada llamada recursiva subsecuente (ej. `fat(5)`, `fat(4)`, etc.) genera una nueva clausura.
+    *   Debido a que la función fue definida dentro de `letrec` y su clausura extiende `mr`, cada nueva llamada encuentra la definición de `fat` dentro del ambiente recursivo `mr`.
+    *   Este proceso crea una cadena de ambientes anidados, cada uno extendiendo `mr`:
+        *   Ambiente para `x = 6`
+        *   Ambiente para `x = 5`
+        *   Ambiente para `x = 4`
+        *   Ambiente para `x = 3`
+        *   Ambiente para `x = 2`
+        *   Ambiente para `x = 1`
+        *   Ambiente para `x = 0`
+
+5.  **Condición de Parada (Caso Base):**
+    *   La recursión finaliza cuando `x = 0`. La condición `x > 0` se evalúa como falsa.
+    *   En este punto, la función devuelve el valor del caso base, que es `1`.
+    *   Por lo tanto, `fat(0) = 1`.
+
+6.  **Resolución de Valores (Sustitución hacia atrás):**
+    *   Una vez alcanzado el caso base, los resultados se calculan en orden inverso:
+        *   `fat(1)`: `1 * fat(0) = 1 * 1 = 1`
+        *   `fat(2)`: `2 * fat(1) = 2 * 1 = 2`
+        *   `fat(3)`: `3 * fat(2) = 3 * 2 = 6`
+        *   `fat(4)`: `4 * fat(3) = 4 * 6 = 24`
+        *   `fat(5)`: `5 * fat(4) = 5 * 24 = 120`
+        *   `fat(6)`: `6 * fat(5) = 6 * 120 = 720`
+
+7.  **Importancia de la Condición de Parada:**
+    *   Es crucial que una función recursiva definida en un ambiente extendido recursivo tenga una condición de parada clara. Sin ella, la función generaría ambientes de manera indefinida, lo que llevaría a un desbordamiento de pila o agotamiento de memoria.
+
+8.  **Verificación:** El resultado final `fat(6) = 720` puede ser verificado mediante la ejecución del código o cálculo manual (ej. `fat(4) = 24`).
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=T-h2Q-EtcNc
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

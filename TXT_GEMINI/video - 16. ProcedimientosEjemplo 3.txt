@@ -1,0 +1,104 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Este documento detalla la evaluación de un ejemplo que involucra variables, clausuras y manejo de ambientes.
+
+**Configuración Inicial**
+
+Las variables `x`, `y`, `z` tienen valores iniciales de `4`, `2`, y `5` respectivamente.
+`f` se define como una **clausura** (procedimiento) que:
+*   Toma `y` como variable de entrada.
+*   Realiza la operación `y * (y - 1)`.
+*   Almacena el ambiente vacío (`empty_env`). Esto implica que cualquier llamada a `f` extenderá de este ambiente vacío para resolver sus referencias.
+
+El programa principal incluye dos bloques `let` anidados y finaliza con la evaluación de la expresión `- h, q`.
+
+---
+
+**Ambientes y Ejecución Paso a Paso**
+
+1.  **Ambiente 0 (Global/Inicial):**
+    *   `x = 4`
+    *   `y = 2`
+    *   `z = 5`
+    *   `f = closure(y, y * (y - 1), empty_env)`
+
+2.  **Ambiente 1 (Resultado del primer `let`):**
+    Este ambiente se crea tras la evaluación del primer bloque `let`:
+    *   `g = closure(x, + y, f(x), env0)`
+        *   Esta clausura `g` toma `x` como entrada y realiza `y + f(x)`.
+        *   Almacena el `env0` como su ambiente de creación.
+    *   `m = 6`
+
+3.  **Ambiente 2 (Resultado del segundo `let`):**
+    Este ambiente se crea tras la evaluación del segundo bloque `let` (que incluye la definición de `h` y `q`).
+    *   `h = closure([], g(m), env1)`
+        *   La clausura `h` no toma argumentos.
+        *   Su cuerpo invoca `g(m)`.
+        *   Almacena el `env1` (ambiente donde fue creada).
+    *   `q = 7`
+
+4.  **Evaluación Final: `- h, q` en `env2`**
+    *   Primero, se resuelve `q`, cuyo valor es `7`.
+    *   Luego, se invoca `h()`.
+
+    **Ejecución de `h()`:**
+    *   Se crea un nuevo ambiente para la ejecución de `h`. Este ambiente extiende de `env1` (el ambiente capturado por `h`) y está vacío, ya que `h` no recibe argumentos.
+    *   Dentro de `h`, se evalúa `g(m)`.
+    *   `m` se busca en `env1` (el ambiente léxico de `h`), y su valor es `6`.
+    *   Se invoca `g(6)`. El `g` que se invoca es la clausura definida en `env1` (el primer `g`), porque `h` extiende de `env1`.
+
+    **Ejecución de `g(6)`:**
+    *   Se crea un nuevo ambiente para la ejecución de `g`. Este ambiente extiende de `env0` (el ambiente capturado por el primer `g`).
+    *   La variable `x` dentro de este ambiente de `g` toma el valor `6` (el argumento recibido).
+    *   Se evalúa la expresión `+ y, f(x)`.
+        *   `y` se busca en `env0` (a través de la extensión), y su valor es `2`.
+        *   `x` es `6`. Se evalúa `f(6)`.
+
+        **Ejecución de `f(6)`:**
+        *   Se crea un nuevo ambiente para la ejecución de `f`. Este ambiente extiende del `empty_env` (el ambiente capturado por `f`).
+        *   La variable `y` dentro de este ambiente de `f` toma el valor `6` (el argumento recibido).
+        *   Se evalúa la expresión `y * (y - 1)`.
+        *   Sustituyendo `y = 6`: `6 * (6 - 1) = 6 * 5 = 30`.
+        *   `f(6)` retorna `30`.
+
+    *   De vuelta en la ejecución de `g(6)`: La expresión `+ y, f(x)` se convierte en `+ 2, 30`, lo que resulta en `32`.
+    *   `g(6)` retorna `32`.
+
+    *   De vuelta en la ejecución de `h()`: `g(m)` retorna `32`.
+    *   `h()` retorna `32`.
+
+5.  **Resultado Final:**
+    *   La evaluación inicial `- h, q` se convierte en `- 32, 7`.
+    *   El resultado final es `25`.
+
+---
+
+**Código del Ejemplo**
+
+A continuación, se presenta el código que corresponde con la ejecución descrita:
+
+```
+x = 4
+y = 2
+z = 5
+f = proc(y) y * (y - 1)
+
+let g = proc(x) + y, f(x)
+    m = 6
+in
+let h = proc() g(m) // h captura el 'g' del ambiente exterior (Ambiente 1)
+    q = 7
+in
+- h, q
+```
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=JJcxJbQPn_U
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

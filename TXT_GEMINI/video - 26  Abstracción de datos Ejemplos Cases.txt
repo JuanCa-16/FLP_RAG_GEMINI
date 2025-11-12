@@ -1,0 +1,44 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Para un tipo de dato `arbol_b` definido, se requiere implementar dos funciones: una para sumar los números de los nodos y otra para extraer una lista de los símbolos.
+
+### Función para Sumar Números (`sumar_arbol`)
+
+Se define la función `sumar_arbol` que recibe un `arbol_b` y utiliza `cases` para su procesamiento, diferenciando entre los tipos de nodos:
+
+*   **Caso `leaf` (hoja):** Un `leaf` contiene un único dato numérico (`num`). En este caso, la suma es simplemente `num`.
+*   **Caso `node` (nodo):** Un nodo se compone de una `key`, un subárbol izquierdo (`l`) y un subárbol derecho (`r`). La suma se calcula recursivamente como `sumar_arbol(l) + sumar_arbol(r)`.
+
+El uso de `cases` facilita la extracción automática de los componentes (`num`, `key`, `l`, `r`) del árbol, simplificando la implementación en comparación con métodos manuales.
+
+**Ejemplos de uso:**
+
+*   `sumar_arbol(arbol_1)` resulta en `5`.
+*   La suma de `arbol_2` se calculó como `(5 + 7) + (4 + 7) = 23`.
+
+### Función para Obtener Lista de Símbolos (`a_lista_s`)
+
+A continuación, se define la función `a_lista_s` (a lista de símbolos) que toma un `arbol_b` (`arb`) y también utiliza `cases` para su procesamiento:
+
+*   **Caso `leaf` (hoja):** Un `leaf` contiene un número, no un símbolo. Por lo tanto, se retorna una lista vacía.
+*   **Caso `node` (nodo):** Un nodo contiene una `key` (que representa un símbolo), un subárbol izquierdo (`l`) y un subárbol derecho (`r`). Se construye una lista que incluye la `key` del nodo, seguida de los símbolos obtenidos recursivamente de los subárboles `l` y `r`.
+
+La construcción de estas funciones se simplifica al seguir el patrón de especificar el `data_type` y luego la `variable` dentro de la estructura `cases`.
+
+**Ejemplos de uso:**
+
+*   `a_lista_s(arbol_1)` produce una lista vacía.
+*   Para `arbol_2`, se obtiene la lista `[k, p, j]`.
+
+En síntesis, el uso de `cases` permite una gestión y administración eficiente de los datos al interactuar con la estructura de un árbol B.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Wec_PIRX7tY
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

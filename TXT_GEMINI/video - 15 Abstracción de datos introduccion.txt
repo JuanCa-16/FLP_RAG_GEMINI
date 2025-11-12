@@ -1,0 +1,37 @@
+Aquí tienes la transcripción de clase limpia y formateada para estudio:
+
+---
+
+### Abstracción de Datos
+
+Hasta el momento, hemos revisado la representación recursiva de datos, definida mediante especificaciones evolutivas o gramáticas, y la manipulación de variables. Observamos que los programas están intrínsecamente ligados a la estructura de los datos, requiriendo seguir una gramática específica. A partir de esto, exploraremos cómo definir tipos de datos a través de la abstracción de datos.
+
+La abstracción de datos consiste en asignar un significado a un conjunto de bits (0s y 1s) que, por sí mismos, carecen de él. Por ejemplo, un conjunto de 32 bits puede representar un número entero. Al declarar `int a = 10` en lenguajes como Java o C++, se define que un espacio de 32 bits contendrá el valor binario correspondiente a 10, otorgando así un significado programático a esa secuencia de bits.
+
+Esta representación se divide en dos componentes: la **implementación** y la **interfaz**.
+*   La **implementación** se refiere a las operaciones de bajo nivel realizadas directamente sobre los datos binarios. Proporciona la representación específica de los datos y el código para estas operaciones.
+*   La **interfaz** es el conjunto de operaciones que los programadores utilizan para interactuar con los tipos de datos. Para un entero, la interfaz permite incrementarlo, decrementarlo, calcular su módulo, multiplicarlo, etc. Si bien la interfaz simplifica el uso, los algoritmos subyacentes (como la multiplicación o división binaria) son complejos a nivel de implementación.
+
+Un **Tipo de Datos Abstracto (TDA)** es cualquier tipo de datos de alto nivel (como un entero, un doble, etc.) que representa una abstracción de su representación binaria subyacente. El resto del programa, denominado "el cliente", interactúa con el TDA únicamente a través de su interfaz. Esto significa que el cliente manipula los datos mediante un conjunto de funciones (suma, resta, multiplicación, división, etc.) sin acceder directamente a la cadena de ceros y unos que representa el dato internamente. La parte del programador se enfoca en el uso de la interfaz, mientras que el lenguaje de programación se encarga de la implementación interna.
+
+Una ventaja clave es que si la implementación subyacente cambia (por ejemplo, de 32 a 64 bits, o una alteración en la representación interna del entero), los programas del cliente no se ven afectados. Operaciones como la suma, resta o multiplicación seguirán funcionando de la misma manera, ya que el código del cliente es independiente de la representación interna del TDA. Esto se demostrará con ejemplos.
+
+Todo lo concerniente al dato debe estar especificado en el código de la implementación. La parte más crítica de la implementación es la definición de cómo los datos serán representados (por ejemplo, un entero como una cadena de texto, un booleano, etc.). Para indicar la representación de un tipo de dato, se emplea una notación específica, como `⌈TipoDeDato⌉`. Por ejemplo, `⌈10⌉` para un entero o `⌈10.5⌉` para un doble.
+
+#### Ejemplo: Números Naturales
+
+Consideremos la representación de los números naturales, comenzando desde 0. Se definen las siguientes funciones:
+*   `es_cero(N)`: Pregunta si un número `N` es 0.
+*   `sucesor(N)`: Retorna `N + 1`.
+*   `predecesor(N+1)`: Retorna `N`. Es importante notar que `predecesor` se aplica a números mayores o iguales que 1 (es decir, el sucesor de 0 es 1, y su predecesor es 0).
+
+Esta representación es coherente con la definición recursiva de los números naturales: 0 pertenece al conjunto, y si N pertenece al conjunto, entonces N+1 también pertenece. La especificación de los números naturales nos guía en su manejo, permitiendo escribir programas para la manipulación de datos independientemente de su representación subyacente.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=oXmddkgASKY
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

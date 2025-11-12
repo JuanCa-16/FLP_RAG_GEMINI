@@ -1,0 +1,68 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+## Implementación Simple de Clases y Objetos
+
+### Declaración de Clases y Métodos
+
+En una implementación simple, la declaración de una clase contiene toda la información necesaria. Esta información abarca:
+*   El nombre de la clase.
+*   Su superclase.
+*   Sus campos (atributos).
+*   Las declaraciones de sus métodos.
+
+Una declaración de método, a su vez, consiste en:
+*   Un nombre (representado por un símbolo).
+*   Una lista de argumentos (cada uno como un símbolo).
+*   Una expresión que define su comportamiento.
+
+La especificación gramatical del lenguaje proporciona directamente la estructura para generar los tipos de datos (datatypes) correspondientes a estas declaraciones de clases y métodos, simplificando su representación en el intérprete.
+
+### Entorno de Clases Global
+
+Para gestionar las declaraciones de clases, se utiliza una variable global denominada `class_env` (o `de_class_enf`).
+*   **Propósito:** Almacenar todas las declaraciones de clase a medida que son procesadas.
+*   **Inicialización:** `class_env` se inicializa como una estructura de datos vacía.
+*   **Población:** Un método, como `elaborate_class` (o `elaborate_classes`), se encarga de procesar las declaraciones de clases y agregarlas a `class_env`. Este proceso se realiza durante la fase de construcción de las clases.
+*   **Consulta:** Para buscar una clase específica por su nombre, se implementa una función `lookup_class`. Esta función toma un nombre de clase como entrada, busca su declaración correspondiente en `class_env` y la retorna. Si la clase no se encuentra, la función debe indicar que la clase es desconocida.
+
+En resumen, el entorno de clases (`class_env`) se compone de:
+1.  **Almacén:** La variable global `class_env` que guarda las declaraciones.
+2.  **Constructor/Poblador:** Un método (`elaborate_class`) que añade las declaraciones al entorno.
+3.  **Observador/Buscador:** Una función (`lookup_class`) que permite recuperar una declaración de clase.
+
+### Representación de Objetos
+
+En esta implementación simple, un objeto se representa como una lista de partes. Cada parte de esta lista corresponde a una clase en su cadena de herencia.
+
+Considerando solo herencia simple (una sola superclase), la lista de partes se estructura de la siguiente manera:
+*   La primera posición de la lista corresponde a la clase más específica del objeto (la clase instanciada).
+*   Las posiciones subsiguientes corresponden a las superclases en orden ascendente de la jerarquía.
+*   La lista termina con una representación de la clase `Object` (generalmente una lista vacía), que es el ancestro común de todas las clases.
+
+**Ejemplo:**
+Dadas las siguientes declaraciones de clases:
+*   `Class1` extiende de `Object` (Object se representa como una lista vacía `[]`)
+*   `Class2` extiende de `Class1`
+*   `Class3` extiende de `Class2`
+
+Si se declara un objeto `o3` de tipo `Class3`, su representación como lista de partes sería:
+`[Class3, Class2, Class1, []]`
+
+Donde:
+*   `Class3` es la clase instanciada (el punto más bajo en la cadena de herencia).
+*   `Class2` es la superclase de `Class3`.
+*   `Class1` es la superclase de `Class2`.
+*   `[]` representa la superclase `Object`.
+
+Esta estructura asegura que la primera parte de la lista representa el nivel más bajo en la jerarquía de herencia, y a medida que se avanza en la lista, se asciende en la jerarquía hacia el tope (`Object`). La herencia múltiple no se considera en esta implementación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=fbWUE8jvebo
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,107 @@
+A continuación, se presenta una versión limpia y coherente de la transcripción, enfocada en los conceptos académicos relevantes:
+
+---
+
+### Introducción a la Librería SLG en DrRacket
+
+La librería SLG, proporcionada en DrRacket, es fundamental para construir escáneres y parsers. Comprender su funcionamiento es crucial, ya que gran parte del curso dependerá de ella, incluyendo el manejo de errores.
+
+SLG es un generador de parsers que recibe dos especificaciones principales:
+1.  **Especificación Léxica:** Describe cómo se reconocen los elementos básicos del lenguaje (tokens), como números, identificadores, espacios, comentarios, etc.
+2.  **Gramática:** Define la estructura sintáctica del lenguaje de programación.
+
+A partir de estas especificaciones, SLG produce un escáner y un parser, que luego pueden integrarse para construir un interpretador.
+
+---
+
+### 1. Especificación Léxica
+
+La especificación léxica es una lista de reglas que asocian expresiones regulares con acciones. Cada regla tiene la siguiente estructura:
+`[nombre_simbólico expresión_regular acción_de_salida]`
+
+*   **Nombre Simbólico:** Un identificador arbitrario que se le da al token (ej. `espacio-blanco`, `identificador`, `numero`). Debe ser coherente con su propósito.
+*   **Expresión Regular:** Un patrón que la librería SLG utiliza para reconocer secuencias de caracteres. Algunos componentes comunes incluyen:
+    *   `letter`: Captura una letra.
+    *   `digit`: Captura un dígito.
+    *   `space`: Captura un espacio en blanco.
+    *   `any`: Captura cualquier carácter.
+    *   `not`: Niega un patrón (ej. `(not #\newline)` para cualquier carácter excepto un salto de línea).
+    *   `or`: Combina patrones (ej. `(or letter digit)`).
+    *   `arno` (Cerradura de Kleene): Captura cero o más ocurrencias del patrón.
+    *   `concat`: Une expresiones regulares.
+    *   Las que se usarán principalmente son `letter`, `digit`, `space`, `any`, `not`, `or`, y `arno`.
+*   **Acción de Salida:** Define qué hacer cuando se encuentra una coincidencia con la expresión regular:
+    *   `skip`: Ignora la coincidencia (ej. para espacios en blanco o comentarios).
+    *   `symbol`: Transforma los caracteres capturados en un símbolo de Racket.
+    *   `number`: Transforma los caracteres capturados en un número de Racket.
+    *   `string`: Transforma los caracteres capturados en una cadena de caracteres (string) de Racket.
+    *(Es importante recordar que los símbolos y los strings son tipos de datos diferentes en Racket.)*
+
+#### Ejemplo de Especificación Léxica:
+
+```racket
+'(
+  [espacio-blanco (space) skip]
+  [comentario    (concat #\% (arno (not #\newline))) skip]
+  [identificador (concat letter (arno (or letter digit #\?))) symbol]
+  [numero        (concat digit (arno digit)) number]
+  ; ... otras reglas para operadores, palabras clave, etc.
+)
+```
+**Explicación del Ejemplo:**
+*   **Espacio en Blanco:** Cualquier carácter de espacio es ignorado.
+*   **Comentario:** Una línea que comienza con `%` y es seguida por cualquier carácter (excepto un salto de línea) es ignorada.
+*   **Identificador:** Empieza con una letra, seguida de cero o más letras, dígitos o el símbolo `?`. Se transforma en un `symbol`.
+*   **Número:** Empieza con un dígito, seguido de cero o más dígitos. Se transforma en un `number`.
+
+#### Funcionamiento del Escáner
+
+El escáner recolecta caracteres en un búfer. Cuando encuentra la cadena más larga posible que coincide con alguna de las expresiones regulares definidas, ejecuta la acción de salida asociada. Esto significa que el escáner prioriza la coincidencia más larga posible para evitar ambigüedades. Las salidas resultantes pueden ser ignoradas (`skip`), convertidas en `symbol`, `number` o `string` para su posterior procesamiento.
+
+---
+
+### 2. Especificación Gramatical
+
+La especificación gramatical define la sintaxis del lenguaje. La ventaja principal de SLG es que permite especificar la gramática como una lista, lo que genera automáticamente los tipos de datos (data types) necesarios para representar el Árbol de Sintaxis Abstracta (AST), sin necesidad de usar `define-data-type` manualmente.
+
+Una gramática se compone de una lista de producciones. Cada producción tiene la forma:
+`[LHS RHS_item nombre_de_producción]`
+
+*   **LHS (Left-Hand Side):** Es el nombre del no-terminal de la producción. Corresponde al tipo de dato que se está definiendo (ej. `expresión`, `sentencia`).
+*   **RHS Item (Right-Hand Side Item):** Describe los elementos que componen la producción. Puede incluir:
+    *   Símbolos (literales o tokens léxicos).
+    *   Cadenas (para agrupar elementos).
+    *   `arno`: Cerradura de Kleene para cero o más repeticiones.
+    *   `separa`: Para elementos separados por un delimitador.
+    *   `lids`: Para listas de elementos separados.
+*   **Nombre de Producción:** Un símbolo que identifica la variante específica de la producción (ej. `binario-op`, `numero-expr`). Esto se corresponde con el "constructor" del tipo de dato generado automáticamente.
+
+#### Restricciones de Gramática (Gramáticas LL(1))
+
+La gramática de SLG debe ser **LL(1)** (Left-to-Right, Leftmost derivation, 1-token lookahead). Esto significa que el parser debe poder decidir qué producción aplicar basándose únicamente en el siguiente token de entrada. Por esta razón, es crucial que:
+*   **No pueden existir dos producciones para el mismo no-terminal que comiencen con el mismo símbolo (o token).** Si dos producciones tienen el mismo "primer símbolo", esto crea un conflicto por la izquierda que el parser LL(1) no puede resolver sin reglas adicionales. Las gramáticas deben estar diseñadas para evitar estas ambigüedades de inicio.
+
+---
+
+### 3. Funciones Principales de SLG
+
+SLG proporciona funciones clave para trabajar con especificaciones léxicas y gramaticales:
+
+*   `SLG:make-data-types`: Genera automáticamente los tipos de datos (data types) correspondientes a la gramática especificada, evitando la necesidad de definirlos manualmente con `define-data-type`.
+*   `SLG:make-parser`: Construye el escáner y el parser a partir de las especificaciones léxicas y gramaticales. Este procedimiento retorna una función que toma una cadena de entrada y produce un Árbol de Sintaxis Abstracta (AST).
+*   `SLG:make-repl`: Crea un Read-Eval-Print Loop (REPL) interactivo. Esto abre una consola donde se puede ingresar código del lenguaje definido, el cual será evaluado línea por línea. Es una herramienta muy útil para probar y depurar el lenguaje. Esta función recibe el parser y un evaluador (función que procesa el AST generado por el parser).
+
+---
+
+### Próximos Pasos
+
+En la siguiente sección, se abordará cómo integrar estas herramientas para generar un interpretador funcional, incluyendo un ejemplo práctico de su implementación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=vNQauK4mMHA
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

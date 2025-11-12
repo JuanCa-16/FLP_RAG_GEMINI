@@ -1,0 +1,88 @@
+A continuación, se presenta la versión limpia y formateada de la transcripción, lista para estudio:
+
+---
+
+### Construcción de un Intérprete Simple
+
+Se construirá un intérprete simple que se utilizará a lo largo del curso. Este lenguaje, inicialmente enfocado en operaciones matemáticas básicas, se expandirá progresivamente para incluir procedimientos recursivos, tipos y finalmente objetos, cubriendo así el temario completo del curso.
+
+La primera fase se centrará únicamente en **expresiones aritméticas**, abarcando variables, números y las operaciones de suma, multiplicación, resta, incremento y decremento.
+
+#### Conceptos Fundamentales: Valores Expresados y Denotados
+
+Es crucial distinguir entre:
+*   **Valores Expresados:** Son aquellos valores que se manejan directamente en el lenguaje y son visualizables.
+*   **Valores Denotados:** Son los valores almacenados en una variable.
+
+#### Gramática Inicial del Lenguaje
+
+El primer lenguaje a construir trabajará exclusivamente con números. Su gramática principal se define de la siguiente manera:
+
+*   **Programa:** Una expresión. Se agrupa en la variante `a-program` que recibe una expresión.
+*   **Expresiones:** Pueden ser de los siguientes tipos:
+    *   Un número (`literal-expression`).
+    *   Un identificador (`var-expression id`).
+    *   Una operación: una primitiva seguida de una lista de expresiones separadas por comas, encerradas entre paréntesis.
+*   **Primitivas:** Inicialmente se incluyen: suma, resta, multiplicación, incremento y decremento. Se podrán añadir más posteriormente.
+
+### Proceso de Codificación: Especificación Léxica y Gramatical
+
+Se inicia la codificación del intérprete. El código del libro estará disponible en el campus virtual.
+
+#### 1. Especificación Léxica
+
+Define cómo se tokenizan los caracteres de entrada:
+
+1.  **Espacios en blanco:** Se ignoran.
+2.  **Comentarios:** Empiezan con el carácter '%' y abarcan cualquier contenido hasta el final de la línea. Se ignoran.
+3.  **Identificadores:** Una letra seguida de cualquier cantidad de letras, dígitos o caracteres especiales (ej., numeral). Se transforman en símbolos.
+4.  **Números:**
+    *   **Enteros:** Un dígito seguido de cualquier cantidad de dígitos. Se transforman en valores numéricos.
+    *   **Negativos:** Se define un caso para números precedidos por un signo menos.
+    *   **Flotantes (opcional):** Se extienden las reglas de enteros para incluir un punto decimal.
+
+#### 2. Especificación Gramatical
+
+Representa la estructura sintáctica del lenguaje:
+
+*   **Programa:** `(a-program expresión)`
+*   **Expresión:**
+    *   Número literal: `(literal-expression número)`
+    *   Variable: `(var-expression identificador)`
+        *   *Nota importante:* Es fundamental mantener la coherencia en los nombres de los tokens definidos léxicamente (ej., usar consistentemente 'identificador').
+    *   Expresión Primitiva: `(prim-expression primitiva (separated-list expresión ','))`
+*   **Primitivas disponibles:**
+    *   Suma: `(add-prim)`
+    *   Resta: `(minus-prim)`
+    *   Multiplicación: `(mul-prim)`
+    *   División: `(div-prim)`
+    *   Incremento: `(add1-prim)`
+    *   Decremento: `(sub1-prim)`
+
+#### 3. Generación de Tipos de Datos (Data Types)
+
+Para generar los tipos de datos a partir de las especificaciones léxica y gramatical, se utiliza la función `CLG:make-define-data-types`, pasándole ambas especificaciones como argumentos. Una corrección común es asegurar la consistencia en la denominación de los tokens (ej., 'identificador') para evitar errores de reconocimiento.
+
+#### 4. Construcción del Intérprete
+
+La función principal del intérprete se construye utilizando `CLG:make-reloop`.
+*   Se configura un prompt para la entrada del usuario (ej., una flecha `->`).
+*   Se utiliza `CLG:make-string-parser`, al cual se le pasan las especificaciones léxica y gramatical para configurar el analizador sintáctico.
+*   Se define una función principal, `eval-program`, que recibirá una instancia del tipo de dato `programa` y, en esta fase inicial, simplemente la mostrará.
+
+#### Demostración y Próximos Pasos
+
+Una vez configurado, el intérprete permite ingresar expresiones como `(+ 5,4)` y construye el árbol de sintaxis correspondiente. Esto completa la primera parte del proyecto: la especificación léxica y gramatical, que establece la interfaz inicial del lenguaje.
+
+Los siguientes pasos implicarán desarrollar la lógica para evaluar las expresiones y las primitivas definidas.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=f45S2x0W9Wk
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

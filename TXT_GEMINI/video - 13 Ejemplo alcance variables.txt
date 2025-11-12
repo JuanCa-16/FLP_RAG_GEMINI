@@ -1,0 +1,81 @@
+A continuación, la transcripción de la clase, limpia y formateada para estudio:
+
+---
+
+### Alcance de Variables y Ocultamiento (Shadowing)
+
+El **alcance (scope)** de una variable se limita a la región donde ha sido declarada. En un **ámbito de bloque (bloc scope)**, cuando se consulta una variable, el sistema busca la declaración más cercana dentro del ámbito actual o los ámbitos externos. Por lo tanto, la disponibilidad de una variable depende directamente de su punto de declaración. Este principio es fundamental en lenguajes como Racket.
+
+**Ejemplo de Alcance:**
+Si se declara `x` en un ámbito externo y luego se redefine `x` en un ámbito interno, la `x` interna se refiere a su propia declaración local. Cuando se consulta `x` dentro del ámbito interno, siempre se prioriza la declaración más cercana.
+
+### Ocultamiento de Variables (Variable Shadowing)
+
+Este fenómeno se denomina **ocultamiento de variables (variable shadowing)**: la capacidad de declarar una variable con el mismo nombre dentro de un ámbito interno. Durante la búsqueda de una variable, el sistema siempre prioriza la declaración más cercana a la posición donde se está utilizando.
+
+*   Si se consulta una variable `A` en un ámbito interno donde ha sido declarada, se utilizará esa `A`.
+*   Si se consulta una variable `C` y no está definida localmente, la búsqueda continúa recursivamente en los ámbitos externos, buscando la declaración más cercana en niveles superiores.
+
+El algoritmo de búsqueda de variables funciona buscando en el ámbito más cercano. Si la variable no se encuentra, la búsqueda procede al nivel anterior y así sucesivamente, hasta encontrar la declaración o hasta llegar al ámbito global.
+
+### Ejercicio Práctico con `let`
+
+Consideremos el siguiente ejercicio para evaluar el alcance de las variables en una expresión `let`.
+
+**Estructura `let`:**
+Un `let` define:
+1.  **Área de declaración de variables:** Se especifica entre paréntesis, por ejemplo: `(let ((x 3) (y 4)) ...)`.
+2.  **Área de uso:** Contiene las expresiones donde se utilizan las variables declaradas, que pueden incluir `let`s anidados.
+
+**Análisis de la expresión:**
+
+Asumamos la siguiente expresión:
+```racket
+(let ((x 4) (y 4))
+  (let ((x (+ y 5)))
+    (* x 3)))
+```
+
+1.  **Ámbito externo:** Se declaran `x` con valor `4` e `y` con valor `4`.
+2.  **Ámbito interno:**
+    *   Se declara una nueva variable `x`. Su valor es `(+ y 5)`.
+    *   Para `y`, como no se redefine en este ámbito interno, se utiliza la `y` del ámbito superior, cuyo valor es `4`.
+    *   Por lo tanto, el nuevo `x` interno tiene el valor `(4 + 5) = 9`.
+3.  **Expresión final:** `(* x 3)`
+    *   Aquí, la `x` que se utiliza es la `x` del ámbito *más cercano*, es decir, la `x` declarada en el `let` interno, con valor `9`.
+    *   El resultado de `(* x 3)` será `(* 9 3) = 27`.
+
+**Corrección y aclaración del cálculo original:**
+En la clase se realizó un cálculo que llevó a una discusión. Corrigiendo el cálculo original del texto (que parecía implicar una variable externa adicional):
+
+Si tuviéramos:
+```racket
+(let ((x 4) (y 4))
+  (let ((x (+ y 5)))
+    (+ (* x 3) (variable-externa-z 3)))) ; hipotética variable externa
+```
+Donde:
+*   `x` (externo) = 4
+*   `y` (externo) = 4
+*   `x` (interno) = `y` (externo) + 5 = 4 + 5 = 9
+*   `(* x 3)` = `(* 9 3)` = 27
+*   Si la `variable-externa-z` es `3`, entonces el resultado final sería `27 + 3 = 30`.
+
+**Revisión del cálculo del profesor:**
+
+El profesor llegó a `39` en el ejemplo en clase. Esto implica un cálculo como:
+1.  `x` inicial = 4. `y` inicial = 4.
+2.  `x` (interno) = `y` (externo) + 5 = 4 + 5 = 9.
+3.  Multiplicación: `9 * 4` = 36 (asumiendo que se refiere a la `x` del ámbito externo como el multiplicador, o algún otro `4`).
+4.  Luego, se le suma una `3` de alguna variable externa. `36 + 3 = 39`.
+
+Esto sugiere una estructura donde un `let` podría estar usando la `x` del ámbito externo en la expresión final, o la estructura implicaba otra operación. La clave es entender que **la búsqueda de una variable se hace para su *declaración* más cercana, no para su *uso* en una expresión**. La `y` en `(+ y 5)` toma el valor de la `y` declarada en el ámbito superior porque no se ha declarado una nueva `y` en el ámbito actual.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=dIhRmt4Khgw
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

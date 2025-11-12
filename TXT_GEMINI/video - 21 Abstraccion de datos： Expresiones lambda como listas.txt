@@ -1,0 +1,118 @@
+Este documento presenta la implementación de las expresiones del cálculo lambda, denominadas "LC expression", utilizando una aproximación basada en tipos de datos algebraicos. Se definen los constructores, predicados y extractores para estas expresiones, seguidos de la implementación de la función `occurs_free?`.
+
+---
+
+### Implementación de Expresiones del Cálculo Lambda (LC Expression)
+
+#### 1. Constructores
+
+Los constructores son funciones que crean instancias de las diferentes formas de las expresiones del cálculo lambda. Cada tipo de expresión se representa como una lista, donde el primer elemento es un símbolo (el "tag" del constructor) que identifica el tipo de expresión, seguido de sus componentes.
+
+*   **`var_expression (id)`**: Representa una variable. Recibe un identificador (`id`).
+    *   Sintaxis: `(list 'var_expression id)`
+    *   Ejemplo: `(var_expression 'x')`
+
+*   **`lambda_expression (id, body)`**: Representa una abstracción lambda. Recibe un identificador (`id`) para el parámetro y una `LC expression` (`body`) para el cuerpo de la función.
+    *   Sintaxis: `(list 'lambda_expression id body)`
+    *   Ejemplo: `(lambda_expression 'x' (var_expression 'x'))`
+
+*   **`app_expression (rator, rand)`**: Representa una aplicación de función. Recibe dos `LC expression`: el operador (`rator`) y el operando (`rand`).
+    *   Sintaxis: `(list 'app_expression rator rand)`
+    *   Ejemplo: `(app_expression (lambda_expression 'x' (var_expression 'x')) (var_expression 'y'))`
+
+**Ejemplos de Expresiones:**
+
+*   `expression1`: `(var_expression 'x')`
+*   `expression2`: `(lambda_expression 'x' (lambda_expression 'y' (var_expression 'x')))`
+*   `expression3`: `(app_expression (var_expression 'x') (lambda_expression 'y' (var_expression 'x')))`
+
+#### 2. Observadores
+
+Las funciones observadoras permiten inspeccionar y extraer información de las expresiones. Se dividen en predicados y extractores.
+
+##### 2.1 Predicados
+
+Los predicados son funciones que verifican el tipo de una expresión, examinando el "tag" del constructor.
+
+*   **`is_var_expression? (expr)`**:
+    *   Verifica si `expr` es una `var_expression`.
+    *   Implementación: `(eq? (car expr) 'var_expression)`
+
+*   **`is_lambda_expression? (expr)`**:
+    *   Verifica si `expr` es una `lambda_expression`.
+    *   Implementación: `(eq? (car expr) 'lambda_expression)`
+
+*   **`is_app_expression? (expr)`**:
+    *   Verifica si `expr` es una `app_expression`.
+    *   Implementación: `(eq? (car expr) 'app_expression)`
+
+##### 2.2 Extractores
+
+Los extractores son funciones que recuperan los componentes internos de una expresión.
+
+*   **`var_expression_id (expr)`**:
+    *   Extrae el identificador de una `var_expression`.
+    *   Implementación: `(cadr expr)`
+
+*   **`lambda_expression_id (expr)`**:
+    *   Extrae el identificador del parámetro de una `lambda_expression`.
+    *   Implementación: `(cadr expr)`
+
+*   **`lambda_expression_body (expr)`**:
+    *   Extrae el cuerpo de una `lambda_expression`.
+    *   Implementación: `(caddr expr)`
+
+*   **`app_expression_rator (expr)`**:
+    *   Extrae el operador (función) de una `app_expression`.
+    *   Implementación: `(cadr expr)`
+
+*   **`app_expression_rand (expr)`**:
+    *   Extrae el operando (argumento) de una `app_expression`.
+    *   Implementación: `(caddr expr)`
+
+#### 3. Función `occurs_free?`
+
+La función `occurs_free? (variable, expression)` determina si una `variable` dada ocurre libremente dentro de una `expression`. Su implementación es recursiva y utiliza los predicados y extractores definidos para manejar cada tipo de expresión del cálculo lambda.
+
+*   **Definición de `occurs_free? (variable, expression)`:**
+
+    1.  **Si `expression` es una `var_expression`:**
+        *   `variable` ocurre libre si es idéntica al identificador de la `var_expression`.
+        *   Lógica: `(eq? variable (var_expression_id expression))`
+
+    2.  **Si `expression` es una `lambda_expression`:**
+        *   `variable` ocurre libre si:
+            *   No es idéntica al identificador del parámetro de la `lambda_expression` (`id`),
+            *   **Y** ocurre libre en el cuerpo (`body`) de la `lambda_expression`.
+        *   Lógica: `(and (not (eq? variable (lambda_expression_id expression))) (occurs_free? variable (lambda_expression_body expression)))`
+
+    3.  **Si `expression` es una `app_expression`:**
+        *   `variable` ocurre libre si ocurre libre en el operador (`rator`) **o** ocurre libre en el operando (`rand`).
+        *   Lógica: `(or (occurs_free? variable (app_expression_rator expression)) (occurs_free? variable (app_expression_rand expression)))`
+
+    4.  **Cualquier otro caso:**
+        *   Indica un error debido a una expresión no reconocida.
+
+*   **Ejemplos de uso de `occurs_free?`:**
+
+    *   `occurs_free? 'x' expression1` (donde `expression1` es `(var_expression 'x')`)
+        *   Resultado esperado: `true` (la variable `x` es la misma que la de la expresión).
+
+    *   `occurs_free? 'x' expression2` (donde `expression2` es `(lambda_expression 'x' (lambda_expression 'y' (var_expression 'x')))` )
+        *   Resultado esperado: `false` (la `x` está ligada por la `lambda_expression` más externa).
+
+    *   `occurs_free? 'x' expression3` (donde `expression3` es `(app_expression (var_expression 'x') (lambda_expression 'y' (var_expression 'x')))` )
+        *   Resultado esperado: `true` (la `x` ocurre libre en el `rator` de la `app_expression`).
+
+---
+
+Este proceso demuestra cómo construir y manipular tipos de datos abstractos para estructuras como las expresiones del cálculo lambda, utilizando un conjunto de funciones bien definidas para interactuar con su representación interna de manera modular y robusta.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=DsPWtf9LUqQ
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

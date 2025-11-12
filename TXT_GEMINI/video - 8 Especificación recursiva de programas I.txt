@@ -1,0 +1,60 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Especificación de Recursión en Programas
+
+Para la especificación de recursión de datos, se utilizan las expresiones gramaticales de Backus-Naur (BNF) y las definiciones inductivas. Ahora pasaremos a la especificación de programas.
+
+La definición inductiva, o mediante gramáticas, sirve como guía para desarrollar procedimientos que operan sobre esos datos. Por ejemplo, al definir un tipo de dato como una lista, se establece su estructura: un entero seguido de una lista de enteros, o una lista vacía. El acceso a los elementos se realiza mediante operaciones como `CAR` (para el primer elemento) y `CDR` (para el resto de la lista).
+
+Toda función que trabaja sobre un tipo de dato recursivo debe considerar la estructura de dicho dato. En el caso de una lista, esto implica considerar tanto el caso de la lista vacía como el caso de la lista no vacía (un elemento seguido de otra lista).
+
+**Ejemplo: Suma de elementos en una lista (`sumar-lista`)**
+
+Consideremos una función para sumar los elementos de una lista. Para su diseño, se deben contemplar dos casos principales:
+
+1.  **Caso Base (Símbolo Terminal / Condición de Parada):**
+    Este es el caso más sencillo, que tiene una respuesta trivial y no incluye ninguna llamada recursiva. Para una lista, el caso base es cuando la lista es vacía.
+    *   **Pregunta:** ¿La lista es vacía?
+    *   **Respuesta:** Si la lista es vacía y se pide sumar sus elementos, la suma es `0`.
+
+2.  **Caso Recursivo:**
+    Este caso se aplica cuando la lista no es vacía, siguiendo la estructura definida por la gramática (un entero seguido de una lista de enteros). Aquí, se resuelve una parte del problema y se realiza una llamada recursiva para el resto.
+    *   **Estrategia:** Se suma el primer elemento (`CAR`) de la lista y se realiza una llamada recursiva a la misma función con el resto de la lista (`CDR`). Esto se debe a que el `CDR` de una lista no vacía siempre es otra lista, manteniendo la estructura recursiva.
+
+**Principio fundamental:** Las funciones deben seguir la estructura de los datos sobre los que operan. La idea es descomponer el problema en una versión más pequeña hasta alcanzar el caso base, que es el problema más simple de resolver.
+
+**Ejemplo: Función para obtener la longitud de una lista (`list-length`)**
+
+Para diseñar una función que devuelve el número de elementos de una lista, se deben considerar los mismos dos casos:
+
+1.  **Caso Base:**
+    *   Si la lista es vacía, su longitud es `0`. Esta es la respuesta inmediata.
+
+2.  **Caso Recursivo:**
+    *   Si la lista no es vacía, significa que hay al menos un elemento. Por lo tanto, se suma `1` (por el elemento actual) y se realiza una llamada recursiva a la función `list-length` con el `CDR` de la lista, que es una lista más pequeña.
+
+**Estructura de la función en Racket (usando `if`):**
+
+El diseño de la función `list-length` en Racket podría ser:
+
+```racket
+(define (list-length l)
+  (if (empty? l)         ; Pregunta: ¿Es la lista vacía? (caso base)
+      0                  ; Respuesta si es verdadero: 0
+      (+ 1 (list-length (cdr l))))) ; Respuesta si es falso: 1 + llamada recursiva con el CDR
+```
+
+En el caso recursivo, la función cuenta un elemento y se llama a sí misma para contar los elementos restantes en la sub-lista (el `CDR`). Este proceso continúa hasta que se encuentra la lista vacía, momento en el que se devuelve `0` y las sumas pendientes se resuelven en orden inverso a las llamadas.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=VpJGNtKpskI
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

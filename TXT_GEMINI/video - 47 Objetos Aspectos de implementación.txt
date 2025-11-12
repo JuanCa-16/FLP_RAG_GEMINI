@@ -1,0 +1,38 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+La implementación de objetos en nuestro interpretador implica varios cambios.
+
+Cuando se incorporan objetos en la programación orientada a objetos, un programa consta de un conjunto de declaraciones de clases y una expresión. Las declaraciones de clases son procesadas por `elaborate-class-decls` y luego la expresión es evaluada.
+
+La función `elaborate-class-decls` se encarga de procesar y almacenar las declaraciones de clases, haciéndolas accesibles cuando son necesarias. Esto implica una modificación en `eval-program`. Originalmente, `eval-program` evaluaba directamente una expresión. Ahora, su definición cambia para primero elaborar las declaraciones de clases (`elaborate-class-decls`) y luego evaluar la expresión (`eval-expression`). En consecuencia, la estructura de un programa ahora consiste en un conjunto de una o más declaraciones de clases seguido de una expresión.
+
+La incorporación de objetos introduce tres nuevos tipos de expresiones en la gramática del lenguaje: `creación` (instanciación), `invocación de métodos` (`method-send`), y `superllamados` (`super-call`). Estas deben ser añadidas a la especificación gramatical. Cuando una expresión de tipo `method-send` es evaluada, se utiliza un procedimiento llamado `find-method-and-apply`. Este procedimiento localiza el método asociado al nombre especificado dentro de la declaración del objeto y lo aplica con sus argumentos.
+
+Dentro de `eval-expression`, se deben añadir los casos para las nuevas expresiones:
+*   **`New` (Creación de objeto):** Recibe un nombre de clase (`classname`) y argumentos (`runs`) para el constructor. Implica evaluar los argumentos, crear un nuevo objeto y luego llamar al método `initialize`.
+*   **`Method-send` (Invocación de método):** Recibe el objeto, el nombre del método (`method-name`) y los argumentos (`arguments`). Los argumentos son evaluados (`eval-runs`), el objeto es evaluado (`eval-expression` de `object-expression`), y luego se invoca `find-method-and-apply` con el nombre del método, el nombre de la clase del objeto, el objeto (`self`), y los argumentos evaluados. Este procedimiento creará un ambiente extendido para la ejecución del método.
+*   **`Super-call` (Superllamado):** Por ahora, su implementación inicial no realiza una acción compleja, pero se contempla su manejo posterior.
+
+La función `find-method-and-apply` espera cuatro argumentos: el nombre del método, el nombre de la clase donde se inicia la búsqueda, el valor de `self` (la instancia del objeto), y la lista de argumentos.
+
+El `super-call` es similar a la invocación de un método, pero invoca un método de la superclase. Se usará una variable `super` para identificar el nombre de la superclase.
+
+En la `creación de objetos` (`new`), una vez evaluados los argumentos (`eval-runs` se implementa como un `map` que aplica `eval-expression` a cada argumento), se crea un nuevo objeto de la clase especificada. Posteriormente, se llama a su método `initialize` (constructor), ignorando su valor de retorno, y finalmente se devuelve la representación del objeto.
+
+Cualquier implementación de este sistema orientado a objetos debe proporcionar procedimientos para la orquestación de declaraciones, `find-method-and-apply`, la manipulación de objetos y nombres de clases, y la creación de nuevos objetos. Estos procedimientos, aunque su implementación específica puede variar (ej. implementación simple, implementación plana), comparten características comunes:
+*   La evaluación de métodos utiliza `find-method-and-apply` con el nombre del método, el nombre de la clase, el valor `self` y los argumentos. Esto establece un ambiente extendido para la ejecución y realiza los cambios necesarios en la representación del objeto.
+*   La creación de objetos implica la llamada al método `initialize`.
+*   Los superllamados invocan métodos de la clase padre, cuyo nombre se guarda en la variable `super`.
+
+Una declaración de clase contendrá toda la información necesaria: el nombre de la clase, su superclase y la declaración de sus métodos. A continuación, se detallará la implementación simple.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=ZqTptDxsXCs
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

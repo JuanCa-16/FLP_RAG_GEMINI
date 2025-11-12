@@ -1,0 +1,97 @@
+A continuación, se detalla la ejecución y evaluación de un ejemplo con paso de parámetros y ambientes.
+
+---
+
+### Análisis de Ejecución
+
+1.  **Ambiente Inicial**
+    *   Arrancamos con un ambiente vacío.
+    *   Luego, se establece el `environment 0` con las siguientes definiciones de direct targets:
+        *   `A` es 1.
+        *   `B` es 2.
+        *   `C` es 3.
+        *   `P` es un direct target de una clausura que almacena el ambiente anterior.
+        *   `Q` es un direct target de una clausura.
+
+2.  **Ejecución de `set A = P(C, B, A, Q)`**
+
+    *   **Llamada al procedimiento P**:
+        *   P se invoca con los parámetros X, Y, Z, F.
+        *   Dado que se están pasando variables, todos los parámetros son **indirect targets**. Esto significa que los cambios realizados a X, Y, Z, F dentro de P afectarán directamente a las variables C, B, A, Q, respectivamente.
+        *   Las asignaciones de parámetros son:
+            *   `X` es un indirect target hacia `C`.
+            *   `Y` es un indirect target hacia `B`.
+            *   `Z` es un indirect target hacia `A`.
+            *   `F` es un indirect target hacia `Q`.
+
+    *   **Paso 1: `set X = Y - X`**:
+        *   `Y` se refiere al valor de `B` (que es 2).
+        *   `X` se refiere al valor de `C` (que es 3).
+        *   La operación es `X = 2 - 3 = -1`.
+        *   Como `X` es un indirect target hacia `C`, el valor de `C` se actualiza a **-1**.
+
+    *   **Paso 2: `set Y = F(Z, X)`**:
+        *   `Z` se refiere a `A` (cuyo valor actual es 1).
+        *   `X` se refiere a `C` (cuyo valor actual es -1).
+        *   Se invoca el procedimiento `F`, que es `Q`, con los parámetros M y N.
+        *   **Llamada al procedimiento Q (F)**:
+            *   `Q` recibe `M` y `N`. Ambos son **indirect targets** porque se pasan variables (`Z` que apunta a `A`, y `X` que apunta a `C`).
+            *   Las asignaciones de parámetros son:
+                *   `M` es un indirect target hacia `A`.
+                *   `N` es un indirect target hacia `C`.
+
+            *   **Dentro de Q - Sub-paso 1: `set N = M * 5`**:
+                *   `M` se refiere al valor de `A` (que es 1).
+                *   La operación es `N = 1 * 5 = 5`.
+                *   Como `N` es un indirect target hacia `C`, el valor de `C` se actualiza a **5** (reemplazando el -1 anterior).
+
+            *   **Dentro de Q - Sub-paso 2: `set M = M + 6`**:
+                *   `M` se refiere al valor de `A` (que es 1).
+                *   La operación es `A = 1 + 6 = 7`.
+                *   Como `M` es un indirect target hacia `A`, el valor de `A` se actualiza a **7**.
+
+            *   **Dentro de Q - Sub-paso 3: Retorno de `M + N`**:
+                *   `M` se refiere a `A` (cuyo valor actual es 7).
+                *   `N` se refiere a `C` (cuyo valor actual es 5).
+                *   El valor retornado por `Q` es `7 + 5 = 12`.
+
+        *   **Retorno de F(Z, X) a Y**:
+            *   El valor 12 es retornado y asignado a `Y`.
+            *   Como `Y` es un indirect target hacia `B`, el valor de `B` se actualiza a **12**.
+
+    *   **Retorno del procedimiento P**:
+        *   El procedimiento `P` retorna el valor actual de `X`.
+        *   `X` es un indirect target a `C`, y `C` fue actualizado a 5.
+        *   Por lo tanto, `P` retorna **5**.
+
+    *   **Asignación final a A: `set A = (valor_retornado_por_P)`**:
+        *   El valor 5 (retornado por P) es asignado a `A`.
+        *   El valor de `A` se actualiza a **5** (reemplazando el 7 anterior).
+
+3.  **Cálculo Final: `A + C`**
+    *   Los valores finales de las variables son:
+        *   `A` = 5
+        *   `C` = 5
+    *   La expresión final es `5 + 5 = 10`.
+
+### Verificación de Valores Finales
+
+*   **A = 5**
+*   **C = 5**
+*   **B = 12**
+
+El resultado final de la expresión es 10.
+
+### Conceptos Clave
+
+*   **Indirect Targets (Paso por Referencia)**: Ocurre cuando se pasa una variable como parámetro a una función o procedimiento. Cualquier modificación a ese parámetro dentro de la función afecta directamente a la variable original fuera de ella.
+*   **Direct Targets (Paso por Valor)**: Ocurre cuando se pasa un valor definido (literal o resultado de una expresión) como parámetro. La función opera sobre una copia de ese valor, sin afectar la variable original si la hubiera.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=ShlhAy8owxI
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

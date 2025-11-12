@@ -1,0 +1,77 @@
+Aquí tienes la transcripción limpia y formateada para estudio:
+
+---
+
+**Análisis y Verificación de Tipos en un Ejemplo Complejo**
+
+Este documento detalla un ejemplo avanzado de verificación de tipos, enfocándose en determinar los tipos de retorno de varios procedimientos y validar la consistencia de una expresión compleja.
+
+**1. Declaración de Tipos de Procedimientos y Variables:**
+
+*   **Procedimiento G:**
+    *   **Parámetros:** Tres enteros y tres booleanos.
+    *   **Retorno:** Un booleano.
+*   **Procedimiento H (alias `tgf`):**
+    *   **Parámetro:** Un procedimiento anidado.
+        *   Este procedimiento anidado, a su vez, recibe dos enteros y tres booleanos.
+        *   Retorna un booleano.
+    *   **Retorno de H:** Un booleano.
+*   **Procedimiento P:**
+    *   **Parámetros:** Un entero.
+    *   **Retorno:** Un booleano.
+*   **Procedimiento Q:**
+    *   **Parámetros:** Un entero.
+    *   **Retorno:** Un booleano.
+*   **Variable `i`:**
+    *   **Tipo:** Booleano.
+
+**2. Verificación de Tipos para la Expresión `f(g, q, 5, i)`:**
+
+Se procede a validar que cada argumento pasado a la función `f` es compatible con el tipo esperado:
+
+1.  **Primer argumento (`g`):** Se confirma que el procedimiento `g` cumple con el tipo esperado por `f` (recibe tres enteros y tres booleanos, y retorna un booleano).
+2.  **Segundo argumento (`q`):** El procedimiento `q` (que recibe un entero y retorna un booleano) es compatible con el tipo esperado.
+3.  **Tercer argumento (`5`):** El valor `5` es un entero, compatible con el parámetro correspondiente.
+4.  **Cuarto argumento (`i`):** La variable `i` es de tipo booleano, compatible con el parámetro correspondiente.
+
+**3. Verificación Interna de `f` y `h`:**
+
+*   **Dentro de `f`:** Se evalúa una condición `if pm`. La expresión `pm` debe retornar un booleano (lo cual `p` cumple). El parámetro `m` (utilizado en la evaluación de `p`) debe ser un entero, lo cual se verifica.
+*   **Evaluación de `h`:** El procedimiento `h` espera un entero (`n`), un entero (`m`), un booleano (`p(n)`), y un booleano (`p(2*n)`). Se confirma que todas estas condiciones de tipo se cumplen. Además, el tipo de `h` en este contexto es consistente con el tipo de `g`.
+
+**4. Resultado de la Verificación de Tipos:**
+
+Tras el análisis, no se encontraron errores de tipos en la expresión `f(g, q, 5, i)`. La expresión completa, al ser evaluada, retorna un booleano.
+
+**5. Distinción entre Declaración y Evaluación de Tipos:**
+
+Es crucial diferenciar entre la *declaración* de un procedimiento (su firma de tipos, es decir, los tipos de sus parámetros y su valor de retorno definidos en su estructura) y su *evaluación* (el valor concreto que retorna al ser ejecutado con argumentos específicos).
+
+**6. Ejemplos de Errores de Tipos Comunes:**
+
+*   **Discrepancia de tipos:** Ocurre cuando un valor de un tipo es proporcionado donde se espera otro tipo (ej., pasar un booleano donde se espera un entero).
+*   **Número incorrecto de argumentos:** Se produce al llamar a un procedimiento con una cantidad de argumentos diferente a la especificada en su declaración.
+*   **Condición no booleana en `if`:** La expresión que define la condición de una estructura `if` debe ser estrictamente de tipo booleano.
+*   **Tipos inconsistentes en ramas `if-then-else`:** Las expresiones en las ramas `then` y `else` de una instrucción `if` deben retornar valores del mismo tipo.
+
+**7. Principios Clave del Chequeo de Tipos:**
+
+Para llevar a cabo una verificación de tipos efectiva, es esencial seguir estos principios:
+1.  **Comprobación Individual:** Verificar el tipo de cada variable, literal y subexpresión.
+2.  **Coherencia Declaración-Uso:** Relacionar la declaración formal de un procedimiento (su firma) con los tipos de los argumentos pasados en su evaluación.
+3.  **Verificación Interna:** Revisar, dentro de los procedimientos, que las variables y expresiones locales cumplen con los tipos esperados. Esto incluye asegurar que las condiciones de control (como en un `if`) son booleanas y que las ramas de control mantienen la consistencia de tipos.
+
+**8. Introducción a la Inferencia de Tipos:**
+
+El siguiente concepto es la inferencia de tipos. A diferencia del chequeo de tipos (donde los tipos son conocidos y verificados), la inferencia busca *estimar* o deducir los tipos de las expresiones y variables cuando no están explícitamente declarados. Esto se logra modificando el interpretador para que, basándose en un conjunto de reglas predefinidas y el contexto de uso, pueda determinar los tipos faltantes.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=yKNOAasafJI
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

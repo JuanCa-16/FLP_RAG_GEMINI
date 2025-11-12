@@ -1,0 +1,69 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Implementación de Referencias y Asignación
+
+En esta sesión, realizaremos modificaciones a las funciones `applyM` y `applyM-ref` para incorporar el manejo de referencias, lo cual es fundamental para la asignación de valores en nuestro interpretador.
+
+#### Modificación de `applyM` y `applyM-ref`
+
+1.  **Concepto de Referencias:**
+    *   Las referencias permiten que los cambios de estado (asignaciones) sean visibles y gestionados durante la ejecución del programa.
+    *   A diferencia de un valor directo, una referencia se construye cada vez que es consultada, asegurando que siempre apunte al estado más reciente.
+
+2.  **Definición de `applyM-ref`:**
+    *   La función `applyM-ref` se encargará de retornar una *referencia* a una variable dentro del ambiente.
+    *   Su comportamiento para ambientes vacíos o extendidos será similar a la búsqueda de variables previa, pero con un cambio crucial.
+
+3.  **Definición de `applyM`:**
+    *   La función original `applyM` ahora se redefinirá para ser un "deref" (desreferenciación) de lo que retorna `applyM-ref`.
+    *   Es decir, `(applyM ambiente variable)` ejecutará `(deref (applyM-ref ambiente variable))`.
+
+4.  **Detalles de Implementación de `applyM-ref`:**
+    *   **Retorno:** Cuando `applyM-ref` encuentra la variable, debe construir y devolver una referencia (`a-ref`). Esta referencia se compone del vector que contiene el valor y la posición de la variable dentro de ese vector.
+    *   **Estructura del Ambiente:** La estructura interna del ambiente cambia de una lista (`eleval`) a un `vector` para facilitar el acceso posicional y la mutabilidad.
+    *   **Recorrido del Ambiente:** En lugar de usar `CDR` para la recursión en ambientes extendidos, se introduce un parámetro `posición`. Esta `posición` se inicializa en `0` y se incrementa en cada llamada recursiva para localizar la variable en el vector.
+
+#### Inclusión de Asignación (`set`) y Bloques Secuenciales (`begin`)
+
+Una vez modificadas las funciones de ambiente, se procede a implementar las expresiones `set` y `begin`.
+
+1.  **`set` (Asignación):**
+    *   La expresión `set` permite asignar un nuevo valor a una variable existente.
+    *   Su implementación utiliza `set-ref`, una función que recibe una referencia y un valor.
+    *   El proceso es el siguiente:
+        *   Obtener la referencia de la variable (`id`) utilizando `applyM-ref` en el ambiente actual.
+        *   Evaluar la expresión de valor (`expr`) en el ambiente actual.
+        *   Aplicar `set-ref` con la referencia obtenida y el valor evaluado.
+        *   Convencionalmente, retorna `1` para indicar éxito.
+    *   La sintaxis esperada es `(set-expression identificador expresión)`.
+
+2.  **`begin` (Bloque Secuencial):**
+    *   La expresión `begin` permite ejecutar una secuencia de expresiones, devolviendo el valor de la última expresión.
+    *   Su implementación utiliza una función recursiva auxiliar, `evaluar-begin`, que procesa una lista de expresiones.
+    *   **`evaluar-begin` lógica:**
+        *   **Caso Base:** Si la lista de expresiones tiene un solo elemento (el `CDR` es nulo), se evalúa esa única expresión y se devuelve su resultado.
+        *   **Caso Recursivo:** Se evalúa la primera expresión de la lista. Luego, se realiza una llamada recursiva a `evaluar-begin` con el resto de la lista (el `CDR`).
+
+#### Pruebas y Verificación
+
+Se realizaron diversas pruebas para verificar la correcta implementación de las nuevas características:
+
+*   **`let` y `let-fun`:** Comprobación del funcionamiento de la creación de variables y funciones.
+*   **`begin` y `set`:**
+    *   Se demostró que `set` modifica el valor de una variable de forma permanente dentro del contexto de ejecución actual del interpretador. Por ejemplo, `(begin (set x 10) x)` devuelve `10`.
+    *   Se evidenció la mutabilidad al reasignar una variable global `x` dentro de una función definida con `let-fun`, confirmando que la función accede al valor actualizado.
+*   **`let-rec`:** Verificación del funcionamiento de funciones recursivas como el factorial.
+*   **Reasignación de Funciones:** Se demostró la capacidad de `set` para reasignar incluso una función a un valor numérico, mostrando la flexibilidad y potencia del sistema de referencias. Por ejemplo, una función `f` definida con `let-rec` puede ser reasignada a un número `6` con `(set f 6)`, y operaciones posteriores sobre `f` usarán este nuevo valor numérico.
+
+A partir de este punto, el interpretador cuenta con la capacidad de asignación, lo que permite manejar estados mutables y es un paso crucial en la construcción de un lenguaje más expresivo.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=-qYggrtY6bQ
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

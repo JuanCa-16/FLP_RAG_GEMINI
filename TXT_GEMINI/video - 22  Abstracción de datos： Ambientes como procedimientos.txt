@@ -1,0 +1,86 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Vamos a tratar los ambientes como procedimientos. La implementación incluirá constructores, métodos observadores y el área del programador.
+
+### Constructores
+
+Los constructores se implementan con funciones que reciben una `señal` para gestionar el acceso a sus componentes:
+
+*   **`var expression`**:
+    *   Recibe un `id`.
+    *   Si `señal` es `0`, retorna que es un `var expression`.
+    *   Si `señal` es `1`, retorna el `id`.
+    *   Cualquier otra `señal` es inválida.
+
+*   **`lambda expression`**:
+    *   Recibe un `id` y una `expresión` interna.
+    *   Si `señal` es `0`, retorna que es un `lambda expression`.
+    *   Si `señal` es `1`, retorna el `id`.
+    *   Si `señal` es `2`, retorna la `expresión` interna.
+    *   Cualquier otra `señal` es inválida.
+
+*   **`app expression`**:
+    *   Recibe `radar` y `rant`.
+    *   Si `señal` es `0`, retorna que es un `app expression`.
+    *   Si `señal` es `1`, retorna `radar`.
+    *   Si `señal` es `2`, retorna `rant`.
+    *   Cualquier otra `señal` es inválida.
+
+Las expresiones se implementan como procedimientos, donde las señales corresponden a los elementos de la expresión (e.g., `expresión(0)` para el tipo, `expresión(1)` para el ID, etc.).
+
+### Observadores
+
+Los observadores se dividen en predicados y extractores.
+
+#### Predicados
+
+*   **`var expression?`**:
+    *   Recibe una `expresión`.
+    *   Retorna verdadero si `expresión(0)` es `var expression`.
+
+*   **`lambda expression?`**:
+    *   Recibe una `expresión`.
+    *   Retorna verdadero si `expresión(0)` es `lambda expression`.
+
+*   **`app expression?`**:
+    *   Recibe una `expresión`.
+    *   Retorna verdadero si `expresión(0)` es `app expression`.
+
+#### Extractores
+
+*   **`var expression-id`**:
+    *   Recibe una `expresión`.
+    *   Retorna `expresión(1)` (el `id`).
+
+*   **`lambda expression-id`**:
+    *   Recibe una `expresión`.
+    *   Retorna `expresión(1)` (el `id`).
+
+*   **`lambda expression-expresion`**:
+    *   Recibe una `expresión`.
+    *   Retorna `expresión(2)` (la expresión interna).
+
+*   **`app expression-radar`**:
+    *   Recibe una `expresión`.
+    *   Retorna `expresión(1)` (el `radar`).
+
+*   **`app expression-rant`**:
+    *   Recibe una `expresión`.
+    *   Retorna `expresión(2)` (el `rant`).
+
+Este enfoque utiliza señales en los constructores para definir la estructura de los tipos de datos, y luego se emplean estas señales para trabajar los elementos como procedimientos a través de los observadores.
+
+### Conclusión
+
+Al aplicar los mismos ejemplos a esta implementación (como la función `occursfree`, que puede dar falso o verdadero), se verifica que el programador no percibe la diferencia entre la representación basada en listas y la basada en procedimientos. La clave radica en proporcionar una interfaz consistente con constructores, predicados y extractores. Esto permite construir funciones de manera independiente a la implementación subyacente.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=UykkUdFKMNg
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

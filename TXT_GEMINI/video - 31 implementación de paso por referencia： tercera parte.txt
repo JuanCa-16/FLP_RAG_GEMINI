@@ -1,0 +1,71 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Este documento detalla las modificaciones al intérprete para el manejo de *targets* (blancos), diferenciando entre *targets* directos e indirectos, y cómo esto afecta la creación y consulta de referencias, especialmente en la aplicación de procedimientos.
+
+### Infraestructura Existente y Necesidades Pendientes
+
+Previamente, se estableció la infraestructura para:
+*   **Crear *targets***: Mediante `define-data` y funciones observadoras.
+*   **Consultar referencias**: Con `deref`.
+*   **Cambiar referencias**: Con `set!`, considerando si es un *target* directo o indirecto.
+
+La tarea pendiente es implementar la **creación de *targets* directos** y la **correcta consideración de *targets* directos e indirectos** en el flujo del intérprete.
+
+### Modificaciones por Tipo de Expresión
+
+#### 1. `apply-primitive`
+
+*   **No se requiere ningún cambio.** Las primitivas no interactúan directamente con la mecánica de *targets* de esta manera.
+
+#### 2. `let`
+
+*   En el contexto de `let`, las variables siempre se asocian con **direct targets**.
+*   Por ejemplo, en `(let ((a 5) (b 8)) ...)`, tanto `a` como `b` son *direct targets*.
+*   La función `eval-let-brands` (o su equivalente) se encarga de realizar un mapeo para asignar a cada variable un *direct target* que contiene el valor expresado.
+
+#### 3. Aplicación de Procedimientos (`eval-ran`)
+
+Esta es la sección que requiere la mayor modificación para implementar el paso por referencia. Se introduce una nueva función, `eval-ran`, que reemplaza la evaluación directa de expresiones en el contexto de los argumentos de un procedimiento.
+
+**Definición de `eval-ran` (recibe una expresión `exp` y un ambiente `env`):**
+
+*   **Caso `var-expression` (la expresión es una variable `id`):**
+    *   Se genera un **indirect target**.
+    *   Se obtiene la referencia (`ref`) de la variable `id` en el ambiente actual.
+    *   **Lógica de manejo de `ref`:**
+        *   **Si `ref` es un `direct-target`:** Se retorna la referencia directa misma. Esto significa que si pasamos `(let ((a 8)) (f a))`, y `a` es un *direct target*, la función `f` recibirá la referencia a `a`.
+        *   **Si `ref` es un `indirect-target`:** Se retorna la referencia interna a la que apunta el *indirect target*. Esto es crucial para **evitar anidar *indirect targets* dentro de otros *indirect targets***. Si un procedimiento `f` recibe una variable `x` que es un *indirect target*, y luego `f` llama a otro procedimiento `g` pasando `x`, `g` recibirá directamente el *target* final al que apunta `x`, no una nueva indirección a `x`.
+*   **Para cualquier otro caso (la expresión no es una variable):**
+    *   Se crea un **direct target** que contiene el valor de la expresión evaluada en el ambiente. Esto maneja el paso de valores literales o expresiones que se resuelven a un valor.
+
+### Ejemplo y Verificación
+
+La implementación se verifica con un código de prueba que demuestra el paso por referencia:
+
+```scheme
+(let ((p (proc (x) (set! x 4)))) ; Define un procedimiento p que cambia su argumento a 4
+  (let ((a 3))                 ; Inicializa a con el valor 3
+    (begin
+      (p a)                    ; Llama a p, pasando 'a' por referencia
+      a)))                     ; Retorna el valor actual de 'a'
+```
+
+Si la implementación es correcta, `a` inicialmente valiendo 3, se modificará a 4 después de la llamada a `(p a)`, lo que confirma que `p` operó sobre la referencia de `a` y no sobre una copia de su valor.
+
+### Consideraciones Técnicas Durante la Implementación
+
+*   La función `eval-ran` se integra en la parte de aplicación de expresiones para manejar los argumentos de los procedimientos.
+*   Es importante asegurarse que las llamadas a funciones como `vector-ref` dentro de la implementación (`primitive deref ref`) tengan sus argumentos en el orden correcto (ej. `(vector-ref vector position)`).
+
+Con esta estructura, el intérprete es capaz de manejar correctamente el paso de argumentos por referencia, utilizando *targets* directos e indirectos según el contexto.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=NdSjy4I5B-8
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,81 @@
+A continuación se presentan ejemplos sobre la instanciación y el funcionamiento de objetos simples en un contexto de programación.
+
+---
+
+### 1. Instanciación y Ejecución en Objetos Simples
+
+**Caso 1: Objeto Único con un Método Simple**
+
+*   **Definición de Clase:** Se tiene una clase `S1` con campos `X` e `Y`.
+*   **Instanciación:** Se crea un objeto `O1` de la clase `S1`, inicializando sus campos `X=1` e `Y=2`.
+    *   **Representación de O1:** Un objeto de tipo `Object`, de clase `S1`, que contiene los campos `X=1` e `Y=2`.
+*   **Invocación de Método:** Se invoca el método `M1` en `O1` (ej. `O1.M1()`).
+*   **Ambiente de Ejecución:**
+    *   Se establece un ambiente de ejecución.
+    *   La representación del objeto `O1` incluye sus campos `X=1` e `Y=2`.
+    *   Para el método `M1`, `self` hace referencia a `O1`, y `super` hace referencia a la clase padre de `M1` (en este caso, la clase `S1` o una base común si aplica).
+*   **Resultado Esperado:** La invocación de `O1.M1()` devuelve 1.
+
+### 2. Clases con Herencia y Sobreescritura
+
+**Caso 2: Interacción entre Clases C1 y C2 con Métodos M1 y M2**
+
+*   **Clases Definidas:** `C1` y `C2` con métodos `M1` y `M2`.
+*   **Objetos:**
+    *   `O1` es de clase `C1`.
+    *   `O2` es de clase `C2`.
+*   **Representación de O1 (Clase C1):** Contiene campos `X=1` e `Y=2`.
+*   **Representación de O2 (Clase C2):**
+    *   Contiene campos `X` e `Y` heredados de `C1` (valores iniciales: 1, 2, asumiendo llamada al inicializador de `C1`).
+    *   Contiene campos `X` e `Y` propios de `C2` (valores iniciales: 9, 10).
+    *   **Nota Importante:** La correcta inicialización de los campos heredados es crucial; de no ser así, sus valores podrían ser 0, 0.
+*   **Ejecución de `O2.M2()`:**
+    *   Dado que `M2` no se encuentra en `C2`, su ejecución se resuelve en la clase `C1`.
+    *   **Función `FindRefinePosition`:** Esta función, al ejecutarse en `C1`, accede únicamente a las partes del vector de estado del objeto `O2` que corresponden a `C1` (es decir, `X=1`, `Y=2`).
+    *   **Contexto del Método M2:**
+        *   `super` se refiere a la clase padre (`C1`).
+        *   `self` se refiere a `O2`.
+    *   **Llamada Anidada:** Dentro de `M2`, se invoca `self.M1()` (equivalente a `O2.M1()`).
+    *   **Nuevo Ambiente:** Esta llamada genera un nuevo ambiente de ejecución.
+    *   **Estado Combinado:** El estado del objeto para esta ejecución combina los campos de `C2` y `C1`. El orden de inserción (`C2` y luego `C1`) asegura que al buscar `X` o `Y`, se encuentren primero los valores de `C2` si hay sobreescritura.
+    *   **Retorno de X:** `O2.M1()` devuelve 9 (valor de `X` en `C2`).
+    *   **Comparativa:** En contraste, `O1.M1()` devolvería 1 (valor de `X` en `C1`).
+*   **Resultado Esperado:** La invocación de `O2.M2()` devuelve 9.
+
+### 3. Modificación de Estado y Recuperación
+
+**Caso 3: Instanciación, Lectura y Modificación del Estado**
+
+*   **Clase y Objeto:** Se instancia un objeto `O1` de una clase `C1` con campos `I` y `J`.
+*   **Instanciación Inicial:** `O1` se inicializa con `I=3` y `J=-3`.
+*   **Ejecución 1: `O1.getState()`**
+    *   El ambiente contiene la representación de `O1` (`I=3`, `J=-3`).
+    *   `super` es la clase padre (ej. `Object`), `self` es `O1`.
+    *   Devuelve una lista `[3, -3]`, que se almacena en la variable `T1`.
+*   **Ejecución 2: `O1.countUp(2)`**
+    *   El ambiente contiene la representación actual de `O1` (`I=3`, `J=-3`).
+    *   Contexto del método: `super` (clase padre), `self` (`O1`), y el parámetro `d=2`.
+    *   Operación: `I = I + d` y `J = J - d`.
+    *   Nuevo estado de `O1`: `I = 3+2=5`, `J = -3-2=-5`. (Los campos `I` y `J` están conectados y se actualizan en conjunto).
+*   **Ejecución 3: `O1.getState()`**
+    *   El ambiente contiene la representación actualizada de `O1` (`I=5`, `J=-5`).
+    *   `super` es la clase padre, `self` es `O1`.
+    *   Devuelve una lista `[5, -5]`.
+*   **Resultado Final (Implicado):** Una lista que combina los estados obtenidos: `[[3, -3], [5, -5]]`.
+
+### Principio Clave para `getState`
+
+Para operaciones como `getState`, el ambiente de ejecución debe proporcionar acceso a los miembros de la clase en el nivel de herencia más cercano y relevante en el contexto de la llamada.
+
+---
+
+Este material es una introducción a la instanciación de objetos y la gestión de su estado en diferentes escenarios. Se recomienda realizar ejercicios prácticos para consolidar la comprensión de estos conceptos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=nL5i_K0OV_4
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

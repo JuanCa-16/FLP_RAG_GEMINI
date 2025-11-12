@@ -1,0 +1,53 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se presenta la implementación de los cambios en el manejador de referencias.
+
+### Modificación de `de-ref`
+
+La función `de-ref` se encarga de obtener el valor de una referencia. Las variables se representan como "blancos" (targets).
+*   Si el blanco es **directo**, se retorna su valor directamente.
+*   Si el blanco es **indirecto** (corresponde a una referencia a otra referencia), se busca el valor de la referencia interna.
+
+**Detalles de la implementación de `de-ref`:**
+1.  `de-ref` recibe una `referencia`.
+2.  Si la `referencia` es un `direct target`, devuelve el valor interno.
+3.  Si la `referencia` es un `indirect target`:
+    *   Contiene una `referencia interna` (`ref1`).
+    *   Se aplica `primitive-de-ref` a `ref1` para obtener su representación.
+    *   Si la representación de `ref1` es un `direct target`, se devuelve su valor expresado.
+    *   Si la representación de `ref1` es un `indirect target`, se genera un error. Esto ocurre porque se ha encontrado una referencia indirecta anidada dentro de otra, lo cual no está permitido más allá de un nivel. La referencia no es válida.
+
+### Modificación de `set-ref`
+
+El procedimiento `set-ref` modifica el valor de una referencia y debe considerar los distintos tipos de blancos.
+
+**Detalles de la implementación de `set-ref`:**
+1.  `set-ref` recibe una `referencia` y un `nuevo valor`.
+2.  Se determina qué referencia modificar:
+    *   Se aplica `primitive-de-ref` a la `referencia` de entrada para obtener su `target`.
+    *   Si el `target` es un `direct target`, se modifica la `referencia` de entrada misma.
+    *   Si el `target` es un `indirect target`, este contiene una `referencia interna` (`ref2`). En este caso, lo que se modifica es `ref2` (la variable a la que apunta la referencia indirecta).
+3.  El `nuevo valor` se almacena siempre como un `direct target`.
+4.  Finalmente, se invoca `primitive-set-ref` con la referencia determinada (la original o la interna) y el `nuevo valor`.
+
+De esta manera, si se intenta modificar una variable que es un `indirect target`, la modificación se desvía a la variable a la que ya está apuntando.
+
+### Resumen y Próximos Pasos
+
+Se han modificado las funciones `de-ref` y `set-ref` para manejar adecuadamente las referencias, incluyendo los casos de `direct target` e `indirect target`.
+
+*   `de-ref` consulta el target al que apunta una referencia, resolviendo un nivel de indirección si es necesario.
+*   `set-ref` modifica la referencia directamente si el target es directo, o modifica la referencia interna si el target es indirecto, redirigiendo la asignación a la variable apuntada.
+
+A continuación, será necesario modificar otras partes del código, como la evaluación de expresiones y procedimientos, para integrar correctamente estas nuevas funcionalidades de manejo de referencias.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=WtgIKHO4FcM
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

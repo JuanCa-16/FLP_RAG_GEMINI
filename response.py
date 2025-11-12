@@ -29,14 +29,15 @@ docs_df = pd.read_json(ruta_embeddings, lines=True)
 #consulta = "Que es una operacion declarativa?"
 #consulta = "Que es un ambiente?"
 #consulta = "Diferencias entre ligadura y asignacion"
-consulta = "Que es un dato? "
+consulta = "En que consiste un objeto"
+#consulta = "Como se clasifican los lenguajes"
 
 
 print(f"📘 Consulta del usuario: {consulta}\n")
 
 # 3. Función para buscar el documento más relevante para una consulta
-def encontrar_documento_relevante(consulta, dataframe, modelo):
-    """Encuentra el documento más relevante para la consulta dada."""
+def encontrar_documento_relevante(consulta, dataframe, modelo, top_n=3):
+    """Encuentra los top N documentos más relevantes para la consulta dada."""
 
     # Generamos el embedding para la consulta con RETRIEVAL_QUERY
     embedding_consulta = client.models.embed_content(
@@ -50,38 +51,53 @@ def encontrar_documento_relevante(consulta, dataframe, modelo):
     embedding_values_np = np.array(embedding_reducido.values)
     normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
     
-
     # Calculamos la similitud del coseno entre la consulta y todos los documentos
     similitudes = []
     for doc_embedding in dataframe.embeddings:
         # Similitud del coseno entre dos vectores
+        # Nota: Asume que los embeddings del dataframe ya están normalizados o los normaliza aquí si es necesario
         similitud = np.dot(doc_embedding, normed_embedding)
         similitudes.append(similitud)
 
-    # Encontramos el índice del documento con mayor similitud
-    indice_mejor = np.argmax(similitudes)
+    # Convertimos a array de numpy para encontrar los top N
+    similitudes_np = np.array(similitudes)
+    # argsort() da los índices en orden ascendente, [::-1] invierte (descendente), [:top_n] toma los N primeros
+    indices_top_n = np.argsort(similitudes_np)[::-1][:top_n]
 
-    # Retornamos información sobre el mejor resultado
+    # Preparamos la lista de resultados
+    resultados = []
+    for indice in indices_top_n:
+        resultados.append({
+            "documento": dataframe.iloc[indice]["contenido"],
+            "titulo": dataframe.iloc[indice]["titulo"],
+            "similitud": similitudes_np[indice]
+        })
+
+    # Retornamos la lista de resultados
     return {
-        "documento": dataframe.iloc[indice_mejor]["contenido"],
-        "titulo": dataframe.iloc[indice_mejor]["titulo"],
-        "similitud": similitudes[indice_mejor],
+        "top_documentos": resultados,
         "todos_scores": dict(zip(dataframe.titulo, similitudes))
     }
+
 
 def generar_respuesta(consulta, contexto):
     """Genera una respuesta usando el modelo generativo y el contexto recuperado."""
 
     prompt = f"""
-    Tu rol: Eres un asistente AI especializado en explicar y recomendar temas de programación y fundamentos de lenguajes a estudiantes universitarios.
+    Tu rol: Eres un asistente AI, con personalidad de profesor universitario experto en **Fundamentos de interpretacion y compilacion de lenguajes de programacion**. Tu misión es educar y profundizar temas técnicos.
 
-    Tu tarea: Utiliza el CONTEXTO proporcionado para responder a la PREGUNTA del usuario.
+    Tu tarea: Analizar exhaustivamente el **CONTEXTO** proporcionado (fragmentos de documentos) para responder a la **PREGUNTA** del usuario.
 
-    Pautas para tu respuesta:
-    - Sé claro y simple: Explica cualquier idea complicada en términos fáciles de entender, sin perder lo tecnico y no tan extenso.
-    - Sé amigable: Escribe en un tono explicativo como profesor universitario.
-    - Sé completo: Construye una respuesta detallada utilizando toda la información relevante del contexto.
-    - Céntrate en el tema: Si el contexto no contiene la respuesta, indica que la información no está disponible.
+    Pautas INELUDIBLES para tu respuesta:
+
+    ### I. Estructura y Estilo (Profesor Universitario)
+    1.  **Tono y Claridad:** Mantén un tono **profesoral, formal y amigable**. Usa un lenguaje preciso, pero descompón las ideas complejas  en términos sencillos y accesibles para un estudiante que busca claridad.
+    2.  **Concisión Técnica:** La explicación debe ser **completa y detallada**, pero **nunca redundante**. Evita la extensión innecesaria; ve directo al concepto técnico.
+    3.  **Introducción:** Comienza con una breve introducción que valide la importancia del tema para la Ingeniería o Ciencias de la Computación.
+
+    ### II. Uso del Contexto (Prioridad Máxima)
+    1.  **Fidelidad al Contexto:** Utiliza **exclusivamente** la información contenida en el CONTEXTO. No inventes, ni busques, ni uses conocimiento externo.
+    2.  **Gestión de Información Faltante:** Si la PREGUNTA no puede ser respondida completamente o en absoluto con el CONTEXTO, debes indicarlo claramente con una frase profesional como: "La información específica sobre [TEMA FALTANTE] no se encuentra en los documentos proporcionados."
 
     PREGUNTA: {consulta}
 
@@ -97,44 +113,60 @@ def generar_respuesta(consulta, contexto):
     return respuesta.text
 
 
-resultado = encontrar_documento_relevante(consulta, docs_df, MODEL_ID)
+resultado = encontrar_documento_relevante(consulta, docs_df, MODEL_ID,top_n=1)
 
-# Mostramos los resultados
+# 1. Concatenar el contexto de los documentos más relevantes
+contexto_combinado = "\n\n--- FUENTE ADICIONAL ---\n\n".join([
+    f"Fuente: {doc['titulo']}\nContenido: {doc['documento']}" 
+    for doc in resultado['top_documentos']
+])
+
+# 2. Mostramos los resultados de la búsqueda
 print(f"Consulta: {consulta}\n")
-print(f"Documento más relevante: {resultado['titulo']}")
-print(f"concepto: {resultado['documento']}")
-print(f"Puntuación de similitud: {resultado['similitud']:.4f}\n")
+print("🔍 Documentos más relevantes (Top 3):")
+for i, doc in enumerate(resultado['top_documentos']):
+    # **CAMBIO CLAVE AQUÍ**
+    # Creamos un snippet de 250 caracteres del contenido para la impresión en consola
+    snippet_contenido = doc['documento'][:250].replace('\n', ' ')
+    if len(doc['documento']) > 250:
+        snippet_contenido += "..."
+        
+    print(f"  {i+1}. Título: {doc['titulo']} (Similitud: {doc['similitud']:.4f})")
+    print(f"     Snippet: {snippet_contenido}")
+
+
+print("\n--- Contexto Combinado Enviado al Modelo ---")
+print(contexto_combinado[:500] + "...") # Imprimimos solo los primeros 500 caracteres del contexto
+print("-------------------------------------------\n")
+
 
 respuesta_final = None
 max_retries = 5
 retry_count = 0
 
+
 while respuesta_final is None and retry_count < max_retries:
     try:
-        print(f"🚀 Intentando generar respuesta... (Intento {retry_count + 1}/{max_retries})")
+        print(f"🚀 Intentando generar respuesta con contexto combinado... (Intento {retry_count + 1}/{max_retries})")
         # Aquí se llama a la función que puede fallar con 503
-        respuesta_final = generar_respuesta(consulta, resultado["documento"])
+        respuesta_final = generar_respuesta(consulta, contexto_combinado)
         print("\n🧠 Respuesta generada:")
         print(respuesta_final)
-
+        
     except ServerError as e:
-        # Capturamos específicamente el error del servidor (como el 503)
         if '503 UNAVAILABLE' in str(e):
             retry_count += 1
             if retry_count < max_retries:
-                # El backoff exponencial (2, 4, 8, 16, 32 segundos de espera)
+                # Backoff exponencial
                 wait_time = 2**retry_count 
                 print(f"\n⚠️ ERROR 503 UNAVAILABLE. Reintentando en {wait_time} segundos... (Intento {retry_count + 1}/{max_retries})")
                 time.sleep(wait_time) 
             else:
-                 print("\n❌ Se agotó el número máximo de reintentos. No se pudo obtener una respuesta (Error 503).")
-
+                print("\n❌ Se agotó el número máximo de reintentos. No se pudo obtener una respuesta (Error 503).")
         else:
-            # Si es otro ServerError, mostramos el error y terminamos el bucle
             print(f"\n❌ Se produjo otro error de servidor: {e}")
             break
-
+            
     except Exception as e:
-        # Capturamos cualquier otro error inesperado
         print(f"\n❌ Se produjo un error inesperado: {e}")
         break

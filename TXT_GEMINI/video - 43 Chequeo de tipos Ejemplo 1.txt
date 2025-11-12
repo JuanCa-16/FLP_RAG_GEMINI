@@ -1,0 +1,37 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+**Análisis de Ejemplos de Chequeo de Tipos**
+
+**Ejemplo 1: Función `zoom`**
+Para determinar el tipo de salida de una función `zoom`, se debe identificar que `zoom` recibe un `boolean`, un `entero` y otro `entero` como argumentos. Hay que determinar su tipo de retorno.
+
+Las verificaciones necesarias son:
+1.  `b` es un `boolean`.
+2.  La salida de la rama 'then' es igual a la salida de la rama 'else', y ambas son de tipo `entero`.
+3.  Esto es coherente, ya que las variables `m` y `n` son `enteros`, y el resultado esperado de la expresión debe ser `entero`.
+
+Es fundamental verificar que los argumentos proporcionados (`boolean`, `entero`, `entero`) coincidan con los tipos esperados por la función. Este código pasa el chequeo de tipos. La ejecución en el intérprete confirma que el resultado es `7`, un `entero`.
+
+**Ejemplo 2: Expresión `let` con función `fat`**
+Analicemos un segundo ejemplo utilizando `let`. En esta expresión, se define la función `fat` de tipo `entero -> entero`. Dentro de su cuerpo:
+*   La expresión `x > 0` es válida porque el operador `>` espera dos `enteros` y `x` es un `entero`.
+*   El operador de multiplicación (`*`) también opera con `enteros`.
+*   La llamada a `fat(5)` produce un `entero`.
+
+El resultado de la resolución de esta expresión es un `entero`, como se confirma en el intérprete con el valor `120`.
+
+**Consideraciones Generales para el Chequeo de Tipos**
+Al realizar el chequeo de tipos, es crucial verificar cada llamada a función y cada relación entre variables para asegurar la correspondencia de tipos. Esto es especialmente importante en el manejo de procedimientos y procedimientos recursivos.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=a58oyy--My8
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

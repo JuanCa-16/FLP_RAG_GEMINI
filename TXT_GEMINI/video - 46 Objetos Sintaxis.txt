@@ -1,0 +1,247 @@
+Aquí tienes la transcripción de clase limpia y formateada:
+
+---
+
+### Modificación de la Gramática para Clases y Objetos
+
+Para extender nuestra gramática, primero se introduce la **declaración de clases** antes de cualquier expresión. Una declaración de clases puede incluir una o más definiciones de clases, permitiendo múltiples clases en el interpretador. Posteriormente, se permite una expresión.
+
+#### Estructura de una Clase
+
+Una clase se define con:
+*   Un **identificador** para el nombre de la clase.
+*   La palabra clave `extends`, seguida de un identificador, para especificar la **herencia** de otra clase.
+*   `field` seguido de un identificador (con cerradura, indicando cero o más campos) para declarar los **campos** o atributos de la clase.
+*   **Declaraciones de métodos**.
+
+#### Estructura de un Método
+
+La declaración de un método incluye:
+*   Un **identificador** (nombre del método).
+*   Una serie de **identificadores** para los parámetros de entrada, separados por comas.
+*   Una **expresión** que define el comportamiento del método.
+
+### Manejo de Objetos
+
+Para trabajar con objetos, se deben agregar nuevas reglas de producción a las expresiones, que permitan:
+1.  **Crear objetos**.
+2.  **Invocar métodos de objetos**.
+3.  Realizar **`super` llamadas** (invocar un método de la clase padre).
+
+Las expresiones clave para esto son:
+*   `new` Identificador `(` lista de expresiones `)`: **Creación de objetos**. El Identificador es el nombre de la clase y la lista de expresiones son los argumentos para el constructor.
+*   `send` Expresión (objeto) Identificador (nombre del método) `(` lista de expresiones `)`: **Invocación de un método** sobre un objeto específico.
+*   `super` Identificador (nombre del método) `(` lista de expresiones `)`: **Llamada a un método de la clase padre** desde una clase hija.
+
+### Valores Denotados y Expresados
+
+Los **valores denotados** son aquellos almacenados en las variables en memoria. Los **valores expresados** que podemos manejar incluyen: números, `PROCVAL`, objetos y listas de valores expresados.
+
+### Ejemplos de Objetos y Semántica
+
+**Ejemplo 1: Clase `C1`**
+
+Consideremos la declaración de una clase `C1` que extiende `Object`. La palabra clave `Object` indica que `C1` no tiene una clase padre explícita. (La palabra `Stance` en el texto original se mantiene por limitaciones de la librería).
+
+```
+class C1 extends Object {
+    field I;
+    field J;
+    method Initialize(val) {
+        // Asume que asigna I = val, J = -val
+        I = val;
+        J = -val;
+    }
+    method App(delta) {
+        // Asume que suma delta a I y resta delta a J
+        I = I + delta;
+        J = J - delta;
+    }
+    method GetState() {
+        return List(I, J); // Retorna una lista con los valores actuales de I y J
+    }
+}
+```
+
+*   Cada objeto de `C1` contendrá dos campos (`I`, `J`) y tres métodos (`Initialize`, `App`, `GetState`).
+*   El método `Initialize` actúa como el **constructor** por defecto y se ejecuta automáticamente al crear un objeto.
+
+**Uso de `C1`:**
+
+*   `o1 = new C1(3)`: Se crea un objeto `o1` de la clase `C1`. El valor `3` se pasa al método `Initialize`, resultando en `o1.I = 3` y `o1.J = -3`.
+*   `send o1 GetState()`: Invoca `GetState` sobre `o1`, retornando la lista `[3, -3]`.
+*   `send o1 App(2)`: Invoca `App` sobre `o1` con argumento `2`. Esto actualiza `o1.I` a `3 + 2 = 5` y `o1.J` a `-3 - 2 = -5`.
+*   `send o1 GetState()`: Ahora retornaría `[5, -5]`.
+
+### Polimorfismo y Despacho Dinámico de Métodos
+
+**Ejemplo 2: Árboles con Nodos Interiores y Nodos Hoja**
+
+Consideremos dos clases para construir un árbol:
+
+```
+class InteriorNode {
+    field left;
+    field right;
+    method Initialize(l_node, r_node) {
+        left = l_node;
+        right = r_node;
+    }
+    method sum() {
+        return (send left sum()) + (send right sum()); // Llama recursivamente a sum en los hijos
+    }
+}
+
+class LeafNode {
+    field value;
+    method Initialize(val) {
+        value = val;
+    }
+    method sum() {
+        return value; // Devuelve directamente el valor de la hoja
+    }
+}
+```
+
+**Uso y Observación:**
+
+*   `o1 = new InteriorNode(new LeafNode(3), new LeafNode(4))`: Se crea un árbol donde `o1` es un nodo interior con dos hojas.
+*   `send o1 sum()`: Para encontrar la suma de las hojas, se invoca el método `sum()`.
+    *   Cuando `sum()` se invoca sobre un `InteriorNode`, este llama `sum()` a sus hijos `left` y `right`.
+    *   Cuando `sum()` se invoca sobre un `LeafNode`, este devuelve directamente su `value`.
+
+Aquí observamos **polimorfismo**: ambas clases (`InteriorNode` y `LeafNode`) tienen un método `sum()`, pero su comportamiento es diferente. Este comportamiento variable, determinado por el tipo real del objeto en tiempo de ejecución, se logra mediante **despacho dinámico de métodos**. El sistema selecciona automáticamente la implementación correcta de `sum()` (la de `InteriorNode` o `LeafNode`) según el tipo de objeto, sin que el invocador necesite saberlo explícitamente. En el ejemplo, `send o1 sum()` retornaría `3 + 4 = 7`.
+
+### La palabra clave `self`
+
+Para invocar métodos dentro del mismo objeto, se utiliza la palabra clave `self`. Es análogo a `this` en Java o `self` en Python, refiriéndose a la instancia del objeto actual.
+
+**Ejemplo 3: Clase `OddEven`**
+
+```
+class OddEven extends Object {
+    Initialize() { /* no operation */ }
+    even(n) {
+        if (n == 0) return 1; // Base case
+        else return send self odd(n - 1); // Llama a 'odd' en el mismo objeto
+    }
+    odd(n) {
+        if (n == 0) return 0; // Base case
+        else return send self even(n - 1); // Llama a 'even' en el mismo objeto
+    }
+}
+```
+
+*   Si `o1 = new OddEven()`, al ejecutar `send o1 even(n)`, las llamadas internas `send self odd(n-1)` y `send self even(n-1)` siempre se refieren al objeto `o1`.
+*   `self` es muy útil en conjunción con el polimorfismo, ya que el despacho dinámico se aplica incluso a llamadas internas realizadas a través de `self`.
+
+### Herencia y Ocultamiento de Campos/Métodos
+
+La herencia permite definir clases a partir de clases existentes. La clase `Object` es una clase base vacía; una clase que extiende `Object` no tiene una clase padre explícita.
+
+**Ejemplo 4: Clases `C1` y `C2` con herencia**
+
+Supongamos las siguientes clases:
+
+```
+class C1 extends Object {
+    field x;
+    field y1;
+    method setX(v) { x = v; }
+    method getX() { return x; }
+    method setY1(v) { y1 = v; }
+    method getY1() { return y1; }
+}
+
+class C2 extends C1 { // C2 hereda de C1
+    field y2; // C2 tiene su propio campo y2
+    method setY2(v) { y2 = v; }
+    method getY2() { return y2; }
+    // Asumimos que C2 no redefine setX ni getX, por lo que los hereda directamente de C1.
+    // Asumimos que C2 no redefine setY1 ni getY1.
+}
+```
+
+**Comportamiento con `o2 = new C2()`:**
+
+*   `send o2 setX(101)`: El método `setX` no está en `C2`, por lo que se busca y ejecuta en `C1`. El campo `x` (heredado de `C1`) de `o2` se establece en `101`.
+*   `send o2 setY1(102)`: El método `setY1` no está en `C2`, se busca y ejecuta en `C1`. El campo `y1` (heredado de `C1`) de `o2` se establece en `102`.
+*   `send o2 setY2(999)`: El método `setY2` está definido directamente en `C2`. El campo `y2` de `o2` se establece en `999`.
+
+**Acceso a valores:**
+
+*   `send o2 getX()`: Retorna `101`.
+*   `send o2 getY1()`: Retorna `102`.
+*   `send o2 getY2()`: Retorna `999`.
+
+Esto demuestra cómo la búsqueda de métodos y el acceso a campos se resuelven a través de la cadena de herencia, priorizando la implementación en la clase más específica. Si una subclase define un campo o método con el mismo nombre que uno de su superclase, se produce un **ocultamiento** (shadowing), donde la versión de la subclase es la que se utiliza para las instancias de esa subclase.
+
+### Uso de `self` con Polimorfismo en Herencia
+
+Consideremos clases `C1` y `C2` (donde `C2` podría extender `C1`):
+
+```
+class C1 {
+    m1() { return 1; }
+    m2() { return 100; }
+    m3() { return send self m2(); } // Llama a m2 en la instancia actual
+}
+class C2 { // Puede extender C1 o una base común
+    m1() { return 1; } // Puede ser heredado o redefinido
+    m2() { return 2; } // C2 sobreescribe m2
+    m3() { return send self m2(); } // Llama a m2 en la instancia actual
+}
+```
+
+*   `o1 = new C1()` y `o2 = new C2()`
+*   `send o1 m3()`: `self` se refiere a `o1` (de clase `C1`). Se invoca `C1.m2()`, retornando `100`.
+*   `send o2 m3()`: `self` se refiere a `o2` (de clase `C2`). Se invoca `C2.m2()`, retornando `2`.
+
+Aquí, el comportamiento de `m3` cambia dependiendo de si se invoca sobre un objeto de `C1` o `C2`. A pesar de que la llamada `send self m2()` es idéntica en ambas clases, el despacho dinámico de métodos asegura que se ejecute la implementación correcta de `m2` (la de `C1` o la de `C2`) según el tipo del objeto `self`.
+
+### Llamadas a `super` para Inicialización
+
+La palabra clave `super` se utiliza para invocar un método de la clase padre. Esto es crucial para la inicialización correcta de objetos en una jerarquía de herencia.
+
+**Ejemplo 5: Clases `Point` y `ColoredPoint`**
+
+```
+class Point extends Object {
+    field x;
+    field y;
+    method Initialize(x_val, y_val) {
+        x = x_val;
+        y = y_val;
+    }
+}
+
+class ColoredPoint extends Point { // ColoredPoint hereda de Point
+    field color;
+    method Initialize(x_val, y_val, color_val) {
+        super Initialize(x_val, y_val); // Llama al constructor de la clase padre (Point)
+        color = color_val; // Inicializa el campo propio de ColoredPoint
+    }
+}
+```
+
+**Comportamiento con `o1 = new ColoredPoint(5, 4, 'red')`:**
+
+1.  Se invoca el `Initialize` de `ColoredPoint` con `(5, 4, 'red')`.
+2.  Dentro de este, la línea `super Initialize(5, 4)` ejecuta el `Initialize` de la clase `Point`. Esto establece los campos `x=5` e `y=4` en el objeto `o1`.
+3.  Luego, el `Initialize` de `ColoredPoint` continúa y establece el campo `color='red'` en `o1`.
+
+**Importancia de `super Initialize`:**
+*   Permite la inicialización correcta de los campos heredados.
+*   Si no se llama explícitamente a `super Initialize`, los campos heredados se inicializarán con sus valores por defecto (generalmente `0` o `null`).
+*   Esto facilita las inicializaciones en cadena en jerarquías profundas (ej., `C3.Initialize` llama a `C2.Initialize`, que llama a `C1.Initialize`).
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=PFEp6jFmshw
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

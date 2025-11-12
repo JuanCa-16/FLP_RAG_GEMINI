@@ -1,0 +1,55 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Se aborda la implementación de las ligaduras locales. Estas permiten crear nuevas variables (identificadores) y modificar sus valores, en contraste con un ambiente inicial fijo.
+
+La gramática para las ligaduras locales se agregará a la especificación del lenguaje. La sintaxis de una `let expression` es:
+`let identificador = expresión in expresión`
+Esto permite declaraciones como `x = 1`, `y = 2`, etc., seguidas de una expresión en la que estas variables están disponibles.
+
+Para integrar esta funcionalidad, se modificará la función `evaluar_expresión`. Se añadirá un caso para `let expression` después de los condicionales existentes. Una `let expression` se descompone en:
+*   `IDs`: los identificadores de las variables.
+*   `runs`: las expresiones que definen los valores de esas variables.
+*   `body`: la expresión final que utiliza las variables declaradas.
+
+**Funcionamiento Conceptual de las Ligaduras Locales**
+Es fundamental comprender el concepto de ambiente en este contexto. Un ambiente inicial comienza vacío. Una `let expression` se divide en dos partes conceptuales: las declaraciones y la expresión que sigue a `in`.
+
+1.  **Evaluación de Declaraciones:** Las declaraciones (`identificador = expresión`) se evalúan en el ambiente *anterior* (el ambiente donde se encuentra la `let expression`).
+2.  **Evaluación del Cuerpo:** La expresión que sigue a `in` (el `body`) se evalúa en un *nuevo ambiente* que es una extensión del ambiente anterior, incluyendo las variables y valores definidos en las declaraciones.
+
+**Ejemplo:**
+Consideremos un ambiente inicial con `y` igual a `2`.
+*   Si se encuentra la declaración `x = (- y 1)`, el valor de `y` (2) se toma del ambiente anterior. `x` se evalúa a `1`.
+*   Se crea un `Ambiente 1` donde `x` tiene el valor `1`.
+*   Luego, si se encuentra la declaración `x = (+ x 2)`, el `x` de la derecha se toma del `Ambiente 1` (donde `x` vale 1). `x` se evalúa a `3`.
+*   Se crea un `Ambiente 2` donde `x` tiene el valor `3`.
+*   Finalmente, si la expresión a evaluar es `(add1 x)`, el `x` se toma del `Ambiente 2` (donde `x` vale 3). El resultado final es `4`.
+
+**Proceso de Implementación**
+1.  Los `IDs` (identificadores) se utilizan directamente.
+2.  Se crea una lista de valores evaluados (`eval_values`) aplicando la función `evaluar_expresión` a cada elemento de la lista `runs` dentro del ambiente actual. Esto convierte las expresiones en valores concretos (números, booleanos, etc.).
+3.  Finalmente, se evalúa el `body` de la `let expression` en un *ambiente extendido*. Este nuevo ambiente se forma combinando los `IDs` con sus correspondientes `eval_values`, y se extiende a partir del ambiente previo.
+
+**Verificación de la Implementación**
+Para verificar la implementación, se prueba el siguiente código, ajustando el ambiente inicial a `x=4, y=2, z=5` para este ejemplo específico:
+
+```
+let x = (- y 1)
+in
+  let x = (+ x 2)
+  in
+    (add1 x)
+```
+
+Al ejecutar este código, el resultado obtenido es `4`, lo cual confirma la correcta implementación de las ligaduras locales. Es crucial entender la gestión de ambientes para el análisis avanzado del curso, y se recomienda estudiar los diagramas de ambientes para una comprensión más profunda.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=YcFm8jqUHYA
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

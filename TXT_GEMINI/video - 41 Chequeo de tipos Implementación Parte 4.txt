@@ -1,0 +1,54 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Implementación y Verificación de Tipos
+
+#### Expresiones `let`
+
+Para las expresiones `let`, el proceso de tipado implica evaluar los tipos de cada una de las expresiones en las declaraciones (por ejemplo, `x = 1`, `y = 2`). El tipo resultante de una expresión `let` es la evaluación del tipo de su cuerpo.
+
+Se implementa un procedimiento llamado `type-of-let-expression`. Este procedimiento identifica los tipos de las expresiones en las declaraciones `let` y extiende el ambiente de tipos con las variables `let` y los tipos encontrados. Posteriormente, `type-expression` determina el tipo de la expresión correspondiente al cuerpo del `let` dentro de este ambiente de tipos extendido.
+
+La función `type-of-let-expression` recibe:
+*   `ids`: las variables.
+*   `runs`: las expresiones cuyos valores se asignarán a esas variables.
+*   `body`: la expresión principal del `let`.
+*   `env`: el ambiente de tipos actual.
+
+Esta función construye un ambiente extendido asociando los `ids` con los tipos derivados de `runs` dentro del ambiente actual, y luego determina el tipo del `body` en este nuevo ambiente extendido usando `type-expression`.
+
+La función `type-expression` debe ser modificada para incluir una invocación a `type-of-let-expression` cuando se encuentre una expresión `let`.
+
+#### Expresiones `let-rec`
+
+La implementación de `let-rec` es el siguiente paso. Una expresión `let-rec` define procedimientos que pueden ser mutuamente recursivos. Cada procedimiento en un `let-rec` tiene una firma que incluye tipos de argumentos y un tipo de retorno. Por ejemplo, un procedimiento `P1` podría tener tipos de argumento `T11, T12, ...` y un tipo de retorno `T1`.
+
+Tanto el cuerpo de la expresión `let-rec` como los cuerpos de cada procedimiento declarado deben ser verificados en un ambiente donde todas las variables (incluidos los nombres de los procedimientos) tengan el tipo correcto. El cuerpo del `let-rec` se verifica en un ambiente que contiene todas las declaraciones de los procedimientos para permitir la recursión mutua.
+
+La regla de tipado para `let-rec` establece que si los procedimientos `P1...Pn` tienen tipos `T1...Tn` respectivamente, y el cuerpo del `let-rec` (`E`) tiene tipo `T`, entonces la expresión `let-rec` completa tiene tipo `T`.
+
+Para manejar esto, se crea la función `type-of-let-rec-expression`. Este procedimiento primero convierte las expresiones de tipo de los argumentos y resultados en tipos concretos. Luego, enlaza la lista de tipos de los procedimientos para construir un ambiente de tipos extendido (`ten-and-full-body`). Finalmente, calcula el tipo del cuerpo de cada procedimiento y el tipo del cuerpo del `let-rec`, comparándolos con los tipos de retorno especificados.
+
+El parámetro `arg-types` representa una lista de listas de expresiones de tipo para los argumentos del procedimiento. Esto requiere mapear estas expresiones a una lista de listas de tipos reales. Los tipos de los procedimientos se construyen usando `pro-type`, combinando los `arg-types` y los `result-types`. Esto genera una lista donde cada elemento es un `pro-type` que encapsula los tipos de los argumentos y el tipo de resultado de un procedimiento. La función también realiza una verificación para asegurar que el tipo del cuerpo del `let-rec`, evaluado en el ambiente extendido (que incluye los tipos de los procedimientos), coincida con el `result-type` esperado.
+
+#### Modificaciones de la Gramática y el Intérprete
+
+Una vez implementadas las funciones de tipado para `let` y `let-rec`, es necesario actualizar la gramática y la función `eval-expression`. Para `let-rec`, se deben considerar `result-types`, `ids` y `tids`. Expresiones como `begin` y `set` también deben incorporarse en el sistema de tipos, aunque su lógica de verificación puede ser más simple.
+
+#### Ambientes de Tipos y Funciones Auxiliares
+
+La definición de los ambientes de tipos es fundamental. Un ambiente de tipos mapea símbolos (variables) a sus tipos correspondientes, a diferencia de los ambientes de valores. Funciones auxiliares como `apply-to-n` y `list-index` son utilizadas para gestionar y buscar dentro de estos ambientes, de manera similar a cómo operan los ambientes de valores.
+
+La función `equal-type` se utiliza para verificar si dos tipos son equivalentes. Las operaciones primitivas (como `sum-type`, `greater-equal-type`) también requieren una tipificación correcta. Los objetos `pro-type` contienen tanto los tipos de argumentos (`arg-types`) como los tipos de resultados. `type-to-external-form` y `to-external-form` son funciones auxiliares para la representación de tipos. La verificación de tipos para `atomic-type` debe asegurar que los símbolos se manejen apropiadamente.
+
+Finalmente, la función `eval-program` dentro del intérprete debe ser modificada. Se introducirá una nueva función auxiliar del intérprete que realizará primero la verificación de tipos usando `type-of-program`. Si `type-of-program` determina con éxito un tipo (indicando que la verificación de tipos ha pasado), entonces el programa puede ser ejecutado. En caso contrario, se devuelve un error de tipo. La función `type-of-program` invoca a `type-of-expression` con un ambiente de tipos inicial vacío.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=ukFGcDhW2xc
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

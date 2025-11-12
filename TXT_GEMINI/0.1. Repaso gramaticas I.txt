@@ -1,0 +1,916 @@
+El alfabeto
+Un alfabeto es un conjunto finito no vacío cuyos elementos se
+llaman símbolos .
+Sea Σ = { a , b } el alfabeto que consta de los símbolos a y b .
+Las siguientes son cadenas sobre Σ : aba, abaabaaa, aaaab .
+El alfabeto binario Σ = { 0 , 1 } son las cadenas sobre Σ que se
+definen como secuencias finitas de ceros y unos.
+Las cadenas son secuencias ordenadas y finitas de símbolos.
+
+<CODIGO_BLOCK_START>
+Por ejemplo, w = aaab = w 1 = baaa .
+Sea Σ = { a , b , c , . . . , x , y , z } el alfabeto del idioma castellano.
+El alfabeto utilizado por muchos lenguajes de programacion.
+Sea Σ = { a , b , c } entonces podemos formar todas las cadenas
+sobre Σ incluyendo la cadena vacia.
+<CODIGO_BLOCK_END>
+
+Si bien un alfabeto Σ es un conjunto finito, Σ ∗ es siempre un
+conjunto infinito (enumerable).
+Hay que distinguir entre los siguientes cuatro objetos, que son
+diferentes entre sí: ∅ , ϵ, {∅} , { ϵ }.
+
+#####
+
+<IMG_BLOCK_START>
+Notacion usada en la teoria de lenguajes pa denotan alfabetos. y" denota el conjunto de todas las cadenas que se pue- den formar con los simbolos del alfabeto 2. denotan simbolos de un alfabeto. denotan cadenas, es de siones finitas de simbolos de un alfabeto. € denota la cadena vacia, es decir, la unica cadena que no tiene simbolos. . denotan lenguajes (definidos mas adelante)
+//DESCRIPCION IMAGEN: Código o pseudocódigo
+<IMG_BLOCK_END>
+
+#####
+
+Operaciones con alfabetos
+Si Σ es un alfabeto, σ ∈ Σ denota que σ es un símbolo de Σ , por
+tanto, si
+Σ = { 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 }
+se puede decir que 0 ∈ Σ
+Un alfabeto es simplemente un conjunto finito no vacío que cumple
+las siguientes propiedades, Dados Σ 1 y Σ 2 alfabetos
+Entonces Σ 1 ∪ Σ 2 también es un alfabeto.
+Σ 1 ∩ Σ 2 , Σ 1 − Σ 2 y Σ 2 − Σ 1 también son alfabetos.
+
+#####
+
+Lenguaje
+Un lenguaje es un conjunto de palabras o cadenas. Un lenguaje L
+sobre un alfabeto Σ es un subconjunto de Σ ∗ y si L = Σ ∗ es el
+lenguaje de todas las cadenas sobre Σ .
+Sea L = ∅ el lenguaje vacío
+∅⊆ L ⊆ Σ ∗
+Σ = { a , b , c } . L = { a , aba , aca }
+Σ = { a , b , c } . L = { a , aa , aaa } = { a n : n ≥ 1 }
+Σ = { a , b , c } . L = { w ∈ Σ ∗ : w no contiene el símbolo c } . Por
+
+<CODIGO_BLOCK_START>
+ejemplo, abbaab ∈ L pero abbcaa / ∈ L .
+Sobre Σ = { 0 , 1 , 2 } el lenguaje de las cadenas que tienen igual
+numero de ceros, unos y dos’s en cualquier orden.
+<CODIGO_BLOCK_END>
+
+#####
+
+Potencia del lenguaje
+Potencia del lenguaje Dado un lenguaje A sobre Σ y ( A ⊆ Σ ∗ ) y
+n ∈ N , se define
+A n =
+  { ϵ } ,
+si n = 0
+A · A n − 1 ,
+si n ≥ 1
+
+<CODIGO_BLOCK_START>
+Ejemplo . Sea A = { ab } sobre un alfabeto Σ = { a , b } , entonces:
+A 0 = { ϵ }
+A 1 = A = { ab }
+A 2 = A · A 1 = { abab }
+A 3 = A · A 2 = { ababab }.
+<CODIGO_BLOCK_END>
+
+#####
+
+Def. formal de Cerradura de Kleene
+La cerradura de Kleene de un lenguaje A ⊆ Σ ∗ es la unión de las
+potencias: se denota por A ∗
+A ∗ =
+[
+i ≥ 0
+A i = A 0 ∪ A 1 ∪ A 2 ∪ . . . ∪ A n
+Observación: A ∗ se puede describir de la siguiente manera:
+A ∗ = { u 1 u 2 . . . u n : u i ∈ A , n ≥ 0 }
+Es el conjunto de todas las concatenaciones de la cadena A ,
+incluyendo ϵ
+la cerradura positiva se denota por A +
+A + =
+[
+i ≥ 1
+A i = A 1 ∪ A 2 ∪ A 3 ∪ . . . ∪ A n.
+
+#####
+
+Las expresiones regulares sobre un alfabeto Σ se definen
+recursivamente como:
+∅ , ϵ y a , a ∈ Σ son expresiones regulares.
+si A y B son expresiones regulares, también lo son:
+A ∪ B (Unión)
+A · B (Concatenación)
+A ∗ (Cerradura de Kleene)
+Son expresiones regulares aab ∗ , ab + , ( aaba ∗ ) +
+Sea el conjunto { ϵ, aa , aba , ab 2 a , ab 3 a , ab 4 a , ... } entonces
+{ ϵ } ∪ ab ∗ a es una expresión regular.
+Expresión regular de todas las cadenas impares sobre
+Σ = { a , b }
+a ( aa ∪ ab ∪ ba ∪ bb ) ∗ ∪ b ( aa ∪ ab ∪ ba ∪ bb ) ∗.
+
+Σ = { a , b } Lenguaje de todas las palabras que tienen un número
+par de símbolos (palabras de longitud par)
+( aa ∪ ab ∪ ba ∪ bb ) ∗
+Σ = { a , b } Lenguaje de todas las palabras que tienen un número
+impar de símbolos (palabras de longitud impar)
+a ( aa ∪ ab ∪ ba ∪ bb ) ∗ ∪ b ( aa ∪ ab ∪ ba ∪ bb ) ∗
+Σ = { a , b } Lenguaje de todas las palabras que tienen un número
+par de a’s.
+b ∗ ( ab ∗ a ) ∗ b ∗.
+
+#####
+
+Según Chomsky los tipos de gramáticas se clasifican así:.
+
+<IMG_BLOCK_START>
+Gramatica de estructura de frase (tipo 0) Gramdticas libres de contexto (tipo Gramaticas
+segulares
+(Tipo 3) Gramatica dependiente del contexto (aipo 1)
+//DESCRIPCION IMAGEN: Código o pseudocódigo
+<IMG_BLOCK_END>
+
+#####
+
+Gramáticas Regulares (Tipo 3)
+Una gramática regular G es una 4-tupla G = ( N , Σ , S , P ) que
+consiste de un conjunto N de no terminales, un alfabeto Σ , un
+símbolo inicial S y de un conjunto de producciones P . Las reglas
+son de la forma A → w , donde A ∈ N y w es una cadena sobre
+Σ ∪ N que satisface lo siguiente:
+1 w contiene un no terminal como máximo.
+2 Si w contiene un no terminal, entonces es el símbolo que está
+en el extremo derecho de w .
+3 El conjunto de reglas P se define así:
+P ⊆ N × Σ ∗ ( N ∪ ϵ )
+o
+P ⊆ N × ( N ∪ ϵ )Σ ∗.
+
+#####
+
+Gramáticas regulares
+Sobre
+G = ( N , Σ , S , P )
+Una gramática es regular por la derecha si sus producciones son de
+la forma:
+ 
+{ A −→ wB ,
+w ∈ P ∗ , B ∈ N
+A −→ ε
+}
+ 
+
+<CODIGO_BLOCK_START>
+Ejemplo Considere la siguiente gramatica regular
+G = ( N , Σ , S , P ) , que genera a ∗ , donde Σ = { a , b } , N = { S , A }
+P : S → aA | ε
+A → aA | ε.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo. Sea la siguiente gramatica regular G = ( N , Σ , S , P ) que
+genera el lenguaje de la expresion regular ( a ∪ b ) ∗
+Σ = { a , b }
+N = { S , A }
+P : S −→ aS | bS | ε.
+<CODIGO_BLOCK_END>
+
+#####
+
+Forma de Backus-Naur
+La forma de Backus-Naur se emplea para especificar reglas
+sintácticas de muchos lenguajes de programación y de lenguaje
+natural: En lugar de utilizar el símbolo −→ usamos ::= y colocamos
+los símbolos no terminales entre <> .
+La forma BNF se usa frecuentemente para especificar la sintaxis de
+lenguajes de programación, como Java y LISP; lenguajes de bases
+de datos, como SQL, y lenguajes de marcado como XML.
+
+Sea la siguiente gramática:
+A −→ Aa | a | AB
+La forma Backus-Naur es:
+BNF gramática
+< A > ::= < A > a | a | < A >< B >.
+
+La producción de enteros son signo en notación decimal. (Un
+entero con signo es un natural precedido por un signo más o un
+signo menos). La forma Backus-Naur para la gramática que
+produce los enteros con signo es:
+BNF entero con signo
+< entero con signo > ::= < signo >< entero >
+< signo > ::= + | −
+< entero > ::= < dígito > | < dígito >< entero >
+< dígito > ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9.
+
+
+<CODIGO_BLOCK_START>
+Ejemplos
+Una definicion de listas de numeros
+<lista-de-numeros> ::= ()
+|
+<numero> <lista-de-numeros>
+Una definicion de arbol binario:
+<arbol-binario> ::= <numero>
+<arbol-binario> ::= <simbolo> <arbol-binario>
+<arbol-binario>.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo real
+Programs
+<compilation unit> ::= <package declaration> <import declarations>
+<type declarations>
+Declarations
+<package declaration> ::= package <package name> ;
+<import declarations> ::= <import declaration> |
+<import declarations> <import declaration>
+<import declaration> ::= <single type import declaration> |
+<type import on demand declaration>
+<single type import declaration> ::= import <type name> ;.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo real
+JAVA https:
+//users-cs.au.dk/~amoeller/RegAut/JavaBNF.html
+C++ 98 http:
+//www.externsoft.ch/download/cpp-iso.html#syntax
+Python
+https://docs.python.org/3/reference/grammar.html.
+<CODIGO_BLOCK_END>
+
+#####
+
+¡Lo puedes instalar en Windows, Linux y Mac OS !
+Se recomienda trabajar con la versión 7.9, algunas versiones
+como la 5.6 y 6.2 tienen problema con la librería SLLGEN
+Las expresiones en Dr Racket son en notación prefija, por
+
+<CODIGO_BLOCK_START>
+ejemplo (+ 5 2) es equivalente 5+2 en notacion infija.
+Se recomienda utilizar parentesis para evitar problemas en la
+interpretacion de resultados por ejemplo (+ (- 3 2) 4) es
+equivalente en notacion infija a ((3 - 2) + 4)
+debe seleccionar The Racket Lenguaje y agregar en la
+primera linea:
+#lang
+eopl.
+<CODIGO_BLOCK_END>
+
+#####
+
+Se utiliza la palabra reservada define para la definición de
+
+<CODIGO_BLOCK_START>
+variables por ejemplo
+( define numeroA
+5)
+( define numeroB
+(∗
+2 numeroA ) )
+Se definen las funciones de la siguiente forma:
+( define
+( nombreFuncion
+argumentosEntrada ) <operaciones
+>)
+Ejemplo:
+( define
+( m u l t i p l i q u e
+a b )
+(∗
+a
+(∗b b ) ) )
+¿Que deberia retornar (multiplique 3 9)?.
+<CODIGO_BLOCK_END>
+
+#####
+
+Así mismo, se pueden definir funciones anónimas con la expresión
+
+<CODIGO_BLOCK_START>
+lambda . Ejemplo:
+( lambda
+( x y )
+( i f
+(> x y )
+(∗
+x y ) (−x y ) ) )
+Este retorna un valor funcion o procedimiento, estos podemos
+evaluarlos asi:
+(
+( lambda
+( x y )
+( i f
+(> x y )
+(∗
+x y ) (−x y ) ) )
+3
+4)
+Observe que la funcion espera 2 argumentos.
+<CODIGO_BLOCK_END>
+
+Importante
+Debido a que en el paradigma funcional no hay diferencia entre
+funciones y valores, usaremos lambda para representar las funciones
+como valores.
+
+<CODIGO_BLOCK_START>
+Para el ejemplo anterior:
+( define
+m u l t i p l i q u e
+( lambda
+( a b )
+(∗
+a
+(∗b b ) )
+)
+).
+<CODIGO_BLOCK_END>
+
+#####
+
+<CODIGO_BLOCK_START>
+Ejercicio
+Escriba en el Dr Racket utilizando notacion prefija:
+2 ∗ 2 + 3 ∗ 5 + ( 1
+4 ) 2 Respuesta: 19.0625
+2 ∗ ( 1 + 3 2 + 4
+4 ) + 3 ∗ ( 5 − 3 ) + 12
+4 − 3 + 4 ∗ 5 3 Respuesta: 528
+Disene una funcion anonima que reciba dos valores. Si ambos
+valores son positivo o ambos son negativos retorna su
+multiplicacion, en caso contrario retorna su suma.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejercicio 1
+2 ∗ 2 + 3 ∗ 5 + ( 1
+4 ) 2
+(+ (∗
+2
+2)
+(∗
+3
+5)
+( expt
+(/
+1
+4)
+2) )
+Respuesta: 19.0625.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejercicio 2
+2 ∗ ( 1 + 3 2 + 4
+4 ) + 3 ∗ ( 5 − 3 ) + 12
+4 − 3 + 4 ∗ 5 3
+(+ (∗
+2 (+ 1
+( expt 3
+2)
+(/ 4
+4) ) )
+(∗
+3 (−5
+3) )
+(/
+12
+4) −3
+(∗
+4
+( expt 5
+3) ) )
+Respuesta: 528.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejercicio 3
+( lambda
+( x y )
+( i f
+(>= (∗
+x y )
+0)
+(∗
+x y ) (+ x y ) ) )
+Probemos
+(
+( lambda
+( x y )
+( i f
+(>= (∗
+x y )
+0)
+(∗
+x y ) (+ x y ) ) )
+2 3)
+(
+( lambda
+( x y )
+( i f
+(>= (∗
+x y )
+0)
+(∗
+x y ) (+ x y ) ) )
+2 −3).
+<CODIGO_BLOCK_END>
+
+#####
+
+En Racket tenemos el condicional que usualmente trabajamos en
+diferentes lenguajes
+( i f
+pregunta
+hacer_si_verdad
+hacer_si_falso )
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+( define
+f u n c i o n M i s t e r i o s a
+( lambda
+( n
+l )
+( i f
+(< n
+l )
+"n es menor
+que l" "n es mayor o igual
+que l
+" )
+).
+<CODIGO_BLOCK_END>
+
+También, contamos con condicionales que permiten verificar varias
+condiciones sucesivamente. Solo se da respuesta a la primera que
+sea verdadera, si ninguna lo es se responderá lo indicando el else.
+( cond
+[ Pregunta
+Respuesta ]
+[ Pregunta
+Respuesta ]
+. . .
+[ e l s e
+Respuesta ]
+).
+
+
+<CODIGO_BLOCK_START>
+Por ejemplo, una funcion que recibe un numero y verifica si es par
+( define
+v e r i f i c a r p a r
+( lambda
+( n )
+( cond
+[ ( even ? n )
+"Par" ]
+[(< n 0)
+"Impar y menor
+que 0" ]
+[ e l s e
+"Impar y mayor o igual
+que 0" ]
+)
+)
+).
+<CODIGO_BLOCK_END>
+
+Diseñe una función que recibe un número y un símbolo
+1 Si el número es menor o igual que 0 retorna el símbolo ’error
+2 Si no, Si el número es mayor o igual 0 retorna:
+Si el símbolo es ’m, retorna ’hombre
+Si el símbolo es ’f, retorna ’mujer
+En otro caso retorna ’error.
+
+#####
+
+En algunos casos requerimos realizar definiciones dentro de
+funciones, en Fundamentos de programación contábamos con la
+sentencia local , pero para este curso usaremos dos
+let para definiciones no recursivas. Dentro de este las
+funciones no se conocen a sí mismas
+( let
+(
+; Zona
+de
+d e c l a r a c i o n e s
+(
+. .
+)
+; D e c l a r a c i o n
+1
+(
+. .
+)
+; D e c l a r a c i o n
+2
+)
+; Zona
+de
+e x p r e s i o n e s
+)
+letrec para definiciones recursivas. En este las funciones se
+conocen a sí mismas. Su sintaxis es igual a la de let.
+
+( define
+f u n c i o n
+( lambda
+( n )
+( let
+(
+( p
+2)
+( f
+( lambda
+( a
+b )
+(∗
+a
+b ) ) )
+)
+( f
+n
+p )
+)
+)
+)
+( f u n c i o n
+10).
+
+( define
+f u n c i o n
+( lambda
+( n )
+( l e t r e c
+(
+( p
+2)
+( sume
+( lambda
+( a
+b )
+( i f
+(= b
+0)
+0 (+ a
+( sume
+a
+( −b
+1) ) ) )
+)
+)
+)
+( sume
+n
+p )
+)
+)
+)
+( f u n c i o n
+10)
+Si utilizas let en lugar de letrec, va a indicar que no conoce la función
+suma.
+
+A veces requerimos que un valor declarado conozca los anteriores y
+que las funciones no se conozcan a sí mismas, para esto usaremos
+let*.
+( define
+f u n c i o n
+( lambda
+( n )
+( let ∗
+(
+( p
+2)
+( q
+3)
+( r
+(+ p
+q
+n ) )
+)
+r
+)
+)
+)
+( f u n c i o n
+10)
+
+<CODIGO_BLOCK_START>
+Este codigo es funcional cambiando let* por letrec, la diferencia
+radica en las funciones recursivas.
+<CODIGO_BLOCK_END>
+
+#####
+
+Las listas son una estructura recursiva, la cual consta de dos partes:
+1 Un valor (cualquiera representado por Scheme)
+2 Una lista: La cual puede ser vacía.
+( cons
+1
+( cons
+2
+( cons
+3
+empty ) ) )
+Dr Racket, provee la función list, la cual permite construir listas sin
+pensar en la recursividad. A esto se le conoce como azúcar
+sintáctico.
+( list
+1
+2
+3).
+
+Para acceder a los elementos se tiene. car accede al primer
+elemento y cdr al resto, el cual es una lista.
+( define
+l
+( cons
+1
+( cons
+2
+( cons
+3
+empty ) ) ) )
+( c a r
+l )
+( cdr
+l )
+Si observa, cdr devuelve una lista. Para acceder al segundo
+elemento tenemos cadr (primero del resto). Así mismo se tienen
+funciones similares.
+
+A lo largo del curso vamos a utilizar una representación de listas
+especial:
+’ ( )
+Esto es una lista vacía, podemos hacer lo siguiente:
+’ ( p e r r o
+gato
+1
+2
+3)
+Observe que perro y gato no son variables si no que se convierten
+en símbolos, también puede representar listas dentro de listas así:
+’ (
+( p e r r o
+1
+2
+3)
+(3
+2
+4)
+gato )
+Observe que las listas solo se declaran entre paréntesis. Esta
+representación permite agilizar el diseño de ciertas funciones.
+
+#####
+
+Enunciado
+Diseñe una función que almacene los factoriales (en una lista)
+desde 0! hasta un valor n ingresado por el usuario.
+Para esto necesitas usar locales (recursivos) ya que se requiere una
+función que genere una lista entre 0! y n!, la función a diseñar solo
+recibe como argumento n.
+
+; C a l c u l a
+el
+f a c t o r i a l
+de
+un
+número
+( define
+f a c t o r i a l
+( lambda
+( n )
+( cond
+[(=
+n
+0)
+1 ]
+[ e l s e
+(∗
+n
+( f a c t o r i a l
+(−n
+1) ) ) ]
+)
+)
+)
+; Genera
+una
+lista
+de
+f a c t o r i a l e s
+desde
+0!
+hasta
+n !
+( define
+l i s t a −f a c t o r i a l
+( lambda
+( n )
+( l e t r e c
+(
+( l i s t a −f a c t o r i a l −a u x
+( lambda
+( n
+acc )
+( i f
+(=
+acc
+n )
+( f a c t o r i a l
+n )
+( cons
+( f a c t o r i a l
+acc )
+(
+l i s t a −f a c t o r i a l −a u x
+n (+ 1
+acc ) ) )
+)
+)
+)
+)
+( l i s t a −f a c t o r i a l −a u x
+n
+0)
+)
+)
+)
+( l i s t a −f a c t o r i a l
+10).
+
+#####
+
+<CODIGO_BLOCK_START>
+Ejemplo
+¡Las funciones pueden ingresar como parametros!
+( define
+p r e d i c a d o
+( lambda
+( a
+b )
+( cond
+[( <
+a
+b ) #T]
+[ ( even ?
+a ) #T]
+[ e l s e #F ]
+)
+)
+)
+( define
+f i l t r o
+( lambda
+( l s t
+num
+f )
+( cond
+[ ( eqv ?
+l s t
+’ ( ) )
+empty ]
+[ ( f
+( c a r
+l s t )
+num)
+( cons
+( c a r
+l s t )
+( f i l t r o
+( cdr
+l s t )
+num
+f ) ) ]
+[ e l s e
+( f i l t r o
+( cdr
+l s t )
+num
+f ) ]
+)
+)
+)
+( f i l t r o
+( list
+1
+2
+3
+4
+5)
+3
+p r e d i c a d o )
+¿Que hace esta funcion?.
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo
+¡Pueden retornarse funciones!
+( define
+f u n c i o n M i s t e r i o
+( lambda
+( a b )
+( lambda
+( x y ) (+ x y a b ) )
+)
+)
+;Probar
+( f u n c i o n M i s t e r i o
+1
+2)
+(
+( f u n c i o n M i s t e r i o
+1
+2)
+3
+4)
+Esto significa que no hay diferencia entre los valores y funciones.
+Son exactamente lo mismo.
+<CODIGO_BLOCK_END>
+
+1 Diseñe una función, que reciba un número a y una función f .
+La función f recibe un número y retorna un booleano. Se hace
+el llamado (f a) y si el resultado es verdadero se retorna ”ok”,
+en otro caso ”falso”.
+2 Diseñe una función que reciba dos números a y b y retorna una
+función t la cual espera un argumento numérico s . t evalúa si
+a es mayor que b si es así retorna 2 ∗ s en otro caso − 2 ∗ s.
+
+#####
+
+Hasta ahora hemos trabajado en un paradigma declarativo
+funcional en el cual las variables están ligadas a un valor. Ahora,
+para trabajar en un paradigma imperativo debemos incluir la noción
+de estado con la instrucción set!, lo que permite a lo largo del
+
+<CODIGO_BLOCK_START>
+codigo las variables puedan cambiar un valor. Este estado
+caracteriza la ejecucion de un programa. Ejemplo:
+( define
+v a l o r
+1)
+( set !
+v a l o r
+2)
+En este punto el estado de valor ha cambiado de 1 a 2 durante la
+ejecucion.
+<CODIGO_BLOCK_END>
+
+Otra característica de un paradigma imperativo es la secuenciación,
+es decir la ejecución de más de una instrucción en un paso dado, ya
+que el declarativo solo permite uno. Para esto contamos con begin,
+este tiene la siguiente sintaxis:
+( begin
+;expresión
+;expresión
+. . .
+;expresión
+)
+Este retorna la última expresión ejecutada, la ventaja es que
+permite ejecutar más de una expresión en un paso.
+
+Otra característica de un paradigma imperativo es la secuenciación,
+es decir la ejecución de más de una instrucción en un paso dado, ya
+que el declarativo solo permite uno. Para esto contamos con begin,
+este tiene la siguiente sintaxis:
+( define
+f u n c i o n
+( lambda
+( a b )
+( begin
+( set !
+a
+(∗
+a b ) )
+( set !
+b (−a b ) )
+(+ a b )
+)
+)
+)
+( f u n c i o n
+2
+3)
+Observe que se retorna la última expresión ejecutada.
+
+--- METADATA ---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 0.1. Repaso gramaticas I

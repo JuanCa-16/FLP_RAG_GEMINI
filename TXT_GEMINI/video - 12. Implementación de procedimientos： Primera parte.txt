@@ -1,0 +1,112 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Extensión del Interpretador: Procedimientos y Clausuras
+
+Hasta este punto, nuestro lenguaje de programación incluía operaciones matemáticas (sumas, restas, multiplicaciones), booleanos para condicionales, y ligaduras locales inmutables. Ahora, extenderemos el interpretador para incorporar procedimientos (funciones), esenciales en la computación por su capacidad de reutilizar tareas repetitivas mediante llamados.
+
+Se incluirán dos elementos: la creación de procedimientos, y la aplicación o llamado de estos procedimientos ya creados.
+
+#### Modificaciones Gramaticales
+
+Para la implementación de procedimientos, se añaden las siguientes construcciones a la gramática:
+
+1.  **Creación de un Procedimiento:**
+    *   Sintaxis: `(proc (lista_de_identificadores) cuerpo_expresión)`
+    *   La `lista_de_identificadores` es una secuencia de cero o más identificadores separados por comas (cerradura de Kleene).
+    *   `cuerpo_expresión` es la expresión que define la lógica del procedimiento.
+    *   Representación gramatical: `Expresión ::= (proc (ListaIdentificadores) Expresión)`
+
+2.  **Aplicación (Llamado) de un Procedimiento:**
+    *   Sintaxis: `(procedimiento_expresión argumento_1 argumento_2 ...)`
+    *   `procedimiento_expresión` debe evaluar a un procedimiento.
+    *   `argumento_i` son las expresiones que se evaluarán para obtener los valores de los parámetros.
+    *   Representación gramatical: `Expresión ::= (Expresión Argumento_1 Argumento_2 ...)`
+
+#### Semántica de Procedimientos: Ejemplos
+
+Antes de la implementación, evaluemos la semántica de los procedimientos con ejemplos:
+
+*   **Ejemplo 1:**
+    ```
+    f = proc(y, z) { y + (z - 5) }
+    ```
+    Si llamamos `f(2, 28)`, entonces `y=2` y `z=28`. La evaluación sería `2 + (28 - 5) = 2 + 23 = 25`.
+
+*   **Ejemplo 2:**
+    ```
+    g = proc(z) { z * 2 }
+    h = proc(x, y) { x + y }
+    ```
+    Si llamamos `h(g(4), g(3))`, primero se resuelven los argumentos: `g(4)` es `4*2=8`, y `g(3)` es `3*2=6`. Luego, `h(8, 6)` evaluaría a `8+6=14`.
+
+Estos ejemplos demuestran cómo las variables declaradas en el procedimiento (`y, z, x`) existen dentro de su ámbito y toman valores al momento de la invocación. Es crucial conectar el llamado con la implementación del procedimiento.
+
+#### El Problema del Ámbito (Lexical vs. Dynamic Scoping)
+
+Consideremos el siguiente escenario:
+
+```
+let x = 5
+let f = proc(y, z) { y + (z - x) }
+```
+
+Si llamamos `f(2, 28)`, `y` toma el valor `2` y `z` toma `28`. La expresión interna sería `2 + (28 - x)`. La pregunta crucial es: ¿Qué valor debe tomar `x`? ¿El `x=5` declarado al momento de la *creación* de `f`, o un valor `x` diferente si se modificara *posteriormente* (`x=7`) y se llamara a `f` de nuevo?
+
+El paradigma funcional establece que una función, invocada con los mismos argumentos, debe producir el mismo resultado independientemente del contexto de llamada. Para `f(2, 28)`, el valor de `x` debe ser el que existía cuando `f` fue definida, es decir, `5`. Así, `2 + (28 - 5) = 2 + 23 = 25`. Si `x` cambiara a `7` después de la definición de `f`, una llamada posterior a `f` debería seguir usando `x=5`.
+
+#### La Solución: Clausuras (Closures)
+
+Para garantizar este comportamiento (ámbito léxico o *lexical scoping*), se introduce el concepto de **clausura (closure)**. Una clausura es la representación de un procedimiento que encapsula la función misma junto con el entorno léxico en el que fue definida. Esto asegura que todas las variables libres (no definidas como parámetros del procedimiento) capturen su valor correcto del ambiente de creación, eliminando ambigüedades en la evaluación.
+
+La clausura es la representación interna de un procedimiento. En lenguajes como Python o JavaScript, el concepto de 'función' o 'lambda' a menudo implica una clausura. Una clausura debe almacenar la siguiente información:
+
+1.  **Lista de identificadores (parámetros)** del procedimiento.
+2.  **Cuerpo (expresión)** del procedimiento.
+3.  **Ambiente (environment)** donde el procedimiento fue creado.
+
+Este ambiente de creación es crítico, ya que contiene los valores de todas las variables libres del procedimiento en el momento de su definición.
+
+Para nuestro interpretador, definiremos la clausura con el tipo `ProVal` (valor de procedimiento) de la siguiente manera:
+
+```
+(define-data-type ProVal
+  (clausura (ids (list-of symbol?))
+            (cuerpo expresión?)
+            (env environment?)))
+```
+Esta estructura permite que el procedimiento "recuerde" su contexto de creación.
+
+#### Implementación de la Creación de Procedimientos
+
+La representación de un procedimiento al crearse es una clausura. En la función `eval-expression`, cuando se encuentra una `proc-expression` (la creación de un procedimiento), esta debe construir y retornar una clausura. La `proc-expression` recibe los identificadores (`ids`) y el cuerpo (`cuerpo`). La clausura se creará con estos `ids`, el `cuerpo` y, fundamentalmente, el **ambiente actual** (`env`) en el que se está evaluando esa `proc-expression`.
+
+La aplicación de procedimientos (`app-expression`), que toma el procedimiento a llamar (el `rator`) y sus argumentos (los `rands`), será el siguiente paso crucial en la implementación.
+
+*(Nota sobre la gramática: Un error común en `define-data-type` o gramáticas es la falta de elementos distintivos como paréntesis o llaves para diferenciar las construcciones, lo que puede llevar a ambigüedades. Asegurarse de que la sintaxis de creación de `proc` incluya paréntesis explícitos ayuda al parser.)*
+
+#### Ejemplo de Representación Interna
+
+Para finalizar, observemos un ejemplo de la creación de un procedimiento y su representación interna:
+
+```
+let a = (proc (x, y) { x + y })
+```
+Al evaluar esta expresión, el interpretador crea una clausura. Esta clausura contendrá:
+*   Los identificadores de los parámetros: `(x, y)`
+*   El cuerpo del procedimiento: `x + y`
+*   El ambiente en el que `a` fue definido. Este ambiente es una cadena de entornos extendidos (ej., `(struct:environment (z 425) (struct:environment (x 456) ...))`) que captura el estado de las variables visibles en el momento de la definición.
+
+La clausura, al guardar este ambiente de creación, asegura que la evaluación posterior del procedimiento utilice los valores correctos de las variables libres. Esta será la base para la evaluación de procedimientos.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=nbjdT8UYKAc
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

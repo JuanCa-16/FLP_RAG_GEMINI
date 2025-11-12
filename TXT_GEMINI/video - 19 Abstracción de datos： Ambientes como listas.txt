@@ -1,0 +1,130 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se detalla la representación de ambientes utilizando listas, incluyendo funciones constructoras, observadoras y una función de búsqueda.
+
+### Representación de Ambientes con Listas
+
+Se definirán los siguientes elementos:
+
+1.  **Funciones constructoras:** Permiten construir el tipo de dato ambiente.
+2.  **Funciones observadoras:** Permiten extraer información de un tipo de dato. Se subdividen en:
+    *   **Predicados:** Determinan si un elemento es de un tipo de dato específico (ej. ambiente vacío, ambiente extendido).
+    *   **Extractores:** Obtienen componentes específicos de un tipo de dato (ej. identificador, valor, ambiente previo).
+
+#### 1. Funciones Constructoras
+
+*   **`en_TN` (Ambiente Vacío):** Retorna una lista que contiene el símbolo `'en_TN'`. Este símbolo sirve como identificador para un ambiente vacío.
+    ```scheme
+    (define (en_TN)
+      (list 'en_TN))
+    ```
+*   **`en` (Ambiente Extendido):** Recibe un identificador (`id`), un valor (`val`) y un ambiente previo (`ambiente_previo`). Retorna una lista que contiene el símbolo `'en'`, el identificador, el valor y el ambiente previo. Se utiliza `list` explícitamente para evitar que los elementos se transformen automáticamente en símbolos.
+    ```scheme
+    (define (en id val ambiente_previo)
+      (list 'en id val ambiente_previo))
+    ```
+
+#### 2. Ejemplo de Construcción de un Ambiente
+
+Utilizando las funciones constructoras, se puede crear un ambiente anidado:
+
+```scheme
+(define a
+  (en 'x 3
+    (en 'y 4
+      (en 'j 9
+        (en 'x 4
+          (en 'w 9
+            (en_TN)))))))
+```
+Este ambiente se representa como una lista anidada.
+
+#### 3. Predicados (Observadores)
+
+Permiten verificar si un ambiente es vacío o extendido.
+
+*   **`es_en_TN?`:** Determina si un ambiente dado es un ambiente vacío.
+    ```scheme
+    (define (es_en_TN? n)
+      (equal? (car n) 'en_TN))
+    ```
+*   **`es_en?`:** Determina si un ambiente dado es un ambiente extendido.
+    ```scheme
+    (define (es_en? n)
+      (equal? (car n) 'en))
+    ```
+
+**Ejemplo de uso:**
+*   `(es_en_TN? (en_TN))` retorna `#t`.
+*   `(es_en? (en 'a 1 (en_TN)))` retorna `#t`.
+
+#### 4. Extractores (Observadores)
+
+Estos extractores operan sobre ambientes extendidos para obtener sus componentes. Un ambiente vacío (`en_TN`) no contiene componentes extraíbles.
+
+*   **`en_id`:** Extrae el identificador de un ambiente extendido.
+    ```scheme
+    (define (en_id n)
+      (cadr n))
+    ```
+*   **`en_valor`:** Extrae el valor de un ambiente extendido.
+    ```scheme
+    (define (en_valor n)
+      (caddr n))
+    ```
+*   **`en_ambiente`:** Extrae el ambiente previo (el ambiente que se extiende) de un ambiente extendido.
+    ```scheme
+    (define (en_ambiente n)
+      (cadddr n))
+    ```
+
+**Ejemplo de uso con el ambiente `a` definido previamente:**
+*   `(en_valor a)` debería retornar `3`.
+*   `(en_id a)` debería retornar `'x'`.
+
+Esto demuestra cómo manipular el tipo de dato abstracto ambiente, aunque internamente esté representado como una lista.
+
+### Función `aplicar_ambiente`
+
+Esta función busca el valor asociado a un símbolo en un ambiente dado.
+
+```scheme
+(define (aplicar_ambiente ambiente simbolo_buscado)
+  (cond
+    ((es_en_TN? ambiente)
+     (error (string-append
+              "Error: El símbolo '"
+              (symbol->string simbolo_buscado)
+              "' no se encuentra en el ambiente.")))
+    ((es_en? ambiente)
+     (if (equal? (en_id ambiente) simbolo_buscado)
+         (en_valor ambiente)
+         (aplicar_ambiente (en_ambiente ambiente) simbolo_buscado)))
+    (else
+     (error "Tipo de ambiente desconocido."))))
+```
+
+#### Ejemplos de uso de `aplicar_ambiente`:
+
+```scheme
+(aplicar_ambiente a 'y)   ; Retorna 4
+(aplicar_ambiente a 'w)   ; Retorna 9
+(aplicar_ambiente a 'x)   ; Retorna 3 (el 'x' más externo es el primero que se encuentra)
+(aplicar_ambiente a 'z)   ; Lanza un error: "Error: El símbolo 'z' no se encuentra en el ambiente."
+```
+La función busca el identificador de forma recursiva, retornando el valor de la primera ocurrencia encontrada (la más cercana al principio de la cadena de ambientes). Esto simula el *shadowing* de variables, donde una definición más reciente de una variable oculta una definición anterior en un ámbito más externo.
+
+### Principios de Diseño
+
+La función `aplicar_ambiente` está diseñada para utilizar los predicados (`es_en_TN?`, `es_en?`) para identificar el tipo de ambiente y los extractores (`en_id`, `en_valor`, `en_ambiente`) para acceder a sus componentes. Esta abstracción permite que la lógica de búsqueda sea independiente de la implementación interna del tipo de dato ambiente, facilitando la reutilización y la posibilidad de cambiar la representación subyacente del ambiente sin afectar la lógica de la función `aplicar_ambiente`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=hsHRvKwYGU8
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,60 @@
+Aquí tienes la transcripción limpia y formateada para estudio:
+
+---
+
+### **Definición de Datos Recursivos y Estructuras Fundamentales**
+
+**1. Símbolos en Gramáticas Formales:**
+
+*   **Símbolos No Terminales:** Permiten la recursión. Pueden llamar a la misma regla (auto-recursión) o transitar entre diferentes reglas.
+*   **Símbolos Terminales:** Elementos básicos del alfabeto donde una derivación termina, como un número o un símbolo.
+*   **Reglas de Producción:** Operan como funciones, dictando cómo se construyen las estructuras.
+
+**2. Cerraduras (Closures):**
+
+*   **Cerradura de Kleene ( * ):** Indica cero o más ocurrencias de un elemento.
+*   **Cerradura Positiva ( + ):** Indica una o más ocurrencias de un elemento.
+
+**3. Ejemplos de Definiciones Recursivas:**
+
+*   **Lista de Números:**
+    *   Puede ser una **lista vacía** (símbolo terminal, condición de terminación).
+    *   O puede ser un **entero seguido de una lista de enteros** (regla recursiva, ya que se invoca a sí misma).
+    *   Toda regla recursiva debe tener una condición de terminación para evitar bucles infinitos. Esto también se puede expresar con cerraduras (ej., "0 o más enteros", donde 0 implica la lista vacía).
+
+**4. Listas vs. Árboles (Estructuras Recursivas):**
+
+*   **Similitud fundamental:** Ambos son estructuras recursivas. Dentro de una lista hay otra lista; dentro de un árbol hay otros árboles.
+*   **Diferencia clave:**
+    *   Una **lista** tiene un **único llamado recursivo** (ej., el elemento y el "resto" de la lista, como la "cola").
+    *   Un **árbol** tiene **dos o más llamados recursivos** (ej., los sub-árboles o "hijos" en un nodo).
+
+**5. La Analogía de la Matryoshka (Muñeca Rusa):**
+
+*   **Para Listas:** Una lista es como una muñeca Matryoshka que contiene una muñeca idéntica más pequeña en su interior. El elemento de la lista es la muñeca exterior, y el "resto" es la muñeca interior.
+    *   La **condición de parada** es la lista vacía, que representa la muñeca más pequeña y hueca. Sin esta condición, la recursión sería infinita, agotando la memoria.
+*   **Para Árboles:** Un árbol es como una Matryoshka que, al abrirse, contiene **dos o más** muñecas Matryoshka más pequeñas. Estas representaciones internas son los sub-árboles (hijos).
+    *   Un **árbol binario** contendría dos sub-árboles (hijo izquierdo y derecho) dentro de cada nodo no terminal.
+    *   Un **árbol ternario** contendría tres, y así sucesivamente para un árbol n-ario.
+
+**6. Procesamiento Recursivo de Árboles:**
+
+*   Al trabajar con árboles, los llamados recursivos se duplican (o multiplican) respecto a las listas. Para un árbol binario, se hacen llamados recursivos tanto para el hijo izquierdo como para el hijo derecho.
+*   **Contrato de Funciones:** Las funciones recursivas deben mantener la consistencia de tipos. Si una función espera un árbol como argumento, los llamados recursivos a los sub-árboles deben pasar también árboles.
+*   **Nodos Vacíos:** En la construcción de árboles, si un hijo no está presente (es nulo), la gramática debe permitir explícitamente la opción de un "nodo vacío" para poder representar estas estructuras de forma correcta y evitar restricciones.
+
+**7. Introducción a las Expresiones Lambda:**
+
+*   Una expresión básica en el cálculo lambda es un **identificador**.
+*   **Identificador:** Es una palabra sin espacios (ej., "x", "y", "foo", "ola"), utilizada para nombrar variables y datos dentro del lenguaje.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=JPRyWqSGR_k
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

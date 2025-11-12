@@ -1,0 +1,157 @@
+Aquí tienes la transcripción limpia y coherente, lista para estudio:
+
+---
+
+### Implementación de Gramáticas para Lenguajes de Programación
+
+Este módulo aborda la implementación de gramáticas para lenguajes de programación utilizando herramientas de generación automática de analizadores.
+
+#### 1. Definición Manual de Tipos de Datos (Introducción y Descarte)
+
+Inicialmente, podemos implementar la gramática mediante la definición manual de tipos de datos utilizando `define-data-type`.
+
+**A. Declaración (Declaration)**
+
+*   **Declaracion Tipo 1**: Contiene dos elementos que son a su vez declaraciones.
+    ```racket
+    (define-data-type Declaracion
+      (Declaracion1 (d1 Declaracion) (d2 Declaracion)))
+    ```
+*   **Declaracion Tipo 2**: Contiene una expresión y una declaración.
+    ```racket
+    (Declaracion2 (e Expresion) (d Declaracion)))
+    ```
+    (Nota: Se ignoran las palabras clave y signos escritos; solo nos interesan las estructuras expresadas por la gramática, como `while Expresion do Declaracion`.)
+*   **Declaracion Tipo 3**: Contiene un identificador y una expresión.
+    ```racket
+    (Declaracion3 (id Symbol) (e Expresion)))
+    ```
+
+**B. Expresión (Expression)**
+
+*   **Expresion Tipo 1**: Un identificador.
+    ```racket
+    (define-data-type Expresion
+      (Expresion1 (id Symbol)))
+    ```
+*   **Expresion Tipo 2**: Una suma de dos expresiones.
+    ```racket
+    (Expresion2 (e1 Expresion) (e2 Expresion)))
+    ```
+
+Sin embargo, la construcción manual de árboles de sintaxis abstracta (AST) de esta manera resulta tediosa y propensa a errores. Por ello, recurriremos a una librería para la generación automática.
+
+#### 2. Generación Automática de Analizadores con SLGEN
+
+Utilizaremos la librería SLGEN para automatizar la creación del analizador léxico, el analizador sintáctico y los tipos de datos del AST.
+
+**A. Especificación Léxica (Lexical Specification)**
+
+La especificación léxica es una lista simbólica que define los tokens del lenguaje.
+
+*   **Espacios en blanco**: `(whitespace (regexp "#\\s+") (ignored))` - Se ignoran.
+*   **Comentarios**: `(comment (regexp "#%;.*") (ignored))` - Inician con `%` y se ignoran.
+*   **Identificadores**: `(identifier (regexp "[a-zA-Z][a-zA-Z0-9]*") (to-symbol))` - Una letra seguida de letras o dígitos. Se transforman en símbolos. (Evitar `%` como carácter en identificadores para no crear conflictos con comentarios).
+*   **Números**:
+    *   Enteros: `(number (regexp "[0-9]+") (to-number))` - Uno o más dígitos.
+    *   Negativos: `(number (regexp "-[0-9]+") (to-number))` - Un signo menos seguido de uno o más dígitos.
+    *   Punto flotante: `(number (regexp "[0-9]+\\.[0-9]+") (to-number))` - Dígitos, un punto, y más dígitos.
+    *   Negativos en punto flotante: `(number (regexp "-[0-9]+\\.[0-9]+") (to-number))` - Un signo menos, dígitos, un punto, y más dígitos.
+
+**B. Especificación Gramatical (Grammar Specification)**
+
+La especificación gramatical define la estructura sintáctica del lenguaje, mapeando directamente las reglas.
+
+*   **Declaración**:
+    *   `Declaracion ::= Declaracion ; Declaracion` -> `(Declaracion (Declaracion1 (d1 Declaracion) (d2 Declaracion)))`
+    *   `Declaracion ::= while Expresion do Declaracion` -> `(Declaracion (Declaracion2 (e Expresion) (d Declaracion)))`
+    *   `Declaracion ::= identifier := Expresion` -> `(Declaracion (Declaracion3 (id identifier) (e Expresion)))`
+*   **Expresión**:
+    *   `Expresion ::= identifier` -> `(Expresion (Expresion1 (id identifier)))`
+    *   `Expresion ::= number` -> `(Expresion (Expresion2 (n number)))`
+    *   `Expresion ::= Expresion + Expresion` -> `(Expresion (Expresion3 (e1 Expresion) (e2 Expresion)))`
+
+**C. Generación de Tipos de Datos del AST**
+
+La librería SLGEN permite generar automáticamente los tipos de datos (`define-data-type`) para el AST a partir de las especificaciones léxica y gramatical.
+
+```racket
+(SLGEN make-define-data-types 'lexical-specification 'grammar-specification)
+```
+Para listar los tipos de datos creados automáticamente:
+```racket
+(SLGEN list-define-data-types 'lexical-specification 'grammar-specification)
+```
+
+**D. Construcción del Escáner (Lexer)**
+
+El escáner se construye utilizando `SLGEN make-string-scanner` y toma como parámetros las especificaciones léxica y gramatical. Retorna una función (un procedimiento) que puede escanear cadenas de texto.
+
+```racket
+(define scanner (SLGEN make-string-scanner 'lexical-specification 'grammar-specification))
+```
+**Ejemplo de escaneo:**
+Al ejecutar `(scanner "while x := 1.8; y := x + 2")`, el escáner produce una secuencia de tokens, identificando literales, identificadores y números.
+
+**E. Construcción del Analizador Sintáctico (Parser)**
+
+El analizador sintáctico se construye con `SLGEN make-string-parser`, también recibiendo las especificaciones léxica y gramatical. Este procedimiento devuelve una función que transforma una cadena de texto en un AST.
+
+```racket
+(define parser (SLGEN make-string-parser 'lexical-specification 'grammar-specification))
+```
+**Manejo de conflictos comunes del parser:**
+Durante la construcción del parser, pueden surgir conflictos gramaticales como la ambigüedad o la recursión por la izquierda.
+*   **Ambigüedad en el inicio de reglas**: Si múltiples reglas pueden comenzar con el mismo token (ej., `Declaracion1`, `Declaracion2`, `Declaracion3` pueden empezar con `identifier` o `while`), el parser no sabrá cuál elegir. Es crucial revisar y ajustar la gramática, por ejemplo, asegurando que las reglas tengan prefijos distintivos o manejando la precedencia.
+*   **Recursión por la izquierda y precedencia**: Para operaciones como `Expresion + Expresion`, la recursión por la izquierda puede causar problemas o ambigüedad en el orden de evaluación. Esto se resuelve comúnmente mediante el uso de paréntesis en la gramática para forzar la precedencia o el agrupamiento.
+    Por ejemplo, transformar `Expresion ::= Expresion + Expresion` a `Expresion ::= (Expresion + Expresion)` o reestructurar la gramática.
+
+**Ejemplo de parsing:**
+```racket
+(parser "while x := 1.8; y := x + 2")
+```
+Esto generará el AST correspondiente a la entrada.
+
+#### 3. Construcción del Intérprete (REPL)
+
+Finalmente, se construye el intérprete, o Read-Eval-Print Loop (REPL), utilizando `SLGEN make-repl`.
+
+```racket
+(define interpretador
+  (SLGEN make-repl
+    #:prompt "primer-lenguaje> "
+    #:eval-function evaluar-programa
+    #:parser (SLGEN make-string-parser 'lexical-specification 'grammar-specification)))
+```
+La función `evaluar-programa` recibe el AST generado por el parser y se encarga de procesarlo.
+
+```racket
+(define (evaluar-programa programa-ast)
+  (cases Declaracion programa-ast
+    [(Declaracion1 d1 d2) (list (evaluar-programa d1) (evaluar-programa d2))]
+    [(Declaracion2 e d) (list 'while (evaluar-expresion e) (evaluar-programa d))]
+    [(Declaracion3 id e) (list 'assign (symbol->string id) (evaluar-expresion e))]))
+
+(define (evaluar-expresion expr-ast)
+  (cases Expresion expr-ast
+    [(Expresion1 id) (symbol->string id)]
+    [(Expresion2 n) n]
+    [(Expresion3 e1 e2) (list (evaluar-expresion e1) '+ (evaluar-expresion e2))]))
+```
+**Ejecución del intérprete:**
+Al ejecutar `(interpretador)`, se abrirá una ventana interactiva donde se pueden introducir expresiones del lenguaje. Por ejemplo:
+```
+primer-lenguaje> x := 1.8; while x do y := x + 1
+```
+El intérprete procesará la entrada, generará el AST y lo deconstruirá utilizando la función `evaluar-programa`, mostrando el resultado de la evaluación. La deconstrucción del AST mediante `cases` es el método principal para implementar la semántica del lenguaje.
+
+Este proceso sienta las bases para construir nuestro primer lenguaje de programación, permitiendo abordar los conceptos fundamentales de compiladores e intérpretes.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=RmcKbgU1rbM
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,98 @@
+A continuación, se presenta una transcripción limpia y estructurada del material de clase sobre la representación de números y operaciones aritméticas, lista para estudio.
+
+---
+
+### Representación Vigno
+
+La representación Vigno es un método para representar un número en una base específica. Se utiliza una lista o vector para almacenar los dígitos.
+
+**Ejemplos en Base 16:**
+
+*   Para el vector `(1, 2)`: Representa el número `1 * 16^0 + 2 * 16^1`.
+*   Para el vector `(2, 0, 1)`: Representa el número `2 * 16^0 + 0 * 16^1 + 1 * 16^2`.
+
+Es importante destacar que, a pesar de utilizar esta representación, las operaciones numéricas y las funciones diseñadas operarán de la misma manera, manteniendo su independencia de la representación subyacente.
+
+### Definición de Funciones Básicas
+
+Definiremos funciones esenciales como `cero?`, `sucesor`, `predecesor` y `suma` utilizando esta representación de lista. La base utilizada en los ejemplos será 16, pero la implementación puede ser genérica.
+
+#### 1. Función `cero?`
+
+*   **Representación de Cero:** El número 0 se representa como la lista vacía (`()`).
+*   **Verificación:** La función `cero?` verifica si la representación del número es una lista vacía.
+
+#### 2. Función `sucesor`
+
+La función `sucesor` calcula el siguiente número en la secuencia, con especial atención a los casos de acarreo (carry-over) en la base definida.
+
+**Casos y Lógica:**
+
+*   **Caso Base (Sucesor de 0):** Si el número de entrada es 0 (lista vacía), su sucesor es 1, representado como `(list 1)`.
+*   **Caso Recursivo (Acarreo):** Si el primer dígito del número es igual a `(base - 1)` (por ejemplo, 15 en base 16):
+    *   El primer dígito se convierte en 0.
+    *   Se llama recursivamente a `sucesor` con el resto de la lista para manejar el acarreo.
+    *   Ejemplo: `sucesor((15))` en base 16 es `(0, 1)`.
+    *   Ejemplo con múltiples dígitos: `sucesor((15, 15))` en base 16 es `(0, 0, 1)`.
+*   **Caso General:** Si el primer dígito no es `(base - 1)`:
+    *   Simplemente se incrementa el primer dígito en 1.
+    *   El resto de la lista permanece igual.
+    *   Ejemplo: `sucesor((1, 2))` en base 16 es `(2, 2)`.
+
+**Ejemplos de `sucesor` (en base 16):**
+
+*   `sucesor(1)` -> `(2)`
+*   `sucesor(15)` -> `(0, 1)`
+*   `sucesor( (15, 15, 3) )` -> `(0, 0, 4)`
+*   `sucesor( (15, 15, 15) )` -> `(0, 0, 1)`
+
+#### 3. Función `predecesor`
+
+La función `predecesor` calcula el número anterior, manejando los casos de "préstamo" (borrow) de manera inversa a la función `sucesor`.
+
+**Casos y Lógica:**
+
+*   **Caso Base (Predecesor de 0):** El predecesor de 0 (lista vacía) no existe en este sistema (puede retornar un error o un valor especial).
+*   **Caso Base (Predecesor de 1):** Si el número de entrada es 1 (`(list 1)`), su predecesor es 0 (lista vacía `()`).
+*   **Caso Recursivo (Préstamo):** Si el primer dígito del número es `0`:
+    *   El primer dígito se convierte en `(base - 1)` (por ejemplo, 15 en base 16).
+    *   Se llama recursivamente a `predecesor` con el resto de la lista para manejar el préstamo.
+    *   Ejemplo: `predecesor((0, 1))` en base 16 es `(15)`. (El número 16 se convierte en 15).
+    *   Ejemplo: `predecesor((0, 15))` (valor 240) en base 16 es `(15, 14)` (valor 239).
+*   **Caso General:** Si el primer dígito no es `0`:
+    *   Simplemente se decrementa el primer dígito en 1.
+    *   El resto de la lista permanece igual.
+    *   Ejemplo: `predecesor((5, 2))` en base 16 es `(4, 2)`.
+
+**Ejemplos de `predecesor` (en base 16):**
+
+*   `predecesor(1)` -> `()` (vacío, representando 0)
+*   `predecesor( (0, 1) )` -> `(15)`
+*   `predecesor( (0, 0, 1) )` -> `(15, 15)`
+*   `predecesor( (15, 15, 15) )` -> `(14, 15, 15)`
+
+#### 4. Función `suma` (Plus)
+
+La función `suma` implementa la adición de dos números representados como listas, aplicando las reglas de acarreo de la base.
+
+**Ejemplos de `suma` (en base 16):**
+
+*   `suma(4, 3)` -> `(7)`
+*   `suma(15, 1)` -> `(0, 1)` (que representa 16)
+*   `suma( (0, 1), (0, 1) )` -> `(0, 2)` (que representa 32)
+*   `suma( (10, 1), (1, 1) )` (suma de 26 + 17) -> `(11, 2)` (que representa 43)
+
+### Conclusión
+
+Como se ha demostrado, no importa cómo se representen los números internamente. Las funciones aritméticas diseñadas para operar con estas representaciones conservan las propiedades matemáticas fundamentales y funcionan correctamente, validando el principio de que la lógica de las operaciones es independiente de su representación.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=z_uAWdqChmk
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

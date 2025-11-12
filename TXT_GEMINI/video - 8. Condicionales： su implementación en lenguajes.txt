@@ -1,0 +1,79 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Incorporación de Condicionales y Variables Locales
+
+El objetivo es extender el lenguaje actual, que solo soporta operaciones matemáticas con un conjunto fijo de variables, para incorporar condicionales y la creación de nuevas variables.
+
+**Extensiones del Lenguaje**
+
+Para ello, el lenguaje se extenderá para incluir:
+*   Asignación de ligadura local (`let`).
+*   Expresiones condicionales (`if/else`).
+
+Se amplía el conjunto de valores expresados y anotados para incluir valores booleanos. Un *valor expresado* es el que se utiliza directamente, mientras que un *valor anotado* es el que se almacena en las variables.
+
+**Modificación de la Gramática**
+
+La gramática se modifica para incorporar:
+*   **Valores Booleanos**: `true` para verdadero y `false` para falso.
+*   **Expresiones Condicionales**: `if expression then expression else expression`.
+*   **Operador de Ligadura Local**: `let identifier = expression ... expression`. (Este operador permite definir variables locales, se abordará en detalle más adelante).
+*   **Primitivas Booleanas**: Funciones para realizar comparaciones, esenciales para la especificación de los condicionales.
+
+**Modificaciones del Interpretador**
+
+Se modificará el interpretador para manejar los nuevos elementos de la gramática.
+
+1.  **Manejo de Valores Booleanos:**
+    *   La expresión `true` se mapea a la representación nativa `#true` del lenguaje anfitrión (Scheme/Racket).
+    *   La expresión `false` se mapea a la representación nativa `#false` del lenguaje anfitrión.
+
+2.  **Implementación de Condicionales (`if expression then expression else expression`):**
+    *   La expresión `if` recibe tres componentes: una condición, una expresión para el caso verdadero y una expresión para el caso falso.
+    *   Para su implementación, se utiliza la estructura `if` del lenguaje nativo (Scheme/Racket).
+    *   **Proceso de Evaluación:**
+        1.  Evaluar la expresión de la `condición` en el ambiente actual.
+        2.  Si la `condición` es verdadera, evaluar la `expresión_verdadera` en el ambiente actual.
+        3.  Si la `condición` es falsa, evaluar la `expresión_falsa` en el ambiente actual.
+
+3.  **Implementación de Primitivas Booleanas:**
+    Se añaden las siguientes primitivas de comparación, las cuales requieren dos argumentos:
+    *   `mayor-prim` (mayor que, `>`)
+    *   `mayor-igual-prim` (mayor o igual que, `>=`)
+    *   `menor-prim` (menor que, `<`)
+    *   `menor-igual-prim` (menor o igual que, `<=`)
+    *   `igual-prim` (igualdad numérica, `==`)
+    Estas primitivas evalúan sus argumentos y realizan la comparación correspondiente, retornando un valor booleano.
+
+**Ejemplos de Uso**
+
+*   **Ejemplo 1: Condicional simple**
+    Considerando que el valor de `x` es `1`:
+    ```
+    if (> x 2) then 4 else (+ 3 2)
+    ```
+    Dado que `x` (1) no es mayor que `2`, se evalúa el caso `else`, resultando en `5`.
+
+*   **Ejemplo 2: Condicional con operaciones anidadas**
+    Considerando que el valor de `x` es `1`:
+    ```
+    if (== x 1) then (* 2 (+ 2 4)) else -3
+    ```
+    Como `x` (1) es igual a `1`, se evalúa el caso `then`. La subexpresión `(+ 2 4)` resulta en `6`, y la multiplicación `(* 2 6)` da `12`.
+
+**Próximos Pasos**
+
+La implementación del operador de ligadura local (`let`) se abordará en una sesión posterior.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=WCkgIVxDA1U
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

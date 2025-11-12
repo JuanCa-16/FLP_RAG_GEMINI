@@ -1,0 +1,80 @@
+Aquí tienes la transcripción de clase limpia y formateada para estudio:
+
+---
+
+### Análisis de Expresiones con Paso por Referencia
+
+Para trabajar con expresiones que utilizan paso por referencia, consideraremos un ejemplo cuyo resultado esperado es 103.
+
+**1. Configuración Inicial del Entorno:**
+
+*   Comenzamos con un ambiente vacío.
+*   Se crea el ambiente `M0` que contiene las declaraciones `A` y `B`. Ambas son *direct targets* hacia clausuras que contienen el ambiente vacío. Como son declaraciones `let`, se consideran *direct targets*.
+*   En el ambiente `1`, se declaran `K` y `M`.
+    *   `K` es un *direct target* hacia el valor 3.
+    *   `M` es un *direct target* hacia el valor 4.
+
+**2. Definición de Procedimientos `T` y `F`:**
+
+*   Se define un ambiente `let` (llamado `2R`) para `T`. `T` es un *direct target* hacia una clausura que contiene el ambiente `2R`.
+*   Finalmente, se define otro `let` (ambiente `3`) para `F`. `F` es un *direct target* hacia una clausura que contiene a `X` y referencia el ambiente `2R`.
+
+**3. Evaluación de la Expresión Principal `T(F(K), K)`:**
+
+La evaluación procede de izquierda a derecha. Primero, se evalúa `F(K)`.
+
+**3.1. Evaluación de `F(K)`:**
+
+*   La función `F` (que extiende del ambiente `2R`) recibe `X` como un *indirect target* hacia `K`. Esto es crucial: cualquier modificación a `X` dentro de `F` afectará directamente a la variable `K` original.
+*   `F` ejecuta una suma que involucra dos procedimientos internos: `a` y `b`.
+
+    *   **Procedimiento `a`:**
+        *   Recibe `X` como un *indirect target* hacia `K`.
+        *   `a` suma 1 a `X`. Dado que `X` es un *indirect target* a `K` (cuyo valor inicial es 3), `K` se actualiza de 3 a 4. Ahora, `K` es un *direct target* hacia 4.
+        *   `a` devuelve el valor actual de `K`, que es 4.
+
+    *   **Procedimiento `b`:**
+        *   Recibe `Y` como un *indirect target* hacia `K`.
+        *   `b` suma 3 a `Y`. `K` (cuyo valor actual es 4) se actualiza a 7. Ahora, `K` es un *direct target* hacia 7.
+        *   `b` devuelve el resultado de 7 + 2, que es 9.
+
+*   El resultado final de `F(K)` es la suma de los resultados de `a` y `b`: 4 + 9 = 13.
+*   En este punto, el valor de `K` es 7.
+
+**3.2. Evaluación de `T(13, K)`:**
+
+Ahora se llama al procedimiento `T` con el valor de `F(K)` (13) y el valor actual de `K` (7).
+
+*   `T` es un procedimiento recursivo que se ejecuta mientras su primer argumento `X` sea mayor que 0.
+    *   `X` se pasa como un *direct target* con el valor 13.
+    *   `Y` se pasa como un *indirect target* hacia `K`. Esto significa que `Y` siempre referenciará el valor más actualizado de `K`.
+*   En cada llamada recursiva, `X` se decrementa en 1, y se suma el valor actual de `Y` (el valor de `K` en ese momento) al resultado acumulado.
+*   La recursión de `T` se realizará 13 veces (desde X=13 hasta X=1). Durante estas 13 llamadas, el valor de `Y` (que es `K`) permanece en 7.
+*   Cuando `X` finalmente llega a 0, se realiza una llamada final a `B(Y)` (donde `Y` es el *indirect target* hacia `K`).
+
+    *   **Llamada a `B(Y)` (con `Y` como indirect target a `K`):**
+        *   `B` recibe `Y` (el *indirect target* a `K`).
+        *   `B` suma 3 a `Y`. `K` (que valía 7) se actualiza a 10. Ahora, `K` es un *direct target* hacia 10.
+        *   `B` devuelve el resultado de 10 + 2, que es 12.
+
+**4. Cálculo del Resultado Final:**
+
+*   Las 13 llamadas recursivas de `T` suman el valor de `Y` (que es 7) 13 veces: 7 * 13 = 91.
+*   A este valor se le suma el resultado de la llamada final a `B(Y)`: 91 + 12 = 103.
+
+El resultado final de 103 coincide con el valor esperado. Al verificar los valores finales de las variables, se observa que `M` no fue modificado, mientras que `K` (que inició en 3) finaliza con un valor de 10.
+
+**Conclusión Clave:**
+
+Cuando se utilizan pasos de procedimientos que comparten un *indirect target*, se pasa el target interno de la variable. Esto permite observar directamente el efecto de los cambios realizados sobre las variables originales a lo largo de la ejecución de diferentes procedimientos.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=jWgdJYlW6KA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

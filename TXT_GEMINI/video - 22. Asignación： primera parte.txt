@@ -1,0 +1,102 @@
+Aquí tienes la transcripción de clase limpia y formateada para estudio:
+
+---
+
+### Introducción a la Asignación: Transición del Paradigma Funcional al Imperativo
+
+A partir de este punto, se introducirá el concepto de **asignación**. Hasta ahora, las variables se han manejado como **ligaduras** inmutables. Ahora, se habilitará la posibilidad de cambiar estas variables, marcando una transición de un paradigma funcional a uno imperativo. Se abordará la introducción, sintaxis, semántica e implementación de la asignación de variables, seguida de ejemplos. (La discusión sobre paso de parámetros se pospondrá.)
+
+### Características de un Lenguaje Funcional (recapitulación)
+
+En un lenguaje funcional puro, las características clave son:
+1.  **Inmutabilidad**: No existen variables mutables, sino ligaduras que, por definición, no pueden ser alteradas una vez establecidas.
+2.  **Expresiones y Valores**: Cada construcción es una expresión que siempre devuelve un valor (número, booleano, etc.).
+3.  **Transparencia Referencial**: Una función siempre retorna el mismo valor para los mismos argumentos, independientemente de dónde o cuándo sea llamada.
+
+### Efectos y Asignación de Memoria
+
+Hasta ahora, solo se ha considerado el **valor producido** por una computación. Sin embargo, una computación también puede generar una alteración en el sistema, conocida como **efecto**. Ejemplos de efectos incluyen:
+*   Imprimir un valor.
+*   Cambiar el estado de la memoria.
+*   Leer o escribir archivos en el sistema.
+
+A diferencia de producir un valor (considerado un efecto local o limitado), un **efecto** es un cambio global en el sistema. En este contexto, nos centraremos exclusivamente en la **asignación de ubicaciones de memoria**.
+
+### Diferencias entre Ligadura y Asignación
+
+*   **Ligadura**:
+    *   Se realiza con construcciones como `let`.
+    *   Es una asociación de nombres con valores de **alcance local**.
+    *   Comprende la asociación directa de nombres con valores.
+*   **Asignación**:
+    *   Es potencialmente **global**, ya que modificar el valor de una variable declarada previamente puede tener efectos en múltiples partes del programa.
+    *   Introduce el concepto de **referencia**, que se explicará más adelante.
+
+### Ejecución Secuencial y Asignación
+
+Las expresiones del lenguaje, hasta ahora, realizan una operación y retornan un valor. Para permitir la asignación de variables (que es una operación con efecto), es necesario introducir la **ejecución secuencial de expresiones**. Esto implica que, además de operaciones que retornan un valor, habrá operaciones que generan un efecto.
+
+Para lograr esto, se introducirán dos construcciones:
+1.  **`begin`**: Permite la ejecución secuencial de una o más expresiones, de arriba hacia abajo.
+2.  **`set`**: Permite la asignación de variables.
+
+Un cambio fundamental es que, a partir de ahora, los **valores expresados** (lo que el programador escribe) y los **valores denotados** (lo que se guarda en las variables, es decir, las referencias) dejan de ser idénticos.
+
+### Sintaxis de `begin` y `set`
+
+La sintaxis a implementar para estas nuevas expresiones es:
+*   **`begin`**: `begin <expresión> {; <expresión>} end`
+    *   Permite una o más expresiones separadas por punto y coma.
+    *   La terminación `end` es crucial para delimitar el bloque de expresiones y evitar conflictos en el análisis sintáctico.
+*   **`set`**: `set <identificador> = <expresión>`
+
+### Ejemplos de Asignación
+
+1.  **Ejemplo Básico de `begin` y `set`:**
+    ```
+    let m = 0
+    begin
+        set m = m + 1;
+        m * 2
+    end
+    ```
+    *Análisis:* Inicialmente `m` se liga al valor 0. Dentro del bloque `begin`, `m` se incrementa a 1. La última expresión `m * 2` evalúa a `1 * 2`, retornando **2**.
+
+2.  **Ejemplo de Alcance y Paso de Parámetros:**
+    ```
+    let x = 100
+    let p = (λ (x)
+               begin
+                   set x = x + 1;
+                   x
+               end)
+    p(x)
+    ```
+    *Análisis:* `x` global se inicializa en 100. La función `p` toma un argumento `x`. Cuando `p(x)` es llamado con el `x` global, si el paso de parámetros es por valor, una *copia* de `x` (con valor 100) se pasa a la función. Dentro de `p`, el `x` *local* se incrementa a 101 y se retorna 101. El `x` global permanece inalterado. La importancia de este ejemplo para 'paso por valor' vs 'paso por referencia' se abordará posteriormente.
+
+### Reglas de Evaluación
+
+*   **Evaluación de `begin`**:
+    1.  Se evalúan secuencialmente todas las expresiones dentro del bloque.
+    2.  Si el bloque contiene una sola expresión, se retorna su valor.
+    3.  Si contiene una lista de expresiones, se retorna el valor de la **última** expresión evaluada.
+
+*   **Evaluación de `set`**:
+    1.  Se evalúa primero la expresión del lado derecho de la asignación.
+    2.  El valor expresado resultante se almacena en la ubicación de memoria asociada al identificador del lado izquierdo.
+    3.  Las operaciones de asignación (`set`) son **operaciones de efecto** y, conceptualmente, no retornan un valor computacional (serían `void` en muchos lenguajes). Sin embargo, por razones prácticas y de implementación (ej. en un entorno como Dr. Racket), se retornará un valor simbólico (como `cero` o `set-ok`) para indicar que la operación se realizó con éxito, diferenciándolo de un valor numérico cero.
+
+### Próximos Pasos
+
+En resumen, `begin` permite la evaluación secuencial de una o más expresiones, retornando el valor de la última expresión. Si `begin` contiene una única expresión, se retorna el valor de esa expresión. A continuación, se procederá con las modificaciones necesarias en los interpretadores para soportar estas nuevas construcciones.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=glGvOtFAldY
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

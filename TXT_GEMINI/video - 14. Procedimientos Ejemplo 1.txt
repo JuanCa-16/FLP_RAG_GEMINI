@@ -1,0 +1,50 @@
+A continuación, se presenta la transcripción limpia y formateada, lista para estudio:
+
+---
+
+Se desea evaluar una expresión dada una configuración inicial del ambiente de computación.
+
+**Configuración Inicial del Ambiente:**
+
+El ambiente inicial (denominado Ambiente 0) se establece con las siguientes ligaduras de variables a valores:
+*   `X = 2`
+*   `Y = 4`
+*   `Z = 5`
+
+**Definición y Evaluación de Procedimientos:**
+
+1.  **Creación del procedimiento `F`:**
+    Se define el procedimiento `F` utilizando la sintaxis `let F = prot(X) (X * X)`.
+    Este procedimiento se representa como una **clausura (closure)**. Una clausura es una estructura que encapsula:
+    *   El parámetro formal del procedimiento (`X`).
+    *   La expresión que el procedimiento debe evaluar (`X * X`).
+    *   El ambiente en el que la clausura fue creada (`Ambiente 0`).
+
+2.  **Invocación del procedimiento `F(Z)`:**
+    Para evaluar la expresión `F(Z)`, se siguen los siguientes pasos:
+    *   Cada vez que se invoca un procedimiento, se crea un **nuevo ambiente** de ejecución para esa llamada específica.
+    *   Este nuevo ambiente extiende (o referencia) al ambiente en el que la clausura de `F` fue creada, es decir, el `Ambiente 0`. Esto significa que el nuevo ambiente tiene acceso a las variables definidas en `Ambiente 0` si no han sido redefinidas localmente.
+    *   El argumento `Z` se evalúa en el ambiente de invocación (el `Ambiente 0` en este caso). Según la configuración inicial, el valor de `Z` es `5`.
+    *   El parámetro formal `X` del procedimiento `F` se enlaza al valor del argumento pasado. Por lo tanto, dentro del nuevo ambiente de `F`, la variable `X` toma el valor `5`.
+
+3.  **Evaluación de la expresión dentro de `F`:**
+    *   Finalmente, se evalúa la expresión `X * X` en el contexto del nuevo ambiente de `F`, donde `X` es `5`.
+    *   El resultado de la evaluación es `5 * 5 = 25`.
+
+**Conceptos Clave del Manejo de Ambientes en Procedimientos:**
+
+*   **Clausura (Closure):** Un procedimiento se almacena como una clausura que incluye su código y el ambiente donde fue definido, lo que permite el acceso a variables no locales en el momento de su definición.
+*   **Creación de Ambiente en Invocación:** Cada llamada a un procedimiento genera un ambiente de ejecución nuevo y local para esa instancia de la llamada.
+*   **Extensión de Ambiente:** El nuevo ambiente creado durante la invocación extiende del ambiente almacenado en la clausura, asegurando que las variables del contexto de definición estén disponibles.
+*   **Ligadura de Parámetros:** Los parámetros formales del procedimiento se ligan a los valores de los argumentos en el ambiente recién creado para la invocación.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=91lReaV1wcU
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

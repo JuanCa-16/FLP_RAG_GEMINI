@@ -1,0 +1,61 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+### Definición de la Suma de Números Naturales
+
+La suma entre dos números naturales no está definida intrínsecamente en una representación que solo utiliza la función "predecesor". Por ello, es necesario definir un método para realizar la operación de suma entre dos números `x` e `y`.
+
+**Definición de la Suma (`plus`)**
+La suma puede definirse como la aplicación repetida de la función "sucesor" a un número.
+*   **Ejemplo**: Para `4 + 2`, se aplica el sucesor a 4 dos veces:
+    *   `sucesor(4) = 5`
+    *   `sucesor(5) = 6`
+Así, la suma se representa como la aplicación iterativa del sucesor. La función de suma será denominada `plus`.
+
+### Representación Unaria de Números
+
+Se presentarán diferentes representaciones numéricas. La primera es la **representación unaria**:
+Un entero no negativo `n` se representa por una lista de `n` símbolos (por ejemplo, `#t`).
+*   **Cero (0)**: Se representa como la lista vacía.
+*   **Sucesor**: Se obtiene concatenando el símbolo `#t` a la representación actual del número.
+*   **Predecesor**: Se obtiene aplicando la función `cdr` a la representación del número.
+    *   **Manejo de errores**: Si se intenta obtener el predecesor de cero, se retorna un mensaje de error, ya que el predecesor de cero no está definido en este contexto.
+
+**Ejemplos de Representación Unaria:**
+*   `cero` = `()`
+*   `sucesor(cero)` = `(#t)` (Representación de 1)
+*   `sucesor(sucesor(cero))` = `(#t #t)` (Representación de 2)
+
+**Implementación de la Función `plus(x, y)` en Representación Unaria:**
+La función `plus(x, y)` se define recursivamente:
+*   **Caso base**: Si `y` es cero, el resultado es `x`.
+*   **Caso recursivo**: De lo contrario, `plus(x, y)` es igual a `sucesor(plus(x, predecesor(y)))`.
+Esta lógica aplica la función sucesor a `x` tantas veces como lo indique el valor de `y`.
+
+**Ejemplo de Suma Unaria:**
+`plus((#t #t #t), (#t #t #t #t))` (equivalente a 3 + 4) dará como resultado la representación unaria de 7.
+
+### Representación Numérica Estándar
+
+Ahora, consideremos una **representación numérica** estándar, donde los números se manejan directamente como valores enteros:
+*   **Cero (0)**: Se verifica si `n` es igual a 0.
+*   **Sucesor**: Se define como `n + 1`.
+*   **Predecesor**: Se define como `n - 1`.
+
+**Impacto en la Función `plus`:**
+Al aplicar la misma función `plus` (definida previamente con la lógica recursiva de sucesor y predecesor) con esta nueva representación numérica, por ejemplo, `plus(3, 4)`, el resultado es 7.
+
+**Filosofía Central:**
+A pesar del cambio en la representación subyacente de los números (de una lista unaria a un valor numérico directo), la lógica interna de la función `plus` permanece idéntica. Esto demuestra una filosofía clave en el diseño de software: la implementación de la suma es independiente de la representación específica de los números, lo que aísla al programador de los detalles de cómo se almacena el tipo de dato.
+
+---
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Wiqa0Xnq_k0
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

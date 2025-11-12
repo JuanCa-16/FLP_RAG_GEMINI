@@ -1,0 +1,105 @@
+A continuación, se presenta una explicación detallada sobre el concepto de variables ligadas y libres en el cálculo lambda, junto con la implementación de una función para su determinación.
+
+---
+
+### Concepto de Ligadura y Variables Libres en Cálculo Lambda
+
+En el contexto del cálculo lambda, una variable puede estar **ligada** o **libre** dentro de una expresión.
+
+*   Una variable está **libre** si no ha sido asignada o "capturada" por una abstracción lambda en su ámbito.
+*   Una variable está **ligada** si ha sido asignada por una abstracción lambda.
+
+La determinación de si una variable `x` ocurre libre en una expresión `e` se rige por las siguientes reglas:
+
+1.  **Caso 1: Identificador (Variable simple)**
+    *   Si la expresión `e` es una variable (un identificador simple), la variable `x` ocurre libre en `e` si y solo si `x` es igual a `e`.
+
+2.  **Caso 2: Abstracción Lambda**
+    *   Si la expresión `e` es de la forma `(lambda y e')` (donde `y` es el identificador ligado y `e'` es el cuerpo de la abstracción), la variable `x` ocurre libre en `e` si y solo si `y` es distinto de `x` **y** `x` ocurre libre en `e'`. (Si `y` fuera igual a `x`, entonces `x` estaría ligada por esta `lambda`.)
+
+3.  **Caso 3: Aplicación**
+    *   Si la expresión `e` es de la forma `(e1 e2)` (una aplicación de `e1` a `e2`), la variable `x` ocurre libre en `e` si y solo si `x` ocurre libre en `e1` **o** `x` ocurre libre en `e2`.
+
+### Gramática de Expresiones Lambda
+
+Para implementar estas reglas, es fundamental entender la estructura de las expresiones lambda. Una expresión lambda puede ser:
+
+*   Un **identificador** (p. ej., `x`, `y`).
+*   Una **abstracción**: `(lambda identificador expresión)` (p. ej., `(lambda x x)`).
+*   Una **aplicación**: `(expresión1 expresión2)` (p. ej., `((lambda x x) y)`).
+
+### Diseño de la Función `ocorre-libre`
+
+Para determinar programáticamente si una variable ocurre libre en una expresión, se diseña una función `(ocorre-libre expresión variable)` que recibe la expresión lambda y la variable `x` que se busca.
+
+La implementación de la función sigue la estructura de la gramática y las reglas de ocurrencia libre:
+
+```scheme
+(define (ocorre-libre expresion variable)
+  (cond
+    ;; Caso 1: La expresión es un identificador (símbolo)
+    ((symbol? expresion)
+     (eq? expresion variable))
+
+    ;; Caso 2: La expresión es una abstracción (empieza con 'lambda)
+    ((eq? 'lambda (car expresion))
+     (let* ((identificador-ligado (cadr expresion))  ; Extrae 'y'
+            (cuerpo-abstraccion (caddr expresion)))   ; Extrae 'e''
+       (and (not (eq? identificador-ligado variable))
+            (ocorre-libre cuerpo-abstraccion variable))))
+
+    ;; Caso 3: La expresión es una aplicación
+    (else
+     (let* ((expresion1 (car expresion))   ; Extrae 'e1'
+            (expresion2 (cadr expresion))) ; Extrae 'e2'
+       (or (ocorre-libre expresion1 variable)
+           (ocorre-libre expresion2 variable))))))
+```
+
+**Extracción de componentes de la expresión:**
+
+*   Para una abstracción `(lambda y e')`:
+    *   El identificador ligado `y` se extrae con `(cadr expresion)`.
+    *   El cuerpo de la abstracción `e'` se extrae con `(caddr expresion)`.
+*   Para una aplicación `(e1 e2)`:
+    *   La primera subexpresión `e1` se extrae con `(car expresion)`.
+    *   La segunda subexpresión `e2` se extrae con `(cadr expresion)`.
+
+### Ejemplos y Pruebas
+
+Consideremos las siguientes expresiones lambda:
+
+*   **`expresion1`**: `x`
+*   **`expresion2`**: `(lambda x x)`
+*   **`expresion3`**: `((lambda y x) (x y))`
+
+Vamos a probar la función `ocorre-libre` con la variable `'x'`:
+
+1.  **`expresion1` (`x`)**:
+    *   `(ocorre-libre 'x 'x')`
+    *   **Análisis:** Es un identificador. `x` es igual a `x`.
+    *   **Resultado esperado:** Verdadero.
+
+2.  **`expresion2` (`(lambda x x)`)**:
+    *   `(ocorre-libre '(lambda x x) 'x')`
+    *   **Análisis:** Es una abstracción `(lambda y e')` donde `y` es `x` y `e'` es `x`. La regla 2 indica que `x` ocurre libre si `y` es distinto de `x` (lo cual es falso, ya que `y` es `x`).
+    *   **Resultado esperado:** Falso. La `x` en el cuerpo está ligada por el `lambda x`.
+
+3.  **`expresion3` (`((lambda y x) (x y))`)**:
+    *   `(ocorre-libre '((lambda y x) (x y)) 'x')`
+    *   **Análisis:** Es una aplicación `(e1 e2)`, donde `e1` es `(lambda y x)` y `e2` es `(x y)`.
+        *   Analicemos `e1`: `(ocorre-libre '(lambda y x) 'x')`. Aquí, `y` es `y` y `e'` es `x`. `y` (`y`) es distinto de `x`. Luego, `(ocorre-libre 'x 'x')` es verdadero. Por lo tanto, `x` ocurre libre en `e1`.
+        *   Analicemos `e2`: `(ocorre-libre '(x y) 'x')`. Esto es una aplicación anidada. `(ocorre-libre 'x 'x')` es verdadero. Por lo tanto, `x` ocurre libre en `e2`.
+        *   Dado que `x` ocurre libre en `e1` **o** en `e2`, la condición general para `expresion3` es verdadera.
+    *   **Resultado esperado:** Verdadero.
+
+El objetivo de este procedimiento es implementar un método funcional que, basándose en las reglas establecidas, pueda determinar de manera precisa si una variable específica ocurre libre en una expresión lambda dada.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=KEyfWgouql0
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

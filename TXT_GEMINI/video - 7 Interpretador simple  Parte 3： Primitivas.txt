@@ -1,0 +1,26 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+Hemos implementado la expresión de variable (`var expression`) y la expresión literal (`literal expression`). La expresión literal es un número; si es un número, se evalúa como tal. Ahora implementaremos las operaciones matemáticas. Para ello, trabajaremos con `prim expression`, que recibe una primitiva y una lista de expresiones.
+
+La lista de expresiones llega en sintaxis abstracta y debe transformarse en números. Para esto, utilizaremos la función `map` para aplicar `eval-expression` a cada elemento de la lista. Posteriormente, construiremos una función separada para desglosar las primitivas y realizar las operaciones de forma recursiva. Usando `let` para definir `lista-de-expresiones` y `lista-de-valores`, aplicaremos `map` a la lista de expresiones, transformando cada elemento `x` mediante `eval-expression x ambiente`. Esto convertirá la lista de expresiones en una lista de números.
+
+Luego, se define la función `evaluar-primitiva`, que recibirá la primitiva y la lista de valores (ya convertida a números). Es crucial recordar que `eval-expression` siempre devuelve un valor expresado (un número). La función `evaluar-primitiva` se implementa como un `lambda` que toma la primitiva y los valores. Dentro de ella, se manejan los diferentes casos (`cases`) según el tipo de primitiva: `sum-prim`, `minus-prim`, `multiplication`, `division`, `increment`, y `decrement`.
+
+Para `increment` y `decrement`, solo se considera el primer número de la lista de valores. `increment` suma 1 a este número (`car lista-de-valores + 1`), y `decrement` le resta 1 (`car lista-de-valores - 1`).
+
+Para la suma, multiplicación, resta y división, se definirá una función recursiva auxiliar `define-operacion-primitiva`. Esta función recibe una lista de valores, la operación a aplicar y un valor de terminación. El valor de terminación es 0 para la suma/resta (elemento neutro) y 1 para la multiplicación/división. Si la lista de valores es nula, devuelve el valor de terminación. En caso contrario, aplica la operación entre el `car` de la lista y el resultado de la llamada recursiva con el `cdr` de la lista, la misma operación y el valor de terminación. Luego, se aplicaría esta `operacion-primitiva` con la función de suma, resta, multiplicación y división respectivamente, aprovechando las funciones como ciudadanos de primera clase.
+
+Una vez corregidos los errores de sintaxis y la omisión del valor de terminación en la función `define-operacion-primitiva` (0 para suma/resta, 1 para multiplicación/división), se pueden probar las operaciones. Por ejemplo: `(division 1 2 3)` -> `3/2`, `(plus 1 2 3 4 5)` -> `15/8`, `(plus 1 2 3)` -> `6`, `(minus 1 2 3)` -> `2` (interpretado como 1 - 2 - 3, si es asociativo a izquierda), `(increment 5)` -> `6`. El incremento solo considera el primer argumento. Finalmente, se demuestra un ejemplo combinado como `(plus (minus 1 2) (times 2 3))`, resultando en 5 (1-2 = -1, 2*3 = 6, -1+6 = 5). Con esto se ha completado la primera parte del intérprete.
+
+Las próximas clases cubrirán la adición de condicionales, ligaduras locales (requiriendo un entendimiento de ambientes), procedimientos y, finalmente, procedimientos recursivos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=rY7EvYy-4B0
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

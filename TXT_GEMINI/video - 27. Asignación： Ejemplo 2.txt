@@ -1,0 +1,35 @@
+Aquí tienes la transcripción limpia y formateada:
+
+---
+
+A continuación, se analizan ejemplos relacionados con la gestión de ambientes y el paso de parámetros.
+
+### Análisis de Función Recursiva (`ntn`)
+
+Se examina el comportamiento de la función `ntn`, esperando un resultado de 726.
+
+1.  **Ambiente Inicial:** Se establece un ambiente para `ntn`.
+2.  **Definición de Clausura `f`:** Dentro de este ambiente, se define `f` como una clausura que captura la variable `x` y guarda su propio ambiente de definición.
+3.  **Ejecución `j = f(6)`:**
+    *   La llamada a `f(6)` inicia un proceso recursivo.
+    *   Este proceso genera una secuencia de ambientes anidados, donde `x` toma valores decrecientes: 6, 5, 4, 3, 2, 1 y, finalmente, 0.
+    *   El resultado de esta ejecución recursiva es 720 (correspondiente a 6 factorial), el cual se asigna a `j`.
+4.  **Segunda Ejecución de `f(6)`:**
+    *   Se realiza una segunda ejecución de `f(6)`. Es importante destacar que esta ejecución opera sobre el *mismo ambiente* donde `f` fue definida y se conoce a sí misma.
+5.  **Modificación de `f` (`set f`):**
+    *   Se ejecuta la operación `set f`. En este punto, `f` deja de ser una clausura y se le asigna el valor 6.
+6.  **Cálculo Final:**
+    *   Al evaluar la expresión `j + f`, donde `j` es 720 y `f` es ahora 6, el resultado total es 726.
+
+### Introducción a Paso por Valor y Paso por Referencia
+
+Se abordará el concepto de "paso por valor" y "paso por referencia". Se analizará cómo el alcance de la asignación, específicamente la operación `set x`, difiere dependiendo de si la variable involucrada es `a` o `x`. Por ejemplo, si una variable `x` se cambia a `a`, el resultado de una operación previa podría cambiar a 203. Se investigará si al pasar una variable `x` como argumento se espera o no que su valor cambie dentro de la función.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=gGiwIY4jviU
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO
