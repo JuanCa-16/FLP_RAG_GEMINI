@@ -29,8 +29,12 @@ docs_df = pd.read_json(ruta_embeddings, lines=True)
 #consulta = "Que es una operacion declarativa?"
 #consulta = "Que es un ambiente?"
 #consulta = "Diferencias entre ligadura y asignacion"
-consulta = "En que consiste un objeto"
+#consulta = "En que consiste un objeto"
 #consulta = "Como se clasifican los lenguajes"
+#consulta = "caractersticas de un lenguaje orientado a objeto"
+#consulta = "Que es un alfabeto"
+# consulta = "Que es un dato"
+consulta = "como es la interfaz de datos recursivos?"
 
 
 print(f"📘 Consulta del usuario: {consulta}\n")
@@ -50,7 +54,7 @@ def encontrar_documento_relevante(consulta, dataframe, modelo, top_n=3):
 
     embedding_values_np = np.array(embedding_reducido.values)
     normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
-    
+
     # Calculamos la similitud del coseno entre la consulta y todos los documentos
     similitudes = []
     for doc_embedding in dataframe.embeddings:
@@ -113,11 +117,11 @@ def generar_respuesta(consulta, contexto):
     return respuesta.text
 
 
-resultado = encontrar_documento_relevante(consulta, docs_df, MODEL_ID,top_n=1)
+resultado = encontrar_documento_relevante(consulta, docs_df, MODEL_ID,top_n=2)
 
 # 1. Concatenar el contexto de los documentos más relevantes
 contexto_combinado = "\n\n--- FUENTE ADICIONAL ---\n\n".join([
-    f"Fuente: {doc['titulo']}\nContenido: {doc['documento']}" 
+    f"Fuente: {doc['titulo']}\nContenido: {doc['documento']}"
     for doc in resultado['top_documentos']
 ])
 
@@ -130,7 +134,7 @@ for i, doc in enumerate(resultado['top_documentos']):
     snippet_contenido = doc['documento'][:250].replace('\n', ' ')
     if len(doc['documento']) > 250:
         snippet_contenido += "..."
-        
+
     print(f"  {i+1}. Título: {doc['titulo']} (Similitud: {doc['similitud']:.4f})")
     print(f"     Snippet: {snippet_contenido}")
 
@@ -152,21 +156,21 @@ while respuesta_final is None and retry_count < max_retries:
         respuesta_final = generar_respuesta(consulta, contexto_combinado)
         print("\n🧠 Respuesta generada:")
         print(respuesta_final)
-        
+
     except ServerError as e:
         if '503 UNAVAILABLE' in str(e):
             retry_count += 1
             if retry_count < max_retries:
                 # Backoff exponencial
-                wait_time = 2**retry_count 
+                wait_time = 2**retry_count
                 print(f"\n⚠️ ERROR 503 UNAVAILABLE. Reintentando en {wait_time} segundos... (Intento {retry_count + 1}/{max_retries})")
-                time.sleep(wait_time) 
+                time.sleep(wait_time)
             else:
                 print("\n❌ Se agotó el número máximo de reintentos. No se pudo obtener una respuesta (Error 503).")
         else:
             print(f"\n❌ Se produjo otro error de servidor: {e}")
             break
-            
+
     except Exception as e:
         print(f"\n❌ Se produjo un error inesperado: {e}")
         break
