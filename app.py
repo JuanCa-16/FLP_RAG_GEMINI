@@ -95,13 +95,14 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
 
     # argsort() da los índices en orden ascendente, [::-1] invierte (descendente), [:top_n] toma los N primeros
     indices_top_n = np.argsort(similitudes_np)[::-1][:top_n]
-
+    
     # Preparamos la lista de resultados
     resultados = []
     for indice in indices_top_n:
         resultados.append({
             "documento": dataframe.iloc[indice]["contenido"],
             "titulo": dataframe.iloc[indice]["titulo"],
+            "metadata": dataframe.iloc[indice]["metadata"],
             "similitud": similitudes_np[indice]
         })
 
@@ -207,7 +208,7 @@ async def responder_pregunta(data: Consulta):
         "pregunta": consulta,
         "respuesta": respuesta_final,
         "documentos_usados": [
-            {"titulo": doc['titulo'], "similitud": f"{doc['similitud']:.4f}"} 
+            {"titulo": doc['titulo'], "metadata": doc['metadata'], "similitud": f"{doc['similitud']:.4f}"} 
             for doc in documentos_relevantes
         ]
     }
