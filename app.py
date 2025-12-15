@@ -32,16 +32,37 @@ MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
 ruta_embeddings = "corpus_con_embeddings.jsonl"
 
-print("✅ Cargando embeddings existentes...")
+docs_df_all = None
+docs_df_pdf = None
+docs_df_video = None
+
+print("✅ Cargando y filtrando embeddings existentes...")
 try:
-    # Se carga el DataFrame una sola vez
-    docs_df = pd.read_json(ruta_embeddings, lines=True)
+    # 1. Carga del DataFrame COMPLETO (se hace una sola vez)
+    docs_df_todo = pd.read_json(ruta_embeddings, lines=True)
+    
+    # Asegurarse de que 'metadata' es un diccionario (o se puede acceder a 'FUENTE')
+    def get_fuente(metadata):
+        return metadata.get('FUENTE', '').upper() if isinstance(metadata, dict) else ''
+
+    docs_df_todo['FUENTE'] = docs_df_todo['metadata'].apply(get_fuente)
+
+    # 2. Filtrado eficiente para los DataFrames específicos
+    docs_df_pdf = docs_df_todo[docs_df_todo['FUENTE'] == 'PDF'].copy()
+    docs_df_video = docs_df_todo[docs_df_todo['FUENTE'] == 'VIDEO'].copy()
+
+    # Log de conteo para verificación
+    print(f"  - Total de documentos cargados: {len(docs_df_todo)}")
+    print(f"  - Documentos PDF disponibles: {len(docs_df_pdf)}")
+    print(f"  - Documentos VIDEO disponibles: {len(docs_df_video)}")
+
 except FileNotFoundError:
-    print(f"Error: No se encontró el archivo {ruta_embeddings}. Asegúrese de que esté en el directorio correcto.")
-    docs_df = None
+    print(f"Error: No se encontró el archivo {ruta_embeddings}.")
+    docs_df_todo = docs_df_pdf = docs_df_video = None
 except Exception as e:
-    print(f"Error al cargar el DataFrame: {e}")
-    docs_df = None
+    print(f"Error al cargar/filtrar el DataFrame: {e}")
+    docs_df_todo = docs_df_pdf = docs_df_video = None
+
 
 # Inicialización de FastAPI
 app = FastAPI(
@@ -71,6 +92,10 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     """Encuentra los top N documentos más relevantes para la consulta dada."""
     if client is None:
         raise HTTPException(status_code=500, detail="El cliente Gemini no se inicializó correctamente.")
+    
+    if dataframe is None or dataframe.empty:
+        # Esto será manejado por los endpoints, pero es una buena práctica aquí también
+        raise HTTPException(status_code=404, detail="El corpus de documentos seleccionado está vacío.")
     
     # ... [TU LÓGICA ORIGINAL PARA EMBEDDING Y CÁLCULO DE SIMILITUD] ...
     # Generamos el embedding para la consulta con RETRIEVAL_QUERY
@@ -165,50 +190,85 @@ def generar_respuesta(consulta: str, contexto: str):
 
     return respuesta_final
 
-
 # ==========================================================
-# 3. ENDPOINT DE LA API
+# 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
 # ==========================================================
 
-@app.post("/rag/responder")
-async def responder_pregunta(data: Consulta):
+async def _ejecutar_rag(consulta: str, dataframe: pd.DataFrame, top_n: int):
     """
-    Endpoint principal para obtener una respuesta RAG.
+    Función interna que encapsula la lógica de RAG para un DataFrame específico.
     """
-    if docs_df is None or docs_df.empty:
-        raise HTTPException(status_code=500, detail="El corpus de embeddings no está cargado o está vacío.")
-
-    consulta = data.pregunta
-    top_n = data.top_n
     
     # 1. Recuperación de documentos
     try:
-        documentos_relevantes = encontrar_documento_relevante(consulta, docs_df, MODEL_ID, top_n=top_n)
+        # Ahora pasamos el DataFrame específico (todo, pdf o video)
+        documentos_relevantes = encontrar_documento_relevante(consulta, dataframe, MODEL_ID, top_n=top_n)
     except Exception as e:
-        # La excepción ya fue manejada y convertida a HTTPException en la función,
-        # pero es bueno tener un manejo genérico.
-        raise HTTPException(status_code=500, detail=f"Error en la fase de Recuperación de Documentos (Embeddings): {e}")
+        # Captura excepciones para formatearlas correctamente en el retorno de la API
+        detail = e.detail if isinstance(e, HTTPException) else str(e)
+        raise HTTPException(status_code=500, detail=f"Error en la fase de Recuperación de Documentos (Embeddings): {detail}")
 
     # 2. Concatenar el contexto
     contexto_combinado = "\n\n--- FUENTE ADICIONAL ---\n\n".join([
-        f"Fuente: {doc['titulo']}\nContenido: {doc['documento']}" 
+        f"Fuente: {doc['titulo']} (Similitud: {doc['similitud']:.4f})\nContenido: {doc['documento']}" 
         for doc in documentos_relevantes
     ])
 
     # 3. Generación de la respuesta
-    try:
-        respuesta_final = generar_respuesta(consulta, contexto_combinado)
-    except Exception as e:
-        # La excepción ya fue manejada y convertida a HTTPException en la función.
-        # Es para asegurar que cualquier fallo se propague como un error de API.
-        raise e
+    if not documentos_relevantes:
+        respuesta_final = f"No se encontró información relevante para su pregunta ('{consulta}') en la fuente de datos seleccionada."
+        documentos_usados = []
+    else:
+        try:
+            respuesta_final = generar_respuesta(consulta, contexto_combinado)
+        except Exception as e:
+            raise e # Propaga el HTTPException de generar_respuesta
+        
+        documentos_usados = [
+            {"titulo": doc['titulo'], "metadata": doc['metadata'], "similitud": f"{doc['similitud']:.4f}"} 
+            for doc in documentos_relevantes
+        ]
         
     # 4. Retornar el resultado estructurado
     return {
         "pregunta": consulta,
         "respuesta": respuesta_final,
-        "documentos_usados": [
-            {"titulo": doc['titulo'], "metadata": doc['metadata'], "similitud": f"{doc['similitud']:.4f}"} 
-            for doc in documentos_relevantes
-        ]
+        "documentos_usados": documentos_usados
     }
+
+# ==========================================================
+# 4. ENDPOINTS DE LA API (Multifuente)
+# ==========================================================
+
+# >>> ESTE REEMPLAZA A SU ENDPOINT ORIGINAL /rag/responder <<<
+@app.post("/rag/responder/todo")
+async def responder_pregunta_todo(data: Consulta):
+    """
+    Endpoint principal para obtener una respuesta RAG, buscando en **TODO** el corpus.
+    """
+    if docs_df_todo is None or docs_df_todo.empty:
+        raise HTTPException(status_code=500, detail="El corpus total de embeddings no está cargado o está vacío.")
+
+    return await _ejecutar_rag(data.pregunta, docs_df_todo, data.top_n)
+
+
+@app.post("/rag/responder/pdf")
+async def responder_pregunta_pdf(data: Consulta):
+    """
+    Endpoint para obtener una respuesta RAG, buscando **SOLO** en documentos con FUENTE: 'PDF'.
+    """
+    if docs_df_pdf is None or docs_df_pdf.empty:
+        raise HTTPException(status_code=404, detail="El corpus de documentos PDF no está disponible o está vacío.")
+
+    return await _ejecutar_rag(data.pregunta, docs_df_pdf, data.top_n)
+
+
+@app.post("/rag/responder/video")
+async def responder_pregunta_video(data: Consulta):
+    """
+    Endpoint para obtener una respuesta RAG, buscando **SOLO** en documentos con FUENTE: 'VIDEO'.
+    """
+    if docs_df_video is None or docs_df_video.empty:
+        raise HTTPException(status_code=404, detail="El corpus de documentos VIDEO no está disponible o está vacío.")
+
+    return await _ejecutar_rag(data.pregunta, docs_df_video, data.top_n)
