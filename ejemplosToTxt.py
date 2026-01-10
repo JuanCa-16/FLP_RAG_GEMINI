@@ -17,7 +17,7 @@ if not GEMINI_API_KEY:
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 CARPETA_ENTRADA = "EJEMPLOS"
-CARPETA_SALIDA = "EJEMPLOS_TXT"
+CARPETA_SALIDA = "TXT_EJEMPLOS"
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 MODELO = "gemini-2.5-flash"

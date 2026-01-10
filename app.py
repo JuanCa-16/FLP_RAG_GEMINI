@@ -1,4 +1,3 @@
-# app.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -13,24 +12,24 @@ from google.genai import types
 import time
 from google.genai.errors import ServerError
 
-# ==========================================================
-# 1. CONFIGURACIÓN y CARGA GLOBAL
-# ==========================================================
+
+# CONFIGURACIÓN y CARGA GLOBAL
+
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Inicialización global del cliente y carga de datos
-# Esto se hace una sola vez al iniciar el servidor (optimización clave)
+# Esto se hace una sola vez al iniciar el servidor
+
 try:
     client = genai.Client(api_key=GEMINI_API_KEY)
 except Exception as e:
-    # Si la clave API falla, se puede manejar el error aquí o dejar que el servidor falle al inicio
     print(f"Error al inicializar el cliente Gemini: {e}")
     client = None
 
 MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
-ruta_embeddings = "corpus_con_ejemplos_embeddings.jsonl"
+RUTA_EMBEDDINGS = "src/embeddings/corpus_con_ejemplos_embeddings.jsonl"
 
 docs_df_all = None
 docs_df_pdf = None
@@ -40,7 +39,7 @@ docs_df_codigos = None
 print("✅ Cargando y filtrando embeddings existentes...")
 try:
     # 1. Carga del DataFrame COMPLETO (se hace una sola vez)
-    docs_df_todo = pd.read_json(ruta_embeddings, lines=True)
+    docs_df_todo = pd.read_json(RUTA_EMBEDDINGS, lines=True)
     
     # Asegurarse de que 'metadata' es un diccionario (o se puede acceder a 'FUENTE')
     def get_fuente(metadata):
@@ -59,7 +58,7 @@ try:
     print(f"  - Documentos VIDEO disponibles: {len(docs_df_video)}")
 
 except FileNotFoundError:
-    print(f"Error: No se encontró el archivo {ruta_embeddings}.")
+    print(f"Error: No se encontró el archivo {RUTA_EMBEDDINGS}.")
     docs_df_todo = docs_df_pdf = docs_df_video = None
 except Exception as e:
     print(f"Error al cargar/filtrar el DataFrame: {e}")
@@ -80,15 +79,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # Modelo Pydantic para la entrada de la API
 class Consulta(BaseModel):
     pregunta: str
     top_n: int = 1 # Parámetro opcional para elegir cuántos documentos usar
 
-# ==========================================================
-# 2. FUNCIONES DE RAG (Adaptadas de tu script)
-# ==========================================================
+
+# 2. FUNCIONES DE RAG
 
 def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo: str, top_n: int = 3):
     """Encuentra los top N documentos más relevantes para la consulta dada."""
@@ -98,8 +95,7 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     if dataframe is None or dataframe.empty:
         # Esto será manejado por los endpoints, pero es una buena práctica aquí también
         raise HTTPException(status_code=404, detail="El corpus de documentos seleccionado está vacío.")
-    
-    # ... [TU LÓGICA ORIGINAL PARA EMBEDDING Y CÁLCULO DE SIMILITUD] ...
+
     # Generamos el embedding para la consulta con RETRIEVAL_QUERY
     embedding_consulta = client.models.embed_content(
         model=modelo,
@@ -114,6 +110,7 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     
     # Calculamos la similitud del coseno entre la consulta y todos los documentos
     similitudes = []
+
     # Los embeddings en el dataframe deben ser convertidos a np.array si están guardados como listas
     doc_embeddings_np = np.array(dataframe['embeddings'].tolist())
     
@@ -135,7 +132,6 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
 
     # Retornamos la lista de resultados
     return resultados
-
 
 def generar_respuesta(consulta: str, contexto: str):
     """Genera una respuesta usando el modelo generativo y el contexto recuperado."""
@@ -162,7 +158,6 @@ def generar_respuesta(consulta: str, contexto: str):
     CONTEXTO: {contexto}
     """
 
-    # ... [TU LÓGICA ORIGINAL PARA GENERACIÓN CON REINTENTOS] ...
     respuesta_final = None
     max_retries = 5
     retry_count = 0
@@ -291,9 +286,8 @@ def generar_respuesta_hibrida(consulta: str, contexto: str):
             raise HTTPException(status_code=500, detail=f"Error inesperado: {e}")
 
     return respuesta_final
-# ==========================================================
+
 # 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
-# ==========================================================
 
 async def _ejecutar_rag(consulta: str, dataframe: pd.DataFrame, top_n: int):
     """
@@ -337,12 +331,9 @@ async def _ejecutar_rag(consulta: str, dataframe: pd.DataFrame, top_n: int):
         "documentos_usados": documentos_usados
     }
 
-# ==========================================================
-# 4. ENDPOINTS DE LA API (Multifuente)
-# ==========================================================
 
-# >>> ESTE REEMPLAZA A SU ENDPOINT ORIGINAL /rag/responder <<<
-@app.post("/rag/responder/todo")
+# 4. ENDPOINTS DE LA API 
+
 @app.post("/rag/responder/todo")
 async def responder_pregunta_todo(data: Consulta):
     """Endpoint que busca en TODO el corpus y maneja inteligentemente los códigos."""
@@ -405,7 +396,6 @@ async def responder_pregunta_pdf(data: Consulta):
         raise HTTPException(status_code=404, detail="El corpus de documentos PDF no está disponible o está vacío.")
 
     return await _ejecutar_rag(data.pregunta, docs_df_pdf, data.top_n)
-
 
 @app.post("/rag/responder/video")
 async def responder_pregunta_video(data: Consulta):

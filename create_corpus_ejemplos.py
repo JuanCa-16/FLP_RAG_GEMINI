@@ -6,20 +6,20 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords
 import nltk
 
-# ==========================================================
-# CONFIGURACIÓN (sin cambios)
-# ==========================================================
+
+# CONFIGURACIÓN
+
 RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
 CARPETA_ENTRADA = os.path.join(RUTA_PADRE, "TXT_GEMINI")
-ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "corpus_con_ejemplos.jsonl")
-CARPETA_EJEMPLOS = os.path.join(RUTA_PADRE, "EJEMPLOS_TXT")
+ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "src/embeddings/corpus_con_ejemplos.jsonl")
+CARPETA_EJEMPLOS = os.path.join(RUTA_PADRE, "TXT_EJEMPLOS")
 ARCHIVO_CONSOLIDADO = os.path.join(RUTA_PADRE, "txt_global.txt")
 MIN_PALABRAS = 60
 MAX_PALABRAS = 100
 
-# ==========================================================
-# STOPWORDS (Español) (sin cambios)
-# ==========================================================
+
+# STOPWORDS
+
 try:
     STOP_WORDS_ES = set(stopwords.words('spanish'))
 except LookupError:
@@ -32,11 +32,12 @@ STOP_WORDS_ES.update({
     "muchachos", "ustedes", "gracias", "por su", "profesor", "curso", "bueno", "pues", "debe", "cierto", "ej", "digamos","partir","utilizar","va","pronto", "acá","mencioné", "ejemplo", "quiero", "recuerden","siguientes",
 "sencillamente","vamos","perdón","próximo","sé","vamos","voy","miren","así"
 })
+
 STOP_WORDS_ES = list(STOP_WORDS_ES)
 
-# ==========================================================
-# FUNCIONES BASE (sin cambios)
-# ==========================================================
+
+# FUNCIONES BASE
+
 def limpiar_texto(texto: str) -> str:
     """Limpieza de texto sin eliminar signos útiles ni palabras acentuadas."""
 
@@ -67,9 +68,6 @@ def extraer_palabras_clave(texto: str, vectorizador: TfidfVectorizer, top_n: int
     except Exception:
         return []
 
-# ==========================================================
-# PROCESAMIENTO DE BLOQUES (Lógica Original: Archivos NO 'video')
-# ==========================================================
 def dividir_bloques(texto: str) -> List[Dict]:
     """Divide el texto usando los tags <CODIGO_BLOCK_START>, <IMG_BLOCK_START>, etc."""
     fragmentos = []
@@ -105,9 +103,6 @@ def dividir_bloques(texto: str) -> List[Dict]:
 
     return fragmentos
 
-# ==========================================================
-# PROCESAMIENTO DE BLOQUES (Lógica Original MODIFICADA: Archivos NO 'video')
-# ==========================================================
 def dividir_bloques_por_hash(texto: str) -> List[Dict]:
     """
     Divide el texto en bloques basados en las líneas que comienzan con '#####',
@@ -162,10 +157,6 @@ def dividir_bloques_por_hash(texto: str) -> List[Dict]:
         return [{"tipo": "concepto", "texto": limpiar_texto(texto.strip())}]
         
     return fragmentos
-
-# ==========================================================
-# PROCESAMIENTO DE BLOQUES (Lógica Nueva: Archivos 'video')
-# ==========================================================
 
 def dividir_por_hashtag(texto: str) -> List[Dict]:
     """
@@ -223,10 +214,6 @@ def dividir_por_hashtag(texto: str) -> List[Dict]:
     
     return fragmentos
 
-
-# ==========================================================
-# AGRUPACIÓN DE PÁRRAFOS Y UNIÓN (sin cambios)
-# ==========================================================
 def agrupar_parrafos(fragmentos: List[Dict]) -> List[Dict]:
     # ... (cuerpo de la función agrupar_parrafos es el mismo que en tu código original)
     resultado = []
@@ -297,9 +284,9 @@ def unir_fragmentos_pequenos(fragmentos: List[Dict], min_palabras: int = 50) -> 
         
     return nuevos
 
-# ==========================================================
-# PIPELINE PRINCIPAL (MODIFICADO CON LÓGICA CONDICIONAL)
-# ==========================================================
+
+# PIPELINE PRINCIPAL
+
 def procesar_archivos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]:
     fragmentos_global = []
 
@@ -416,9 +403,8 @@ def procesar_ejemplos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
 
     return fragmentos_global
 
-# ==========================================================
-# EJECUCIÓN (sin cambios)
-# ==========================================================
+# EJECUCIÓN
+
 print("🧠 Cargando vectorizador global...")
 vectorizador_global = cargar_vectorizador_consolidado(ARCHIVO_CONSOLIDADO)
 

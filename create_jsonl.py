@@ -6,12 +6,15 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords
 import nltk
 
+
+#ESTE NO INCLUYE LOS EJEMPLOS (LA IDEA ES BORRAR ESTE ARCHIVO A FUTURO)
+
 # ==========================================================
 # CONFIGURACIÓN (sin cambios)
 # ==========================================================
 RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
 CARPETA_ENTRADA = os.path.join(RUTA_PADRE, "TXT_GEMINI")
-ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "corpus.jsonl")
+ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "src/embeddings/corpus.jsonl")
 ARCHIVO_CONSOLIDADO = os.path.join(RUTA_PADRE, "txt_global.txt")
 MIN_PALABRAS = 60
 MAX_PALABRAS = 100

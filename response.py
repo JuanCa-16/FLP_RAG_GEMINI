@@ -18,7 +18,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
-ruta_embeddings = "corpus_con_embeddings.jsonl"
+ruta_embeddings = "src/embeddings/corpus_con_embeddings.jsonl"
 
 # ==========================================================
 # CARGAR EMBEDDINGS Y CONSULTA
