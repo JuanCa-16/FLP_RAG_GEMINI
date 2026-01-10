@@ -30,11 +30,12 @@ except Exception as e:
 
 MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
-ruta_embeddings = "corpus_con_embeddings.jsonl"
+ruta_embeddings = "corpus_con_ejemplos_embeddings.jsonl"
 
 docs_df_all = None
 docs_df_pdf = None
 docs_df_video = None
+docs_df_codigos = None
 
 print("✅ Cargando y filtrando embeddings existentes...")
 try:
@@ -50,6 +51,7 @@ try:
     # 2. Filtrado eficiente para los DataFrames específicos
     docs_df_pdf = docs_df_todo[docs_df_todo['FUENTE'] == 'PDF'].copy()
     docs_df_video = docs_df_todo[docs_df_todo['FUENTE'] == 'VIDEO'].copy()
+    docs_df_codigos = docs_df_todo[docs_df_todo['FUENTE'] == 'CODIGO'].copy()
 
     # Log de conteo para verificación
     print(f"  - Total de documentos cargados: {len(docs_df_todo)}")
@@ -189,6 +191,106 @@ def generar_respuesta(consulta: str, contexto: str):
 
     return respuesta_final
 
+def generar_respuesta_codigo(consulta: str, contexto: str):
+    """Genera una respuesta técnica centrada en Racket con lógica de reintentos."""
+    if client is None:
+        raise HTTPException(status_code=500, detail="Cliente Gemini no inicializado.")
+        
+    prompt = f"""
+    Tu rol: Eres un profesor universitario experto en **Interpretadores y Lenguajes de Programación**, especialista en **Racket** y la librería `eopl`.
+    
+    Tu misión: Responder a la duda del usuario basándote en la información técnica y los códigos fuente del CONTEXTO.
+
+    ### ESCENARIOS DE RESPUESTA:
+
+    1. **Si el usuario PIDE un ejemplo:** - Busca en el CONTEXTO el código con mejor similitud. 
+       - Si el CONTEXTO contiene un ejemplo relevante: Muéstralo y explica su funcionamiento (gramática, ambientes, etc.) paso a paso.
+       - Si el CONTEXTO NO contiene un ejemplo que satisfaga la petición: Indica profesionalmente: "No dispongo de un ejemplo de código específico en mis registros para explicar ese concepto."
+
+    2. **Si el usuario ENVÍA código en su pregunta para que lo expliques:**
+       - Explica el código del usuario usando tus conocimientos expertos en Racket/eopl.
+       - **Búsqueda de Similitud:** Si en el CONTEXTO encuentras un código similar o relacionado, menciónalo como una referencia adicional diciendo: "He encontrado este ejemplo relacionado en los archivos del curso que podría interesarte:" y muestra el fragmento del contexto.
+
+    3. **Si es una duda teórica sobre el código del contexto:**
+       - Responde detalladamente basándote en la explicación técnica del fragmento recuperado.
+
+    ### REGLAS TÉCNICAS INELUDIBLES:
+    - **Sintaxis:** Explica el cod, su funcionalidad.
+    - **Formato:** Todo código debe ir en bloques Markdown con sintaxis `racket`.
+    - **Fidelidad:** No inventes funcionalidades que no existan en los fragmentos del CONTEXTO a menos que sea para explicar el código que el usuario envió.
+
+    CONTEXTO RECUPERADO (Explicación + Código Fuente):
+    {contexto}
+
+    PREGUNTA DEL USUARIO:
+    {consulta}
+    """
+
+    respuesta_final = None
+    max_retries = 5
+    retry_count = 0
+
+    while respuesta_final is None and retry_count < max_retries:
+        try:
+            respuesta = client.models.generate_content(
+                model=GENERATIVE_MODEL,
+                contents=prompt
+            )
+            respuesta_final = respuesta.text
+        except ServerError as e:
+            if '503 UNAVAILABLE' in str(e):
+                retry_count += 1
+                time.sleep(2**retry_count)
+            else:
+                raise HTTPException(status_code=500, detail=f"Error Gemini: {e}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error inesperado: {e}")
+
+    return respuesta_final
+
+def generar_respuesta_hibrida(consulta: str, contexto: str):
+    """Genera respuestas que pueden contener teoría (PDF/Video) o práctica (Código)."""
+    if client is None:
+        raise HTTPException(status_code=500, detail="Cliente Gemini no inicializado.")
+
+    prompt = f"""
+    Tu rol: Eres un profesor universitario experto en **Fundamentos de Interpretación y Compilación**. Dominas tanto la teoría como la implementación práctica en **Racket (eopl)**.
+
+    Tu tarea: Responder a la duda del usuario usando exclusivamente el CONTEXTO proporcionado.
+
+    ### REGLAS SEGÚN EL TIPO DE INFORMACIÓN EN EL CONTEXTO:
+    1. **Si hay fragmentos de CÓDIGO:** Explica la implementación, gramática o sintaxis. Si el usuario pide un ejemplo y el contexto lo tiene, muéstralo en un bloque `racket`,  Todo código debe ir en bloques Markdown con sintaxis `racket`.
+    2. **Si hay teoría (PDF/Video):** Úsala para dar definiciones formales y conceptos.
+    3. **Si el usuario envía su propio código:** Explícalo usando tus conocimientos y compáralo con los ejemplos del contexto si existen similitudes.
+    4. **Si falta información:** Si no hay un ejemplo específico o la teoría no cubre la duda, di: "La información disponible en el material de clase no cubre este punto específico".
+
+    CONTEXTO:
+    {contexto}
+
+    PREGUNTA: {consulta}
+    """
+
+    respuesta_final = None
+    max_retries = 5
+    retry_count = 0
+
+    while respuesta_final is None and retry_count < max_retries:
+        try:
+            respuesta = client.models.generate_content(
+                model=GENERATIVE_MODEL,
+                contents=prompt
+            )
+            respuesta_final = respuesta.text
+        except ServerError as e:
+            if '503 UNAVAILABLE' in str(e):
+                retry_count += 1
+                time.sleep(2**retry_count)
+            else:
+                raise HTTPException(status_code=500, detail=f"Error Gemini: {e}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error inesperado: {e}")
+
+    return respuesta_final
 # ==========================================================
 # 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
 # ==========================================================
@@ -241,14 +343,57 @@ async def _ejecutar_rag(consulta: str, dataframe: pd.DataFrame, top_n: int):
 
 # >>> ESTE REEMPLAZA A SU ENDPOINT ORIGINAL /rag/responder <<<
 @app.post("/rag/responder/todo")
+@app.post("/rag/responder/todo")
 async def responder_pregunta_todo(data: Consulta):
-    """
-    Endpoint principal para obtener una respuesta RAG, buscando en **TODO** el corpus.
-    """
+    """Endpoint que busca en TODO el corpus y maneja inteligentemente los códigos."""
     if docs_df_todo is None or docs_df_todo.empty:
-        raise HTTPException(status_code=500, detail="El corpus total de embeddings no está cargado o está vacío.")
+        raise HTTPException(status_code=500, detail="Corpus no cargado.")
 
-    return await _ejecutar_rag(data.pregunta, docs_df_todo, data.top_n)
+    # 1. Recuperación
+    documentos = encontrar_documento_relevante(data.pregunta, docs_df_todo, MODEL_ID, top_n=data.top_n)
+
+    # 2. Construcción de contexto inteligente
+    contexto_lista = []
+    for doc in documentos:
+        fuente = doc['metadata'].get('FUENTE', 'DESCONOCIDA')
+        contenido = doc['documento']
+        
+        # Si es código, extraemos el snippet de la metadata
+        if fuente == 'CODIGO' and 'codigo' in doc['metadata']:
+            snippet = doc['metadata']['codigo']
+            item = f"--- FUENTE: CÓDIGO ({doc['titulo']}) ---\nEXPLICACIÓN: {contenido}\nCODE_START\n{snippet}\nCODE_END"
+        else:
+            item = f"--- FUENTE: {fuente} ({doc['titulo']}) ---\nCONTENIDO: {contenido}"
+        
+        contexto_lista.append(item)
+
+    contexto_final = "\n\n".join(contexto_lista)
+
+    # 3. Generación con la nueva lógica híbrida
+    try:
+        respuesta = generar_respuesta_hibrida(data.pregunta, contexto_final)
+    except Exception as e:
+        raise e
+
+    return {
+        "pregunta": data.pregunta,
+        "respuesta": respuesta,
+        "documentos_usados": [
+            {
+                "titulo": d['titulo'], 
+                "fuente": d['metadata'].get('FUENTE'), 
+                "similitud": f"{d['similitud']:.4f}"
+            } for d in documentos
+        ]
+    }
+# async def responder_pregunta_todo(data: Consulta):
+#     """
+#     Endpoint principal para obtener una respuesta RAG, buscando en **TODO** el corpus.
+#     """
+#     if docs_df_todo is None or docs_df_todo.empty:
+#         raise HTTPException(status_code=500, detail="El corpus total de embeddings no está cargado o está vacío.")
+
+#     return await _ejecutar_rag(data.pregunta, docs_df_todo, data.top_n)
 
 
 @app.post("/rag/responder/pdf")
@@ -271,3 +416,46 @@ async def responder_pregunta_video(data: Consulta):
         raise HTTPException(status_code=404, detail="El corpus de documentos VIDEO no está disponible o está vacío.")
 
     return await _ejecutar_rag(data.pregunta, docs_df_video, data.top_n)
+
+@app.post("/rag/responder/codigo")
+async def responder_pregunta_codigo(data: Consulta):
+    """
+    Endpoint para obtener explicaciones de código buscando en la metadata.
+    """
+    if docs_df_codigos is None or docs_df_codigos.empty:
+        raise HTTPException(status_code=404, detail="El corpus de CÓDIGO no está cargado.")
+
+    # 1. Recuperación de documentos relevantes
+    try:
+        documentos_relevantes = encontrar_documento_relevante(data.pregunta, docs_df_codigos, MODEL_ID, top_n=data.top_n)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en recuperación: {str(e)}")
+
+    if not documentos_relevantes:
+        return {"pregunta": data.pregunta, "respuesta": "No encontré ejemplos de código relacionados.", "documentos_usados": []}
+
+    # 2. Construcción del contexto UNIFICANDO contenido y el campo 'codigo' de la metadata
+    contexto_combinado = ""
+    for i, doc in enumerate(documentos_relevantes):
+        # Extraemos el código real desde la metadata según tu ejemplo
+        codigo_fuente = doc['metadata'].get('codigo', 'Código no disponible')
+        explicacion_texto = doc['documento'] # Este es el campo 'contenido' del JSON
+        
+        contexto_combinado += f"\n--- EJEMPLO {i+1}: {doc['titulo']} ---\n"
+        contexto_combinado += f"EXPLICACIÓN TÉCNICA: {explicacion_texto}\n"
+        contexto_combinado += f"CÓDIGO FUENTE RACKET:\n{codigo_fuente}\n"
+
+    # 3. Generación de la respuesta con el prompt especializado
+    try:
+        respuesta_final = generar_respuesta_codigo(data.pregunta, contexto_combinado)
+    except Exception as e:
+        raise e
+
+    return {
+        "pregunta": data.pregunta,
+        "respuesta": respuesta_final,
+        "documentos_usados": [
+            {"titulo": doc['titulo'], "similitud": f"{doc['similitud']:.4f}", "archivo": doc['metadata'].get('NOMBRE_DOCUMENTO')} 
+            for doc in documentos_relevantes
+        ]
+    }

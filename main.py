@@ -12,8 +12,11 @@ load_dotenv()
 MODEL_ID = "gemini-embedding-001"
 BATCH_SIZE = 100 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-RUTA_CORPUS = "corpus.jsonl" 
-RUTA_CORPUS_EMBEDDINGS = "corpus_con_embeddings.jsonl"
+#RUTA_CORPUS = "corpus.jsonl" 
+#RUTA_CORPUS_EMBEDDINGS = "corpus_con_embeddings.jsonl"
+RUTA_CORPUS = "corpus_con_ejemplos.jsonl" 
+RUTA_CORPUS_EMBEDDINGS = "corpus_con_ejemplos_embeddings.jsonl"
+
 
 
 client = genai.Client(api_key=GEMINI_API_KEY)
