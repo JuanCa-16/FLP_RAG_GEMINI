@@ -214,7 +214,6 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
                 contents=prompt,
                 config={
                     'temperature': 0,
-                    'max_output_tokens': 800
                 } 
             )
             respuesta_final = respuesta.text
@@ -237,39 +236,37 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
 
 # 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
 def contextualizar_pregunta(pregunta_usuario: str, historial: list[Mensaje]):
-    """Crea una consulta independiente basada en el historial."""
     if not historial:
         return pregunta_usuario
 
     chat_history_str = "\n".join([f"{m.role}: {m.content}" for m in historial])
     
     prompt = f"""
-    Eres un asistente experto en reformular consultas para sistemas de búsqueda semántica. 
-    Tu objetivo es convertir una "Pregunta de Seguimiento" en una consulta independiente y concisa basándote en el "Historial de Conversación".
+    Eres un experto en recuperación de información. Tu tarea es decidir si una "Pregunta de Usuario" necesita contexto del historial para ser entendida por un buscador.
 
-    REGLAS CRÍTICAS:
-    1. NO añadidas introducciones como "Dado lo anterior..." o "Basado en la charla...".
-    2. NO respondas la pregunta, solo reescríbela.
-    3. La salida debe ser exclusivamente la pregunta reformulada, optimizada para buscar en embeddings.
-    4. Si la pregunta ya es independiente, o no tiene que ver con el historial de la conversación, devuélvela exactamente igual.
+    REGLAS:
+    1. Si la pregunta es general, teórica o ya incluye sus propios sujetos (ej. "¿Cómo es la interfaz de datos recursivos?"), DEVUÉLVELA EXACTAMENTE IGUAL.
+    2. Si la pregunta usa pronombres o referencias ambiguas (ej. "¿Cómo funciona eso?", "Dame otro ejemplo", "¿Quién lo creó?"), REFORMÚLALA usando el historial.
+    3. NO añadas temas del historial si la pregunta del usuario ya es una consulta técnica completa por sí misma.
+    4. La salida debe ser SOLO la pregunta, sin explicaciones.
 
     HISTORIAL:
     {chat_history_str}
 
-    PREGUNTA DE SEGUIMIENTO: {pregunta_usuario}
+    PREGUNTA DEL USUARIO: {pregunta_usuario}
 
-    PREGUNTA REFORMULADA:"""
+    PREGUNTA PARA EL BUSCADOR:"""
 
     try:
         res = client.models.generate_content(
             model=GENERATIVE_MODEL, 
             contents=prompt,
-            config={'temperature': 0} 
+            config={'temperature': 0} # Mantener 0 es vital para consistencia
         )
         return res.text.strip()
     except:
         return pregunta_usuario
-
+    
 async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
     """
     Función interna que encapsula la lógica de RAG para un DataFrame específico.
