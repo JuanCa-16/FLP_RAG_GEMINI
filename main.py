@@ -7,15 +7,18 @@ from google.genai import types
 import pandas as pd
 import numpy as np
 
+# corpues con los embeddings 
 load_dotenv()
 
 MODEL_ID = "gemini-embedding-001"
 BATCH_SIZE = 100 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
+
 #RUTA_CORPUS = "corpus.jsonl" 
 #RUTA_CORPUS_EMBEDDINGS = "corpus_con_embeddings.jsonl"
-RUTA_CORPUS = "src/embeddings/corpus_con_ejemplos.jsonl" 
-RUTA_CORPUS_EMBEDDINGS = "src/embeddings/corpus_con_ejemplos_embeddings.jsonl"
+RUTA_CORPUS =  os.path.join(RUTA_PADRE, "src", "embeddings", "corpus_con_ejemplos.jsonl")
+RUTA_CORPUS_EMBEDDINGS = os.path.join(RUTA_PADRE, "src", "embeddings", "corpus_con_ejemplos_embeddings.jsonl") 
 
 
 

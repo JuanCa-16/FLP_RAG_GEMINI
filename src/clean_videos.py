@@ -19,8 +19,11 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # Nombres de las carpetas de entrada y salida
-CARPETA_ENTRADA = "TXT_METADATA"
-CARPETA_SALIDA = "TXT_GEMINI"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "TXT_METADATA")
+CARPETA_SALIDA = os.path.join(BASE_DIR, "TXT_GEMINI")
+
 os.makedirs(CARPETA_SALIDA, exist_ok=True) # Crear la carpeta de salida si no existe
 
 print(f"🌟 Script de limpieza de transcripciones iniciado.")

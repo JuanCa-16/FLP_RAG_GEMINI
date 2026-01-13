@@ -13,9 +13,9 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-# Nombres de las carpetas de entrada y salida
-CARPETA_ENTRADA = "TXT_METADATA"
-CARPETA_SALIDA_ESTRUCTURA = "TXT_GEMINI"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "TXT_METADATA")
+CARPETA_SALIDA_ESTRUCTURA = os.path.join(BASE_DIR, "TXT_GEMINI")
 
 # Crear la carpeta de salida si no existe
 os.makedirs(CARPETA_SALIDA_ESTRUCTURA, exist_ok=True)

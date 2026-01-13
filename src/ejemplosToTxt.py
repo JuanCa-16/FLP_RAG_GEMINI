@@ -16,8 +16,12 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-CARPETA_ENTRADA = "EJEMPLOS"
-CARPETA_SALIDA = "TXT_EJEMPLOS"
+RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # root
+
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "EJEMPLOS")
+CARPETA_SALIDA = os.path.join(BASE_DIR, "TXT_EJEMPLOS")
+
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 MODELO = "gemini-2.5-flash"
