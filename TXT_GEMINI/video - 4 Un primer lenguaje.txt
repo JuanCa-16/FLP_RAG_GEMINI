@@ -1,151 +1,58 @@
-Aquí tienes la transcripción limpia y coherente, lista para estudio:
+Para implementar una gramática en un lenguaje de programación como DrRacket, se puede utilizar la estructura `define-datatype`. Esta herramienta permite definir tipos de datos algebraicos que se corresponden directamente con las reglas de una gramática, facilitando la construcción de un árbol de sintaxis abstracta (AST). Por ejemplo, dada una gramática para declaraciones y expresiones, se pueden definir dos tipos de datos: `declaration` y `expression`. Cada variante dentro de estos `define-datatype` representará una regla de producción de la gramática. La variante `declaration-type1`, que contiene dos declaraciones `a` y `b`, corresponde a una regla como `declaration ::= declaration ; declaration`. De manera similar, otras variantes pueden representar reglas como `declaration ::= while expression do declaration` o `declaration ::= identifier = expression`.
 
----
+####
 
-### Implementación de Gramáticas para Lenguajes de Programación
+La implementación de una gramática mediante `define-datatype` requiere la construcción manual de los árboles de sintaxis abstracta (AST). Esto implica anidar las llamadas a los constructores de cada variante para representar la estructura del código fuente. Por ejemplo, para representar una declaración compuesta, se debería escribir una expresión como `(declaration-type1 (declaration-type3 'x (expression-type1 'y)) (declaration-type2 ...))`. Este proceso es tedioso, propenso a errores y poco práctico para analizar código real, ya que obliga al programador a construir el árbol manualmente en lugar de escribir el código en la sintaxis definida por la gramática. La complejidad de este enfoque manual motiva el uso de herramientas automatizadas, como generadores de parsers, que pueden construir el AST directamente a partir de una cadena de texto.
 
-Este módulo aborda la implementación de gramáticas para lenguajes de programación utilizando herramientas de generación automática de analizadores.
+####
 
-#### 1. Definición Manual de Tipos de Datos (Introducción y Descarte)
-
-Inicialmente, podemos implementar la gramática mediante la definición manual de tipos de datos utilizando `define-data-type`.
-
-**A. Declaración (Declaration)**
-
-*   **Declaracion Tipo 1**: Contiene dos elementos que son a su vez declaraciones.
-    ```racket
-    (define-data-type Declaracion
-      (Declaracion1 (d1 Declaracion) (d2 Declaracion)))
-    ```
-*   **Declaracion Tipo 2**: Contiene una expresión y una declaración.
-    ```racket
-    (Declaracion2 (e Expresion) (d Declaracion)))
-    ```
-    (Nota: Se ignoran las palabras clave y signos escritos; solo nos interesan las estructuras expresadas por la gramática, como `while Expresion do Declaracion`.)
-*   **Declaracion Tipo 3**: Contiene un identificador y una expresión.
-    ```racket
-    (Declaracion3 (id Symbol) (e Expresion)))
-    ```
-
-**B. Expresión (Expression)**
-
-*   **Expresion Tipo 1**: Un identificador.
-    ```racket
-    (define-data-type Expresion
-      (Expresion1 (id Symbol)))
-    ```
-*   **Expresion Tipo 2**: Una suma de dos expresiones.
-    ```racket
-    (Expresion2 (e1 Expresion) (e2 Expresion)))
-    ```
-
-Sin embargo, la construcción manual de árboles de sintaxis abstracta (AST) de esta manera resulta tediosa y propensa a errores. Por ello, recurriremos a una librería para la generación automática.
-
-#### 2. Generación Automática de Analizadores con SLGEN
-
-Utilizaremos la librería SLGEN para automatizar la creación del analizador léxico, el analizador sintáctico y los tipos de datos del AST.
-
-**A. Especificación Léxica (Lexical Specification)**
-
-La especificación léxica es una lista simbólica que define los tokens del lenguaje.
-
-*   **Espacios en blanco**: `(whitespace (regexp "#\\s+") (ignored))` - Se ignoran.
-*   **Comentarios**: `(comment (regexp "#%;.*") (ignored))` - Inician con `%` y se ignoran.
-*   **Identificadores**: `(identifier (regexp "[a-zA-Z][a-zA-Z0-9]*") (to-symbol))` - Una letra seguida de letras o dígitos. Se transforman en símbolos. (Evitar `%` como carácter en identificadores para no crear conflictos con comentarios).
-*   **Números**:
-    *   Enteros: `(number (regexp "[0-9]+") (to-number))` - Uno o más dígitos.
-    *   Negativos: `(number (regexp "-[0-9]+") (to-number))` - Un signo menos seguido de uno o más dígitos.
-    *   Punto flotante: `(number (regexp "[0-9]+\\.[0-9]+") (to-number))` - Dígitos, un punto, y más dígitos.
-    *   Negativos en punto flotante: `(number (regexp "-[0-9]+\\.[0-9]+") (to-number))` - Un signo menos, dígitos, un punto, y más dígitos.
-
-**B. Especificación Gramatical (Grammar Specification)**
-
-La especificación gramatical define la estructura sintáctica del lenguaje, mapeando directamente las reglas.
-
-*   **Declaración**:
-    *   `Declaracion ::= Declaracion ; Declaracion` -> `(Declaracion (Declaracion1 (d1 Declaracion) (d2 Declaracion)))`
-    *   `Declaracion ::= while Expresion do Declaracion` -> `(Declaracion (Declaracion2 (e Expresion) (d Declaracion)))`
-    *   `Declaracion ::= identifier := Expresion` -> `(Declaracion (Declaracion3 (id identifier) (e Expresion)))`
-*   **Expresión**:
-    *   `Expresion ::= identifier` -> `(Expresion (Expresion1 (id identifier)))`
-    *   `Expresion ::= number` -> `(Expresion (Expresion2 (n number)))`
-    *   `Expresion ::= Expresion + Expresion` -> `(Expresion (Expresion3 (e1 Expresion) (e2 Expresion)))`
-
-**C. Generación de Tipos de Datos del AST**
-
-La librería SLGEN permite generar automáticamente los tipos de datos (`define-data-type`) para el AST a partir de las especificaciones léxica y gramatical.
+Una alternativa a la construcción manual de parsers es utilizar una librería especializada como `sllgen` en Racket. El primer paso con esta librería es definir una especificación léxica. Esta especificación es una lista simbólica que define los patrones de los tokens (o lexemas) del lenguaje. Cada elemento de la lista es una sublista que contiene un nombre para el tipo de token (ej. `whitespace`), una expresión regular que describe el patrón del token (ej. `(any-of " \t\n")`), y una acción a realizar cuando se encuentra el token (ej. `ignore`). Otras acciones comunes incluyen transformar el texto coincidente en un símbolo (`symbol`) o un número (`number`), lo cual es útil para identificadores y literales numéricos.
 
 ```racket
-(SLGEN make-define-data-types 'lexical-specification 'grammar-specification)
+(define lexical-specification
+  `([whitespace (repetition 1 +inf.0 (char-in " \t\n")) ignore]
+    [comment ("%" (repetition 0 +inf.0 (char-not-in "\n"))) ignore]
+    [identifier (sequence letter (repetition 0 +inf.0 (char-in "a-zA-Z0-9_"))) symbol]
+    [number (optional "-") (repetition 1 +inf.0 digit) number]
+    [float (sequence (optional "-")
+                     (repetition 1 +inf.0 digit)
+                     "."
+                     (repetition 1 +inf.0 digit)) number]))
 ```
-Para listar los tipos de datos creados automáticamente:
-```racket
-(SLGEN list-define-data-types 'lexical-specification 'grammar-specification)
-```
 
-**D. Construcción del Escáner (Lexer)**
+####
 
-El escáner se construye utilizando `SLGEN make-string-scanner` y toma como parámetros las especificaciones léxica y gramatical. Retorna una función (un procedimiento) que puede escanear cadenas de texto.
-
-```racket
-(define scanner (SLGEN make-string-scanner 'lexical-specification 'grammar-specification))
-```
-**Ejemplo de escaneo:**
-Al ejecutar `(scanner "while x := 1.8; y := x + 2")`, el escáner produce una secuencia de tokens, identificando literales, identificadores y números.
-
-**E. Construcción del Analizador Sintáctico (Parser)**
-
-El analizador sintáctico se construye con `SLGEN make-string-parser`, también recibiendo las especificaciones léxica y gramatical. Este procedimiento devuelve una función que transforma una cadena de texto en un AST.
+Después de la especificación léxica, se define la especificación gramatical. Esta también es una lista que mapea directamente las reglas de producción de la gramática a una estructura de datos. Cada elemento de la lista representa una regla y contiene tres partes: el no terminal del lado izquierdo de la producción (ej. `declaration`), una lista de símbolos terminales y no terminales del lado derecho (ej. `(declaration ";" declaration)`), y un nombre para la variante del AST que se creará (ej. `declaration-type1`). Esta declaración permite describir la sintaxis del lenguaje de forma declarativa, separando la definición de la gramática del código que la procesará.
 
 ```racket
-(define parser (SLGEN make-string-parser 'lexical-specification 'grammar-specification))
+(define grammatical-specification
+  `([declaration (declaration ";" declaration) declaration-type1]
+    [declaration ("while" expression "do" declaration) declaration-type2]
+    [declaration (identifier ":=" expression) declaration-type3]
+    [expression (identifier) expression-type1]
+    [expression (number) expression-type2]
+    [expression ("(" expression "+" expression ")") expression-type3]))
 ```
-**Manejo de conflictos comunes del parser:**
-Durante la construcción del parser, pueden surgir conflictos gramaticales como la ambigüedad o la recursión por la izquierda.
-*   **Ambigüedad en el inicio de reglas**: Si múltiples reglas pueden comenzar con el mismo token (ej., `Declaracion1`, `Declaracion2`, `Declaracion3` pueden empezar con `identifier` o `while`), el parser no sabrá cuál elegir. Es crucial revisar y ajustar la gramática, por ejemplo, asegurando que las reglas tengan prefijos distintivos o manejando la precedencia.
-*   **Recursión por la izquierda y precedencia**: Para operaciones como `Expresion + Expresion`, la recursión por la izquierda puede causar problemas o ambigüedad en el orden de evaluación. Esto se resuelve comúnmente mediante el uso de paréntesis en la gramática para forzar la precedencia o el agrupamiento.
-    Por ejemplo, transformar `Expresion ::= Expresion + Expresion` a `Expresion ::= (Expresion + Expresion)` o reestructurar la gramática.
 
-**Ejemplo de parsing:**
-```racket
-(parser "while x := 1.8; y := x + 2")
-```
-Esto generará el AST correspondiente a la entrada.
+####
 
-#### 3. Construcción del Intérprete (REPL)
+Con las especificaciones léxica y gramatical definidas, la librería `sllgen` puede generar automáticamente los `define-datatype` necesarios para representar el árbol de sintaxis abstracta. La función `sllgen:make-define-datatypes` toma ambas especificaciones como argumentos y crea las definiciones de tipos de datos correspondientes a las reglas de la gramática. Esto elimina la necesidad de escribir manualmente las estructuras de datos, automatizando una tarea repetitiva y propensa a errores. Para verificar los tipos de datos generados, se puede utilizar la función `sllgen:list-define-datatypes`, que lista las definiciones creadas, confirmando que la estructura del AST se corresponde con la gramática especificada.
 
-Finalmente, se construye el intérprete, o Read-Eval-Print Loop (REPL), utilizando `SLGEN make-repl`.
+####
 
-```racket
-(define interpretador
-  (SLGEN make-repl
-    #:prompt "primer-lenguaje> "
-    #:eval-function evaluar-programa
-    #:parser (SLGEN make-string-parser 'lexical-specification 'grammar-specification)))
-```
-La función `evaluar-programa` recibe el AST generado por el parser y se encarga de procesarlo.
+El escáner, o analizador léxico, es el componente que convierte una cadena de texto de entrada en una secuencia de tokens. La librería `sllgen` proporciona la función `sllgen:make-string-scanner` para generar un escáner a partir de la especificación léxica y gramatical. Esta función devuelve un procedimiento (un lambda) que, al ser invocado con una cadena de código fuente, la procesa y devuelve una lista de los tokens identificados. Por ejemplo, al escanear la cadena `"while x do y := 1.4"`, el escáner identifica los literales ("while", "do", ":="), los identificadores ("x", "y") y los números ("1.4"), de acuerdo con las reglas definidas en la especificación léxica.
 
-```racket
-(define (evaluar-programa programa-ast)
-  (cases Declaracion programa-ast
-    [(Declaracion1 d1 d2) (list (evaluar-programa d1) (evaluar-programa d2))]
-    [(Declaracion2 e d) (list 'while (evaluar-expresion e) (evaluar-programa d))]
-    [(Declaracion3 id e) (list 'assign (symbol->string id) (evaluar-expresion e))]))
+####
 
-(define (evaluar-expresion expr-ast)
-  (cases Expresion expr-ast
-    [(Expresion1 id) (symbol->string id)]
-    [(Expresion2 n) n]
-    [(Expresion3 e1 e2) (list (evaluar-expresion e1) '+ (evaluar-expresion e2))]))
-```
-**Ejecución del intérprete:**
-Al ejecutar `(interpretador)`, se abrirá una ventana interactiva donde se pueden introducir expresiones del lenguaje. Por ejemplo:
-```
-primer-lenguaje> x := 1.8; while x do y := x + 1
-```
-El intérprete procesará la entrada, generará el AST y lo deconstruirá utilizando la función `evaluar-programa`, mostrando el resultado de la evaluación. La deconstrucción del AST mediante `cases` es el método principal para implementar la semántica del lenguaje.
+El parser, o analizador sintáctico, es responsable de tomar la secuencia de tokens generada por el escáner y construir un árbol de sintaxis abstracta (AST) que represente la estructura gramatical del código. La función `sllgen:make-string-parser` genera un parser a partir de las especificaciones léxica y gramatical. Este parser es una función que recibe una cadena de texto y, si la cadena es sintácticamente correcta, devuelve el AST correspondiente. Durante este proceso, pueden surgir conflictos si la gramática es ambigua. Por ejemplo, una regla como `expression ::= expression + expression` puede generar conflictos de precedencia o asociatividad. Estos errores deben corregirse en la especificación gramatical, a menudo añadiendo elementos como paréntesis para eliminar la ambigüedad, como en `expression ::= "(" expression "+" expression ")"`. La lectura e interpretación de los mensajes de error del generador de parsers es fundamental para depurar la gramática.
 
-Este proceso sienta las bases para construir nuestro primer lenguaje de programación, permitiendo abordar los conceptos fundamentales de compiladores e intérpretes.
+####
+
+Para crear una interfaz interactiva o un REPL (Read-Eval-Print Loop), se puede utilizar la función `sllgen:make-rep-loop`. Esta función construye un bucle que lee la entrada del usuario, la procesa y muestra el resultado. Requiere como argumentos un prompt (el texto que se muestra al usuario, ej. `"> "`), una función de evaluación que procesará el AST generado, y el parser creado previamente con `sllgen:make-string-parser`. Cuando se ejecuta, esta función abre una nueva ventana donde el usuario puede introducir código. El código es analizado por el parser, que produce un AST, y este árbol es pasado a la función de evaluación para su procesamiento. Inicialmente, la función de evaluación puede simplemente devolver el AST para verificar que el análisis sintáctico funciona correctamente.
+
+####
+
+Una vez que el parser genera correctamente el árbol de sintaxis abstracta (AST), el siguiente paso es procesarlo. En Racket, esto se logra típicamente usando la expresión `cases`, que permite el reconocimiento de patrones sobre tipos de datos algebraicos. El AST, que es una instancia de los `define-datatype` generados, se pasa a `cases`. Cada cláusula de `cases` corresponde a una de las variantes del tipo de dato (ej. `declaration-type1`, `declaration-type2`). Dentro de cada cláusula, se puede acceder a los componentes de esa variante del árbol, como las sub-expresiones o sub-declaraciones. De esta manera, se puede recorrer el árbol de forma recursiva para evaluar, interpretar o transformar el programa representado por el AST. Por ejemplo, para una variante `(declaration-type3 identifier expression)`, se puede extraer el identificador y la expresión para procesar una asignación.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=RmcKbgU1rbM

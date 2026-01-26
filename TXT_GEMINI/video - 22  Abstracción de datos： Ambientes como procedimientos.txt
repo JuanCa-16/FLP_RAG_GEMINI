@@ -1,80 +1,65 @@
-Aquí tienes la transcripción limpia y formateada:
+En este enfoque, los tipos de datos para las expresiones del lenguaje se implementan como procedimientos en lugar de estructuras de datos como listas. Cada constructor creará un procedimiento que encapsula los datos. Para acceder a la información, este procedimiento recibe una señal numérica que determina qué dato devolver. Por convención, una señal de `0` se usará para identificar el tipo de expresión.
 
----
+####
 
-Vamos a tratar los ambientes como procedimientos. La implementación incluirá constructores, métodos observadores y el área del programador.
+El constructor `var-expression` recibe un identificador (`id`) y retorna un procedimiento. Este procedimiento interno toma una `signal` como argumento. Si la `signal` es `0`, devuelve el símbolo `'var-expression` para identificar su tipo. Si la `signal` es `1`, devuelve el `id` asociado. Para cualquier otra señal, se genera un error.
 
-### Constructores
+```scheme
+(define var-expression
+  (lambda (id)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'var-expression)
+        ((= signal 1) id)
+        (else (eopl:error "Señal no válida"))))))
+```
 
-Los constructores se implementan con funciones que reciben una `señal` para gestionar el acceso a sus componentes:
+####
 
-*   **`var expression`**:
-    *   Recibe un `id`.
-    *   Si `señal` es `0`, retorna que es un `var expression`.
-    *   Si `señal` es `1`, retorna el `id`.
-    *   Cualquier otra `señal` es inválida.
+El constructor `lambda-expression` recibe un identificador (`id`) y una expresión (`body`). Retorna un procedimiento que gestiona el acceso a sus componentes mediante una `signal`. Si la `signal` es `0`, identifica el tipo como `'lambda-expression`. Si es `1`, retorna el `id` del parámetro. Si es `2`, retorna la expresión del cuerpo (`body`). Cualquier otra señal produce un error.
 
-*   **`lambda expression`**:
-    *   Recibe un `id` y una `expresión` interna.
-    *   Si `señal` es `0`, retorna que es un `lambda expression`.
-    *   Si `señal` es `1`, retorna el `id`.
-    *   Si `señal` es `2`, retorna la `expresión` interna.
-    *   Cualquier otra `señal` es inválida.
+```scheme
+(define lambda-expression
+  (lambda (id body)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'lambda-expression)
+        ((= signal 1) id)
+        ((= signal 2) body)
+        (else (eopl:error "Señal no válida"))))))
+```
 
-*   **`app expression`**:
-    *   Recibe `radar` y `rant`.
-    *   Si `señal` es `0`, retorna que es un `app expression`.
-    *   Si `señal` es `1`, retorna `radar`.
-    *   Si `señal` es `2`, retorna `rant`.
-    *   Cualquier otra `señal` es inválida.
+####
 
-Las expresiones se implementan como procedimientos, donde las señales corresponden a los elementos de la expresión (e.g., `expresión(0)` para el tipo, `expresión(1)` para el ID, etc.).
+El constructor `app-expression` recibe un operador (`rator`) y un operando (`rand`). Genera un procedimiento que, al recibir una `signal`, determina qué componente retornar. Con `signal` igual a `0`, devuelve `'app-expression`. Con `signal` igual a `1`, devuelve el `rator`. Con `signal` igual a `2`, devuelve el `rand`. Cualquier otro valor para la señal resulta en un error.
 
-### Observadores
+```scheme
+(define app-expression
+  (lambda (rator rand)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'app-expression)
+        ((= signal 1) rator)
+        ((= signal 2) rand)
+        (else (eopl:error "Señal no válida"))))))
+```
 
-Los observadores se dividen en predicados y extractores.
+####
 
-#### Predicados
+Los predicados son observadores que determinan el tipo de una expresión. Para implementar `var-expression?`, `lambda-expression?` y `app-expression?`, simplemente se invoca el procedimiento de la expresión con la señal `0` y se compara el resultado con el símbolo del tipo correspondiente. Por ejemplo, `(var-expression? exp)` es equivalente a `(eq? (exp 0) 'var-expression)`.
 
-*   **`var expression?`**:
-    *   Recibe una `expresión`.
-    *   Retorna verdadero si `expresión(0)` es `var expression`.
+####
 
-*   **`lambda expression?`**:
-    *   Recibe una `expresión`.
-    *   Retorna verdadero si `expresión(0)` es `lambda expression`.
+Los extractores son observadores que obtienen los componentes de una expresión. Para extraer un componente, se invoca el procedimiento de la expresión con la señal numérica correspondiente al dato deseado.
+- `var-expression-id` invoca la expresión con la señal `1`.
+- `lambda-expression-id` invoca la expresión con la señal `1`.
+- `lambda-expression-body` invoca la expresión con la señal `2`.
+- `app-expression-rator` invoca la expresión con la señal `1`.
+- `app-expression-rand` invoca la expresión con la señal `2`.
 
-*   **`app expression?`**:
-    *   Recibe una `expresión`.
-    *   Retorna verdadero si `expresión(0)` es `app expression`.
+####
 
-#### Extractores
-
-*   **`var expression-id`**:
-    *   Recibe una `expresión`.
-    *   Retorna `expresión(1)` (el `id`).
-
-*   **`lambda expression-id`**:
-    *   Recibe una `expresión`.
-    *   Retorna `expresión(1)` (el `id`).
-
-*   **`lambda expression-expresion`**:
-    *   Recibe una `expresión`.
-    *   Retorna `expresión(2)` (la expresión interna).
-
-*   **`app expression-radar`**:
-    *   Recibe una `expresión`.
-    *   Retorna `expresión(1)` (el `radar`).
-
-*   **`app expression-rant`**:
-    *   Recibe una `expresión`.
-    *   Retorna `expresión(2)` (el `rant`).
-
-Este enfoque utiliza señales en los constructores para definir la estructura de los tipos de datos, y luego se emplean estas señales para trabajar los elementos como procedimientos a través de los observadores.
-
-### Conclusión
-
-Al aplicar los mismos ejemplos a esta implementación (como la función `occursfree`, que puede dar falso o verdadero), se verifica que el programador no percibe la diferencia entre la representación basada en listas y la basada en procedimientos. La clave radica en proporcionar una interfaz consistente con constructores, predicados y extractores. Esto permite construir funciones de manera independiente a la implementación subyacente.
+La principal ventaja de esta implementación basada en procedimientos es la abstracción de datos. Para el programador que utiliza la interfaz (constructores, predicados y extractores), el funcionamiento interno es irrelevante. El código que consume esta interfaz, como una función `occurs-free`, operará de la misma manera sin importar si las expresiones están representadas como listas o como procedimientos. Esta separación entre la interfaz y la implementación permite cambiar la representación subyacente sin afectar el código del programador, demostrando un principio clave de la ingeniería de software.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=UykkUdFKMNg

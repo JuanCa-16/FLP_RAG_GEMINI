@@ -1,29 +1,20 @@
-Aquí tienes la transcripción limpia y formateada:
+La receta para el diseño de interfaces de datos recursivos, o Tipos Abstractos de Datos (TAD), se basa en tres componentes. Primero, se debe incluir un constructor para cada clase de datos, que corresponde a cada regla de producción o variante. Segundo, es necesario un predicado que permita identificar cada tipo de dato específico. Finalmente, se debe implementar un extractor para cada uno de los campos o componentes de los diferentes tipos de datos.
 
----
+####
 
-Para el diseño de interfaces de Tipos Abstractos de Datos (TADs) recursivos, se debe seguir una receta que incluye: un constructor para cada variante o regla de producción, un predicado para verificar cada tipo de datos, y un extractor para cada uno de los diferentes tipos de datos.
+En el entorno de Dr. Racket, el proceso de crear constructores, predicados (observadores) y extractores para un tipo de dato se puede automatizar mediante la función de interfaz `define-datatype`. Esta herramienta permite generar todos los procedimientos necesarios de la interfaz en un único paso, simplificando significativamente la definición de tipos de datos abstractos.
 
-Esta implementación se puede realizar directamente con la función de interfaz `define-data-type` en Dr. Racket. Dr. Racket facilita esta tarea, ya que `define-data-type` genera automáticamente los constructores, observadores y extractores en un solo paso.
+####
 
-La sintaxis de `define-data-type` requiere especificar el nombre del tipo, el nombre del predicado (para preguntar si es un tipo de dato específico), el nombre de cada variante, y los nombres de los campos de cada variante.
+La sintaxis de `define-datatype` requiere especificar el nombre del nuevo tipo de dato, el nombre del predicado asociado para verificar la pertenencia a ese tipo, el nombre de cada variante posible del tipo y, finalmente, los nombres de los campos que componen cada variante.
 
-**Recomendaciones importantes:**
-*   Los nombres de los tipos y de las variantes deben ser únicos, incluso si pertenecen a tipos diferentes.
-*   Para cada variante, se genera un procedimiento constructor.
-*   Si una variante tiene N campos, su constructor recibe N argumentos.
-Este mecanismo construye las funciones automáticamente a partir de la definición proporcionada.
+####
 
-Consideremos un `define-data-type` para `ls-expression`. Este tipo puede incluir variantes como:
-*   `body-expression` con un campo `identifier`.
-*   `land-expression` con campos `identifier` y `body-ls-expression` (que es otra `ls-expression`).
-*   `app-expression` con campos `radar` y `run`.
+Al utilizar `define-datatype` se deben seguir ciertas reglas. Dos tipos de datos no pueden tener el mismo nombre. De manera similar, dos variantes no pueden compartir el mismo nombre, incluso si pertenecen a tipos de datos diferentes. El sistema genera automáticamente un procedimiento constructor para cada variante definida. Si una variante se compone de N campos, su constructor correspondiente será una función que recibirá N argumentos.
 
-Es importante recordar que los nombres de los elementos (tipos, predicados, variantes, campos) son configurables, aunque se recomienda utilizar nombres descriptivos para facilitar la comprensión. Además, `define-data-type` proporciona un mecanismo para verificar que los datos de entrada son del tipo esperado, una funcionalidad avanzada respecto a implementaciones anteriores.
+####
 
-Analicemos el caso de un `s-list`, que representa una lista de símbolos. Un `s-list` puede ser un símbolo o una lista de símbolos, y sus variantes podrían incluir `first` y `rest` para manejar su estructura recursiva.
-
-A continuación, se presentará un ejemplo práctico de cómo construir estos tipos de datos.
+Un ejemplo de aplicación de `define-datatype` es la definición del tipo `ls-expression`. Este tipo puede tener tres variantes: `body-expression` (con un campo `exp`), `lambda-expression` (con los campos `id` y `body`) y `app-expression` (con los campos `rator` y `rand`). Una ventaja clave de este enfoque es que permite asociar un tipo esperado a cada campo (por ejemplo, `symbol?` o `ls-expression?`), habilitando una verificación automática de tipos que no es factible en las implementaciones manuales de constructores y extractores.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=wGuA726RKUM

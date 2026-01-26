@@ -1,54 +1,20 @@
-Aquí tienes la transcripción limpia y formateada:
+Para implementar la asignación por referencia, es necesario modificar la estructura de datos del ambiente. El tipo de ambiente extendido, que originalmente contenía una lista de símbolos y una lista de valores, debe adaptarse para permitir la modificación de dichos valores. Por esta razón, la lista de valores se reemplaza por un vector. Las listas son estructuras inmutables, y modificarlas requeriría una reconstrucción completa, lo cual es ineficiente. En cambio, un vector es una estructura de datos mutable que permite alterar sus elementos directamente, facilitando así la operación de asignación. El nuevo tipo de dato para el ambiente se denominará `ambiente-extendido-ref` (`extend-env-ref`).
 
----
+####
 
-A continuación, se detalla la implementación de la asignación de valores utilizando referencias, enfocándose en las modificaciones necesarias en la estructura del ambiente de ejecución.
+Para mantener la compatibilidad con el código existente del intérprete, se introduce una función constructora llamada `ambiente-extendido`. Esta función actúa como una capa de intermediación. Partes del intérprete, como la que gestiona la aplicación de procedimientos (`app-expression`), generan listas de valores para crear nuevos ambientes. La función `ambiente-extendido` recibe la lista de identificadores, la lista de valores y el ambiente anterior, e internamente convierte la lista de valores a un vector usando `list->vector` antes de invocar al constructor `ambiente-extendido-ref`. Este enfoque evita la necesidad de modificar múltiples partes del código que esperan trabajar con listas, encapsulando la conversión en un único punto.
 
-### 1. Cambios en la Estructura del Ambiente
+####
 
-El ambiente de ejecución, que previamente incluía el ambiente vacío y el ambiente extendido, requiere una actualización fundamental.
+La implementación original del ambiente extendido recursivo (`ambiente-extendido-recursivo`) presenta una limitación fundamental en un lenguaje con asignación. Estaba diseñado exclusivamente para vincular procedimientos, asumiendo que los valores asociados a los identificadores recursivos serían siempre clausuras. Sin embargo, la asignación permite que una variable que inicialmente contenía un procedimiento sea modificada para almacenar un valor de otro tipo, como un número. Si esto ocurriera, la estructura del ambiente recursivo se corrompería. Por lo tanto, es necesario rediseñar el mecanismo para que sea más general y robusto frente a la asignación.
 
-*   **Ambiente Extendido Tradicional:** Constaba de una lista de símbolos y una lista de valores.
-*   **Modificación por Asignación:** Para permitir la modificación de valores existentes en el ambiente mediante la asignación, la **lista de valores será reemplazada por un vector de valores**. Esto implica un cambio en el tipo de dato del ambiente.
-*   **Razón del Vector:** La elección de un vector sobre una lista se debe a que las listas son estructuras inmutables. Modificar un elemento en una lista requeriría reconstruirla completamente, lo cual es ineficiente. Los vectores, en cambio, permiten la modificación directa de sus elementos.
-*   **Eliminación del Ambiente Extendido Recursivo (temporal):** El caso específico de "ambiente extendido recursivo" se eliminará inicialmente de la definición del tipo de dato principal, para ser reimplementado más adelante con el nuevo paradigma de referencias.
+####
 
-### 2. Redefinición del Constructor `ambiente-extendido`
+La nueva implementación de `ambiente-extendido-recursivo` se basará en el `ambiente-extendido-ref`. En lugar de ser un tipo de dato distinto, será una función que construye un ambiente extendido estándar (`ambiente-extendido-ref`) con una estructura específica que permite la autorreferencia de los procedimientos. La estrategia consiste en crear un ambiente donde las clausuras de los procedimientos recursivos capturen el mismo ambiente en el que están siendo definidas. De esta forma, cada procedimiento puede "conocerse" a sí mismo y a los demás procedimientos definidos en el mismo bloque recursivo, habilitando la recursión mutua y simple.
 
-Para facilitar la transición y mantener la compatibilidad con el código existente, se redefine el constructor de `ambiente-extendido`.
+####
 
-*   **Constructor Modificado:** El nuevo `ambiente-extendido` funcionará como un `lambda` que recibe los identificadores (ADS), una lista de valores (`evalu`), y el ambiente previo (`ambiente-anterior`).
-*   **Transformación Interna:** Este constructor se encargará de convertir la lista de valores (`evalu`) en un vector (usando `list->vector`) antes de construir internamente un `ambiente-extendido-ref` (ambiente extendido de referencias).
-*   **Beneficios:** Esta estrategia resuelve dos problemas clave en la función `evaluar-expresion`:
-    1.  **Ambiente Inicial:** Cuando se declara el ambiente inicial, que tradicionalmente usa listas, el nuevo constructor gestiona automáticamente la conversión a vector, evitando modificaciones en el código existente.
-    2.  **`app-expression`:** En la función `app-expression`, las expresiones resultantes (`runs`) son listas. El constructor `ambiente-extendido` convierte estas listas a vectores al construir el ambiente para la evaluación del cuerpo del procedimiento, simplificando la integración.
-
-### 3. Reimplementación del `ambiente-extendido-recursivo`
-
-La versión anterior del ambiente extendido recursivo presentaba limitaciones significativas, ya que solo permitía almacenar procedimientos. Con la asignación, un procedimiento podría ser reasignado a un valor de otro tipo (e.g., un número), lo que requería una reestructuración.
-
-*   **Nueva Estructura:** El `ambiente-extendido-recursivo` ahora será un `ambiente-extendido-ref` con la siguiente composición:
-    *   **Lista de Identificadores (`proc-names`):** Nombres de los procedimientos.
-    *   **Vector de Valores (`closures-vec`):** Contendrá las clausuras de los procedimientos. La característica crucial es que **estas clausuras guardarán una referencia al mismo ambiente recursivo en el que se definen**, permitiendo la auto-referencia para procedimientos recursivos.
-    *   **Ambiente Previo (`old-env`):** El ambiente en el que se extiende.
-
-*   **Proceso de Implementación del Constructor `ambiente-extendido-recursivo`:**
-    1.  **Parámetros:** El constructor recibe: `proc-names` (nombres de los procedimientos), `args-lists` (lista de listas de argumentos para cada procedimiento), `bodies` (lista de cuerpos de los procedimientos), y `old-env` (ambiente previo).
-    2.  **Inicialización del Vector de Clausuras:** Se crea un vector (`closures-vec`) utilizando `make-vector`, con un tamaño igual al número de `proc-names`. Este vector se inicializa con valores predeterminados (e.g., ceros).
-    3.  **Definición del Ambiente con `letrec`:** Se utiliza una estructura `letrec` para definir simultáneamente el ambiente y una función auxiliar recursiva:
-        *   **Definición de `env`:** Se instancia `env` como un `ambiente-extendido-ref`, que contendrá `proc-names`, el `closures-vec` (inicialmente vacío de clausuras definitivas) y `old-env`. Es fundamental que `env` se defina antes de que `closures-vec` esté completamente poblado, para que las clausuras puedan referenciarlo.
-        *   **Función Auxiliar `obtener-clausuras`:** Es una función recursiva que recibe `args-lists`, `bodies` y una posición `pos` (índice actual en el vector).
-            *   **Caso Base:** Si `args-lists` o `bodies` están vacías, la función retorna el ambiente `env`.
-            *   **Paso Recursivo:**
-                *   `vector-set!`: Se inserta una nueva clausura en `closures-vec` en la posición `pos`. La clausura se forma con los argumentos (`car args-lists`), el cuerpo (`car bodies`), y **como ambiente, se le asigna la referencia al mismo `env`** que se está construyendo.
-                *   Llamada recursiva: `obtener-clausuras` se invoca con `cdr args-lists`, `cdr bodies`, y `pos` incrementada.
-    4.  **Llamada Inicial:** Finalmente, se invoca `obtener-clausuras` con las listas completas de `args-lists`, `bodies`, y la posición inicial `0`.
-
-Este diseño permite que las clausuras de procedimientos recursivos se "conozcan" a sí mismas a través de la referencia al ambiente que las contiene, resolviendo la problemática de la recursividad en presencia de asignación.
-
-### 4. Próximos Pasos
-
-La siguiente etapa consiste en modificar las funciones `apply-m` para integrar esta nueva mecánica de búsqueda y manipulación de referencias en el ambiente.
+La implementación de la función `ambiente-extendido-recursivo` sigue varios pasos. Primero, se crea un vector de un tamaño igual al número de procedimientos a definir, inicializado con valores provisionales (e.g., ceros), utilizando una función como `make-vector`. A continuación, se construye el ambiente de salida (`ambiente-extendido-ref`) usando la lista de nombres de los procedimientos, el vector recién creado y el ambiente anterior. Este ambiente ya es una entidad completa, aunque el vector de valores aún no contiene las clausuras finales. Finalmente, se itera sobre las listas de argumentos y cuerpos de los procedimientos para crear cada clausura. Crucialmente, cada clausura se construye para que guarde una referencia al ambiente de salida que se acaba de crear. Mediante una operación como `vector-set!`, cada clausura se inserta en la posición correspondiente del vector de valores. Debido a que las clausuras capturan el ambiente que las contiene, se logra el efecto de autorreferencia necesario para la recursión.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=dVERIOle5zA

@@ -1,61 +1,28 @@
-Aquí se presenta la implementación del chequeo de tipos en un interpretador, tomando como base un interpretador de asignación.
+Para implementar el chequeo de tipos en el interpretador, es necesario que el programador especifique explícitamente el tipo de todas las variables. Este requisito exige modificar la gramática del lenguaje, particularmente en la forma en que se definen los procedimientos (`proc-expression`) y los procedimientos recursivos (`let-trec-expression`), para incluir estas anotaciones de tipo.
 
-Aquí tienes la transcripción limpia y formateada:
+####
 
----
+La modificación gramatical para los procedimientos (`proc-expression`) consiste en añadir una declaración de tipo (`type-expression`) para cada identificador en la lista de argumentos. De forma similar, en los procedimientos recursivos (`let-trec-expression`), se especifica primero el tipo de retorno de la función, seguido del identificador de la función y la lista de argumentos, donde cada argumento también incluye su tipo correspondiente. Esto permite escribir definiciones como `(proc (int x, int y) ...)` y `(let-trec (int f (int x, int y)) ...)` .
 
-### Requisitos del Chequeo de Tipos y Modificaciones Gramaticales
+####
 
-En lenguajes con chequeo de tipos, es fundamental que todas las variables sean explícitamente especificadas por el programador. Esto implica cambios en la gramática, particularmente en la forma en que se declaran los procedimientos (`proc expression`) y los procedimientos recursivos (`let-rec expression`).
+En los procedimientos recursivos (`let-trec`), es fundamental especificar el tipo de retorno explícitamente al inicio de la declaración. La razón es que, durante la evaluación de un llamado recursivo dentro del cuerpo de la función, el sistema necesita conocer el tipo de retorno de dicha función sin tener que evaluar la recursión hasta su caso base. Declarar el tipo de retorno al principio evita este complejo proceso de inferencia, que requeriría descender hasta el final de la cadena recursiva para determinar el tipo.
 
-**Modificaciones Propuestas:**
+####
 
-1.  **Procedimientos (`proc expression`):**
-    *   Ahora recibirán el tipo de cada parámetro antes de su identificador.
-    *   **Ejemplo:** `proc int x int y { ... }` (donde `int x` y `int y` especifican que `x` e `y` son de tipo entero).
+Se introduce una nueva categoría gramatical, `type-expression`, para definir los tipos de datos. Esta categoría incluye tipos básicos como `int-type` para enteros y `bool-type` para booleanos. Adicionalmente, se define `proc-type` para los procedimientos, cuya sintaxis consiste en una lista de los tipos de los argumentos de entrada (separados por `*`), seguida de una flecha (`->`) y el tipo de dato de salida. Por ejemplo, la declaración de un procedimiento que recibe un entero y un booleano y retorna un entero sería `(int * bool -> int)`.
 
-2.  **Procedimientos Recursivos (`let-rec expression`):**
-    *   Requerirán la especificación del tipo de retorno antes del identificador de la función, seguido por los tipos de los parámetros.
-    *   **Ejemplo:** `let-rec int f int x { ... }` (aquí, `int` es el tipo de retorno para la función `f`, y `int x` es el parámetro).
+####
 
-Estas modificaciones se añadirán a la especificación gramatical para permitir la expresión de `type expression` en los argumentos de entrada de procedimientos y procedimientos recursivos.
+Es crucial diferenciar entre el tipo de la declaración de un procedimiento y el tipo del valor que resulta de su evaluación. Por ejemplo, un procedimiento puede tener un tipo de declaración como `(proc (int x, int y) ...)` que describe sus entradas. Sin embargo, al ser evaluado, el resultado de la operación que realiza (ej. una suma) será un valor de un tipo simple, como un entero. La declaración define la "firma" del procedimiento, mientras que la evaluación produce un valor con su propio tipo.
 
-### Justificación del Tipo de Retorno en Recursiones
+####
 
-Es crucial especificar el tipo de retorno en los procedimientos recursivos al inicio de su declaración. Esto se debe a que, durante la evaluación recursiva de la función, el intérprete necesita conocer el tipo de la función misma. Si el tipo de retorno no se declara explícitamente, el intérprete tendría que evaluar la recursión hasta su punto base para inferir el tipo, lo cual es ineficiente y, en algunos casos, inviable. Esta práctica es consistente con lenguajes como C++, donde el tipo de retorno de una función (frecuentemente recursiva) se declara explícitamente por esta razón.
+Para representar los tipos internamente en el interpretador, se define una estructura de datos (`data-type`) llamada `tipo`. Esta estructura contempla dos variantes: `atomic-type`, que representa tipos primitivos mediante un símbolo (como `'int` o `'bool`), y `proc-type`, que representa tipos de procedimientos. Un `proc-type` se compone de una lista de tipos para los argumentos (`arg-types`) y un único tipo para el valor de retorno (`result-type`).
 
-### Definición de Tipos de Expresiones
+####
 
-Se definen los siguientes tipos de expresiones disponibles en la gramática:
-
-*   **`IntTypeExpression`**: Representa el tipo entero.
-*   **`BoolTypeExpression`**: Representa el tipo booleano.
-*   **`ProcTypeExpression`**: Representa el tipo de un procedimiento. Su estructura general es:
-    `(TipoArgumento1 * TipoArgumento2 * ... -> TipoRetorno)`
-    Donde `TipoArgumentoX` son los tipos de los parámetros de entrada (separados por asteriscos), y `TipoRetorno` es el tipo del valor que el procedimiento devuelve.
-
-**Ejemplo de uso:** `proc (int x, int y) -> int { x + y }`
-Este ejemplo muestra un procedimiento que recibe dos enteros (`x` e `y`) y cuyo resultado de evaluación será un entero. Es importante diferenciar entre la *declaración* del tipo de la función (ej., `(int, int) -> int`) y la *evaluación* de su cuerpo, cuyo resultado debe coincidir con el tipo de retorno declarado.
-
-### Representación Interna de Tipos (Data Type)
-
-Para que el intérprete pueda manipular y verificar los tipos, se implementará un tipo de dato (`data type`) interno que diferenciará entre:
-
-1.  **`AtomicType`**: Representa tipos directos y simples como `int` o `boolean`. Internamente, almacena un símbolo (`'int'`, `'boolean'`) para identificar el tipo.
-2.  **`ProcType`**: Representa un tipo de procedimiento y contiene:
-    *   `arg_types`: Una lista de objetos `Type` (la representación interna de los tipos) para los argumentos de entrada.
-    *   `return_type`: Un objeto `Type` para el valor de retorno del procedimiento.
-
-**Definición de Tipos Específicos:**
-
-*   `IntType` se define como `AtomicType('int')`.
-*   `BoolType` se define como `AtomicType('boolean')`.
-
-Estos `AtomicType` son las representaciones internas de los `IntTypeExpression` y `BoolTypeExpression` sintácticos.
-
-En resumen, la implementación del chequeo de tipos implica modificaciones sintácticas para la declaración explícita de tipos en procedimientos y recursiones, y la introducción de un sistema de tipos interno para su representación y verificación. La especificación explícita de tipos de retorno en recursiones es esencial para una evaluación eficiente y clara.
-
-Habiendo definido la representación interna de los tipos, el siguiente paso es integrar estos cambios en la lógica del interpretador para realizar la verificación de tipos.
+Basado en la estructura de datos `tipo`, se establecen las representaciones concretas para los tipos básicos. El tipo entero, `int-type`, se instancia como un `atomic-type` que encapsula el símbolo `'int`. De manera análoga, el tipo booleano, `bool-type`, se define como un `atomic-type` que contiene el símbolo `'bool`. Estas definiciones conectan la gramática del lenguaje con su representación semántica interna en el interpretador.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=J8kdPqy64gc

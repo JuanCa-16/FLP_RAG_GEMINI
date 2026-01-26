@@ -1,38 +1,27 @@
-Aquí tienes la transcripción limpia y formateada:
+Se define una función `sumar-arbol` para sumar todos los valores numéricos contenidos en un tipo de dato `árbol b`. La función utiliza la estructura `cases` para realizar un pattern matching sobre el árbol. Si el árbol es una hoja (`leaf`), que contiene un único dato numérico, la función devuelve ese número. Si es un nodo (`node`), que contiene una clave (`key`), un subárbol izquierdo (`left`) y un subárbol derecho (`right`), la función ignora la clave y realiza una llamada recursiva sobre los subárboles izquierdo y derecho, sumando sus resultados. El uso de `cases` extrae automáticamente los componentes de cada variante del tipo de dato, simplificando la implementación. Por ejemplo, para un árbol con un valor de 5, `sumar-arbol` devolverá 5. Para un árbol más complejo, sumará todos los valores de sus hojas, como en un ejemplo que resulta en 23 (5 + 7 + 4 + 7).
 
----
+```scheme
+(define (sumar-arbol arb)
+  (cases arb
+    [(leaf num) num]
+    [(node k l r)
+     (+ (sumar-arbol l)
+        (sumar-arbol r))]))
+```
 
-Para un tipo de dato `arbol_b` definido, se requiere implementar dos funciones: una para sumar los números de los nodos y otra para extraer una lista de los símbolos.
+####
 
-### Función para Sumar Números (`sumar_arbol`)
+Se implementa una segunda función, `arbol-b->lista-s`, para extraer todos los símbolos almacenados en los nodos de un `árbol b` y devolverlos en una lista. Esta función también emplea `cases` para diferenciar los tipos de nodos. En el caso base, si se encuentra con una hoja (`leaf`), que contiene un número y no un símbolo, devuelve una lista vacía. En el caso recursivo, si se encuentra con un nodo (`node`) que contiene una clave simbólica (`k`), un subárbol izquierdo (`l`) y un subárbol derecho (`r`), la función construye una lista con la clave actual y la une (`append`) con los resultados de las llamadas recursivas a `arbol-b->lista-s` sobre los subárboles izquierdo y derecho. De este modo, se recorre el árbol y se coleccionan todos los símbolos. Por ejemplo, un árbol que no contiene nodos con símbolos devolverá una lista vacía, mientras que uno con símbolos 'k', 'p' y 'j' devolverá la lista `(k p j)`.
 
-Se define la función `sumar_arbol` que recibe un `arbol_b` y utiliza `cases` para su procesamiento, diferenciando entre los tipos de nodos:
-
-*   **Caso `leaf` (hoja):** Un `leaf` contiene un único dato numérico (`num`). En este caso, la suma es simplemente `num`.
-*   **Caso `node` (nodo):** Un nodo se compone de una `key`, un subárbol izquierdo (`l`) y un subárbol derecho (`r`). La suma se calcula recursivamente como `sumar_arbol(l) + sumar_arbol(r)`.
-
-El uso de `cases` facilita la extracción automática de los componentes (`num`, `key`, `l`, `r`) del árbol, simplificando la implementación en comparación con métodos manuales.
-
-**Ejemplos de uso:**
-
-*   `sumar_arbol(arbol_1)` resulta en `5`.
-*   La suma de `arbol_2` se calculó como `(5 + 7) + (4 + 7) = 23`.
-
-### Función para Obtener Lista de Símbolos (`a_lista_s`)
-
-A continuación, se define la función `a_lista_s` (a lista de símbolos) que toma un `arbol_b` (`arb`) y también utiliza `cases` para su procesamiento:
-
-*   **Caso `leaf` (hoja):** Un `leaf` contiene un número, no un símbolo. Por lo tanto, se retorna una lista vacía.
-*   **Caso `node` (nodo):** Un nodo contiene una `key` (que representa un símbolo), un subárbol izquierdo (`l`) y un subárbol derecho (`r`). Se construye una lista que incluye la `key` del nodo, seguida de los símbolos obtenidos recursivamente de los subárboles `l` y `r`.
-
-La construcción de estas funciones se simplifica al seguir el patrón de especificar el `data_type` y luego la `variable` dentro de la estructura `cases`.
-
-**Ejemplos de uso:**
-
-*   `a_lista_s(arbol_1)` produce una lista vacía.
-*   Para `arbol_2`, se obtiene la lista `[k, p, j]`.
-
-En síntesis, el uso de `cases` permite una gestión y administración eficiente de los datos al interactuar con la estructura de un árbol B.
+```scheme
+(define (arbol-b->lista-s arb)
+  (cases arb
+    [(leaf num) '()]
+    [(node k l r)
+     (append (list k)
+             (arbol-b->lista-s l)
+             (arbol-b->lista-s r))]))
+```
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=Wec_PIRX7tY

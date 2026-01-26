@@ -1,29 +1,15 @@
-Aquí tienes la transcripción limpia y formateada:
+La expresión `list(5)` genera un Árbol de Sintaxis Abstracta (AST) correspondiente. Esta estructura se compone de un nodo `list` que contiene un valor numérico, en este caso, el 5.
 
----
+####
 
-A continuación, analizaremos si las sentencias generan un árbol de sintaxis correctamente, según las definiciones de árbol B.
+Para una expresión más compleja, el AST se construye de forma recursiva. Un `node` se compone de tres partes: una clave (`key`), un hijo izquierdo (`left`) y un hijo derecho (`right`). En el ejemplo `node(k, node(p, list(5), list(7)), node(j, list(4), list(7)))`, la estructura es la siguiente:
+- El nodo raíz tiene la clave 'k'.
+- Su hijo izquierdo es un `node` con clave 'p', cuyo propio hijo izquierdo es `list(5)` y su hijo derecho es `list(7)`.
+- Su hijo derecho es un `node` con clave 'j', cuyo hijo izquierdo es `list(4)` y su hijo derecho es `list(7)`.
 
-1.  **Sentencia `list(5)`:**
-    La sentencia `list(5)` genera una estructura (ST) compuesta por un elemento 'lia' y el número '5'. Por ejemplo, `Arbol1` representa `stru(5)`.
+####
 
-2.  **Sentencia `Arbol2`:**
-    `Arbol2` es un nodo que consta de tres partes:
-    *   Una clave (`key`), que en este caso es 'ca'.
-    *   Un hijo izquierdo (`left`).
-    *   Un hijo derecho (`right`).
-
-    El hijo izquierdo (`left`) es también un nodo y posee tres elementos:
-    *   Una clave (`key`) 'p'.
-    *   Una lista (`list`) con el número '5'.
-    *   Otra lista (`list`) con el número '7'.
-
-    El hijo derecho (`right`) es igualmente un nodo con tres componentes:
-    *   Una clave (`key`) 'j'.
-    *   Una lista (`list`) con el número '4'.
-    *   Finalmente, otra lista (`list`) con el número '7'.
-
-Este análisis detallado nos permite verificar la correcta estructura y conformidad del código con la especificación gramatical. La capacidad de generar un árbol de sintaxis correcto implica automáticamente que el código cumple con las reglas de la gramática definida, lo cual es fundamental para su validación.
+El proceso de generar un Árbol de Sintaxis Abstracta (AST) es un método para verificar la correctitud sintáctica del código. Si es posible construir el AST a partir de una expresión, se demuestra automáticamente que dicha expresión cumple con las reglas de la gramática especificada.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=tkfnonZyeZ0

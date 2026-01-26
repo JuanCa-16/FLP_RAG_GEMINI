@@ -1,112 +1,47 @@
-Este documento presenta la implementación de las expresiones del cálculo lambda, denominadas "LC expression", utilizando una aproximación basada en tipos de datos algebraicos. Se definen los constructores, predicados y extractores para estas expresiones, seguidos de la implementación de la función `occurs_free?`.
+Para implementar las expresiones del cálculo lambda, se definen los constructores, que son funciones para crear cada tipo de expresión, y las funciones observadoras (predicados y extractores), que permiten inspeccionarlas. La estructura de datos se representa mediante listas, donde el primer elemento actúa como una etiqueta o "bandera" para identificar el tipo de expresión.
 
----
+Los tres constructores definidos son:
+1.  **`var-expression`**: Representa una variable. Se construye con una lista que contiene el símbolo `'var-expression'` y un identificador.
+2.  **`lambda-expression`**: Representa una abstracción o función. Se construye con una lista que contiene el símbolo `'lambda-expression'`, un identificador para la variable ligada y una expresión que constituye el cuerpo de la función.
+3.  **`app-expression`**: Representa la aplicación de una función. Se construye con una lista que contiene el símbolo `'app-expression'`, una expresión para el operador (`rator`) y otra para el operando (`rand`).
 
-### Implementación de Expresiones del Cálculo Lambda (LC Expression)
+####
 
-#### 1. Constructores
+Los predicados son funciones observadoras que permiten determinar el tipo de una expresión del cálculo lambda. Su implementación se basa en inspeccionar el primer elemento (`car`) de la lista que representa la expresión para verificar si coincide con la etiqueta de tipo correspondiente.
 
-Los constructores son funciones que crean instancias de las diferentes formas de las expresiones del cálculo lambda. Cada tipo de expresión se representa como una lista, donde el primer elemento es un símbolo (el "tag" del constructor) que identifica el tipo de expresión, seguido de sus componentes.
+Existen tres predicados principales:
+1.  **`var-expression?`**: Recibe una expresión y devuelve verdadero (`true`) si el primer elemento de la lista es el símbolo `'var-expression'`.
+2.  **`lambda-expression?`**: Devuelve verdadero si el primer elemento de la lista es el símbolo `'lambda-expression'`.
+3.  **`app-expression?`**: Devuelve verdadero si el primer elemento de la lista es el símbolo `'app-expression'`.
 
-*   **`var_expression (id)`**: Representa una variable. Recibe un identificador (`id`).
-    *   Sintaxis: `(list 'var_expression id)`
-    *   Ejemplo: `(var_expression 'x')`
+El uso de estas etiquetas como primer elemento de la lista simplifica la identificación de cada variante del tipo de dato.
 
-*   **`lambda_expression (id, body)`**: Representa una abstracción lambda. Recibe un identificador (`id`) para el parámetro y una `LC expression` (`body`) para el cuerpo de la función.
-    *   Sintaxis: `(list 'lambda_expression id body)`
-    *   Ejemplo: `(lambda_expression 'x' (var_expression 'x'))`
+####
 
-*   **`app_expression (rator, rand)`**: Representa una aplicación de función. Recibe dos `LC expression`: el operador (`rator`) y el operando (`rand`).
-    *   Sintaxis: `(list 'app_expression rator rand)`
-    *   Ejemplo: `(app_expression (lambda_expression 'x' (var_expression 'x')) (var_expression 'y'))`
+Los extractores son funciones observadoras diseñadas para acceder a los componentes internos de una estructura de datos. Para las expresiones del cálculo lambda, los extractores recuperan las partes constituyentes de cada tipo de expresión, basándose en su posición dentro de la lista.
 
-**Ejemplos de Expresiones:**
+Los extractores para cada tipo son:
+-   Para `var-expression`:
+    -   **`var-expression-id`**: Devuelve el identificador de la variable, que es el segundo elemento de la lista (`cadr`).
+-   Para `lambda-expression`:
+    -   **`lambda-expression-id`**: Devuelve el identificador de la variable ligada (segundo elemento, `cadr`).
+    -   **`lambda-expression-body`**: Devuelve la expresión del cuerpo (tercer elemento, `caddr`).
+-   Para `app-expression`:
+    -   **`app-expression-rator`**: Devuelve la expresión del operador (segundo elemento, `cadr`).
+    -   **`app-expression-rand`**: Devuelve la expresión del operando (tercer elemento, `caddr`).
 
-*   `expression1`: `(var_expression 'x')`
-*   `expression2`: `(lambda_expression 'x' (lambda_expression 'y' (var_expression 'x')))`
-*   `expression3`: `(app_expression (var_expression 'x') (lambda_expression 'y' (var_expression 'x')))`
+Estos extractores permiten manipular los datos de forma abstracta, sin depender directamente de la estructura de lista subyacente.
 
-#### 2. Observadores
+####
 
-Las funciones observadoras permiten inspeccionar y extraer información de las expresiones. Se dividen en predicados y extractores.
+La función `occurs-free?` determina si una variable (un símbolo) aparece libre en una expresión del cálculo lambda. Su implementación utiliza los predicados y extractores previamente definidos para analizar la expresión de manera recursiva según su tipo.
 
-##### 2.1 Predicados
+La lógica se divide en tres casos:
+1.  **Si la expresión es un `var-expression`**: La variable ocurre libre si su símbolo es igual al identificador contenido en la expresión. Este es el caso base de la recursión.
+2.  **Si la expresión es un `lambda-expression`**: La variable ocurre libre si cumple dos condiciones simultáneamente: (a) no es la misma variable que está siendo ligada por el lambda y (b) ocurre libre en el cuerpo de la expresión. Si la variable es la misma que la ligada, su ocurrencia dentro del cuerpo no se considera libre.
+3.  **Si la expresión es un `app-expression`**: La variable ocurre libre si aparece libre en la expresión del operador (`rator`) o en la expresión del operando (`rand`). La función se llama recursivamente sobre ambas partes.
 
-Los predicados son funciones que verifican el tipo de una expresión, examinando el "tag" del constructor.
-
-*   **`is_var_expression? (expr)`**:
-    *   Verifica si `expr` es una `var_expression`.
-    *   Implementación: `(eq? (car expr) 'var_expression)`
-
-*   **`is_lambda_expression? (expr)`**:
-    *   Verifica si `expr` es una `lambda_expression`.
-    *   Implementación: `(eq? (car expr) 'lambda_expression)`
-
-*   **`is_app_expression? (expr)`**:
-    *   Verifica si `expr` es una `app_expression`.
-    *   Implementación: `(eq? (car expr) 'app_expression)`
-
-##### 2.2 Extractores
-
-Los extractores son funciones que recuperan los componentes internos de una expresión.
-
-*   **`var_expression_id (expr)`**:
-    *   Extrae el identificador de una `var_expression`.
-    *   Implementación: `(cadr expr)`
-
-*   **`lambda_expression_id (expr)`**:
-    *   Extrae el identificador del parámetro de una `lambda_expression`.
-    *   Implementación: `(cadr expr)`
-
-*   **`lambda_expression_body (expr)`**:
-    *   Extrae el cuerpo de una `lambda_expression`.
-    *   Implementación: `(caddr expr)`
-
-*   **`app_expression_rator (expr)`**:
-    *   Extrae el operador (función) de una `app_expression`.
-    *   Implementación: `(cadr expr)`
-
-*   **`app_expression_rand (expr)`**:
-    *   Extrae el operando (argumento) de una `app_expression`.
-    *   Implementación: `(caddr expr)`
-
-#### 3. Función `occurs_free?`
-
-La función `occurs_free? (variable, expression)` determina si una `variable` dada ocurre libremente dentro de una `expression`. Su implementación es recursiva y utiliza los predicados y extractores definidos para manejar cada tipo de expresión del cálculo lambda.
-
-*   **Definición de `occurs_free? (variable, expression)`:**
-
-    1.  **Si `expression` es una `var_expression`:**
-        *   `variable` ocurre libre si es idéntica al identificador de la `var_expression`.
-        *   Lógica: `(eq? variable (var_expression_id expression))`
-
-    2.  **Si `expression` es una `lambda_expression`:**
-        *   `variable` ocurre libre si:
-            *   No es idéntica al identificador del parámetro de la `lambda_expression` (`id`),
-            *   **Y** ocurre libre en el cuerpo (`body`) de la `lambda_expression`.
-        *   Lógica: `(and (not (eq? variable (lambda_expression_id expression))) (occurs_free? variable (lambda_expression_body expression)))`
-
-    3.  **Si `expression` es una `app_expression`:**
-        *   `variable` ocurre libre si ocurre libre en el operador (`rator`) **o** ocurre libre en el operando (`rand`).
-        *   Lógica: `(or (occurs_free? variable (app_expression_rator expression)) (occurs_free? variable (app_expression_rand expression)))`
-
-    4.  **Cualquier otro caso:**
-        *   Indica un error debido a una expresión no reconocida.
-
-*   **Ejemplos de uso de `occurs_free?`:**
-
-    *   `occurs_free? 'x' expression1` (donde `expression1` es `(var_expression 'x')`)
-        *   Resultado esperado: `true` (la variable `x` es la misma que la de la expresión).
-
-    *   `occurs_free? 'x' expression2` (donde `expression2` es `(lambda_expression 'x' (lambda_expression 'y' (var_expression 'x')))` )
-        *   Resultado esperado: `false` (la `x` está ligada por la `lambda_expression` más externa).
-
-    *   `occurs_free? 'x' expression3` (donde `expression3` es `(app_expression (var_expression 'x') (lambda_expression 'y' (var_expression 'x')))` )
-        *   Resultado esperado: `true` (la `x` ocurre libre en el `rator` de la `app_expression`).
-
----
-
-Este proceso demuestra cómo construir y manipular tipos de datos abstractos para estructuras como las expresiones del cálculo lambda, utilizando un conjunto de funciones bien definidas para interactuar con su representación interna de manera modular y robusta.
+Este enfoque, que utiliza constructores, predicados y extractores, permite implementar lógica compleja sobre el tipo de dato de forma clara y mantenible, abstrayendo los detalles de la representación interna.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=DsPWtf9LUqQ

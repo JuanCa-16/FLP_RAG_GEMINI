@@ -1,55 +1,30 @@
-Aquí tienes la transcripción limpia y formateada:
+La suma entre dos números naturales puede definirse de forma abstracta, sin depender de una representación numérica específica. El concepto fundamental es que la suma `x + y` equivale a aplicar la función `sucesor` un total de `y` veces al número `x`. Por ejemplo, para calcular 4 + 2, se parte de 4, se le aplica el sucesor para obtener 5, y se le vuelve a aplicar el sucesor para obtener 6. Este enfoque permite definir la suma a partir de operaciones más primitivas como `sucesor` y `predecesor`.
 
----
+####
 
-### Definición de la Suma de Números Naturales
+Una forma de representar los números naturales es la representación unaria, donde un entero no negativo `n` se representa como una lista que contiene `n` símbolos. Bajo este esquema, se establecen las siguientes definiciones:
+-   **Cero**: Se representa como la lista vacía (`nil`).
+-   **Sucesor**: La función `sucesor` de un número `n` se implementa aplicando la operación `cons` (o `pegar`) para añadir un símbolo a la lista que representa a `n`.
+-   **Predecesor**: La función `predecesor` se implementa con la operación `cdr`, que devuelve el resto de la lista. Esta función debe incluir una validación para evitar que se aplique al cero, en cuyo caso debería emitir un error, ya que el cero no tiene predecesor en los números naturales.
 
-La suma entre dos números naturales no está definida intrínsecamente en una representación que solo utiliza la función "predecesor". Por ello, es necesario definir un método para realizar la operación de suma entre dos números `x` e `y`.
+####
 
-**Definición de la Suma (`plus`)**
-La suma puede definirse como la aplicación repetida de la función "sucesor" a un número.
-*   **Ejemplo**: Para `4 + 2`, se aplica el sucesor a 4 dos veces:
-    *   `sucesor(4) = 5`
-    *   `sucesor(5) = 6`
-Así, la suma se representa como la aplicación iterativa del sucesor. La función de suma será denominada `plus`.
+Basándose en una interfaz abstracta que provee las operaciones `es-cero?`, `sucesor` y `predecesor`, se puede implementar una función de suma recursiva, llamada `plus`, que recibe dos números `x` y `y`. La lógica de la función es la siguiente:
+-   **Caso base**: Si `y` es cero, la recursión termina y la función devuelve `x`.
+-   **Caso recursivo**: Si `y` no es cero, la función se llama a sí misma con `x` y el `predecesor` de `y`, y al resultado de esa llamada se le aplica la función `sucesor`.
+La definición sería: `plus(x, y) = sucesor(plus(x, predecesor(y)))`.
 
-### Representación Unaria de Números
+####
 
-Se presentarán diferentes representaciones numéricas. La primera es la **representación unaria**:
-Un entero no negativo `n` se representa por una lista de `n` símbolos (por ejemplo, `#t`).
-*   **Cero (0)**: Se representa como la lista vacía.
-*   **Sucesor**: Se obtiene concatenando el símbolo `#t` a la representación actual del número.
-*   **Predecesor**: Se obtiene aplicando la función `cdr` a la representación del número.
-    *   **Manejo de errores**: Si se intenta obtener el predecesor de cero, se retorna un mensaje de error, ya que el predecesor de cero no está definido en este contexto.
+Otra posible implementación para los números naturales es utilizar la representación numérica nativa del lenguaje de programación. En este caso, la interfaz de operaciones básicas se define de la siguiente manera:
+-   **Cero**: Se representa directamente con el valor numérico `0`.
+-   **Es-cero?**: Es una función que comprueba si un número es igual a `0`.
+-   **Sucesor**: Es una función que toma un número `n` y devuelve `n + 1`.
+-   **Predecesor**: Es una función que toma un número `n` y devuelve `n - 1`.
 
-**Ejemplos de Representación Unaria:**
-*   `cero` = `()`
-*   `sucesor(cero)` = `(#t)` (Representación de 1)
-*   `sucesor(sucesor(cero))` = `(#t #t)` (Representación de 2)
+####
 
-**Implementación de la Función `plus(x, y)` en Representación Unaria:**
-La función `plus(x, y)` se define recursivamente:
-*   **Caso base**: Si `y` es cero, el resultado es `x`.
-*   **Caso recursivo**: De lo contrario, `plus(x, y)` es igual a `sucesor(plus(x, predecesor(y)))`.
-Esta lógica aplica la función sucesor a `x` tantas veces como lo indique el valor de `y`.
-
-**Ejemplo de Suma Unaria:**
-`plus((#t #t #t), (#t #t #t #t))` (equivalente a 3 + 4) dará como resultado la representación unaria de 7.
-
-### Representación Numérica Estándar
-
-Ahora, consideremos una **representación numérica** estándar, donde los números se manejan directamente como valores enteros:
-*   **Cero (0)**: Se verifica si `n` es igual a 0.
-*   **Sucesor**: Se define como `n + 1`.
-*   **Predecesor**: Se define como `n - 1`.
-
-**Impacto en la Función `plus`:**
-Al aplicar la misma función `plus` (definida previamente con la lógica recursiva de sucesor y predecesor) con esta nueva representación numérica, por ejemplo, `plus(3, 4)`, el resultado es 7.
-
-**Filosofía Central:**
-A pesar del cambio en la representación subyacente de los números (de una lista unaria a un valor numérico directo), la lógica interna de la función `plus` permanece idéntica. Esto demuestra una filosofía clave en el diseño de software: la implementación de la suma es independiente de la representación específica de los números, lo que aísla al programador de los detalles de cómo se almacena el tipo de dato.
-
----
+El principio de abstracción de datos permite que el código que utiliza una interfaz sea independiente de la implementación subyacente de los datos. Esto se demuestra al observar que la misma función recursiva `plus` funciona correctamente tanto con la representación unaria (listas) como con la representación numérica nativa. Aunque la implementación de `cero`, `sucesor` y `predecesor` cambia radicalmente entre ambas representaciones, la función `plus`, que fue construida sobre estas operaciones abstractas, no requiere ninguna modificación. El programador que utiliza `plus` no necesita conocer los detalles de la representación interna de los números.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=Wiqa0Xnq_k0

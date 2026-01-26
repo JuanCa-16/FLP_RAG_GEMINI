@@ -130,7 +130,7 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     return resultados
 
 def generar_respuesta(consulta: str, contexto: str, fuente:str):
-    print('ENTRREEE ACA, ', fuente,'ENTRREEE ACA, ', contexto)
+    print('ENTRREEE ACA, ', fuente,'ENTRREEE ACA, ', contexto, consulta)
     """Genera una respuesta usando el modelo generativo y el contexto recuperado."""
     if client is None:
         raise HTTPException(status_code=500, detail="El cliente Gemini no se inicializó correctamente.")

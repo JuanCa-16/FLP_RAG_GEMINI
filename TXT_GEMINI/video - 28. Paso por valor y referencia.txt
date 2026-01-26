@@ -1,41 +1,16 @@
-Aquí tienes la transcripción de clase limpia y formateada:
+El mecanismo de paso de parámetros en funciones se refiere a cómo se transfiere la información cuando una función es invocada, por ejemplo, con `f(x)` o `f(5)`. El método estándar, conocido como **paso por valor**, consiste en que al llamar a una función, se genera una nueva variable local para el parámetro. Esta nueva variable recibe una copia del valor del argumento proporcionado. Debido a que se trata de una copia, la variable local dentro de la función es una referencia completamente nueva e independiente de la variable original que se pasó en la llamada.
 
----
+####
 
-**Paso de Parámetros en Funciones: Paso por Valor vs. Paso por Referencia**
+Consideremos el siguiente ejemplo de **paso por valor**: `let p = proc(x) set(x, 4) in let a = 3 in begin p(a); a end`. Al ejecutar este código, primero se crea un ambiente con la variable `a` inicializada en 3. Cuando se invoca el procedimiento `p(a)`, se crea un nuevo ambiente para su ejecución. En este nuevo ambiente, se crea una nueva variable `x` y se le asigna el valor de `a`, que es 3. La instrucción `set(x, 4)` modifica el valor de esta `x` local a 4. Sin embargo, como `x` es una referencia completamente independiente de `a`, la variable `a` en el ambiente original no se ve afectada y conserva su valor de 3 después de que el procedimiento finaliza.
 
-El paso de parámetros en funciones, al invocar una función (por ejemplo, f(x), f(5)), ha sido implementado hasta ahora de la siguiente manera:
+####
 
-Cuando la función recibe el parámetro (por ejemplo, si la función es `product(a)`), se genera una nueva variable 'a' que contiene una copia del valor de la variable original. Esto ocurre al evaluar la expresión; si es una variable con un valor (ej. 8 o 5), se evalúa y se envía directamente durante la expansión de la clausura en la aplicación de la expresión para ejecutar el procedimiento. Se crea una nueva variable en un ambiente extendido.
+En contraste con el paso por valor, existe un mecanismo llamado **paso por referencia**. El objetivo del paso por referencia es permitir que un procedimiento modifique directamente las variables que se le pasan como argumentos. De esta manera, si el valor de un parámetro se altera dentro del cuerpo del procedimiento, la variable original que se utilizó en la llamada también reflejará ese cambio. Esta capacidad es deseable en situaciones donde se requiere que una función afecte el estado de sus argumentos.
 
-Al crear esta nueva referencia o variable, esta es completamente nueva e independiente de la original. Este mecanismo es conocido como **paso por valor**.
+####
 
-**Ejemplo de Paso por Valor:**
-
-Consideremos el siguiente ejemplo:
-```
-let p = prot x (set x 4) in
-let a = 3 in
-begin
-  p(a);
-  a
-end
-```
-Al generar el ambiente, se crea una clausura para `p` que toma `x` y guarda el ambiente actual. Se inicializa `a` con el valor 3.
-
-Al ejecutar `p(a)`, se genera un nuevo ambiente donde `x` toma una copia del valor de `a` (es decir, 3). Dentro del procedimiento `p`, `x` se modifica a 4 (`set x 4`). Sin embargo, al regresar del procedimiento, la variable `a` original sigue valiendo 3.
-
-Este es el caso de paso por valor porque `x` es una referencia completamente nueva e independiente de `a`.
-
-**Introducción al Paso por Referencia:**
-
-En contraste, en el **paso por referencia**, se busca conectar la variable pasada como parámetro con la variable interna del procedimiento. Esto significa que cualquier modificación hecha a `x` dentro del procedimiento (`set x 4`) afectará también a la variable `a` original, forzando a que `a` también valga 4.
-
-En ciertos escenarios, es deseable que las variables pasadas como parámetros a un procedimiento puedan ser modificadas dentro de este. Si una variable pasada por parámetro está conectada, un cambio en su valor dentro del procedimiento debería afectar a la variable original.
-
-Para lograr esto, en lugar de pasar el *contenido* de la variable, se pasa su *dirección* o *ubicación* en memoria. De esta forma, al crear el nuevo ambiente, en lugar de pasar una copia del valor (ej. 3 para `x`), se establece una conexión entre la variable original y la variable del procedimiento. Esto se verá a continuación.
-
----
+El funcionamiento del **paso por referencia** se basa en un principio fundamentalmente distinto al del paso por valor. En lugar de pasar una copia del contenido de la variable (su valor), lo que se pasa es la **ubicación** o dirección de memoria de la variable original. Al crear el nuevo ambiente para la ejecución del procedimiento, el parámetro no se convierte en una nueva variable con un valor copiado, sino en una referencia que apunta a la misma ubicación que la variable original. Esto establece una conexión directa, de modo que ambas variables (el parámetro dentro de la función y el argumento fuera de ella) operan sobre el mismo dato.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=gswgFVuh48Q

@@ -15,8 +15,6 @@ BATCH_SIZE = 100
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
 
-#RUTA_CORPUS = "corpus.jsonl" 
-#RUTA_CORPUS_EMBEDDINGS = "corpus_con_embeddings.jsonl"
 RUTA_CORPUS =  os.path.join(RUTA_PADRE, "src", "embeddings", "corpus_con_ejemplos.jsonl")
 RUTA_CORPUS_EMBEDDINGS = os.path.join(RUTA_PADRE, "src", "embeddings", "corpus_con_ejemplos_embeddings.jsonl") 
 

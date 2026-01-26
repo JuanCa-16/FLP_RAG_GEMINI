@@ -1,154 +1,89 @@
-Aquí tienes la transcripción de clase limpia y formateada para estudio:
+En nuestro lenguaje de programación, definiremos los tipos de datos básicos, que incluyen enteros (`intype`) y booleanos (`booltype`), así como tipos de procedimiento. Un tipo de procedimiento se compone de los tipos de sus argumentos y el tipo de su valor de retorno. Cada vez que se evalúa una expresión en el intérprete, esta tendrá una expresión de tipo asociada que la clasifica como entero, booleano o procedimiento.
 
----
+####
 
-### Tipos en el Lenguaje de Programación
+La relación entre un valor expresado `v` y su tipo `t` se define de manera inductiva. Un valor expresado es de tipo entero si y solo si es un número entero. Es de tipo booleano si y solo si es un valor booleano. Finalmente, un valor expresado es de tipo procedimiento `(T1 * ... * Tn) -> T_out` si y solo si es un `procval` que requiere exactamente `n` argumentos de tipos `T1` a `Tn` y, al ser evaluado con ellos, retorna un valor de tipo `T_out`.
 
-A continuación, se discuten los aspectos de implementación de tipos en nuestro lenguaje de programación.
+####
 
-#### 1. Definición de Tipos Básicos
+Este lenguaje es de tipado estático, lo que significa que cada valor expresado tiene un único tipo asignado que no puede cambiar durante la ejecución. Sin embargo, determinar el tipo de un valor en tiempo de compilación presenta un desafío, especialmente para el valor de retorno de un procedimiento. Para abordar esto, se utilizan dos estrategias principales: el chequeo de tipos (`type checking`), donde los tipos se especifican explícitamente, y la inferencia de tipos (`type inference`), donde el sistema deduce los tipos automáticamente.
 
-Los tipos fundamentales que se manejarán son:
-*   **IntType (Entero):** Representa números enteros.
-*   **BoolType (Booleano):** Representa valores verdadero/falso.
-*   **ProcedureType (Procedimiento):** Un procedimiento se define por un conjunto de tipos de argumentos de entrada y un tipo de resultado. Se representa como: `T1 * T2 * ... * Tn -> T_salida`, donde `T1` a `Tn` son los tipos de los argumentos y `T_salida` es el tipo de retorno.
+####
 
-Cada expresión en el interpretador tendrá una expresión de tipo asociada, indicando si es un entero, un booleano o un tipo de procedimiento.
+A continuación se analizan las expresiones de tipo para diferentes procedimientos:
+-   La función `is-even?` determina si un número es par. Recibe un entero y retorna un booleano, por lo que su tipo es `(int -> bool)`.
+-   La operación de suma `+` recibe dos enteros y retorna un entero. Su tipo es `(int * int -> int)`.
+-   La expresión `lambda x. lambda y. x + y` tiene el tipo `(int -> (int -> int))`. Se infiere que `x` e `y` deben ser enteros porque participan en una suma. El procedimiento externo recibe un entero `x` y retorna un nuevo procedimiento. Este procedimiento interno recibe un entero `y` y retorna el resultado de la suma, que es un entero.
 
-#### 2. Propiedad de un Valor Expresado
+####
 
-La propiedad de que un valor expresado `v` es de tipo `T` se define inductivamente de la siguiente manera:
-*   Un valor expresado es de tipo **IntType** si y solo si es un entero.
-*   Un valor expresado es de tipo **BoolType** si y solo si es un booleano.
-*   Un valor expresado es de tipo **ProcedureType** (`T1 * T2 * ... * Tn -> T_salida`) si y solo si es un valor de procedimiento (`prodval`) que espera exactamente `n` argumentos de tipos `T1` a `Tn` y retorna un valor de tipo `T_salida`. Esto requiere una verificación de cada uno de los tipos correspondientes.
+El tipo de un procedimiento se distingue del tipo de su evaluación. Por ejemplo, la función `+` tiene el tipo `(int * int -> int)`, que describe una operación que espera dos enteros. En cambio, la expresión `+ 5 2` es la *evaluación* de dicha función, y su resultado, `7`, es de tipo `int`. Es crucial diferenciar el tipo de la función en sí misma del tipo del valor que retorna al ser evaluada.
 
-#### 3. Tipado Estático
+####
 
-En este lenguaje, cada valor expresado tiene un único tipo, es decir, es de **tipado estático**. Esto significa que los tipos no pueden cambiar durante la ejecución. No obstante, en algunos escenarios, como el valor retornado por un procedimiento, no siempre es posible determinar el tipo en tiempo de ejecución. Para abordar esto, existen dos estrategias principales:
-*   **Chequeo de Tipos:** Los tipos se especifican directamente.
-*   **Inferencia de Tipos:** Los tipos se infieren a partir del contexto.
+Para la expresión `lambda f. lambda x. is-even?(f (x + 1))`, el tipo es `((int -> int) -> (int -> bool))`. El análisis es el siguiente:
+1.  La operación `x + 1` implica que `x` es de tipo `int`, y el resultado también es `int`.
+2.  La función `f` se aplica a `(x + 1)`, por lo tanto, `f` debe aceptar un argumento de tipo `int`.
+3.  El resultado de `f` se pasa a `is-even?`, que espera un `int`. Por lo tanto, `f` debe retornar un valor de tipo `int`. Concluimos que el tipo de `f` es `(int -> int)`.
+4.  La función `is-even?` retorna un `bool`.
+5.  El procedimiento completo recibe `f` (de tipo `(int -> int)`) y `x` (de tipo `int`), y retorna el resultado final, que es `bool`.
 
-#### 4. Ejemplos de Inferencia de Tipos
+####
 
-A continuación, se presentan varios ejemplos de expresiones y la derivación de sus tipos:
+El tipo de la expresión `proc (x) (x 26)` es `((int -> Tx) -> Tx)`. En este caso, `x` es un procedimiento que se aplica al entero `26`. Por lo tanto, `x` debe ser un procedimiento que recibe un `int`. Como no hay información sobre lo que `x` retorna, su tipo de salida se representa con una variable de tipo `Tx`. El procedimiento completo recibe `x` (cuyo tipo es `(int -> Tx)`) y el resultado final de la evaluación es el valor retornado por `x`, que es de tipo `Tx`.
 
-*   **`even` (par):**
-    *   Descripción: Función que recibe un entero y retorna un booleano.
-    *   Tipo: `IntType -> BoolType`
-    *   Ejemplo: `even 5` retorna `false`.
+####
 
-*   **`+` (suma):**
-    *   Descripción: Función que recibe dos enteros y retorna un entero.
-    *   Tipo: `IntType * IntType -> IntType`
-    *   Ejemplo: `+ 5 2` retorna `7`.
+La expresión `proc (x) if x then 1 else 3` tiene el tipo `(bool -> int)`. La variable `x` se utiliza como la condición de una estructura `if`, por lo que obligatoriamente debe ser de tipo `bool`. Ambas ramas del condicional, `then` y `else`, retornan valores enteros (`1` y `3`). En nuestro lenguaje, se exige que ambas ramas de un `if` retornen valores del mismo tipo, que en este caso es `int`. Por lo tanto, el procedimiento recibe un booleano y retorna un entero.
 
-*   **`lambda x (lambda y (+ x y))`:**
-    *   Explicación: La expresión `(+ x y)` implica que `x` e `y` deben ser `IntType`, y su resultado es `IntType`.
-    *   `lambda y (+ x y)`: Recibe `y` (`IntType`) y retorna `IntType`. Su tipo es `IntType -> IntType`.
-    *   `lambda x (...)`: Recibe `x` (`IntType`) y retorna el procedimiento anterior.
-    *   Tipo: `IntType -> (IntType -> IntType)`
+####
 
-*   **`lambda f (lambda x (even (+ (f x) 1)))`:** (Se asume `f` es una función, `x` una variable)
-    *   `+ (f x) 1`: Implica que `(f x)` debe ser `IntType` y el resultado de la suma es `IntType`.
-    *   `even (...)`: `even` espera un `IntType`, por lo que `(+ (f x) 1)` debe ser `IntType`. `even` retorna `BoolType`.
-    *   `f x`: Como `x` es el argumento de `lambda x`, su tipo es `IntType`. Para que `f x` sea `IntType`, `f` debe ser un procedimiento que toma un `IntType` y retorna un `IntType`. Así, `f: IntType -> IntType`.
-    *   La expresión `lambda x (...)` toma `x: IntType` y retorna `BoolType`. Su tipo es `IntType -> BoolType`.
-    *   La expresión `lambda f (...)` toma `f: (IntType -> IntType)` y retorna `(IntType -> BoolType)`.
-    *   Tipo: `(IntType -> IntType) -> (IntType -> BoolType)`
+La expresión `proc (f) proc (x) if (f x) then 1 else 2` tiene el tipo `((Tx -> bool) * Tx -> int)`. Analicemos sus componentes:
+1.  `f` es un procedimiento que recibe un argumento `x`. El tipo de `x` es desconocido, por lo que se denota como `Tx`.
+2.  El resultado de `(f x)` se usa como condición en un `if`, lo que implica que `f` debe retornar un valor de tipo `bool`. Por lo tanto, el tipo de `f` es `(Tx -> bool)`.
+3.  El procedimiento completo recibe dos argumentos: `f` y `x`.
+4.  El resultado final del `if` es un entero (`1` o `2`), por lo que el tipo de retorno de todo el procedimiento es `int`.
 
-*   **`- 32 26`:**
-    *   Descripción: Resta de dos enteros. El resultado es un entero.
-    *   Tipo: `IntType`
+####
 
-*   **`proc x (x 26)`:**
-    *   Explicación: `x` es un procedimiento que se aplica a `26` (un `IntType`). Se desconoce el tipo de retorno de `x`, se denota como `Tx`.
-    *   Tipo de `x`: `IntType -> Tx`
-    *   Tipo de la expresión: `(IntType -> Tx) -> Tx`
+La expresión `proc (x) proc (y) if y then x else 3` tiene el tipo `(int -> (bool -> int))`. El análisis es el siguiente:
+1.  La condición del `if` es `y`, por lo que `y` debe ser de tipo `bool`.
+2.  Las ramas `then` y `else` deben tener el mismo tipo. Como la rama `else` retorna `3` (un `int`), la rama `then` también debe retornar un `int`. Esto implica que `x` debe ser de tipo `int`.
+3.  El procedimiento interno recibe `y` (un `bool`) y retorna un `int`. Su tipo es `(bool -> int)`.
+4.  El procedimiento externo recibe `x` (un `int`) y retorna el procedimiento interno.
 
-*   **`proc x (if x 1 3)`:**
-    *   Explicación: La condición `x` de un `if` debe ser `BoolType`. Las ramas `1` y `3` son `IntType`. El `if` retorna `IntType`.
-    *   Tipo: `BoolType -> IntType`
+####
 
-*   **`proc f (proc x (if (f x) 1 2))`:**
-    *   Explicación:
-        *   `if (f x) 1 2`: `(f x)` debe ser `BoolType`. Las ramas `1` y `2` son `IntType`. El `if` retorna `IntType`.
-        *   `proc x (...)`: `x` es el argumento, se desconoce su tipo inicial `Tx`. `(f x)` es `BoolType`, entonces `f` toma `Tx` y retorna `BoolType`.
-        *   `proc f (...)`: `f` es el argumento, su tipo es `(Tx -> BoolType)`. El procedimiento `proc x (...)` retorna `IntType`.
-    *   Tipo: `(Tx -> BoolType) -> (Tx -> IntType)`
+La expresión `proc (x) -(x, 3)` tiene el tipo `(int -> int)`. La operación de resta `-` requiere que sus operandos sean enteros. Por lo tanto, `x` debe ser de tipo `int`. El resultado de la resta también es un entero, que es el valor de retorno del procedimiento.
 
-*   **`proc x (proc y (if y x 3))`:**
-    *   Explicación:
-        *   `if y x 3`: `y` es la condición, debe ser `BoolType`. `x` y `3` deben ser del mismo tipo; `3` es `IntType`, entonces `x` debe ser `IntType`. El `if` retorna `IntType`.
-        *   `proc y (...)`: Toma `y: BoolType` y retorna `IntType`. Su tipo es `BoolType -> IntType`.
-        *   `proc x (...)`: Toma `x: IntType` y retorna `(BoolType -> IntType)`.
-    *   Tipo: `IntType -> (BoolType -> IntType)`
+####
 
-*   **`proc x (- x 3)`:**
-    *   Explicación: La operación de resta `-` implica que `x` debe ser `IntType`. El resultado es `IntType`.
-    *   Tipo: `IntType -> IntType`
+La expresión `proc (f) proc (x) -(f(x), 1)` tiene el tipo `((Tx -> int) -> (Tx -> int))`.
+1.  La función `f` recibe un argumento `x` de tipo desconocido `Tx`.
+2.  El resultado de `f(x)` se usa en una resta, lo que obliga a que `f` retorne un `int`. Por lo tanto, el tipo de `f` es `(Tx -> int)`.
+3.  El procedimiento interno recibe `x` (de tipo `Tx`) y retorna el resultado de la resta, que es `int`. Su tipo es `(Tx -> int)`.
+4.  El procedimiento externo recibe `f` y retorna el procedimiento interno.
 
-*   **`proc f (proc x (- (f x) 1))`:**
-    *   Explicación:
-        *   `- (f x) 1`: Implica que `(f x)` debe ser `IntType` y el resultado es `IntType`.
-        *   `proc x (...)`: Toma `x` (tipo `Tx` desconocido). `f x` es `IntType`, entonces `f` debe ser un procedimiento `Tx -> IntType`. Este procedimiento interno retorna `IntType`.
-        *   `proc f (...)`: Toma `f: (Tx -> IntType)` y retorna `(Tx -> IntType)`.
-    *   Tipo: `(Tx -> IntType) -> (Tx -> IntType)`
+####
 
-*   **`proc x (proc y (x y))`:**
-    *   Explicación:
-        *   `x y`: `x` es un procedimiento que toma `y` (tipo `Ty`) y retorna un tipo `Tz`.
-        *   `proc y (...)`: Toma `y: Ty` y retorna `Tz`. Su tipo es `Ty -> Tz`.
-        *   `proc x (...)`: Toma `x: (Ty -> Tz)` y retorna `(Ty -> Tz)`.
-    *   Tipo: `(Ty -> Tz) -> (Ty -> Tz)`
+La expresión `proc (x) (x x)` genera un error de tipos debido a una definición recursiva infinita. Para determinar el tipo de `x`, digamos `Tx`, observamos que `x` es un procedimiento que se acepta a sí mismo como argumento. Esto implica que `Tx` debe ser `(Tx -> Ty)`, donde `Ty` es el tipo de retorno. Al sustituir `Tx`, obtenemos `((Tx -> Ty) -> Ty)`, y así sucesivamente. Esta estructura de tipo infinita no es resoluble en el sistema de tipos.
 
-*   **`proc x (x 3)`:**
-    *   Explicación: `x` es un procedimiento que toma `3` (`IntType`). Su tipo de retorno es desconocido (`Tx`).
-    *   Tipo: `(IntType -> Tx) -> Tx`
+####
 
-*   **`proc x (x x)`:**
-    *   Explicación: Esto representa una definición de tipo recursiva, donde `x` toma un argumento de su propio tipo. Generalmente, esto conduce a un **error de tipos** en la mayoría de los sistemas de tipos simples.
+La expresión `(proc (x) if x then 88 else 99) 33` produce un error de tipos. El procedimiento `proc (x) if x then 88 else 99` tiene el tipo `(bool -> int)`, ya que espera un argumento booleano para la condición del `if`. Sin embargo, se le está aplicando el valor `33`, que es un entero. Debido a esta discordancia de tipos entre lo esperado (`bool`) y lo proporcionado (`int`), la evaluación falla.
 
-*   **`proc x (if x 88 69)`:**
-    *   Explicación: La condición `x` debe ser `BoolType`. `88` y `69` son `IntType`. El resultado es `IntType`.
-    *   Tipo: `BoolType -> IntType`
+####
 
-*   **`proc x (proc y (if x y 99))`:**
-    *   Explicación:
-        *   `if x y 99`: `x` es la condición, `BoolType`. `y` y `99` deben ser del mismo tipo; `99` es `IntType`, entonces `y` es `IntType`. El `if` retorna `IntType`.
-        *   `proc y (...)`: Toma `y: IntType` y retorna `IntType`. Su tipo es `IntType -> IntType`.
-        *   `proc x (...)`: Toma `x: BoolType` y retorna `(IntType -> IntType)`.
-    *   Tipo: `BoolType -> (IntType -> IntType)`
+La expresión `(proc (p) (p (proc (z) z))) (proc (q) if (q 88) then 99 else 100)` produce un error de tipos. Analicemos la aplicación:
+1.  El argumento `p` del procedimiento externo es `proc (q) if (q 88) then 99 else 100`.
+2.  El argumento interno `(proc (z) z)` es la función identidad, cuyo tipo es `(Tz -> Tz)`.
+3.  Al evaluar `p` con la función identidad, esta última se convierte en `q`. La expresión se transforma en `if ((proc (z) z) 88) then ...`.
+4.  La condición del `if` evalúa la función identidad con el entero `88`, lo cual retorna `88`.
+5.  El `if` espera una condición de tipo `bool`, pero recibe un `int` (`88`). Esto causa un error de tipos.
 
-*   **`proc x (if x 88 99) 33`:**
-    *   Explicación:
-        *   El procedimiento `proc x (if x 88 99)` tiene tipo `BoolType -> IntType`.
-        *   Se intenta aplicar este procedimiento a `33`.
-        *   `33` es `IntType`, pero el procedimiento espera `BoolType`.
-    *   Tipo: **Error de tipos** (se esperaba `BoolType`, se recibió `IntType`).
+####
 
-*   **`proc p (if p 88 99) (proc z z)`:**
-    *   Explicación:
-        *   El procedimiento `proc p (if p 88 99)` tiene tipo `BoolType -> IntType` (similar al ejemplo anterior).
-        *   Se intenta aplicar este procedimiento a `(proc z z)`.
-        *   El tipo de `(proc z z)` (donde `z` es un procedimiento que se aplica a sí mismo) es una definición de tipo recursiva, lo que no es `BoolType`.
-    *   Tipo: **Error de tipos** (se esperaba `BoolType`, se recibió un tipo de procedimiento recursivo).
-
-*   **`proc f (proc g (proc p (if (p (f 1)) (g 1) x)))`:**
-    *   Explicación (basado en la derivación paso a paso de la transcripción):
-        *   `f 1`: `f` recibe `1` (`IntType`) y retorna un `IntType`. Así, `f: IntType -> IntType`.
-        *   `g 1`: `g` recibe `1` (`IntType`) y retorna un `IntType`. Así, `g: IntType -> IntType`.
-        *   `p (f 1)`: `(f 1)` es `IntType`. `p` toma este `IntType` y debe retornar `BoolType` (por ser la condición del `if`). Así, `p: IntType -> BoolType`.
-        *   `g 1` y `x`: `g 1` es `IntType`. La rama `x` también debe ser `IntType`. Así, `x: IntType`.
-        *   `proc p (...)`: Toma `p: (IntType -> BoolType)` y retorna `IntType`.
-        *   `proc g (...)`: Toma `g: (IntType -> IntType)` y retorna `((IntType -> BoolType) -> IntType)`.
-        *   `proc f (...)`: Toma `f: (IntType -> IntType)` y retorna `((IntType -> IntType) -> ((IntType -> BoolType) -> IntType))`.
-    *   Tipo: `(IntType -> IntType) -> ((IntType -> IntType) -> ((IntType -> BoolType) -> IntType))`
-
-*   **`let` con definición recursiva (ejemplo de `f de dd`):**
-    *   Explicación: Si una definición como `de` se define en términos de sí misma (e.g., `de` es un procedimiento que recibe a `de`), se produce una definición recursiva.
-    *   Tipo: **Error de tipos** debido a la definición recursiva, a menos que el sistema de tipos soporte específicamente tipos recursivos.
-
----
+La expresión `let d = proc (x) (d x) in (d d)` resulta en un error de tipos debido a una definición recursiva. La variable `d` se define como un procedimiento que se llama a sí mismo con su argumento `x`. Al evaluar `(d d)`, `d` se llama a sí misma con `d` como argumento. Esto lleva a una cadena de llamadas `(d (d (d ...)))`, lo que corresponde a un tipo recursivo infinito similar a `proc (x) (x x)`, que no es válido en el sistema.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=GxyNVcOdTQE

@@ -1,75 +1,28 @@
-A continuación se presentan ejemplos sobre la instanciación y el funcionamiento de objetos simples en un contexto de programación.
+A continuación se presentan ejemplos de instanciación de objetos y su funcionamiento en un modelo de objetos simples. El primer caso analiza la representación de un objeto y la invocación de uno de sus métodos. La clase `S1`, que extiende de `Object`, posee los campos `X` y `Y`, así como los métodos `initialize`, `M1` y `M2`. Al instanciar un objeto `O1` de la clase `S1` con los valores `1` y `2`, su representación interna consiste en una etiqueta de tipo `Object`, la referencia a su clase `S1`, y un vector de campos que contiene `X` con el valor `1` y `Y` con el valor `2`.
 
----
+####
 
-### 1. Instanciación y Ejecución en Objetos Simples
+Al invocar el método `M1` sobre el objeto `O1` mediante la expresión `send(O1, M1)`, se construye un entorno de ejecución específico. Este entorno se inicia vacío y se le añade la representación del objeto, que encapsula sus campos `X` y `Y` con sus respectivos valores. Dentro de este entorno, la variable `self` se vincula al objeto `O1` sobre el que se invoca el método. La variable `super` se vincula a la clase `Object`, que es la clase padre donde se encuentra definido el método `M1` en este contexto.
 
-**Caso 1: Objeto Único con un Método Simple**
+####
 
-*   **Definición de Clase:** Se tiene una clase `S1` con campos `X` e `Y`.
-*   **Instanciación:** Se crea un objeto `O1` de la clase `S1`, inicializando sus campos `X=1` e `Y=2`.
-    *   **Representación de O1:** Un objeto de tipo `Object`, de clase `S1`, que contiene los campos `X=1` e `Y=2`.
-*   **Invocación de Método:** Se invoca el método `M1` en `O1` (ej. `O1.M1()`).
-*   **Ambiente de Ejecución:**
-    *   Se establece un ambiente de ejecución.
-    *   La representación del objeto `O1` incluye sus campos `X=1` e `Y=2`.
-    *   Para el método `M1`, `self` hace referencia a `O1`, y `super` hace referencia a la clase padre de `M1` (en este caso, la clase `S1` o una base común si aplica).
-*   **Resultado Esperado:** La invocación de `O1.M1()` devuelve 1.
+Un segundo ejemplo, más complejo, involucra dos clases, `C1` y `C2`, para ilustrar la herencia y la resolución de métodos. Primero, se instancia un objeto `O1` de la clase `C1`. Su representación contiene la referencia a la clase `C1` y los campos `X` y `Y` inicializados con `1` y `2` respectivamente. Posteriormente, se instancia un objeto `O2` de la clase `C2`. La representación de `O2` incluye una etiqueta de tipo `Object`, la referencia a su clase `C2`, y un conjunto de campos que combina los de `C1` y `C2`. Los campos `X` y `Y` heredados de `C1` se inicializan con `1` y `2` mediante una llamada al inicializador de la clase padre, mientras que los campos `X` y `Y` propios de `C2` se inicializan con `9` y `10`. Es fundamental invocar el inicializador de la superclase para que los campos heredados reciban sus valores correctos; de lo contrario, podrían quedar con valores por defecto como cero.
 
-### 2. Clases con Herencia y Sobreescritura
+####
 
-**Caso 2: Interacción entre Clases C1 y C2 con Métodos M1 y M2**
+Al analizar la ejecución de `send(O2, M2)`, el sistema busca el método `M2` comenzando por la clase `C2`. Al no encontrarlo, la búsqueda continúa en la jerarquía de herencia hasta la clase `C1`, donde finalmente se localiza. Por lo tanto, `M2` se ejecuta en el contexto de `C1`. El mecanismo de resolución de alcance, como `refine-position`, determina que, al ejecutarse desde `C1`, el entorno de visibilidad inicial se limita a los campos definidos en `C1`. En este contexto, `self` se refiere al objeto `O2`, mientras que `super` apunta a `Object`.
 
-*   **Clases Definidas:** `C1` y `C2` con métodos `M1` y `M2`.
-*   **Objetos:**
-    *   `O1` es de clase `C1`.
-    *   `O2` es de clase `C2`.
-*   **Representación de O1 (Clase C1):** Contiene campos `X=1` e `Y=2`.
-*   **Representación de O2 (Clase C2):**
-    *   Contiene campos `X` e `Y` heredados de `C1` (valores iniciales: 1, 2, asumiendo llamada al inicializador de `C1`).
-    *   Contiene campos `X` e `Y` propios de `C2` (valores iniciales: 9, 10).
-    *   **Nota Importante:** La correcta inicialización de los campos heredados es crucial; de no ser así, sus valores podrían ser 0, 0.
-*   **Ejecución de `O2.M2()`:**
-    *   Dado que `M2` no se encuentra en `C2`, su ejecución se resuelve en la clase `C1`.
-    *   **Función `FindRefinePosition`:** Esta función, al ejecutarse en `C1`, accede únicamente a las partes del vector de estado del objeto `O2` que corresponden a `C1` (es decir, `X=1`, `Y=2`).
-    *   **Contexto del Método M2:**
-        *   `super` se refiere a la clase padre (`C1`).
-        *   `self` se refiere a `O2`.
-    *   **Llamada Anidada:** Dentro de `M2`, se invoca `self.M1()` (equivalente a `O2.M1()`).
-    *   **Nuevo Ambiente:** Esta llamada genera un nuevo ambiente de ejecución.
-    *   **Estado Combinado:** El estado del objeto para esta ejecución combina los campos de `C2` y `C1`. El orden de inserción (`C2` y luego `C1`) asegura que al buscar `X` o `Y`, se encuentren primero los valores de `C2` si hay sobreescritura.
-    *   **Retorno de X:** `O2.M1()` devuelve 9 (valor de `X` en `C2`).
-    *   **Comparativa:** En contraste, `O1.M1()` devolvería 1 (valor de `X` en `C1`).
-*   **Resultado Esperado:** La invocación de `O2.M2()` devuelve 9.
+####
 
-### 3. Modificación de Estado y Recuperación
+El método `M2` contiene una llamada anidada: `send(self, M1)`. Dado que `self` es `O2`, la expresión se resuelve como `send(O2, M1)`. Al ejecutarse `M1` sobre `O2`, se construye un nuevo entorno que incluye los campos de ambas clases, `C1` y `C2`. Para resolver la ambigüedad de campos con el mismo nombre (como `X`), la búsqueda prioriza los campos de la clase más específica, en este caso, `C2`. Cuando `M1` solicita el valor de `X`, obtiene el valor `9` del campo de `C2`. Si se hubiera ejecutado `send(O1, M1)`, el resultado habría sido `1`, ya que `O1` solo posee los campos de `C1`.
 
-**Caso 3: Instanciación, Lectura y Modificación del Estado**
+####
 
-*   **Clase y Objeto:** Se instancia un objeto `O1` de una clase `C1` con campos `I` y `J`.
-*   **Instanciación Inicial:** `O1` se inicializa con `I=3` y `J=-3`.
-*   **Ejecución 1: `O1.getState()`**
-    *   El ambiente contiene la representación de `O1` (`I=3`, `J=-3`).
-    *   `super` es la clase padre (ej. `Object`), `self` es `O1`.
-    *   Devuelve una lista `[3, -3]`, que se almacena en la variable `T1`.
-*   **Ejecución 2: `O1.countUp(2)`**
-    *   El ambiente contiene la representación actual de `O1` (`I=3`, `J=-3`).
-    *   Contexto del método: `super` (clase padre), `self` (`O1`), y el parámetro `d=2`.
-    *   Operación: `I = I + d` y `J = J - d`.
-    *   Nuevo estado de `O1`: `I = 3+2=5`, `J = -3-2=-5`. (Los campos `I` y `J` están conectados y se actualizan en conjunto).
-*   **Ejecución 3: `O1.getState()`**
-    *   El ambiente contiene la representación actualizada de `O1` (`I=5`, `J=-5`).
-    *   `super` es la clase padre, `self` es `O1`.
-    *   Devuelve una lista `[5, -5]`.
-*   **Resultado Final (Implicado):** Una lista que combina los estados obtenidos: `[[3, -3], [5, -5]]`.
+Un tercer ejemplo demuestra la mutación del estado de un objeto. Se instancia un objeto `O1` de una clase `C1` con campos `i` y `j`, inicializados con los valores `3` y `-3`. Una primera llamada a `send(O1, get_state)` retorna una lista con el estado actual del objeto: `[3, -3]`. Posteriormente, se ejecuta `send(O1, count_up, 2)`. El método `count_up` recibe el parámetro `2` y lo utiliza para modificar el estado interno del objeto: el campo `i` se incrementa a `5` (`3 + 2`) y el campo `j` se decrementa a `-5` (`-3 - 2`). Estos cambios son efectos secundarios que alteran permanentemente el estado de `O1`.
 
-### Principio Clave para `getState`
+####
 
-Para operaciones como `getState`, el ambiente de ejecución debe proporcionar acceso a los miembros de la clase en el nivel de herencia más cercano y relevante en el contexto de la llamada.
-
----
-
-Este material es una introducción a la instanciación de objetos y la gestión de su estado en diferentes escenarios. Se recomienda realizar ejercicios prácticos para consolidar la comprensión de estos conceptos.
+Tras la mutación del estado del objeto `O1` por el método `count_up`, una segunda llamada a `send(O1, get_state)` refleja los cambios. Al construir el entorno de ejecución para esta nueva invocación, se accede al estado actualizado del objeto. Los campos `i` y `j` ahora contienen los valores `5` y `-5`, respectivamente. En consecuencia, el método devuelve la lista `[5, -5]`, mostrando cómo el estado del objeto ha sido modificado por la invocación anterior. La verificación de estos tres ejemplos en un intérprete confirma los resultados teóricos: `1` para el primer caso, `9` para el segundo y la concatenación de estados `[3, -3, 5, -5]` para el tercero.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=nL5i_K0OV_4

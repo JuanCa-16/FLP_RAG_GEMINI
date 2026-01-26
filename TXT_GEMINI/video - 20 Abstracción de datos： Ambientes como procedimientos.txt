@@ -1,53 +1,69 @@
-Aquí tienes la transcripción limpia y formateada:
+Una segunda forma de representar datos es la representación basada en procedimientos. En este enfoque, la información no se almacena en una estructura de datos pasiva como una lista, sino que es la propia función la que, al ser invocada, nos devuelve el dato que necesitamos. Para ello, se utilizan señales o códigos numéricos que indican qué información se desea obtener.
 
----
+####
 
-### Representación Basada en Procedimientos
+La construcción de un ambiente vacío (`empty-env`) se implementa como una función que no recibe argumentos y devuelve otra función. Esta función interna, un procedimiento, recibe una señal numérica. Si la señal es `0`, que se utiliza para la verificación de tipo, devuelve un símbolo que la identifica como un ambiente vacío. Para cualquier otra señal, genera un error, ya que un ambiente vacío no contiene más información.
 
-Se utilizará una representación de datos basada en procedimientos. En esta representación, las funciones o el propio tipo de dato devuelven la información necesaria.
+```scheme
+(define empty-env
+  (lambda ()
+    (lambda (signal)
+      (if (= signal 0)
+          'empty-env
+          (eopl:error 'empty-env "Señal no válida: ~s" signal)))))
+```
 
-#### Definición de `make-env`
+####
 
-Se define `make-env`, una función que no recibe argumentos y devuelve otra función. Esta función interna recibe una "señal" (un selector numérico) para gestionar las operaciones:
-*   Si la señal es `0`: se pregunta si es un ambiente vacío (`is-empty-env?`).
-*   Si la señal es `1`: devuelve el extractor de ID (`env-id`).
-*   Si la señal es `2`: devuelve el extractor de valor (`env-value`).
-*   Si la señal es `3`: devuelve el ambiente anterior (`env-old-env`).
+Para extender un ambiente, se define la función `extend-env` que toma un identificador (`id`), un valor (`val`) y un ambiente previo (`env`). Esta función también devuelve un procedimiento que recibe una señal. La lógica interna de este procedimiento mapea cada señal a un dato específico: la señal `0` se reserva para identificarlo como un ambiente extendido, la señal `1` devuelve el `id`, la señal `2` devuelve el `val`, y la señal `3` devuelve el ambiente previo (`env`).
 
-Este proceso genera un tipo de dato que, aunque no es directamente visible, es la estructura fundamental que se manipulará.
+```scheme
+(define extend-env
+  (lambda (id val env)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'extended-env)
+        ((= signal 1) id)
+        ((= signal 2) val)
+        ((= signal 3) env)
+        (else (eopl:error 'extend-env "Señal no válida: ~s" signal))))))
+```
 
-#### Observadores: Predicados
+####
 
-Los predicados permiten verificar las propiedades de un ambiente:
-*   **`is-empty-env?`**: Recibe un ambiente y le pregunta (usando la señal `0`) si es un ambiente vacío.
-*   **`make-empty-env`**: Define un ambiente vacío. Este ambiente, cuando es consultado con la señal `0`, devuelve `true`.
-*   **`is-extended-env?`**: Se utiliza para verificar si un ambiente es un ambiente extendido.
+Los observadores, como los predicados, se implementan invocando el procedimiento del ambiente con la señal correspondiente. Para determinar si un ambiente es vacío (`is-empty-env?`), se le envía la señal `0` y se comprueba si el resultado es el símbolo `'empty-env'`. De manera análoga, para verificar si es un ambiente extendido (`is-extended-env?`), se envía la misma señal `0` y se compara con el símbolo `'extended-env'`.
 
-#### Observadores: Extractores
+```scheme
+(define is-empty-env?
+  (lambda (env)
+    (eq? (env 0) 'empty-env)))
 
-Los extractores permiten obtener componentes específicos de un ambiente:
-*   **`env-id`**: Recibe un ambiente y extrae el identificador (ID) usando la señal `1`.
-*   **`env-value`**: Recibe un ambiente y extrae el valor usando la señal `2`.
-*   **`env-old-env`**: Recibe un ambiente y extrae el ambiente antiguo o padre usando la señal `3`.
+(define is-extended-env?
+  (lambda (env)
+    (eq? (env 0) 'extended-env)))
+```
 
-#### Prueba de Funciones
+####
 
-Al probar las funciones con un ambiente de ejemplo:
-*   `env-id` sobre un ambiente que contiene `x` devuelve `x`.
-*   `env-value` sobre un ambiente que contiene el valor `3` devuelve `3`.
-*   `env-old-env` devuelve un procedimiento, ya que los ambientes son implementados como procedimientos.
+Los extractores de datos para un ambiente extendido operan de forma similar a los predicados, utilizando las señales numéricas codificadas en su definición. Para extraer el identificador (`extend-env-id`), se invoca al procedimiento del ambiente con la señal `1`. Para el valor (`extend-env-val`), se usa la señal `2`, y para obtener el ambiente anterior (`extend-env-old`), se utiliza la señal `3`. Esta implementación es directa y depende completamente de la interfaz definida por el procedimiento.
 
-#### Aplicación y Abstracción
+```scheme
+(define extend-env-id
+  (lambda (env)
+    (env 1)))
 
-Al aplicar la función `apply-env` a un ambiente, se observa:
-*   Buscar `x` devuelve `3`.
-*   Buscar `y` devuelve `4`.
-*   Buscar `w` devuelve `9`.
-*   Buscar `m` (un símbolo no presente en el ambiente) produce un error: "El símbolo m no se encuentra en el ambiente".
+(define extend-env-val
+  (lambda (env)
+    (env 2)))
 
-Se ha demostrado que la función `apply-env` no se ve afectada por el cambio de representación interna del ambiente (pasando de una implementación basada en listas a una basada en procedimientos). Este es un objetivo fundamental de la abstracción: las funciones del programador permanecen inalteradas a pesar de los cambios en la implementación subyacente. Esta filosofía será explorada en el taller relacionado con el tema.
+(define extend-env-old
+  (lambda (env)
+    (env 3)))
+```
 
----
+####
+
+El objetivo principal de la abstracción de datos es separar la interfaz de la implementación. Al cambiar la representación interna de los ambientes, pasando de una basada en listas a una basada en procedimientos, las funciones de alto nivel que operan sobre estos ambientes, como `apply-env` (que busca un valor asociado a un identificador), no requieren ninguna modificación. La función `apply-env` sigue funcionando correctamente porque interactúa con los ambientes únicamente a través de su interfaz pública (constructores, predicados y extractores), sin depender de los detalles de su representación interna.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=5ymi1j8FQuI

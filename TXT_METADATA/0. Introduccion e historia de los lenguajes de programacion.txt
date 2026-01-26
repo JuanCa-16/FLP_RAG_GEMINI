@@ -1,6 +1,6 @@
-Lenguaje = ⇒ Comunicacion
-Lenguaje de programacion = ⇒ Comunicacion con la
-maquina
+Lenguaje = ⇒ Comunicaci´on
+Lenguaje de programaci´on = ⇒ Comunicaci´on con la
+m´aquina
 Lenguaje hablado y lenguaje escrito
 Lenguaje escrito = ⇒ Formalismos = ⇒ Lenguajes formales.
 
@@ -13,32 +13,30 @@ Mayas
 Figura: Ejemplo de escritura egipcia, tomado de enciclopedia britannica.
 <CODIGO_BLOCK_END>
 
-Evolucion de los alfabetos: Pictogramas a Letras.
+Evoluci´on de los alfabetos: Pictogramas a Letras.
 Figura: Evolucion de pictogramas a letras, fuente:
 https://usefulcharts.com/blogs/charts/evolution-of-the-english-alphabet.
-
 
 <IMG_BLOCK_START>
 Evolution of the Alphabet AN a Sut mae ALDO OI EOD COANE eg AL ITAAYIB@LAIMMEOINGAETVOXY
 <IMG_BLOCK_END>
 
-La programacion se define como una actividad general del
-hombre, que significa la accion de extender o cambiar la
+La programaci´on se define como una actividad general del
+hombre, que significa la acci´on de extender o cambiar la
 funcionalidad de un sistema[VanRoy].
-Programar es decirle a un computador (o a alguna maquina)
+Programar es decirle a un computador (o a alguna m´aquina)
 como realizar su trabajo.
-La programacion es una actividad de amplio espectro
-La programacion de sistemas de software consta de dos partes
-esenciales: la ciencia y la tecnologia.
+La programaci´on es una actividad de amplio espectro
+La programaci´on de sistemas de software consta de dos partes
+esenciales: la ciencia y la tecnolog´ia.
 
-Un lenguaje de programacion es un lenguaje artificial
-disenado para expresar computaciones que pueden ser llevadas
-a cabo por una maquina.
-Conjunto de simbolos y reglas sintacticas y semanticas.
+Un lenguaje de programaci´on es un lenguaje artificial
+dise˜nado para expresar computaciones que pueden ser llevadas
+a cabo por una m´aquina.
+Conjunto de s´imbolos y reglas sint´acticas y sem´anticas.
 
-Charles Babagge (Maquina Analitica) y Ada Lovelace
+Charles Babagge (M´aquina Anal´itica) y Ada Lovelace
 (Primera programadora) (Mediados del siglo XIX).
-
 
 <IMG_BLOCK_START>
 AA
@@ -54,7 +52,6 @@ Ce ame ccccatii cd. y =i E MAR Tey PPP PPE PETE EEE - iii CURE A A ee A SS PPP a
 <IMG_BLOCK_END>
 
 Programa escrito por Ada Lovelace.
-
 
 <IMG_BLOCK_START>
 Diagram for the computation by the Engine of the Numbers of Bernoulli. See Note G. (page 722 el seg.) 1
@@ -112,19 +109,18 @@ evo =°V)_|by a Variable card: :
 //DESCRIPCION IMAGEN: Código o pseudocódigo
 <IMG_BLOCK_END>
 
-Herman Hollerith se percato de que podia codificar la
-informacion en tarjetas perforadas cuando observo a los
-conductores de trenes que identificaban a los pasajeros segun
-el orificio que hacian en su respectivo ticket. En 1890
-Hollerith codifico los datos del censo en tarjetas perforadas.
-En la decada de 1920 los calculos numericos estaban basados
-en los numeros decimales. Con el paso del tiempo, se dieron
-cuenta de que la logica podia ser representada con numeros,
-no solo con palabras.
+Herman Hollerith se percat´o de que pod´ia codificar la
+informaci´on en tarjetas perforadas cuando observ´o a los
+conductores de trenes que identificaban a los pasajeros seg´un
+el orificio que hac´ian en su respectivo ticket. En 1890
+Hollerith codific´o los datos del censo en tarjetas perforadas.
+En la d´ecada de 1920 los c´alculos num´ericos estaban basados
+en los n´umeros decimales. Con el paso del tiempo, se dieron
+cuenta de que la l´ogica pod´ia ser representada con n´umeros,
+no s´olo con palabras.
 
-En 1943 se crea el sistema de codificacion de ENIAC la
-primera computadora de proposito general.
-
+En 1943 se crea el sistema de codificaci´on de ENIAC la
+primera computadora de prop´osito general.
 
 <IMG_BLOCK_START>
 if
@@ -139,21 +135,18 @@ xx
 
 .
 
-
 <IMG_BLOCK_START>
 er oo [2°] ~37 oes IRs
 <IMG_BLOCK_END>
 
-
 <CODIGO_BLOCK_START>
 Short Code de John Mauchly en 1949 (BINAC y UNIVAC I).
-Por ejemplo la expresion: a = b + c
-b ∗ c se computa asi:
+Por ejemplo la expresi´on: a = b + c
+b ∗ c se computa as´i:
 A-0, A-1, A-2 entre 1951 y 1953 (UNIVAC). El siguiente
-programa calcula el factorial de un numero almacenado en un
+programa calcula el factorial de un n´umero almacenado en un
 registro.
 <CODIGO_BLOCK_END>
-
 
 <IMG_BLOCK_START>
 B= C+ YL) / XL “vio substitute variables 3 03 09 x1 07 Y1 02 04 X1 YI substitute operators and parentheses
@@ -162,11 +155,10 @@ by juxtaposition. 07 Y1 02 04 x1 y1 group into 12-byte words. 00 00 x8 03 091
 //DESCRIPCION IMAGEN: Código o pseudocódigo
 <IMG_BLOCK_END>
 
-Mayor informacion en:
-http://museo.inf.upv.es/en/univac/ asi mismo se tiene
+Mayor informaci´on en:
+http://museo.inf.upv.es/en/univac/ as´i mismo se tiene
 un simulador disponible en:
 http://www.historicsimulations.com/univac.html.
-
 
 <IMG_BLOCK_START>
 E UNIVAC Man Tape Memory Debug 1008] soo 013 s00 000
@@ -180,44 +172,32 @@ Fortran (FORmula TRANslator) por John Backus et al. en
 1953.
 C AREA OF A TRIANGLE − HERON’ S FORMULA
 C INPUT − CARD READER UNIT
-5 ,
 INTEGER INPUT
 C OUTPUT − LINE PRINTER UNIT
-6 ,
 REAL OUTPUT
 
 <CODIGO_BLOCK_START>
 C INPUT ERROR DISPLAY ERROR OUTPUT CODE 1 IN JOB CONTROL LISTING
 INTEGER A,B,C
 READ (5 ,501) A,B, C
-501
 FORMAT (3 I5 )
 IF (A. EQ .0
 . OR . B. EQ .0
 . OR . C . EQ . 0 )
 STOP 1
 S = (A + B + C)
-/
-2.0
 AREA = SQRT ( S ∗ (S − A) ∗ (S − B) ∗ (S − C)
-)
 WRITE (6 ,601) A,B, C,AREA
-601
 FORMAT (4H A= , I5 ,5H
 B= , I5 ,5H
 C= , I5 ,8H
 AREA= , F10 . 2 ,
 $ 13H SQUARE UNITS)
-STOP
-END
 LISP (LISt Processor) por John McCarthy et al. en 1958.
 ( defun
 averagenum
 ( n1 n2 n3 n4 )
-(/
 ( + n1 n2 n3 n4 )
-4)
-)
 ( write ( averagenum
 10 20 30
 40) ).
@@ -225,21 +205,15 @@ averagenum
 
 COBOL (COmmon Business Oriented Language) por Grace
 Hopper en 1959.
-DATA
 DIVISION .
 WORKING-STORAGE
 SECTION .
-01
-Num1
 PIC 9
 VALUE
 ZEROS .
-01
-Num2
 PIC 9
 VALUE
 ZEROS .
-01
 R e s u l t
 PIC 99 VALUE
 ZEROS .
@@ -261,7 +235,6 @@ R e s u l t .
 DISPLAY "Result
 is = " ,
 R e s u l t .
-STOP
 RUN .
 
 ALGOL (ALGOrithmic Language) 60 en 1960.
@@ -274,39 +247,23 @@ k ) ;
 v a l u e
 n , m;
 a r r a y
-a ;
 i n t e g e r
 n , m,
-i ,
-k ;
 real y ;
 begin
 i n t e g e r
-p ,
-q ;
-y :=
-0;
-i
 := k :=
-1;
 for p := 1
-step
-1
 u n t i l
-n do
 for q := 1
-step
-1
 u n t i l m do
 if abs ( a [ p ,
 q ] ) > y then
 begin
 y := abs ( a [ p ,
 q ] ) ;
-i
 := p ;
 k := q
-end
 end Absmax.
 
 APL (A Programing Language) por Kenneth Iverson(IBM)
@@ -325,55 +282,40 @@ Glyph ;
 Virtual :
 Procedure
 p r i n t
-Is
 Procedure
 p r i n t ; ;
 Begin
 End ;
-CPL (Combined Programming Languaje) en 1963. Esta
-basado en Algol y simplifica la creacion de programas en
-computacion cientifica.
+CPL (Combined Programming Languaje) en 1963. Est´a
+basado en Algol y simplifica la creaci´on de programas en
+computaci´on cient´ifica.
 r e c
 f u n c t i o n
 Fact1 [ x ] = ( x = 0) − > 1 ,
 xFact1 [ x − 1].
 
-
 <CODIGO_BLOCK_START>
 BASIC (Beginners All-purpose Symbolic Instruction Code) por
 Kurtz y PL/1 ( Programming Language 1) de IBM en 1964.
 PROGRAM s e r i e s
-!
-add
-the
 f i r s t
-100
 terms
-of
-a
 simple
 s e r i e s
-!
 True BASIC
 a u t o m a t i c a l l y
 i n i t i a l i z e s
 v a r i a b l e s
-to
 zero ,
-!
-but
 other
 languages
 might
 not .
 LET sum = 0
 FOR n = 1
-to
-100
 LET sum = sum + 1/( n ∗ n )
 PRINT n , sum
 NEXT n
-END
 Ejemplo en PL/1
 Test :
 procedure
@@ -384,22 +326,22 @@ char (20)
 varying
 i n i t i a l i z e ( ’ Hola ,
 mundo ! ’ ) ;
-put
-skip
 list ( My String ) ;
-end
 Test ;.
 <CODIGO_BLOCK_END>
 
 BCPL (Basic Combined Programming Language) por Martin
 Richards en 1967.
-estructurado, de muy facil aprendizaje. Se utiliza para la
-ensenanza de la programacion en ninos y jovenes.
+ALGOL 68 y por Danny Bobrow, Wally Feurzeig y
+Seymour Papert en 1968. es un lenguaje funconal y
+estructurado, de muy f´acil aprendizaje. Se utiliza para la
+ense˜nanza de la programaci´on en ni˜nos y j´ovenes.
+https://www.calormen.com/js /
 C por Dennis Ritchie y Ken Thompson entre 1969 y 1973.
 Influido por Algol 68 (Lenguaje A) y BCPL (Lenguaje B).
 Pascal por Wirth y SmallTalk en 1970. Pascal es
-estaticamente y fuertemente tipado. SmallTalk es de tipado
-dinamico.
+est´aticamente y fuertemente tipado. SmallTalk es de tipado
+din´amico.
 
 Program
 Lesson1 Program1 ;
@@ -407,42 +349,21 @@ Begin
 Write ( ’ H e l l o
 World .
 Prepare
-to
 l e a r n PASCAL ! ! ’ ) ;
 Readln ;
 End .
 ’ H e l l o
 World ! ’
 d i s p l a y N l
-1
-to :
 20 do :
 [ : x
-|
-x
 p r i n t N l
-]
-!
-x :=
 Array
 new :
-20.
-x
 p r i n t N l .
-( x
-at :
-1)
 p r i n t N l .
-x
-at :
 1 put :
-99
-.
-( x
-at :
-1)
 p r i n t N l
-.
 Prolog (PROgrammation en LOGique) por Colmerauer,
 Roussel, y Kowalski en 1972.
 Base del conocimiento:
@@ -453,44 +374,27 @@ l i k e s ( john , mary ) .
 
 Consultas:
 l i k e s ( mary , food ) .
-Yes
 l i k e s ( john , food ) .
-No
 l i k e s (X, wine ) .
-mary
-john
-No
 ML (Meta Language) por Robin Milner en 1973.
-fun
 r e v e r s e
 [ ] = [ ]
-|
 r e v e r s e
-( h
-: :
 t ) = r e v e r s e
 t @ [ h ] ;
-fun
 concat space
-s = s " " ;
+s = s
+ˆ " " ;
 (* Prints
-each
 command
 line arg , suffixed
 with a space. *)
-val
-=
-let
-val
 args = CommandLine . arguments ()
-in
 map ( p r i n t
-o
 concat space )
 ( r e v e r s e
 args ) ;
 p r i n t
-"\n"
 end ;.
 
 Scheme por Guy L. Steele y Gerald Jay Sussman en 1975.
@@ -503,7 +407,6 @@ Common Lisp en 1984.
 Eiﬀel, Erlang, Perl, Tcl y Fl a finales de los 80’s. Ejemplo
 Erlang:
 s o r t ( [ Pivot | T ] )
-->
 s o r t ( [ X | | X < − T, X < Pivot ] ) ++
 [ Pivot ] ++
 s o r t ( [ X | | X < − T, X > = Pivot ] ) ;
@@ -512,40 +415,31 @@ s o r t ( [] )
 Haskell (en honor a Haskell Curry) en 1990.
 
 main = do
-forM
 [ 1 . . 3 ]
 $ \ i − > do
 print
-i
-forM
 [ 7 . . 9 ]
 $ \ j − > do
 print
-j
 withBreak $ \ break − >
-forM
 [ 1 . . ]
-$ \
 − > do
 p "loop"
 break
-()
 where
 withBreak = ( ’ runContT ’
 return )
-.
 callCC
 p = l i f t I O
-.
 putStrLn
 Python, Lua, Java, Delphi, JavaScript, PHP, Rebol, Visual
-Basic, Mozart, entre otros durante los anos 90’s.
-C#, .NET, J#, Scala, Factor, entre otros apartir del ano
+Basic, Mozart, entre otros durante los a˜nos 90’s.
+C#, .NET, J#, Scala, Factor, entre otros apartir del a˜no
 2000.
 <CODIGO_BLOCK_END>
 
-Los principales paradigmas de programacion son:
-Declarativos (Funcional, Logico, Por Restricciones)
+Los principales paradigmas de programaci´on son:
+Declarativos (Funcional, L´ogico, Por Restricciones)
 Imperativo
 Relacional
 Orientado a Objetos
@@ -554,9 +448,9 @@ Concurrente
 Orientado a aspectos
 Orientado a agentes.
 
-Una operacion es declarativa si siempre que es llamada con los
+Una operaci´on es declarativa si siempre que es llamada con los
 mismos argumentos retorna el mismo resultado.
-Una operacion declarativa es:
+Una operaci´on declarativa es:
 Independiente : depende solo de sus argumentos
 Sin estado: no hay memoria entre distintos llamados
 Determinista: un llamado con los mismos argumentos da
@@ -567,63 +461,60 @@ haga.
 Ejemplo: HTML, XML, CSS, Mercury, Prolog.
 <CODIGO_BLOCK_END>
 
-HTML
 < img src = "./ image.jpg" / >
-SQL
 SELECT ∗ FROM
 Users
 WHERE
 Country=’ Mexico ’ ;
-XML
 < a r t i c l e >
 < header >
-< t i t l e > Programaci on
+< t i t l e > Programaci ´on
 d e c l a r a t i v a < / t i t l e >
 < t e x t > Solo
 e s c r i b e
 s i n
 preocuparte
-de ma s
+de m´a s
 : ) < / t e x t >
 < / header >
 < / a r t i c l e >.
 
-Basado en el calculo λ .
-Manejo implicito de la memoria.
-El concepto de funcion es fundamental.
+Basado en el c´alculo λ .
+Manejo impl´icito de la memoria.
+El concepto de funci´on es fundamental.
 Funciones son ciudadanos de primera clase (las funciones
-pueden ser parametros o valores de retorno de otras
+pueden ser par´ametros o valores de retorno de otras
 funciones).
-Programa: Conjunto de funciones + Aplicacion.
+Programa: Conjunto de funciones + Aplicaci´on.
 
 <CODIGO_BLOCK_START>
 Ejemplos: Lisp, Haskell, Scheme, ML.
 <CODIGO_BLOCK_END>
 
-Calculo λ
-Disenado para investigar la definicion de funcion, la nocion de
-aplicacion de funciones y la recursion.
+C´alculo λ
+Dise˜nado para investigar la definici´on de funci´on, la noci´on de
+aplicaci´on de funciones y la recursi´on.
 Utilizado para definir algoritmos computables o decidibles.
 Es una estrategia para definir si un algoritmo es computable,
 ya que se ha demostrado que el problema de la parada es un
 problema indecidible.
-Cualquier funcion computable puede ser expresada y evaluada
-a traves de este calculo.
+Cualquier funci´on computable puede ser expresada y evaluada
+a trav´es de este c´alculo.
 Las funciones son consideradas un valor tipo procedimiento.
 
-Basado en el calculo de predicados.
-Mecanismo de demostracion automatica de teoremas.
-Esencial: Concepto de deduccion logica.
+Basado en el c´alculo de predicados.
+Mecanismo de demostraci´on autom´atica de teoremas.
+Esencial: Concepto de deducci´on l´ogica.
 Programa: Conjunto de axiomas y un objetivo.
 
 <CODIGO_BLOCK_START>
 Ejemplos: Prolog.
 <CODIGO_BLOCK_END>
 
-Orientado por la maquina.
+Orientado por la m´aquina.
 Alto nivel.
-Esencial: Asignacion y secuenciacion.
-La programacion esta dada en terminos del estado del
+Esencial: Asignaci´on y secuenciaci´on.
+La programaci´on est´a dada en t´erminos del estado del
 programa.
 Programa: Secuencia de instrucciones.
 
@@ -636,19 +527,14 @@ class Number {
 c o n s t r u c t o r
 ( number = 0) {
 this . number = number ;
-}
-add
 ( x ) {
 this . number = this . number + x ;
-}
-}
 const myNumber = new Number
 (5) ;
 myNumber . add
 (3) ;
 a l e r t
-(myNumber . number ) ;
-// 8.
+(myNumber . number ) ;.
 
 Se representa el mundo real mediante objetos y sus
 interacciones.
@@ -660,39 +546,36 @@ Programa: Conjunto de objetos y sus interacciones.
 Ejemplos: Smalltalk, Java, C++, Obliq, etc.
 <CODIGO_BLOCK_END>
 
-Basado en la teoria de concurrencia y calculos de procesos
-(Calculo π , CCS, CCP).
-Esencial: Mecanismos de comunicacion entre procesos.
+Basado en la teor´ia de concurrencia y c´alculos de procesos
+(C´alculo π , CCS, CCP).
+Esencial: Mecanismos de comunicaci´on entre procesos.
 Programa: Conjunto de procesos.
 
 <CODIGO_BLOCK_START>
 Ejemplos: PICT, MWB, Erlang.
 Este paradigma funciona bien en lenguajes funcionales, ya que
-no se requiere sincronizacion (semaforos).
+no se requiere sincronizaci´on (sem´aforos).
 <CODIGO_BLOCK_END>
-
 
 <CODIGO_BLOCK_START>
 Ejemplo en Erlang
 − module ( ejemploFLP ) .
 − export ( [ i n i c i a r /0 , d i a l o g o /2 ] ) .
 d i a l o g o ( Entrada ,
-0)
-->
 done ;
 d i a l o g o ( Entrada ,
 Contador )
-->
 i o : format ( "~p~n" ,
 [ Entrada ] ) ,
 d i a l o g o ( Entrada ,
 Contador − 1) .
 i n i c i a r ()
-->
 spawn ( ejemploFLP ,
+dia ,
 [ hola ,
 5 ] ) ,
 spawn ( ejemploFLP ,
+dia ,
 [ adios ,
 4 ] ) .
 %Funcionamiento
@@ -700,21 +583,19 @@ spawn ( ejemploFLP ,
 %ejemploFLP:iniciar ().
 <CODIGO_BLOCK_END>
 
-Las funciones pueden tener cero, una o mas salidas (Frente a
+Las funciones pueden tener cero, una o m´as salidas (Frente a
 funciones)
 Puede intercambiarse el rol de las entradas y salidas
-Seleccion no-determinista de una opcion entre varias
+Selecci´on no-determinista de una opci´on entre varias
 
 <CODIGO_BLOCK_START>
-Ejemplo: Prolog (Busqueda sobre una base de conocimiento),
-Analizadores sintacticos, Bases de datos relacionales (SQL).
+Ejemplo: Prolog (B´usqueda sobre una base de conocimiento),
+Analizadores sint´acticos, Bases de datos relacionales (SQL).
 <CODIGO_BLOCK_END>
-
 
 <CODIGO_BLOCK_START>
 Ejemplo de paradigma relacional con Prolog.
 %Base
-del
 conocimiento
 amigo ( juan ,
 pedro ) .
@@ -725,50 +606,43 @@ maria ) .
 %consultas
 %amigo(juan , pedro).
 %Retorna
-yes
 %amigo(juan , X).
 %Retorna X= pedro y X = carlos
 Observe que
-1 Hay una busqueda en un conjunto de datos
-2 Se retornan cero o mas valores en una consulta.
-SQL tambien es un lenguaje relacional de busqueda sobre bases de
+1 Hay una b´usqueda en un conjunto de datos
+2 Se retornan cero o m´as valores en una consulta.
+SQL tambi´en es un lenguaje relacional de b´usqueda sobre bases de
 datos.
 <CODIGO_BLOCK_END>
 
-Basado en el concepto de restriccion (un predicado o relacion
-logica).
-Esencial: Concepto de consecuencia logica.
-Esencial: Busqueda en arboles y reduccion de dominios
-(distribucion y propagacion).
+Basado en el concepto de restricci´on (un predicado o relaci´on
+l´ogica).
+Esencial: Concepto de consecuencia l´ogica.
+Esencial: B´usqueda en arboles y reducci´on de dominios
+(distribuci´on y propagaci´on).
 Programa: Variables + Restricciones (Conjunto de Relaciones
-entre variables) + Estrategia de exploracion.
-La busqueda de soluciones es concurrente (se exploran varias
+entre variables) + Estrategia de exploraci´on.
+La b´usqueda de soluciones es concurrente (se exploran varias
 posibilidades a la vez).
 
 <CODIGO_BLOCK_START>
 Ejemplos: CLP, Mozart.
 <CODIGO_BLOCK_END>
 
-
 <CODIGO_BLOCK_START>
-Ejemplo de paradigma de programacion con restricciones con
+Ejemplo de paradigma de programaci´on con restricciones con
 Mozart OZ. Problema, encontrar los valores de las letras para que
 SEND + MORE = MONEY.
 declare
 proc { Money Root }
 local
 S E N D M O R Y
-in
 Root = s o l ( s : S e : E n :N d :D m:M o :O r :R y :Y)
 % Registro
-con
 letras
-Root
 : : :
-0#9
 % Dominio
-de busqueda de
-las
+de b´usqueda de
 variables
 entre 0 y 9
 %Restricciones
@@ -779,32 +653,28 @@ de 0 (si no todo se hace 0)
 S \ =: 0
 M \ =: 0
 1000 ∗ S + 100 ∗ E + 10 ∗ N + D
-+
 1000 ∗ M + 100 ∗ O + 10 ∗ R + E
 =: 10000 ∗ M + 1000 ∗ O + 100 ∗ N + 10 ∗ E + Y
 %Estrategia
-de busqueda (probar
+de b´usqueda (probar
 primero
-con numeros
+con n´umeros
 peque~nos del
 dominio)
 { FD. d i s t r i b u t e
-f f
 Root }
-end
 %Explore
 todas
-las
 posibilidades
 { E x p l o r e A l l
 Money }.
 <CODIGO_BLOCK_END>
 
-Modularidad de las aplicaciones y separacion de conceptos
-(generalmente conceptos tecnicos y comunes a toda la
-aplicacion).
-Separacion de las funcionalidades comunes utilizadas en la
-aplicacion de las funcionalidades propias de cada modulo.
+Modularidad de las aplicaciones y separaci´on de conceptos
+(generalmente conceptos t´ecnicos y comunes a toda la
+aplicaci´on).
+Separaci´on de las funcionalidades comunes utilizadas en la
+aplicaci´on de las funcionalidades propias de cada m´odulo.
 Esencial: Concepto de aspecto (funcionalidad transversal).
 
 <CODIGO_BLOCK_START>
@@ -812,12 +682,12 @@ Ejemplos: AspectJ, Aspect, phpAspect, Aspyct AOP.
 <CODIGO_BLOCK_END>
 
 Se representa el mundo real mediante agentes y sus
-interacciones a traves de mensajes.
+interacciones a trav´es de mensajes.
 Basado en el concepto de agentes.
-Un agente es una entidad computacional situada en algun
-entorno y que es capaz de ejecutar acciones autonomas en
-dicho entorno con el fin de cumplir sus objetivos de diseno.
-Hilo de ejecucion independiente, comunicacion por paso de
+Un agente es una entidad computacional situada en alg´un
+entorno y que es capaz de ejecutar acciones aut´onomas en
+dicho entorno con el f´in de cumplir sus objetivos de dise˜no.
+Hilo de ejecuci´on independiente, comunicaci´on por paso de
 mensajes, conocimiento parcial del entorno, mecanismo de
 toma de decisiones, reactividad, proactividad, habilidad social.
 Programa: Conjunto de agentes y sus interacciones.
@@ -829,19 +699,19 @@ Ejemplos: JADE, JASON.
 Enfoques basados en componentes.
 Mecanismos de seguridad y de confiabilidad, seguridad en
 hilos.
-Enfasis en movilidad y distribucion. Enfoques basados en
-paradigmas y tecnologias actuales (computacion grid y cloud,
+´Enfasis en movilidad y distribuci´on. Enfoques basados en
+paradigmas y tecnolog´ias actuales (computaci´on grid y cloud,
 Map and Reduce).
 
 Incrementa la capacidad para expresar ideas.
-Amplia el espectro de conocimientos necesario para
+Ampl´ia el espectro de conocimientos necesario para
 seleccionar un lenguaje.
 Incrementa la habilidad para aprender nuevos lenguajes y
 paradigmas.
 
-Mejor entendimiento de como los lenguajes de programacion
-estan implementados.
-Mejor uso de los lenguajes de programacion que ya se
+Mejor entendimiento de como los lenguajes de programaci´on
+est´an implementados.
+Mejor uso de los lenguajes de programaci´on que ya se
 conocen.
 Progreso global de las ciencias computacionales.
 

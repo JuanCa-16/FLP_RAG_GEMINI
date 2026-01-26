@@ -1,68 +1,20 @@
-Aquí tienes la transcripción limpia y formateada:
+Para trabajar con tipos de datos definidos (data types), se utiliza la construcción `cases`. Esta estructura permite analizar y deconstruir un valor de un tipo de dato específico, extrayendo su información para poder manejarla. Su uso es fundamental en la construcción de intérpretes.
 
----
+####
 
-Para trabajar con tipos de datos definidos por el usuario (data types), se utilizan las expresiones `cases`. Estas expresiones permiten extraer, descomponer y manejar la información encapsulada dentro de las diferentes variantes de un tipo de dato.
+La sintaxis de la construcción `cases` se estructura de la siguiente manera: se inicia con la palabra clave `cases`, seguida del nombre del tipo de dato y la expresión a evaluar. A continuación, se definen cláusulas para cada variante del tipo de dato. Cada cláusula especifica el nombre de la variante, los nombres de las variables que capturarán sus campos, y la expresión a ejecutar si esa variante coincide. Adicionalmente, se puede incluir una cláusula `else` para manejar de forma predeterminada todas las variantes que no fueron explícitamente listadas.
 
-### Sintaxis de `cases`
+####
 
-La sintaxis general de una expresión `cases` es la siguiente:
+El proceso de evaluación de una expresión `cases` funciona de la siguiente forma: primero, se evalúa la expresión de entrada, resultando en un valor `b` que pertenece a un tipo de dato específico. El sistema verifica si el valor `b` corresponde a alguna de las variantes listadas en las cláusulas. Si se encuentra una coincidencia con una variante, los valores de los campos de `b` se asocian a las variables locales definidas en esa cláusula. Finalmente, se evalúa la expresión consecuente de dicha cláusula y su resultado es el valor retornado por toda la construcción `cases`.
 
-```
-cases expresión of
-  NombreVariante1 (Campo1, Campo2, ...) -> expresión_consecuente1;
-  NombreVariante2 (CampoA, CampoB, ...) -> expresión_consecuente2;
-  ...
-  [else -> expresión_por_defecto]
-```
+####
 
-La cláusula `else` es opcional y se utiliza para especificar un comportamiento por defecto si la expresión evaluada no coincide con ninguna de las variantes listadas, o si se desea un manejo genérico para variantes no explícitamente cubiertas.
+Un ejemplo de aplicación de `cases` es el manejo de un tipo de dato para representar expresiones del cálculo lambda, como `ls-expression`. Este tipo puede tener variantes como `var-expression` (con un solo campo), `lambda-expression` (con dos campos: `var` y `body`) y `app-expression` (con dos campos). Mediante `cases`, se puede inspeccionar una expresión de tipo `ls-expression` y, dependiendo de si es una variable, una abstracción o una aplicación, extraer los campos correspondientes para procesarlos.
 
-### Evaluación de una expresión `cases`
+####
 
-El funcionamiento es el siguiente:
-
-1.  La expresión `cases` evalúa la *expresión* inicial.
-2.  Si el resultado es un valor `b` de tipo `NombreTipo` (el tipo al que pertenecen las variantes), la expresión `cases` verifica con qué `NombreVariante` específico coincide `b`.
-3.  Si hay una coincidencia con un `NombreVariante`:
-    *   Los campos definidos en la variante (por ejemplo, `Campo1`, `Campo2`) se asocian a los valores correspondientes extraídos de `b`.
-    *   Se evalúa la *expresión_consecuente* asociada a esa variante.
-    *   El valor resultante de la *expresión_consecuente* es retornado como el resultado final de la expresión `cases`.
-4.  Si no hay coincidencia y existe una cláusula `else`, se evalúa la *expresión_por_defecto* y su valor es retornado.
-
-Este mecanismo es fundamental, especialmente en la construcción de intérpretes y compiladores, donde se necesita procesar y actuar de manera diferente según la estructura de un árbol de sintaxis abstracta (AST) o cualquier tipo de dato compuesto.
-
-### Ejemplo con Expresiones de Cálculo Lambda
-
-Consideremos un tipo de dato `LambdaExpression` para representar expresiones de cálculo lambda, definido con variantes como `VarExpression` (variable), `LambdaExpression` (abstracción) y `AppExpression` (aplicación):
-
-```
-define data type LambdaExpression =
-  VarExpression (name: String)
-| LambdaExpression (param: String, body: LambdaExpression)
-| AppExpression (func: LambdaExpression, arg: LambdaExpression)
-```
-
-Para procesar una expresión de este tipo utilizando `cases`, se haría lo siguiente:
-
-```
-cases mi_expresion_lambda of
-  VarExpression (nombre_variable) ->
-    -- Lógica para una variable. Por ejemplo, devolver su nombre.
-    nombre_variable
-  LambdaExpression (parametro, cuerpo) ->
-    -- Lógica para una abstracción. Por ejemplo, procesar el cuerpo.
-    procesar(cuerpo)
-  AppExpression (funcion, argumento) ->
-    -- Lógica para una aplicación. Por ejemplo, evaluar la función y el argumento.
-    evaluar(funcion, argumento)
-```
-
-Aquí, `VarExpression` tiene un campo (`nombre_variable`), mientras que `LambdaExpression` (parámetro y cuerpo) y `AppExpression` (función y argumento) tienen dos campos cada una. Estos campos son extraídos y utilizados en las expresiones consecuentes para definir el comportamiento específico para cada variante.
-
-### Próximo Ejemplo
-
-A continuación, se explorará otro ejemplo utilizando un árbol binario.
+Otro ejemplo práctico es el procesamiento de un árbol binario. Este tipo de dato puede tener una variante `leaf` con un solo campo (el valor) y una variante `node` con tres campos (`key`, `left`, `right`). Al usar `cases` sobre un valor de tipo árbol, se puede diferenciar si se está ante una hoja o un nodo. Si es un nodo, se pueden extraer de forma separada la clave, el subárbol izquierdo y el subárbol derecho para realizar operaciones recursivas.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=-axhDvoZYQ0

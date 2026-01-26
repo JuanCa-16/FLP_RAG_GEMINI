@@ -18,8 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # root
 CARPETA_ENTRADA = os.path.join(BASE_DIR, "TXT_GEMINI")
 ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "embeddings", "corpus.jsonl")
 ARCHIVO_CONSOLIDADO = os.path.join(BASE_DIR, "txt_global.txt")
-MIN_PALABRAS = 60
-MAX_PALABRAS = 100
+
 
 # ==========================================================
 # STOPWORDS (Español) (sin cambios)
@@ -38,9 +37,6 @@ STOP_WORDS_ES.update({
 })
 STOP_WORDS_ES = list(STOP_WORDS_ES)
 
-# ==========================================================
-# FUNCIONES BASE (sin cambios)
-# ==========================================================
 def limpiar_texto(texto: str) -> str:
     """Limpieza de texto sin eliminar signos útiles ni palabras acentuadas."""
 
@@ -71,63 +67,23 @@ def extraer_palabras_clave(texto: str, vectorizador: TfidfVectorizer, top_n: int
     except Exception:
         return []
 
-# ==========================================================
-# PROCESAMIENTO DE BLOQUES (Lógica Original: Archivos NO 'video')
-# ==========================================================
-def dividir_bloques(texto: str) -> List[Dict]:
-    """Divide el texto usando los tags <CODIGO_BLOCK_START>, <IMG_BLOCK_START>, etc."""
-    fragmentos = []
-    # Nota: Se ha simplificado ligeramente para manejar bloques sin tags en el texto,
-    # aunque la lógica es la misma que la original.
-    bloques = re.split(r'(<CODIGO_BLOCK_START>|<IMG_BLOCK_START>|<CODIGO_BLOCK_END>|<IMG_BLOCK_END>)', texto)
-
-    tipo_actual = "concepto"
-    acumulado = []
-
-    for bloque in bloques:
-        bloque = bloque.strip()
-        if not bloque:
-            continue
-
-        if bloque in ("<CODIGO_BLOCK_START>", "<IMG_BLOCK_START>"):
-            if acumulado:
-                fragmentos.append({"tipo": tipo_actual, "texto": limpiar_texto(" ".join(acumulado))})
-                acumulado = []
-            tipo_actual = "codigo" if "CODIGO" in bloque else "imagen"
-
-        elif bloque in ("<CODIGO_BLOCK_END>", "<IMG_BLOCK_END>"):
-            if acumulado:
-                fragmentos.append({"tipo": tipo_actual, "texto": limpiar_texto(" ".join(acumulado))})
-                acumulado = []
-            tipo_actual = "concepto"
-
-        else:
-            acumulado.append(bloque)
-
-    if acumulado:
-        fragmentos.append({"tipo": tipo_actual, "texto": limpiar_texto(" ".join(acumulado))})
-
-    return fragmentos
-
-# ==========================================================
-# PROCESAMIENTO DE BLOQUES (Lógica Original MODIFICADA: Archivos NO 'video')
-# ==========================================================
 def dividir_bloques_por_hash(texto: str) -> List[Dict]:
     """
-    Divide el texto en bloques basados en las líneas que comienzan con '#####',
-    tratando todos los fragmentos resultantes como de 'tipo': 'concepto'.
-    Se detiene antes de la sección '--- METADATA ---'.
+     Divide el texto en bloques delimitados por '#####'.
+    - El primer bloque empieza desde la primera línea del archivo.
+    - Cada '#####' inicia un nuevo bloque.
+    - Se ignoran líneas de control (<IMG_BLOCK>, <CODIGO_BLOCK>, etc).
+    - Se detiene antes de '--- METADATA ---'.
     """
+
     fragmentos = []
-
-    # 1. Eliminar la parte del texto antes del primer '---' si existe (cabecera inicial)
-    match_inicio = re.search(r'---\s*?\n', texto)
-    if match_inicio:
-        texto = texto[match_inicio.end():].strip()
-    # Si no hay '---', el texto entero es el primer bloque a dividir
-
-    lineas = texto.splitlines()
     acumulado = []
+    lineas = texto.splitlines()
+
+    BLOQUES_INVALIDOS = {
+        "<IMG_BLOCK>", "</IMG_BLOCK>",
+        "<CODIGO_BLOCK>", "</CODIGO_BLOCK>"
+    }
     
     for linea in lineas:
         linea_limpia = linea.strip()
@@ -140,14 +96,18 @@ def dividir_bloques_por_hash(texto: str) -> List[Dict]:
         if linea_limpia == "---":
             continue
 
+         # Ignorar líneas de control
+        if linea_limpia in BLOQUES_INVALIDOS:
+            continue
+
         # Detectar el delimitador de bloque '#####'
-        if linea_limpia.startswith("#####"):
+        if linea_limpia.startswith("####"):
             # Si encontramos un nuevo encabezado, guardamos el bloque anterior
             if acumulado:
                 texto_bloque = " ".join(acumulado).strip()
                 if texto_bloque:
                     # Usamos limpiar_texto al final
-                    fragmentos.append({"tipo": "concepto", "texto": limpiar_texto(texto_bloque)})
+                    fragmentos.append({"tipo": "concepto", "texto": texto_bloque})
             
             # Limpiamos el acumulador y NO incluimos la línea '#####' en el bloque.
             acumulado = []
@@ -159,17 +119,13 @@ def dividir_bloques_por_hash(texto: str) -> List[Dict]:
     if acumulado:
         texto_bloque = " ".join(acumulado).strip()
         if texto_bloque:
-            fragmentos.append({"tipo": "concepto", "texto": limpiar_texto(texto_bloque)})
+            fragmentos.append({"tipo": "concepto", "texto": texto_bloque})
     
     # Si no se generó ningún fragmento, procesar todo el texto restante como un concepto único
     if not fragmentos and texto.strip():
-        return [{"tipo": "concepto", "texto": limpiar_texto(texto.strip())}]
+        return [{"tipo": "concepto", "texto": texto.strip()}]
         
     return fragmentos
-
-# ==========================================================
-# PROCESAMIENTO DE BLOQUES (Lógica Nueva: Archivos 'video')
-# ==========================================================
 
 def dividir_por_hashtag(texto: str) -> List[Dict]:
     """
@@ -177,17 +133,8 @@ def dividir_por_hashtag(texto: str) -> List[Dict]:
     ignorando la línea con el '#' en sí.
     """
     fragmentos = []
-    
-    # 1. Eliminar la parte del texto antes del primer '---'
-    match_inicio = re.search(r'---\s*?\n', texto)
-    if match_inicio:
-        texto = texto[match_inicio.end():].strip()
-    else:
-        return [{"tipo": "concepto", "texto": limpiar_texto(texto)}]
-
-
-    lineas = texto.splitlines()
     acumulado = []
+    lineas = texto.splitlines()
     
     for linea in lineas:
         linea_limpia = linea.strip()
@@ -205,7 +152,7 @@ def dividir_por_hashtag(texto: str) -> List[Dict]:
             if acumulado:
                 texto_bloque = " ".join(acumulado).strip()
                 if texto_bloque:
-                    fragmentos.append({"tipo": "concepto", "texto": limpiar_texto(texto_bloque)})
+                    fragmentos.append({"tipo": "concepto", "texto": texto_bloque})
             
             # Limpiamos el acumulador y no incluimos la línea '#' en el bloque.
             acumulado = []
@@ -223,87 +170,10 @@ def dividir_por_hashtag(texto: str) -> List[Dict]:
     if acumulado:
         texto_bloque = " ".join(acumulado).strip()
         if texto_bloque:
-            fragmentos.append({"tipo": "concepto", "texto": limpiar_texto(texto_bloque)})
+            fragmentos.append({"tipo": "concepto", "texto": texto_bloque})
     
     return fragmentos
 
-
-# ==========================================================
-# AGRUPACIÓN DE PÁRRAFOS Y UNIÓN (sin cambios)
-# ==========================================================
-def agrupar_parrafos(fragmentos: List[Dict]) -> List[Dict]:
-    # ... (cuerpo de la función agrupar_parrafos es el mismo que en tu código original)
-    resultado = []
-
-    for frag in fragmentos:
-        palabras = frag["texto"].split()
-        if frag["tipo"] in ("codigo", "imagen"):
-            resultado.append(frag)
-            continue
-
-        inicio = 0
-        temp_result = []
-
-        while inicio < len(palabras):
-            fin = min(inicio + MAX_PALABRAS, len(palabras))
-            texto_parcial = " ".join(palabras[inicio:fin])
-
-            ultimo_punto = texto_parcial.rfind('.')
-            if ultimo_punto != -1:
-                palabras_hasta_punto = texto_parcial[:ultimo_punto + 1].split()
-                if len(palabras_hasta_punto) >= MIN_PALABRAS:
-                    fin = inicio + len(palabras_hasta_punto)
-
-            texto_fragmento = " ".join(palabras[inicio:fin])
-            temp_result.append({"tipo": "concepto", "texto": texto_fragmento})
-            inicio = fin
-
-        if len(temp_result) > 1 and len(temp_result[-1]["texto"].split()) < MIN_PALABRAS:
-            temp_result[-2]["texto"] += " " + temp_result[-1]["texto"]
-            temp_result.pop(-1)
-
-        resultado.extend(temp_result)
-
-    return resultado
-
-def unir_fragmentos_pequenos(fragmentos: List[Dict], min_palabras: int = 50) -> List[Dict]:
-    # ... (cuerpo de la función unir_fragmentos_pequenos es el mismo que en tu código original)
-    nuevos = []
-    buffer = ""
-
-    for frag in fragmentos:
-        if frag.get("tipo") in ("codigo", "imagen"):
-            if buffer:
-                # Si hay buffer pendiente y el anterior es concepto, unir
-                if nuevos and nuevos[-1]["tipo"] == "concepto":
-                    nuevos[-1]["texto"] += " " + buffer.strip()
-                buffer = ""
-            nuevos.append(frag)
-            continue
-            
-        texto = frag["texto"].strip()
-        if len(texto.split()) < min_palabras:
-            buffer += " " + texto
-        else:
-            if buffer:
-                frag["texto"] = buffer.strip() + " " + frag["texto"]
-                buffer = ""
-            nuevos.append(frag)
-
-    if buffer and nuevos:
-        if nuevos[-1]["tipo"] == "concepto":
-            nuevos[-1]["texto"] += " " + buffer.strip()
-        elif not nuevos:
-            return [{"tipo": "concepto", "texto": buffer.strip()}]
-            
-    if buffer and not nuevos:
-        return [{"tipo": "concepto", "texto": buffer.strip()}]
-        
-    return nuevos
-
-# ==========================================================
-# PIPELINE PRINCIPAL (MODIFICADO CON LÓGICA CONDICIONAL)
-# ==========================================================
 def procesar_archivos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]:
     fragmentos_global = []
 
@@ -335,19 +205,13 @@ def procesar_archivos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
             
         # 2. División en bloques basada en la condición
         if es_archivo_video:
-            # Lógica nueva: división por líneas que empiezan con #
             fragmentos = dividir_por_hashtag(contenido)
             logica_usada = "Hashtag (#)"
         else:
-            # Lógica original: división por tags de bloque (<CODIGO_BLOCK_START>)
-            # fragmentos = dividir_bloques(contenido)
-            # logica_usada = "Tags (<...BLOCK_START>)"
+
             fragmentos = dividir_bloques_por_hash(contenido) # ⬅️ CAMBIO AQUÍ
             logica_usada = "Delimitador (#####)"
-        
-        # 3. Agrupación y unión de párrafos (igual para ambos)
-        #fragmentos = agrupar_parrafos(fragmentos)
-        #fragmentos = unir_fragmentos_pequenos(fragmentos, MIN_PALABRAS) 
+    
 
         print(f"📄 {archivo}: {len(fragmentos)} fragmentos generados. Lógica: {logica_usada}")
 

@@ -1,44 +1,28 @@
-A continuación, se presenta la transcripción de la clase sobre Programación Orientada a Objetos (POO), limpia y formateada para estudio:
+La programación orientada a objetos se basa en el concepto de objeto, que es una abstracción de una entidad del mundo real. Un objeto posee dos componentes principales: un estado y un comportamiento. El estado está definido por sus atributos o características (por ejemplo, para un perro, su edad, color o peso). El comportamiento está definido por sus métodos, que son las acciones que puede realizar (por ejemplo, correr o morder). Los objetos se diferencian entre sí por su estado; así, dos perros pueden distinguirse por tener edades diferentes.
 
----
+####
 
-### Programación Orientada a Objetos (POO)
+Un programa orientado a objetos es fundamentalmente un conjunto de objetos que se comunican entre sí a través del envío de mensajes. Un objeto encapsula tanto sus datos (campos o atributos) como los métodos para manipularlos. La comunicación se establece cuando se invoca un método de un objeto, lo cual se considera como el envío de un mensaje que incluye el nombre del método y sus argumentos.
 
-#### 1. Objetos
+####
 
-Los objetos son abstracciones del mundo real. Por ejemplo, un animal como un gato o un perro posee características como edad, color, número de dientes o peso. Estos atributos corresponden al **estado** del objeto. Dos perros, por ejemplo, pueden diferir en su estado: uno puede tener ocho años y otro dos.
+Una clase es una plantilla o un molde que define los atributos y métodos comunes para un tipo de objeto. Mientras la clase describe la estructura abstracta, un objeto es una instancia concreta de esa clase. La diferencia fundamental es que la clase define qué atributos existen, mientras que el objeto les asigna valores específicos. Por ejemplo, la clase `Gato` puede definir el atributo `edad`, y un objeto específico de esa clase podría tener el valor `edad = 2`. Por lo tanto, los objetos son instancias de una clase.
 
-Además del estado, los objetos también tienen un **comportamiento**. Un gato maúlla o corre; un perro ladra o muerde. Esta abstracción de objetos del mundo real en el ámbito de la computación, junto con la programación basada en ellos, se conoce como Programación Orientada a Objetos.
+####
 
-Un programa orientado a objetos consiste fundamentalmente en un conjunto de objetos que se comunican entre sí a través de **mensajes**. Un objeto comprende **campos** (para el estado) y **métodos** (para el comportamiento), los cuales permiten acceder y gestionar su información. La comunicación entre objetos se realiza enviando mensajes mediante la invocación de métodos.
+La herencia es un mecanismo que permite crear una nueva clase a partir de una clase existente, heredando sus atributos y métodos. La nueva clase, conocida como clase derivada o subclase, puede extender la funcionalidad de la clase base añadiendo nuevos atributos o modificando métodos. Por ejemplo, a partir de una clase general `Animal`, se pueden derivar clases más específicas como `Mamífero`, `Reptil` y `Ave`. Todas heredan características comunes de `Animal`, pero cada una puede tener atributos propios, como `velocidad_de_vuelo` para `Ave` o `numero_de_crias` para `Mamífero`.
 
-#### 2. Clases
+####
 
-Al trabajar con objetos con comportamientos y características similares, como un gato y un perro (ambos tienen color, número de patas, dientes, peso), podemos agruparlos bajo un concepto más general, como "Animal". Esta plantilla que agrupa características comunes se conoce como **clase**.
+El polimorfismo es la capacidad de que una misma operación o método se comporte de manera diferente según el contexto. Una forma de polimorfismo se da en la herencia, donde una clase derivada puede redefinir el comportamiento de un método heredado. Otra forma se manifiesta cuando el comportamiento de un método cambia según los tipos de datos de sus argumentos. Un ejemplo clásico es el operador `+`, que realiza una suma aritmética si recibe dos números, pero ejecuta una concatenación si recibe dos cadenas de texto. El método es polimórfico porque su respuesta se adapta a los datos que procesa.
 
-Una clase es una plantilla que define qué atributos y métodos tendrán los objetos derivados de ella. Un **objeto** es una instancia específica de una clase, a la que se le asignan valores concretos a sus atributos (por ejemplo, un gato de dos años).
+####
 
-#### 3. Herencia
-
-Cuando se necesita definir una nueva clase que es una variación de una existente, manteniendo características comunes pero añadiendo atributos específicos, se utiliza la **herencia**. Por ejemplo, a partir de la clase "Animal", podemos derivar "Mamífero", "Reptil" y "Ave". Todas comparten atributos de "Animal" (color, edad, peso), pero "Ave" podría tener "velocidad_en_aire" y "Mamífero" podría tener "número_de_crías". La herencia implica que una clase "hereda" o "extiende" otra clase existente.
-
-#### 4. Polimorfismo
-
-**Polimorfismo** es la habilidad de un objeto de tomar muchas formas o la capacidad de un método de comportarse de manera diferente según el contexto. Se manifiesta de varias maneras:
-
-*   **Sobrescritura de métodos (en herencia):** Un método puede tener implementaciones diferentes en distintas clases de una jerarquía de herencia. Por ejemplo, un método 'sumar' podría realizar una suma binaria en una clase y una suma decimal en otra.
-*   **Sobrecarga de métodos/operadores:** Un mismo método o operador puede cambiar su comportamiento dependiendo del tipo de datos con los que se le invoque. El operador '+' es un ejemplo clásico: suma dos números, pero concatena dos cadenas de texto.
-
-#### 5. Características Clave de los Lenguajes Orientados a Objetos
-
-En resumen, las características clave de un lenguaje orientado a objetos son:
-
-*   **Encapsulamiento:** Los objetos encapsulan su comportamiento y el estado almacenado en sus campos. El acceso y la modificación de estos datos se realiza a través de sus métodos, protegiendo así el estado interno.
-*   **Clases:** Agrupan objetos que comparten la misma estructura y comportamiento, diferenciándose únicamente en su estado.
-*   **Herencia:** Permite que nuevas clases sean derivadas de clases existentes, heredando sus características y extendiéndolas.
-*   **Polimorfismo:** Posibilita que un mismo tipo de mensaje (invocación de método) pueda ser enviado a objetos de diferentes clases, con cada objeto respondiendo de manera apropiada según su tipo.
-
----
+Las características principales de un lenguaje orientado a objetos son:
+1.  **Encapsulación:** Los objetos agrupan y protegen su estado (datos) y su comportamiento (métodos). El estado interno solo debe ser accesible o modificable a través de los métodos definidos por el objeto.
+2.  **Clases:** Sirven como plantillas para crear objetos que comparten una misma estructura y comportamiento, diferenciándose únicamente en el valor de sus atributos (su estado).
+3.  **Herencia:** Permite la creación de nuevas clases a partir de clases existentes, promoviendo la reutilización y extensión de código.
+4.  **Polimorfismo:** Permite que un mismo mensaje o llamada a un método pueda ser procesado de manera diferente por objetos de distintas clases, adaptando el comportamiento al tipo de objeto que lo recibe.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=yCXq0NCG00o

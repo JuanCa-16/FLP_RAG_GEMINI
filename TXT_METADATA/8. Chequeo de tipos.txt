@@ -1,8 +1,8 @@
 Uno de los conceptos fundamentales de cualquier lenguaje
-de programacion es el concepto de tipo .
+de programaci´on es el concepto de tipo .
 Los tipos definen las estructuras de almacenamiento
-disponibles para representar informacion; ademas, el tipo
-determina como interpreta el compilador el contenido de la
+disponibles para representar informaci´on; adem´as, el tipo
+determina c´omo interpreta el compilador el contenido de la
 memoria.
 Un error de tipo se produce cuando se aplica una operacion
 a un dato con caracteristicas diferentes a las esperadas.
@@ -12,95 +12,87 @@ diversos tipos, se clasifican de dos formas:
 Lenguajes fuertemente tipados : requieren definiciones
 de los tipos y no permiten errores en los tipos. Ej: Pascal.
 Lenguajes debilmente tipados : tienen cierta flexibilidad
-para errores de tipos (pero si existen los errores de tipos).
+para errores de tipos (pero s´i existen los errores de tipos).
 Ej: Racket.
 
-El analisis de tipos es un paso del procesamiento de un
-lenguaje de programacion.
-El analisis de tipos se realiza para evitar que se presenten
-errores de tipos en tiempo de ejecucion.
+El an´alisis de tipos es un paso del procesamiento de un
+lenguaje de programaci´on.
+El an´alisis de tipos se realiza para evitar que se presenten
+errores de tipos en tiempo de ejecuci´on.
 
-Para realizar el analisis de tipos se tienen en cuenta los
+Para realizar el an´alisis de tipos se tienen en cuenta los
 siguientes aspectos:
 1 Se define un conjunto de tipos para el lenguaje y lo que
 significa“un valor expresado v es de tipo t ”.
-2 El analizador asigna un tipo para cada expresion en el
+2 El analizador asigna un tipo para cada expresi´on en el
 programa.
-si a una expresion e se asigna un tipo t , entonces siempre
+si a una expresi´on e se asigna un tipo t , entonces siempre
 que e es interpretada, su valor sera de tipo t .
 Esta propiedad, hace que un sistema de tipos sea adecuado
 ( sound ).
 
-3 El analizador debe inspeccionar tambien cada invocacion
-de una operacion en el programa, con el fin de verificar
+3 El analizador debe inspeccionar tambi´en cada invocaci´on
+de una operaci´on en el programa, con el fin de verificar
 que los operandos sean del tipo adecuado.
 Si no se puede determinar si los argumentos son del tipo
 apropiado, entonces se dice que esta invocacion
 posiblemente genera un error de tipo.
 4 Si se detectan errores de tipo, el analizador puede tomar
 algunas acciones, las cuales son, normalmente, parte del
-diseno del lenguaje:
+dise˜no del lenguaje:
 puede rehusarse a ejecutar el programa,
 aplicar medidas correctivas.
 
-En el diseno del lenguaje, se definen cuales tipos habran, si
-un valor puede tener mas de un tipo, y si los tipos pueden
-ser determinados en tiempo de ejecucion.
-En algunos lenguajes, en cada ejecucion, los valores
+En el dise˜no del lenguaje, se definen cu´ales tipos habr´an, si
+un valor puede tener m´as de un tipo, y si los tipos pueden
+ser determinados en tiempo de ejecuci´on.
+En algunos lenguajes, en cada ejecuci´on, los valores
 incluyen una etiqueta para indicar su tipo.
-Esto es llamado tipado dinamico .
+Esto es llamado tipado din´amico .
 
-Racket es un lenguaje tipado dinamico: las etiquetas son
+Racket es un lenguaje tipado din´amico: las etiquetas son
 revisadas por number? , string? , etc.
-Las desventajas del tipado dinamico son:
+Las desventajas del tipado din´amico son:
 Insertar y revisar las etiquetas puede adicionar tiempo en
-ejecucion.
-No soporta abstraccion de datos.
+ejecuci´on.
+No soporta abstracci´on de datos.
 
 En otros lenguajes, los valores pueden representar, por
 
 <CODIGO_BLOCK_START>
 ejemplo, un entero y un caracter.
-Dichos lenguajes tienen un modelo de ejecucion no tipado .
-Los lenguajes con modelos de ejecucion no tipado
+Dichos lenguajes tienen un modelo de ejecuci´on no tipado .
+Los lenguajes con modelos de ejecuci´on no tipado
 normalmento no detectan operaciones inapropiadas en
-tiempo de ejecucion.
+tiempo de ejecuci´on.
 Si las operaciones son aplicadas con datos incorrectos, los
 resultados no son especificados.
 <CODIGO_BLOCK_END>
 
-En dichos lenguajes se podria hacer la multiplicacion de
+En dichos lenguajes se podr´ia hacer la multiplicaci´on de
 dos caracteres.
-El resultado de esa operacion sera lo que el hardware haga
-con la representacion de los caracteres.
-Esto es llamado un diseno politico .
+El resultado de esa operaci´on ser´a lo que el hardware haga
+con la representaci´on de los caracteres.
+Esto es llamado un dise˜no pol´itico .
 
 Los lenguajes tipados evitan las dificultades anteriores
-analizando el programa antes de la ejecucion para
+analizando el programa antes de la ejecuci´on para
 determinar cualquier llamado particular en el programa
-que pueda resultar en una operacion no apropiada en
-tiempo de ejecucion.
-Esto es llamado chequeo de tipos estatico .
-Si un error es detectado, el analizador podria producir una
+que pueda resultar en una operaci´on no apropiada en
+tiempo de ejecuci´on.
+Esto es llamado chequeo de tipos est´atico .
+Si un error es detectado, el analizador podr´ia producir una
+advertencia, insertar un c´odigo de revisi´on en tiempo de
+ejecuci´on o rechazar el programa.
 
-<CODIGO_BLOCK_START>
-advertencia, insertar un codigo de revision en tiempo de
-ejecucion o rechazar el programa.
-<CODIGO_BLOCK_END>
-
-Los tipos para el lenguaje que se esta implementando tienen
+Los tipos para el lenguaje que se est´a implementando tienen
 una la siguiente estructura:
 ⟨ tipo-exp ⟩
-::=
-int
 int-type-exp ()
 ⟨ tipo-exp ⟩
-::=
-bool
 bool-type-exp ()
 ⟨ tipo-exp ⟩
-::=
-( {⟨ tipo-exp ⟩} ∗ ( ∗ ) -> ⟨ tipo-exp ⟩ )
+( {⟨ tipo-exp ⟩} ^∗^(^∗^)-> ⟨ tipo-exp ⟩ )
 proc-type-exp (arg-texps result-texp).
 
 Los tipos del lenguaje incluyen tipos base para enteros,
@@ -115,14 +107,14 @@ inductivamente sobre t de la siguiente manera:
 Un valor expresado es de tipo int sii es un entero.
 Un valor expresado es de tipo bool sii es un booleano.
 Un valor expresado es de tipo ( t 1 ∗ . . . ∗ t n − > t ) sii
-es un ProcVal que espera exactamente n argumentos, y
-cuando tiene n argumentos de tipos t 1 , . . . , t n , este retorna
+es un ProcVal que espera ex´actamente n argumentos, y
+cuando tiene n argumentos de tipos t 1 , . . . , t n , ´este retorna
 un valor de tipo t .
 
-Asi mismo, en este lenguaje, cada valor expresado tiene
-como maximo un tipo.
+As´i mismo, en ´este lenguaje, cada valor expresado tiene
+como m´aximo un tipo.
 Sin embargo, no siempre es posible determinar el tipo de
-un valor en tiempo de ejecucion, ya que no siempre es
+un valor en tiempo de ejecuci´on, ya que no siempre es
 posible determinar el tipo del valor retornado por un
 procedimiento.
 
@@ -142,7 +134,7 @@ tipo de (lambda (f x)
 (even? (f (+ x 1))))
 donde esos son los tipos de los valores de las expresiones y no
 de las expresiones mismas; hasta ahora no se ha dicho lo que
-significa que una expresion tenga un tipo.
+significa que una expresi´on tenga un tipo.
 <CODIGO_BLOCK_END>
 
 Cual es el tipo de dato de las siguientes expresiones del
@@ -153,39 +145,39 @@ Lenguaje del curso?
 4 proc(f, x) if (f x) then 1 else 2
 5 proc(x) proc(y) if y then x else 3.
 
-El lenguaje que se esta disenando, sera fuerte y
-estaticamente tipado , lo que significa que ningun programa
-que pasa el chequeo de tipos tendra un error de tipos.
-Un error de tipo sera:
+El lenguaje que se est´a dise˜nando, ser´a fuerte y
+est´aticamente tipado , lo que significa que ning´un programa
+que pasa el chequeo de tipos tendr´a un error de tipos.
+Un error de tipo ser´a:
 1 un intento de aplicar un entero o un booleano a un
 argumento,
 2 un intento de aplicar un procedimiento o primitiva a un
-numero errado de argumentos,
+n´umero errado de argumentos,
 3 un intento de aplicar una primitiva que espera un entero a
-un no-entero, o
+un no-entero, ´o
 4 un intento de usar un no-booleano como la prueba de una
-expresion condicional.
-Los errores como una division por cero, no seran
+expresi´on condicional.
+Los errores como una divisi´on por cero, no ser´an
 considerados como errores de tipo.
 
-Se definira un procedimiento type-of-expression que
-dado una expresion exp y un ambiente de tipos tenv (que
+Se definir´a un procedimiento type-of-expression que
+dado una expresi´on exp y un ambiente de tipos tenv (que
 asocia cada variable con un tipo), asigna a exp un tipo t
 con la propiedad que:
 Siempre que exp es ejecutado en un ambiente en el cual
-cada variable tiene el tipo especificado para el por tenv , el
-valor resultante tendra tipo t .
-El analisis estara basado en el principio de que si se conoce
+cada variable tiene el tipo especificado para ´el por tenv , el
+valor resultante tendr´a tipo t .
+El an´alisis estar´a basado en el principio de que si se conoce
 los tipos de los valores de cada una de las variables en una
-expresion, se puede deducir el tipo del valor de la
-expresion.
+expresi´on, se puede deducir el tipo del valor de la
+expresi´on.
 
-EL procedimiento type-of-expression se comportara de la
+EL procedimiento type-of-expression se comportar´a de la
 siguiente manera:
-Si la expresion es un numero, entonces el resultado sera
-siempre un entero y si es una expresion booleana ( true o
-false ) el resultado sera booleano.
-Si la expresion es una variable, entonces el resultado es del
+Si la expresi´on es un n´umero, entonces el resultado ser´a
+siempre un entero y si es una expresi´on booleana ( true o
+false ) el resultado ser´a booleano.
+Si la expresi´on es una variable, entonces el resultado es del
 tipo especificado por tenv .
 
 (type-of-expression ≪ n ≫ tenv ) = int
@@ -193,39 +185,35 @@ tipo especificado por tenv .
 (type-of-expression ≪ false ≫ tenv ) = bool
 (type-of-expression ≪ id ≫ tenv ) = (apply-env tenv id ).
 
-Una expresion de la forma:
+Una expresi´on de la forma:
 Si < condicion1 >
 y < condicion2 >
 y < condicion3 >
-...
 y < condicionN >
 entonces
 < consecuencia >
-Se conoce como regla de tipamieto o especificacion condicional. En
-adelante se omitiran los“Si”,“y”y“entonces”, ya que ellos estan
-implicitos en el formato de la especificacion.
+Se conoce como regla de tipamieto o especificaci´on condicional. En
+adelante se omitiran los“Si”,“y”y“entonces”, ya que ellos est´an
+impl´icitos en el formato de la especificaci´on.
 
-Si la expresion es una aplicacion (de la forma
+Si la expresi´on es una aplicaci´on (de la forma
 ( rator rand 1 . . . rand n )), el tipo del resultado se infiere
 del tipo del operador y los tipos de los operandos.
 El tipo del operador debe ser (obligatoriamente) un tipo
 procedimiento.
 Si el tipo del operador es ( t 1 ∗ t 2 ∗ . . . ∗ t n − > t ), entonces
-debe haber exactamente n operandos, y el tipo del i -esimo
+debe haber ex´actamente n operandos, y el tipo del i -´esimo
 operando debe ser t i .
 Si las condiciones se mantienen, entonces el resultado de
-la aplicacion sera el tipo resultado del procedimiento, t .
+la aplicaci´on ser´a el tipo resultado del procedimiento, t .
 
-Regla de tipamiento para aplicacion de procedimientos o
+Regla de tipamiento para aplicaci´on de procedimientos o
 primitivas:
 (type-of-expression ≪ rator ≫ tenv ) = ( t 1 ∗ t 2 ∗ . . . ∗ t n − >
-t )
 (type-of-expression ≪ rand 1 ≫ tenv ) = t 1
 (type-of-expression ≪ rand 2 ≫ tenv ) = t 2
-...
 (type-of-expression ≪ rand n ≫ tenv ) = t n
-(type-of-expression ≪ ( rator rand 1 rand 2 . . . rand n ) ≫ tenv )
-= t.
+(type-of-expression ≪ ( rator rand 1 rand 2 . . . rand n ) ≫ tenv ).
 
 La regla de tipamiento para las expresiones condicionales es:
 (type-of-expression ≪ test − exp ≫ tenv ) = bool
@@ -234,32 +222,32 @@ La regla de tipamiento para las expresiones condicionales es:
 (type-of-expression
 ≪ if test − exp then true − exp else false − exp ≫ tenv ) = t.
 
-Para el caso de una expresion que crea un procedimiento ( proc
+Para el caso de una expresi´on que crea un procedimiento ( proc
 ( x 1 ,..., x n ) exp ), se dice que el procedimiento resultante
 tiene tipo ( t 1 ∗ t 2 ∗ ... ∗ t n − > t ), si:
 Cada x i esta asociado con el tipo t i .
 Tiene exactamente n argumentos.
 Se puede mostrar que cuando el cuerpo exp del
-procedimiento sea ejecutado, producira un valor de tipo t .
+procedimiento sea ejecutado, producir´a un valor de tipo t .
 
-La regla de tipamiento para creacion de procedimientos es:
+La regla de tipamiento para creaci´on de procedimientos es:
 (type-of-expression ≪ exp ≫ [ x 1 = t 1 , . . . , x n = t n ] tenv ) = t
 (type-of-expression ≪ proc ( x 1 , . . . , x n ) exp ≫ tenv )
 = ( ( t 1 ∗ t 2 ∗ . . . ∗ t n − > t ) ).
 
 La anterior regla lleva a un problema:
-Si se trata de encontrar el tipo de una expresion proc ,
-¿como se encuentran los tipos t 1 , . . . , t n de las variables
+Si se trata de encontrar el tipo de una expresi´on proc ,
+¿c´omo se encuentran los tipos t 1 , . . . , t n de las variables
 ligadas?.
 La respuesta es: No hay donde encontrarlos.
-Existen dos estrategias para esta situacion:
+Existen dos estrategias para esta situaci´on:
 chequeo de tipos : se requiere que el programador brinde
 informacion sobre los tipos de las variables.
 inferencia de tipos : inferencia de tipos: el analizador de
 tipos, infiere el tipos de las variables de la forma en que
 dichas variables son usadas en el programa.
 
-1 Tipos y Programacion
+1 Tipos y Programaci´on
 2 Chequeo de tipos.
 
 En un lenguaje con chequeo de tipos, se requiere que el
@@ -269,31 +257,26 @@ Para hacer chequeo de tipos en el lenguaje del curso, se
 necesita cambiar la forma en que se escriben
 procedimientos ( proc-exp ) y recursion ( letrec-exp ).
 
-La gramatica para expresiones con tipo sera ahora:
-⟨ expresion ⟩
-::=
-proc ( {⟨ tipo-exp ⟩⟨ identificador ⟩} ∗ ( , ) ) ⟨ expresion ⟩
+La gram´atica para expresiones con tipo ser´a ahora:
+⟨ expresi´on ⟩
+proc ( {⟨ tipo-exp ⟩⟨ identificador ⟩} ^∗^(^,^)) ⟨ expresi´on ⟩
 proc-exp (arg-texps ids body)
-⟨ expresion ⟩
-::=
+⟨ expresi´on ⟩
 letrec
 {⟨ type-exp ⟩⟨ identificador ⟩
-( {⟨ type-exp ⟩⟨ identificador ⟩} ∗ ( , ) ) = ⟨ expresion ⟩
-in ⟨ expresion ⟩
+( {⟨ type-exp ⟩⟨ identificador ⟩} ^∗^(^,^)) = ⟨ expresi´on ⟩
+in ⟨ expresi´on ⟩
 letrec-exp
 ( result-texps proc-names arg-texpss
 idss bodies letrec-body ).
 
-Se deben anadir las siguientes producciones a la especificacion
-de la gramatica:
+Se deben a˜nadir las siguientes producciones a la especificaci´on
+de la gram´atica:
 ( e x p r e s s i o n
 ( "proc" "("
 ( s e p a r a t e d − l i s t
 type − exp
 i d e n t i f i e r
-"
-," )
-")"
 e x p r e s s i o n )
 proc − exp )
 ( e x p r e s s i o n
@@ -301,21 +284,16 @@ proc − exp )
 ( arbno
 type − exp
 i d e n t i f i e r
-"("
 ( s e p a r a t e d − l i s t
 type − exp
 i d e n t i f i e r
 "," )
-"
-)"
-"="
 e x p r e s s i o n )
-"in"
 e x p r e s s i o n )
 letrec − exp ).
 
-Asi mismo, se anaden las producciones correspondientes a las
-expresiones type-exp a la especificacion de la gramatica:
+As´i mismo, se a˜naden las producciones correspondientes a las
+expresiones type-exp a la especificaci´on de la gram´atica:
 ( type − exp
 ( "int" )
 int − type − exp )
@@ -336,62 +314,48 @@ i n t
 f a c t
 ( i n t
 x ) =
-if
 zero ?( x )
-then
 1 else
 ∗ ( x , ( f a c t
 sub1 ( x ) ) )
-in
 ( f a c t
-5)
-Aqui, el tipo resultado de fact es int , pero el tipo de fact
+Aqu´i, el tipo resultado de fact es int , pero el tipo de fact
 como tal es (int -> int) .
 
 Se pueden escribir programas como:
-let
 sum = proc ( bool
-b ,
 i n t
-x ,
 i n t
-y )
-if b
 then +(x ,
-y )
 else − (x ,
-y )
 m = 4
 n = 3
-in
-(sum
 t r u e m n )
-Aqui, el tipo resultado de sum es int , pero el tipo de sum como
+Aqu´i, el tipo resultado de sum es int , pero el tipo de sum como
 tal es (bool*int*int -> int) .
 
-Ya se ha definido que es una expresion de tipo .
-Una expresion de tipo denota un tipo . Pero, que es un
+Ya se ha definido qu´e es una expresi´on de tipo .
+Una expresi´on de tipo denota un tipo . Pero, qu´e es un
 tipo?.
 
-Ya se ha definido que es una expresion de tipo .
-Una expresion de tipo denota un tipo . Pero, que es un
+Ya se ha definido qu´e es una expresi´on de tipo .
+Una expresi´on de tipo denota un tipo . Pero, qu´e es un
 tipo?.
-Ahora se definiran los valores (tipos) que pueden denotar
+Ahora se definir´an los valores (tipos) que pueden denotar
 las expresiones de tipo.
 
-Ya se ha definido que es una expresion de tipo .
-Una expresion de tipo denota un tipo . Pero, que es un
+Ya se ha definido qu´e es una expresi´on de tipo .
+Una expresi´on de tipo denota un tipo . Pero, qu´e es un
 tipo?.
-Ahora se definiran los valores (tipos) que pueden denotar
+Ahora se definir´an los valores (tipos) que pueden denotar
 las expresiones de tipo.
-Para ello se definira el tipo abstracto de datos“tipo”. Un
-“tipo”es o un tipo atomico con un nombre, o un tipo
+Para ello se definir´a el tipo abstracto de datos“tipo”. Un
+“tipo”es o un tipo at´omico con un nombre, o un tipo
 procedimiento , con una lista de argumentos con tipo y un
 tipo resultado.
 
-El tipo abstracto de datos tendra la siguiente definicion:
+El tipo abstracto de datos tendr´a la siguiente definici´on:
 ( define-datatype
-type
 type ?
 ( atomic − type
 (name symbol ?) )
@@ -413,25 +377,22 @@ Las constantes int-type y bool-type son abreviaciones.
 
 Ahora, se debe definir el procedimiento
 expand-type-expression que calcula el tipo denotado
-por una expresion de tipo.
-El revisor ( checker ) llamara a expand-type-expression
+por una expresi´on de tipo.
+El revisor ( checker ) llamar´a a expand-type-expression
 siempre que necesite utilizar el tipo denotado por una
-expresion de tipo.
+expresi´on de tipo.
 
-El procedimiento expand-type-expression estara definido
-asi:
+El procedimiento expand-type-expression estar´a definido
+as´i:
 ( define
 expand − type − expression
 ( lambda
 ( texp )
 ( cases
 type − exp
-texp
 ( int − type − exp
-( )
 int − type )
 ( bool − type − exp
-()
 bool − type )
 ( proc − type − exp
 ( arg − texps
@@ -449,22 +410,22 @@ expand − type − expressions
 expand − type − expression
 texps ) ) ).
 
-El revisor ( checker ) se implementara como un
-procedimiento que recibe una expresion y un ambiente de
+El revisor ( checker ) se implementar´a como un
+procedimiento que recibe una expresi´on y un ambiente de
 tipos y retorna el tipo correspondiente a ella o un error.
 El revisor corresponde al procedimiento
-type-of-expression y tendra clausulas que implementan
-las reglas de produccion para las expresiones con tipo.
+type-of-expression y tendr´a cl´ausulas que implementan
+las reglas de producci´on para las expresiones con tipo.
 
-Las primeras clausulas del procedimiento
+Las primeras cl´ausulas del procedimiento
 type-of-expression tienen que ver con literales y
 variables.
-Si la expresion corresponde a una expresion de un literal o
+Si la expresi´on corresponde a una expresi´on de un literal o
 un booleano se retorna el tipo int-type o bool-type
 respectivamente.
-Si la expresion corresponde a una variable, se retorna el
+Si la expresi´on corresponde a una variable, se retorna el
 tipo de la variable en el ambiente de tipos en el que se
-chequea la expresion.
+chequea la expresi´on.
 Se usa el procedimiento apply-tenv , similar a apply-env
 pero con distinto mensaje de error.
 
@@ -476,24 +437,20 @@ type − of − expression
 tenv )
 ( cases
 e x p r e s s i o n
-exp
 ( l i t − e x p
 ( number )
 int − type )
 ( true − exp
-()
 bool − type )
 ( false − exp
-( )
 bool − type )
 ( var − exp
 ( i d )
 ( apply − tenv
-tenv
 i d ) )
 . . . ) ) ).
 
-La siguiente clausula del procedimiento
+La siguiente cl´ausula del procedimiento
 type-of-expression implementa la regla para
 expresiones condicionales ( if-exp ).
 (type-of-expression ≪ test − exp ≫ tenv ) = bool
@@ -510,7 +467,6 @@ type − of − expression
 tenv )
 ( cases
 e x p r e s s i o n
-exp
 . . .
 ( if − exp
 ( test − exp
@@ -533,7 +489,6 @@ tenv ) ) )
 test − type
 bool − type
 test − exp
-)
 ( check − equal − type !
 true − type
 f a l s e − t y p e
@@ -547,37 +502,29 @@ usado para el reporte de errores.
 ( define
 check − equal − type !
 ( lambda
-( t1
-t2
 exp )
-( if
 ( not
 ( equal ?
-t1
 t2 ) )
 ( eopl : error
 ’ check − equal − type !
 "Types
 didn’t match: ~s != ~s in~ %~s"
 ( type − to − external − form
-t1 )
 ( type − to − external − form
-t2 )
 exp ) ) ) ).
 
 El procedimiento check-equal-type! usa el procedimiento
 type-to-external-form para convertir un tipo en una
 
 <CODIGO_BLOCK_START>
-estructura de lista, facil de leer, por ejemplo (int * (int ->
+estructura de lista, f´acil de leer, por ejemplo (int * (int ->
 bool) -> int) .
 ( define
 type − to − external − form
 ( lambda
 ( ty )
 ( cases
-type
-ty
 ( atomic − type
 (name) name)
 ( proc − type
@@ -596,11 +543,8 @@ r e s u l t − t y p e ) ) ) ) ) ) ).
 arg − types − to − external − form
 ( lambda
 ( types )
-( if
 ( null ?
 types )
-’ ()
-( if
 ( null ?
 ( cdr
 types ) )
@@ -613,13 +557,11 @@ types ) ) )
 ( car
 types ) )
 ( cons
-’ ∗
 ( arg − types − to − external − form
 ( cdr
-types ) ) ) ) ) ) )
-).
+types ) ) ) ) ) ) ).
 
-Retomamos, la regla de tipamiento para creacion de
+Retomamos, la regla de tipamiento para creaci´on de
 procedimientos:
 (type-of-expression ≪ exp ≫ [ x 1 = t 1 , . . . , x n = t n ] tenv ) = t
 (type-of-expression ≪ proc ( x 1 , . . . , x n ) exp ≫ tenv )
@@ -627,7 +569,7 @@ procedimientos:
 Esta regla es implementada con ayuda del procedimiento
 type-of-proc-exp .
 
-El procedimiento type-of-proc-exp recibe una expresion
+El procedimiento type-of-proc-exp recibe una expresi´on
 proc ( t 1 x 1 , t 2 x 2 , . . . , t n x n ) exp y convierte los tipos
 t 1 , . . . , t n en una lista de tipos arg-types .
 Posteriormente, revisa el cuerpo en el ambiente
@@ -635,14 +577,13 @@ especificado y liga el tipo resultado a result-type .
 Finalmente, construye un procedimiento con tipo, con las
 partes apropiadas.
 
-La definicion del procedimiento type-of-proc-exp es la
+La definici´on del procedimiento type-of-proc-exp es la
 siguiente:
 ( define
 type − of − proc − exp
 ( lambda
 ( texps
 i d s
-body
 tenv )
 ( let
 (( arg − types
@@ -651,7 +592,6 @@ texps ) ) )
 ( let
 (( r e s u l t − t y p e
 ( type − of − expression
-body
 ( extend − tenv
 i d s
 arg − types
@@ -668,7 +608,6 @@ type − of − expression
 tenv )
 ( cases
 e x p r e s s i o n
-exp
 . . .
 ( proc − exp
 ( texps
@@ -677,17 +616,14 @@ body )
 ( type − of − proc − exp
 texps
 i d s
-body
 tenv ) )
 . . . ) ) ).
 
 Para aplicaciones de primitivas o de procedimientos
 teniamos la siguiente regla de tipamiento:
 (type-of-expression ≪ rator ≫ tenv ) = ( t 1 ∗ t 2 ∗ . . . ∗ t n − >
-t )
 (type-of-expression ≪ rand 1 ≫ tenv ) = t 1
 (type-of-expression ≪ rand 2 ≫ tenv ) = t 2
-...
 (type-of-expression ≪ rand n ≫ tenv ) = t n
 (type-of-expression ≪ ( rator rand 1 rand 2 . . . rand n ) ≫ tenv ) = t.
 
@@ -697,14 +633,14 @@ type-of-application para aplicar la regla de
 tipamiento.
 El procedimiento type-of-application primero revisa si
 el tipo del operador es un tipo procedimiento.
-Luego revisa si el numero de argumentos esperados por el
-procedimientos es igual al numero dado y despues, en el
+Luego revisa si el n´umero de argumentos esperados por el
+procedimientos es igual al n´umero dado y despu´es, en el
 ciclo for-each , revisa si el tipo de cada argumento
 esperado es igual al tipo del operando correspondiente.
-Si la revision tiene exito, entonces el tipo de la aplicacion
+Si la revisi´on tiene ´exito, entonces el tipo de la aplicaci´on
 es le tipo resultado del procedimiento.
 
-La definicion del procedimiento type-of-application es la
+La definici´on del procedimiento type-of-application es la
 siguiente:
 ( define
 type − of − application
@@ -715,7 +651,6 @@ r a t o r
 rands
 exp )
 ( cases
-type
 rator − type
 ( proc − type
 ( arg − types
@@ -737,10 +672,8 @@ result − type )
 "Wrong
 number of
 arguments
-in
 expression ~s:"
 "~ %expected ~s~ %got ~s" )
-exp
 ( map
 type − to − external − form
 arg − types )
@@ -760,12 +693,12 @@ r a t o r
 rator − type ) ) ) ) ) ).
 
 Para determinar el tipo del operador cuando se trata de
-aplicacion de primitivas se utiliza el procedimiento auxiliar
+aplicaci´on de primitivas se utiliza el procedimiento auxiliar
 type-of-primitive .
 Este procedimiento recibe un valor del tipo de dato
 primitiva y crea un tipo proc-type de acuerdo a ese valor.
 
-La definicion del procedimiento type-of-primitive es la
+La definici´on del procedimiento type-of-primitive es la
 siguiente:
 ( define
 type − of − primitive
@@ -773,29 +706,25 @@ type − of − primitive
 ( prim )
 ( cases
 p r i m i t i v e
-prim
 ( add − prim
-()
 ( proc − type
 ( list
 int − type
 int − type )
 int − type ) )
 ( incr − prim
-()
 ( proc − type
 ( list
 int − type )
 int − type ) )
 ( zero − test − prim
-()
 ( proc − type
 ( list
 int − type )
 bool − type ) )
 . . . ) ) ).
 
-Ahora, se anaden las clausulas correspondientes al
+Ahora, se a˜naden las cl´ausulas correspondientes al
 procedimiento type-of-expression :
 . . .
 ( primapp − exp
@@ -807,7 +736,6 @@ prim )
 ( types − of − expressions
 rands
 tenv )
-prim
 rands
 exp ) )
 ( app − exp
@@ -835,14 +763,12 @@ tenv )
 ( lambda
 ( exp )
 ( type − of − expression
-exp
 tenv ) )
 rands ) ) ).
 
 La regla de tipamiento para expresiones let es:
 (type-of-expression ≪ e 1 ≫ tenv ) = t 1
 (type-of-expression ≪ e 2 ≫ tenv ) = t 2
-...
 (type-of-expression ≪ e n ≫ tenv ) = t n
 (type-of-expression ≪ body ≫ [ x 1 = t 1 , . . . , x n = t n ] tenv ) = t
 (type-of-expression ≪ let x 1 = e 1 . . . x n = e n in body ≫ tenv )
@@ -854,17 +780,16 @@ las expresiones en las declaraciones del let y extiende el
 ambiente de tipos con las variables en el let y los tipos
 encontrados.
 Luego, type-of-let-exp determina el tipo de la
-expresion correspondiente a su cuerpo en el ambiente de
+expresi´on correspondiente a su cuerpo en el ambiente de
 tipos extendido.
 
-La definicion del procedimiento type-of-let-exp es la
+La definici´on del procedimiento type-of-let-exp es la
 siguiente:
 ( define
 type − of − let − exp
 ( lambda
 ( i d s
 rands
-body
 tenv )
 ( let
 (( tenv − for − body
@@ -875,10 +800,9 @@ rands
 tenv )
 tenv ) ) )
 ( type − of − expression
-body
 tenv − for − body ) ) ) ).
 
-Asi mismo, se anade la clausula respectiva a la definicion del
+As´i mismo, se a˜nade la cl´ausula respectiva a la definici´on del
 procedimiento type-of-expression :
 ( define
 type − of − expression
@@ -887,7 +811,6 @@ type − of − expression
 tenv )
 ( cases
 e x p r e s s i o n
-exp
 . . .
 ( let − exp
 ( i d s
@@ -896,19 +819,17 @@ body )
 ( type − of − let − exp
 i d s
 rands
-body
 tenv ) )
 . . . ) ) ).
 
-Una expresion letrec se ve de esta manera:
+Una expresi´on letrec se ve de esta manera:
 letrec
 t 1 p 1 ( t 11 x 11 , . . . , t 1 n 1 x 1 n 1 ) = e 1
 t 2 p 2 ( t 21 x 21 , . . . , t 2 n 2 x 2 n 2 ) = e 2
-...
 in body
 En la cual se declaran un conjunto de procedimientos
 p 1 , p 2 , . . . con cuerpos e 1 , e 2 , . . . .
-El tipo de p i sera ( t i 1 ∗ t i 2 ∗ . . . ∗ t in − > t i ).
+El tipo de p i ser´a ( t i 1 ∗ t i 2 ∗ . . . ∗ t in − > t i ).
 
 El cuerpo del letrec y cada uno de los cuerpos de los
 procedimientos deben ser revisados en un ambiente donde
@@ -919,7 +840,6 @@ revisado en el ambiente:
 tenv body = [
 p 1 = ( t 11 ∗ t 12 . . . − > t 1 ),
 p 2 = ( t 21 ∗ t 22 . . . − > t 2 ),
-...
 ] tenv
 Cada cuerpo de los procedimientos, se debe revisar en el
 ambiente:
@@ -928,18 +848,16 @@ tenv i = [ x i 1 = t i 1 , x i 2 = t i 2 , . . . ] tenv body.
 Luego, la regla de tipamiento para expresiones letrec es:
 (type-of-expression ≪ e 1 ≫ tenv 1 ) = t 1
 (type-of-expression ≪ e 2 ≫ tenv 2 ) = t 2
-...
 (type-of-expression ≪ e n ≫ tenv n ) = t n
 (type-of-expression ≪ body ≫ tenv body ) = t
 (type-of-expression
 ≪ letrec
 t 1 p 1 ( t 11 x 11 , . . . , t 1 n 1 x 1 n 1 ) = e 1
 t 2 p 2 ( t 21 x 21 , . . . , t 2 n 2 x 2 n 2 ) = e 2
-...
 in body ≫
 tenv ) = t.
 
-La clausula correspondiente a una expresion letrec en
+La cl´ausula correspondiente a una expresi´on letrec en
 type-of-expression es:
 ( letrec − exp
 ( r e s u l t − t e x p s
@@ -969,7 +887,7 @@ Finalmente, computa el tipo del cuerpo de cada
 procedimiento y lo compara con el tipo del resultado
 especificado.
 
-La siguiente es la definicion del procedimiento
+La siguiente es la definici´on del procedimiento
 type-of-letrec-exp :
 ( define
 type − of − letrec − exp
@@ -1009,11 +927,9 @@ tenv ) ) )
 ( lambda
 ( i d s
 arg − types
-body
 result − type )
 ( check − equal − type !
 ( type − of − expression
-body
 ( extend − tenv
 i d s
 arg − types

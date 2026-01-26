@@ -3,14 +3,14 @@ variantes, aunque pertenezcan a tipos diferentes, pueden tener
 el mismo nombre.
 Para cada variante, un procedimiento constructor es creado.
 Si hay n campos en una variante, su constructor recibe n
-argumentos, prueba si cada uno de ellos satisface el predicado
+argumentos, prueba s´i cada uno de ellos satisface el predicado
 asociado y retorna un nuevo valor de dicha variante del tipo
 de dato.
 El nombre nombre-predicado-tipo es ligado a un predicado.
-Este predicado determina si su argumento es un valor
+Este predicado determina s´i su argumento es un valor
 perteneciente al tipo nombre-tipo .
 
-Expresiones calculo λ
+Expresiones c´alculo λ
 ( define-datatype
 lc − exp
 lc − exp ?
@@ -60,7 +60,6 @@ l i s t − o f
 ( pred )
 ( lambda
 ( v a l )
-( or
 ( null ?
 v a l )
 ( and
@@ -81,16 +80,16 @@ cases , la cual tiene la sintaxis general:
 { (nombre-variante ( { nombre-campo }∗ ) consecuente ) }∗
 (else por-defecto)).
 
-La expresion cases evalua expresion . Esto da como resultado
+La expresi´on cases evalua expresion . Esto da como resultado
 un valor v de tipo nombre-tipo .
 Si v es una variante nombre-variante , cada uno de los campos
 nombre-campo son asociados al valor del correspondiente
-campo de v . Luego la expresion consecuente es evaluada y su
+campo de v . Luego la expresi´on consecuente es evaluada y su
 valor es retornado.
-Si v no es una de las variantes y la clausula else es
-especificada, la expresion por-defecto es evaluada y su valor
+Si v no es una de las variantes y la cl´ausula else es
+espec´ificada, la expresi´on por-defecto es evaluada y su valor
 retornado.
-Si no existe una clausula else , entonces tiene que existir una
+Si no existe una cl´ausula else , entonces tiene que existir una
 variante para todos los tipos de dato.
 
 ( define
@@ -100,11 +99,9 @@ occurs − free ?
 exp )
 ( cases
 lc − exp
-exp
 ( var − exp
 ( var )
 ( eqv ?
-var
 search − var ) )
 ( lambda − exp
 ( bound − var body )
@@ -119,7 +116,6 @@ body ) ) )
 ( app − exp
 ( r a t o r
 rand )
-( or
 ( occurs − free ?
 search − var
 r a t o r )
@@ -143,7 +139,7 @@ b i n t r e e ?) ) ).
 
 Tipo de dato bin-tree
 Definir un procedimiento que permita encontrar la suma de los
-enteros en las hojas de un arbol. Usando cases se tiene:
+enteros en las hojas de un ´arbol. Usando cases se tiene:
 ( define
 leaf − sum
 ( lambda
@@ -189,12 +185,9 @@ apply − env
 ( env sym )
 ( cases
 environment
-env
 ( empty − env − record
-()
 ( eopl : error
 ’ apply − env
-"No
 binding
 for ~s" sym ) )
 ( extended − env − record
@@ -205,7 +198,6 @@ env )
 ( ( pos
 ( l i s t − f i n d − p o s i t i o n
 sym syms ) ) )
-( if
 ( number ?
 pos )
 ( l i s t − r e f
@@ -214,46 +206,43 @@ pos )
 ( apply − env
 env sym ) ) ) ) ) ) ).
 
-Dada la gramatica de las expresiones del calculo lambda:
-⟨ expresion ⟩
+Dada la gram´atica de las expresiones del c´alculo lambda:
+⟨ expresi´on ⟩
 ::= ⟨ identificador ⟩
-::= ( lambda ( ⟨ identificador ⟩ ) ⟨ expresion ⟩ )
-::= ( ⟨ expresion ⟩⟨ expresion ⟩ )
-Se puede representar cada expresion del calculo lambda
+::= ( lambda ( ⟨ identificador ⟩ ) ⟨ expresi´on ⟩ )
+::= ( ⟨ expresi´on ⟩⟨ expresi´on ⟩ )
+Se puede representar cada expresi´on del c´alculo lambda
 usando el tipo de dato lc-exp definido anteriormente
 mediante define-datatype.
 
-Una BNF especifica una representacion particular de un tipo
-de dato que usa los valores generados por la gramatica
-Esta representacion es llamada sintaxis concreta o
-representacion externa
+Una BNF especifica una representaci´on particular de un tipo
+de dato que usa los valores generados por la gram´atica
+Esta representaci´on es llamada sintaxis concreta o
+representaci´on externa
 Para procesar dichos datos, se requiere convertirlos a una
-representacion interna o sintaxis abstracta , en la cual los
-simbolos terminales (como parentesis) no necesiten ser
-almacenados ya que no llevan informacion.
+representaci´on interna o sintaxis abstracta , en la cual los
+s´imbolos terminales (como par´entesis) no necesiten ser
+almacenados ya que no llevan informaci´on.
 
 Para crear una sintaxis abstracta a partir de una sintaxis
-concreta, se debe nombrar cada regla de produccion de la
-sintaxis concreta y cada ocurrencia de un simbolo no terminal
-Para la gramatica de las expresiones del calculo λ , se puede
+concreta, se debe nombrar cada regla de producci´on de la
+sintaxis concreta y cada ocurrencia de un s´imbolo no terminal
+Para la gram´atica de las expresiones del c´alculo λ , se puede
 resumir las opciones (sintaxis concreta y abstracta) usando la
-siguiente notacion:
-⟨ expresion ⟩
-::=
+siguiente notaci´on:
+⟨ expresi´on ⟩
 ⟨ identificador ⟩
 var-exp (id)
-::=
-( lambda ( ⟨ identificador ⟩ ) ⟨ expresion ⟩ )
+( lambda ( ⟨ identificador ⟩ ) ⟨ expresi´on ⟩ )
 lambda-exp (id body)
-::=
-( ⟨ expresion ⟩⟨ expresion ⟩ )
+( ⟨ expresi´on ⟩⟨ expresi´on ⟩ )
 app-exp (rator rand).
 
-La sintaxis abstracta de una expresion es mas facil de
-comprender visualizandola como un arbol de sintaxis abstracta
+La sintaxis abstracta de una expresi´on es m´as f´acil de
+comprender visualiz´andola como un ´arbol de sintaxis abstracta
 
 <CODIGO_BLOCK_START>
-El siguiente ejemplo muestra el arbol para la expresion
+El siguiente ejemplo muestra el ´arbol para la expresi´on
 (lambda (x) (f (f x))) :.
 <CODIGO_BLOCK_END>
 
@@ -263,38 +252,27 @@ var−exp
 app−exp
 var−exp
 var−exp
-id
-body
-x
 rator
-rand
-id
-f
-rator
-rand
-id
-f
-id
-x.
+rator.
 
-Los arboles de sintaxis son utiles en lenguajes de programacion
+Los ´arboles de sintaxis son ´utiles en lenguajes de programaci´on
 de procesamiento de sistemas ya que los programas que
 procesan otros programas (como los interpretadores o
 compiladores) son casi siempre dirigidos por sintaxis
 Esto es que cada parte de un programa es guiado por la regla
 gramatical asociada con dicha parte, y cualquier subparte
-correspondiente a un simbolo no terminal puede ser accedido
+correspondiente a un s´imbolo no terminal puede ser accedido
 con facilidad.
 
-Cuando se procesa la expresion (lambda (x) (f (f x))) ,
-primero se debe reconocer como una expresion del calculo
+Cuando se procesa la expresi´on (lambda (x) (f (f x))) ,
+primero se debe reconocer como una expresi´on del c´alculo
 lambda, correspondiente a la regla:
-⟨ expresion ⟩ ::= ( lambda ( ⟨ identificador ⟩ ) ⟨ expresion ⟩ )
-El parametro formal es x y el cuerpo es (f (f x)) . El cuerpo
-debe ser reconocido como una app-exp , y asi sucesivamente.
+⟨ expresi´on ⟩ ::= ( lambda ( ⟨ identificador ⟩ ) ⟨ expresi´on ⟩ )
+El par´ametro formal es x y el cuerpo es (f (f x)) . El cuerpo
+debe ser reconocido como una app-exp , y as´i sucesivamente.
 
-El problema de convertir un arbol de sintaxis abstracta a una
-representacion lista-y-simbolo (con lo cual Scheme mostraria las
+El problema de convertir un ´arbol de sintaxis abstracta a una
+representaci´on lista-y-s´imbolo (con lo cual Scheme mostrar´ia las
 expresiones en su sintaxis concreta), se resuelve con el
 procedimiento:
 ( define
@@ -303,7 +281,6 @@ unparse − expression
 ( exp )
 ( cases
 e x p r e s s i o n
-exp
 ( var − exp
 ( i d )
 i d )
@@ -325,11 +302,11 @@ r a t o r )
 ( unparse − expression
 rand ) ) ) ) ) ).
 
-La tarea de derivar el arbol de sintaxis abstracta a partir de
+La tarea de derivar el ´arbol de sintaxis abstracta a partir de
 una cadena de caracteres es denominado parsing , y es llevado
-a cabo por un programa llamado parser (analizador sintactico)
-El siguiente procedimiento deriva la representacion en sintaxis
-concreta a arboles de sintaxis abstracta:.
+a cabo por un programa llamado parser (analizador sint´actico)
+El siguiente procedimiento deriva la representaci´on en sintaxis
+concreta a ´arboles de sintaxis abstracta:.
 
 ( define
 p a r s e − e x p r e s s i o n
@@ -339,7 +316,6 @@ p a r s e − e x p r e s s i o n
 (( symbol ? datum )
 ( var − exp datum ) )
 (( pair ? datum )
-( if
 ( eqv ?
 ( car datum )
 ’ lambda )

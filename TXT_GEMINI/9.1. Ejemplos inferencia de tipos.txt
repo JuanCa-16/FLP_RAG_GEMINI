@@ -1,69 +1,64 @@
-Considere la siguiente expresion:
-let
-j = proc ( i n t
-x ,
-? y )
-+(x , y )
-t = proc (? k ,
-i n t
-a ,
-? b )
-( k a b )
-in
-( t
-j
-2
-3)
+Considere la siguiente expresión:
+
+<CODIGO_BLOCK>
+```racket
+(define j
+  (lambda (y) (+ x y)))
+
+(define t
+  (lambda (k b) (k a b)))
+```
+**Explicación:** El texto describe las definiciones de dos procedimientos, `j` y `t`. El código se ha normalizado a sintaxis Racket. Se asume que `x` y `a` son variables libres en este contexto.
+</CODIGO_BLOCK>
+
 Indique su tipo.
 
-Respuesta:
-y = int
-k = (int*int- > int)
-b = int
-La expresion es de tipo int.
-#####
-Considere la siguiente expresion:
-let
-j = proc ( i n t
-x ,
-? y )
-if
-( y
-2)
-then +(x , 2 )
-else − (x , 3 )
-t = proc (? k ,
-i n t
-a ,
-? b ,
-? c )
-( k +(a , b )
-c )
-s = proc (?
-a )
-zero ?( a )
-in
-let
-p = proc (?m
-,
-? n )
-(m n 5 14
-s )
-in
-( p
-t
-j )
+**Respuesta:**
+- `y` = `int`
+- `k` = `(int * int -> int)`
+- `b` = `int`
+
+La expresión es de tipo `int`.
+
+####
+
+Considere la siguiente expresión:
+
+<CODIGO_BLOCK>
+```racket
+(define j
+  (lambda (y)
+    (if (y x)
+        (+ x 2)
+        (- x 3))))
+
+(define t
+  (lambda (k b c)
+    (k (+ a b) c)))
+
+(define s
+  (lambda (a)
+    (zero? a)))
+
+(define p
+  (lambda (m n)
+    (m n 5 14)))
+```
+**Explicación:** Reconstrucción de las definiciones de los procedimientos `j`, `t`, `s` y `p`. La sintaxis se ha completado y corregido a Racket válido basándose en los fragmentos de código y los tipos especificados en la respuesta, infiriendo un condicional `if` para la estructura `then`/`else` y completando las listas de argumentos.
+</CODIGO_BLOCK>
+
 Indique su tipo.
 
-Respuesta:
-y = (int- > bool)
-k = (int*(int- > bool)- > int)
-b = int
-c = (int- > bool)
-a = int
-m = ((int- > bool)*int*int*(int- > bool)- > int)
-n = (int*(int- > bool)- > int)
-La expresion es de tipo int.
+**Respuesta:**
+- `y` = `(int -> bool)`
+- `k` = `(int * (int -> bool) -> int)`
+- `b` = `int`
+- `c` = `(int -> bool)`
+- `a` = `int`
+- `m` = `((int -> bool) * int * int * (int -> bool) -> int)`
+- `n` = `(int * (int -> bool) -> int)`
+
+La expresión es de tipo `int`.
 
 --- METADATA ---
 CORTE: Corte 2

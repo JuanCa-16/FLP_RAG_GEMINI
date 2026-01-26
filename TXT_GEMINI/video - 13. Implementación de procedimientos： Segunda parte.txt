@@ -1,50 +1,16 @@
-Aquí tienes la transcripción limpia y formateada:
+Al aplicar un procedimiento, se crea un nuevo ambiente que vincula sus parámetros formales con los valores de los argumentos proporcionados en la llamada. Por ejemplo, para una llamada `F(2, 28)` donde `F` tiene los parámetros `E` y `Z`, el nuevo ambiente contendrá las asociaciones `E=2` y `Z=28`. El cuerpo del procedimiento se evaluará dentro de este nuevo ambiente. Es fundamental comprender que este ambiente extiende desde el entorno que existía en el momento en que el procedimiento fue *definido* (creado), no desde el entorno donde fue *llamado*. Este principio se conoce como alcance léxico o estático.
 
----
+####
 
-A continuación, se presenta la implementación de la aplicación de procedimientos:
+Para implementar la aplicación de procedimientos en el intérprete, dentro de la función que evalúa expresiones, se deben seguir varios pasos. Primero, es necesario evaluar los operandos (`rands`), que corresponden a los argumentos de la llamada. Esto se realiza aplicando la función de evaluación (`eval-expression`) a cada expresión de argumento en el ambiente actual. Segundo, se debe evaluar el operador (`rator`), que es la expresión que representa al procedimiento. El resultado de evaluar el `rator` debe ser un valor de procedimiento, conocido como clausura. Si el `rator` es una variable, su valor se busca en el ambiente, donde debería estar almacenada la clausura correspondiente.
 
-**1. Contexto de Implementación de Procedimientos**
+####
 
-Al implementar la aplicación, consideremos el ejemplo `F(2, 28)`. Esto implica la creación de un ambiente que contenga las variables `E` y `Z` con valores 2 y 28, respectivamente. El cuerpo del procedimiento se evaluará en este ambiente.
+Una vez evaluados el operador y los operandos, se debe verificar que el valor del operador sea efectivamente un procedimiento. Si no lo es, se debe lanzar un error indicando que se intentó aplicar un valor no procedimental. Si la verificación es exitosa, se procede a desestructurar la clausura para obtener sus componentes: la lista de identificadores de los parámetros, el cuerpo del procedimiento y el ambiente guardado en el momento de su creación. Finalmente, se evalúa el cuerpo del procedimiento en un nuevo ambiente, el cual se crea extendiendo el ambiente guardado de la clausura con los nuevos enlaces entre los identificadores de los parámetros y los valores de los argumentos ya evaluados.
 
-**2. Extensión del Ambiente**
+####
 
-El ambiente de un procedimiento se extiende desde el punto donde fue creado, no desde donde fue llamado. Es crucial recordar que la extensión del ambiente se define por el contexto de creación del procedimiento.
-
-**3. Aplicación de Procedimientos**
-
-Para la aplicación de procedimientos, implementaremos la función `evaluar_expresion`, específicamente la sección que maneja los procedimientos, la cual inicialmente había sido dejada vacía.
-
-**4. Evaluación de Argumentos**
-
-Primero, se evalúan los `RANDs` (argumentos). Estos argumentos se transforman en sus valores mediante un `map` que aplica `evaluar_expresion` a cada uno en el ambiente actual. Esto se realiza dentro de un bloque `let` para manejar la sintaxis abstracta.
-
-**5. Evaluación de la Expresión del Procedimiento**
-
-Luego, la expresión del procedimiento en sí (denominada 'radar') debe ser evaluada. Se le asignará el nombre `PROC_B`. Esta evaluación es un `evaluar_expresion` del 'radar' en el ambiente actual. Esto es necesario porque la entrada es una expresión (`struct`), pero se espera una clausura. Si, por ejemplo, llega una `var_expresion x`, esta debe buscarse en el ambiente donde la clausura debe estar almacenada.
-
-**6. Verificación de Tipo del Procedimiento**
-
-Es indispensable verificar si `PROC_B` es efectivamente un procedimiento (`PROC`). Si no lo es, se debe generar un error, ya que solo los valores de procedimiento pueden ser evaluados. Se puede incluir el 'radar' o su valor evaluado en el mensaje de error para informar al usuario sobre la equivocación.
-
-**7. Evaluación del Cuerpo del Procedimiento en un Ambiente Extendido**
-
-Una vez confirmado que `PROC_B` es un procedimiento, se procede a evaluar su cuerpo. `PROC_B` se manejará con una estructura `CASES` que extrae la clausura. La clausura contiene los identificadores (`LIDs` - parámetros formales), el cuerpo del procedimiento, y el ambiente de creación.
-
-La evaluación se realiza invocando `evaluar_expresion` sobre el cuerpo del procedimiento, pero en un ambiente extendido. Este ambiente extendido conecta los `LIDs` (parámetros formales) con los `LRAMs` (valores de los argumentos evaluados) y se extiende desde el ambiente donde fue creado el procedimiento.
-
-**8. Manejo de Errores por Cantidad de Argumentos**
-
-Después de cerrar las estructuras `IF` y `LET`, y corregir errores de sintaxis como paréntesis, se procede a probar la implementación. Si se intenta llamar al procedimiento con un número incorrecto de argumentos, se produce un error. Para prevenir esto, es esencial añadir una condición que valide que el número de `LIDs` (parámetros formales) sea igual al número de `LRAMs` (argumentos proporcionados).
-
-Se introduce una sentencia `IF` utilizando la función `LENGTH` para comparar la longitud de los `LIDs` con la de los `LRAMs`. Si no coinciden, se lanza un error (`EOPLR`) indicando que el "número de argumentos no es correcto" y especificando el número de argumentos esperados (basado en `LENGTH(LIDs)`).
-
-**9. Mensajes de Error Mejorados**
-
-Finalmente, se mejora el mensaje de error para que sea más informativo. En lugar de solo decir "debe enviar X", se añade "y usted ha enviado Y" (utilizando `LENGTH(RANTS)` para los argumentos enviados). Esto proporciona una retroalimentación clara al usuario, por ejemplo: "El número de argumentos no es correcto: debe enviar 1, y usted ha enviado 3."
-
-Con esto, la implementación básica de los procedimientos está completa. Se explorarán ejemplos a nivel de ambientes y S-Code en futuras sesiones.
+Es crucial manejar el caso en que el número de argumentos proporcionados en la llamada no coincide con el número de parámetros que el procedimiento espera. Para evitar errores de ejecución, se debe añadir una validación antes de crear el ambiente extendido. Esta validación consiste en comparar la longitud de la lista de parámetros formales (obtenida de la clausura) con la longitud de la lista de argumentos evaluados. Si las longitudes no son iguales, el intérprete debe lanzar un error descriptivo. Un buen mensaje de error informaría al usuario sobre el número de argumentos esperado y el número de argumentos que realmente fueron enviados.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=VeDViGXrwrQ

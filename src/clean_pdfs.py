@@ -76,30 +76,59 @@ def manejar_reintentos(prompt, modelo, intentos=3, espera=10):
 # ----------------------------
 
 def estructurar_con_reintentos(texto):
-    """Estructura el texto en grupos lógicos usando Gemini."""
     prompt = f"""
-    Eres un organizador de documentos experto. Tu tarea es analizar el siguiente texto 
-    y dividirlo en grupos temáticos o secciones lógicas.
+        Actúa como editor técnico de transcripciones académicas en
+        Fundamentos de Lenguajes de Programación y Racket.
 
-    Debes seguir estas reglas estrictas:
-    1. **NO debes reescribir, resumir, eliminar o alterar** el contenido original de ninguna manera. 
-       El texto de salida debe ser idéntico al de entrada, excepto por el formato de las secciones.
-    2. Identifica los cambios de tema o subtema significativos y usa **'#####'** (cinco almohadillas) 
-       en una línea separada para marcar la división entre los grupos lógicos de información.
-    3. Asegúrate de que los bloques de código o imagen, delimitados por las etiquetas:
-       - **<CODIGO_BLOCK_START>** hasta **<CODIGO_BLOCK_END>**
-       - **<IMG_BLOCK_START>** hasta **<IMG_BLOCK_END>**
-       se mantengan completamente **íntegros y sin ninguna modificación** en la salida.
-    4. El resultado final debe ser el texto original, pero estructurado y dividido de la mejor manera 
-       posible en grupos coherentes separados por '#####'.
-    5. La unica modificacion posible es en correcciones ortograficas.
+        OBJETIVO:
+        Normalizar y estructurar la transcripción manteniendo el
+        contenido original con la máxima fidelidad posible.
 
-    Texto a estructurar:
-    ---
-    {texto}
-    ---
-    """
-    MODELO = "gemini-2.5-flash" 
+        REGLAS OBLIGATORIAS:
+
+        1. FIDELIDAD AL DISCURSO:
+        - No resumir.
+        - No parafrasear.
+        - No cambiar el orden del contenido.
+        - No agregar contenido conceptual nuevo.
+        - Eliminar únicamente muletillas orales que no aporten significado técnico.
+
+        2. CORRECCIÓN LINGÜÍSTICA:
+        - Corregir ortografía, tildes y puntuación.
+        - Mantener el sentido exacto de cada frase.
+
+        3. CÓDIGO (GLOBAL, INCLUYENDO ETIQUETAS):
+        - Todo código presente en el texto, sin excepción, debe estar en sintaxis válida de Racket.
+        - Esto incluye código dentro de <CODIGO_BLOCK>, ejemplos inline y referencias parciales.
+        - Si el código original es incorrecto o incompleto, corregirlo estrictamente
+        sin añadir funcionalidades, ejemplos nuevos ni explicaciones extra.
+
+        4. ETIQUETAS ESPECIALES:
+        - <IMG_BLOCK>: Reemplazar por una descripción técnica breve únicamente si la imagen
+        es necesaria para comprender el contenido; de lo contrario, eliminarla.
+        - <CODIGO_BLOCK>: Mantener el código corregido y añadir una explicación técnica mínima,
+        directamente relacionada con el discurso original.
+
+        5. FRAGMENTACIÓN OPTIMIZADA PARA RAG:
+        - Dividir el documento en fragmentos usando exclusivamente el delimitador ####.
+        - Cada fragmento debe ser semánticamente completo y comprensible por sí mismo.
+        - Cada fragmento debe conservar el significado original del discurso,
+        sin depender de fragmentos anteriores o posteriores.
+        - No fragmentar de forma que se rompan definiciones, ejemplos o razonamientos.
+        - La fragmentación debe priorizar utilidad para recuperación semántica
+        sin alterar el contenido ni el sentido original.
+
+        RESTRICCIONES FINALES:
+        - Salida directa, sin encabezados ni comentarios.
+        - No interpretar, no opinar, no embellecer el texto.
+        - Priorizar fidelidad y corrección técnica por encima de estilo.
+
+        Texto a procesar:
+
+        {texto}
+
+        """
+    MODELO = "gemini-2.5-pro" 
     return manejar_reintentos(prompt, MODELO)
 
 

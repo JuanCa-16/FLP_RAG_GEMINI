@@ -1,89 +1,25 @@
-Aquí tienes la transcripción limpia y formateada:
+La diagramación de ambientes es una técnica fundamental para comprender la ejecución de código y el alcance de las variables. Practicar la interpretación de ambientes es crucial para analizar correctamente el comportamiento de un programa y es un requisito para entender conceptos más avanzados como los procedimientos y la recursividad.
 
----
+####
+El proceso de análisis de código mediante diagramación comienza con un ambiente vacío, sobre el cual se establece un ambiente inicial o global. Para este ejemplo, el ambiente inicial (E0) se define con las variables `x`, `y` y `z` con los valores 3, 7 y 1, respectivamente.
 
-A continuación, se presenta la evaluación detallada del código, enfocándose en la diagramación de ambientes.
+####
+Toda expresión `let` crea un nuevo ambiente anidado que extiende al ambiente anterior. En este caso, la primera expresión `let` genera el Ambiente 1 (E1). En E1 se introducen dos variables: `y`, que se asigna directamente con el valor 5, y `m`, cuyo valor depende de una evaluación interna.
 
-### Evaluación de Código y Diagramación de Ambientes
+####
+Para determinar el valor de la variable `m` en el Ambiente 1, es necesario evaluar una expresión `let` interna. Esta crea un ambiente temporal para la variable `t`, cuyo valor se calcula como `sub1(y)`. La variable `y` se busca en la cadena de ambientes, encontrándose su valor 7 en el ambiente inicial (E0). Por lo tanto, `t` es `7 - 1 = 6`. Seguidamente, el valor de `m` se calcula como la multiplicación de `t` y `x`. La variable `t` (valor 6) se toma del ambiente temporal y `x` (valor 3) se encuentra en el ambiente inicial (E0). El resultado es `6 * 3 = 18`, que es el valor asignado a `m` en el Ambiente 1.
 
-El primer paso para comprender la ejecución de este código es la diagramación de ambientes. Esta práctica es fundamental para la comprensión de los conceptos que se abordarán más adelante en el curso.
+####
+Una estructura condicional `if` no crea por sí misma un nuevo ambiente. Su función es determinar qué rama de código se ejecutará. Un nuevo ambiente solo se genera si dentro de la rama seleccionada (sea la verdadera o la falsa) existe una expresión `let`. Es un error común asumir que un `if` siempre genera un ambiente.
 
-**Código a Evaluar:**
+####
+La ejecución continúa con un `let` que redefine la variable `y` basándose en una condición. La condición `y > 3` se evalúa buscando la variable `y` en la cadena de ambientes, encontrando el valor más cercano, que es 5, en el Ambiente 1. Como `5 > 3` es verdadero, se ejecuta la rama correspondiente, que calcula `add1(y) + m`. Usando los valores de `y=5` y `m=18` del Ambiente 1, el cálculo resulta en `(5 + 1) + 18 = 24`. Este valor 24 se asigna a la variable `y` en un nuevo entorno, el Ambiente 2 (E2).
 
-```
-let x = 3
-let y = 7
-let z = 1
+####
+La siguiente instrucción `let` crea el Ambiente 3 (E3), donde se define una nueva variable `t`. Su valor se calcula como la resta `y - m`. Para resolver esta operación, el sistema busca las variables en la cadena de ambientes desde el más reciente al más antiguo. La `y` más cercana se encuentra en el Ambiente 2 con valor 24, y la `m` más cercana está en el Ambiente 1 con valor 18. Por lo tanto, `t` se asigna con el resultado de `24 - 18`, que es 6.
 
-let y = 5
-let m = (let t = (sub 1 y) in (por t x))
-in
-  let y = (if (mayor y 3) then (mas (add 1 y) m) else (sub 1 (mas y m)))
-  in
-    let t = (menos y m)
-    in
-      (mas t (mas y (menos z 3)))
-```
-
-**Pasos de Evaluación:**
-
-1.  **Ambiente Inicial (Ambiente 0):**
-    *   Se comienza con un ambiente vacío.
-    *   Se establecen las variables iniciales:
-        *   `x = 3`
-        *   `y = 7`
-        *   `z = 1`
-
-2.  **Ambiente 1 (por el primer `let y = 5`):**
-    *   Se encuentra la primera declaración `let y = 5`.
-    *   **Regla:** Cada vez que se encuentra una declaración `let`, se crea un nuevo ambiente. Este ambiente hereda las variables del ambiente padre y/o define nuevas.
-    *   En este ambiente, `y` se inicializa con el valor 5. (El `y` del ambiente 0 sigue siendo 7, pero en este contexto, `y` se refiere al nuevo `y=5`).
-
-3.  **Evaluación de `m` (dentro de Ambiente 1):**
-    *   Se evalúa `let m = (let t = (sub 1 y) in (por t x))`.
-    *   Esto implica una sub-declaración `let t = (sub 1 y)`. Se busca `y` en el ambiente actual (Ambiente 1), donde `y` vale 5.
-        *   `t = 5 - 1 = 4`.
-    *   Luego, se calcula el valor de `m` como `(por t x)`.
-        *   `t` vale 4.
-        *   `x` se busca en el ambiente más cercano donde esté definido; en este caso, se encuentra en el Ambiente 0 con valor 3.
-        *   `m = 4 * 3 = 12`.
-
-4.  **Evaluación de `y` (por el `if`, dentro de Ambiente 1):**
-    *   Se encuentra la declaración `let y = (if (mayor y 3) then ... else ...)`.
-    *   **Importante:** Una sentencia `if` no crea un nuevo ambiente por sí misma, a menos que una de sus ramas contenga una declaración `let`. El `if` es una estructura de control que decide qué bloque de código ejecutar.
-    *   Se evalúa la condición `(mayor y 3)`. El `y` al que se refiere es el `y` actual en el Ambiente 1, que tiene un valor de 5.
-        *   `5 > 3` es **verdadero**.
-    *   Se ejecuta la rama verdadera: `(mas (add 1 y) m)`.
-        *   `add 1 y`: `y + 1`. El `y` actual es 5, así que `5 + 1 = 6`.
-        *   `m`: El `m` actual es 12.
-        *   Por lo tanto, el nuevo valor de `y` es `6 + 12 = 18`.
-    *   El valor de `y` en el Ambiente 1 se actualiza a 18.
-
-5.  **Evaluación de `t` (dentro de Ambiente 1):**
-    *   Se encuentra la declaración `let t = (menos y m)`.
-    *   Se busca `y` y `m` en el Ambiente 1.
-        *   `y` vale 18.
-        *   `m` vale 12.
-        *   Por lo tanto, `t = 18 - 12 = 6`.
-
-6.  **Operación Final (dentro de Ambiente 1):**
-    *   Finalmente, se evalúa la expresión `(mas t (mas y (menos z 3)))`.
-    *   Se buscan los valores en el Ambiente 1 y, si no se encuentran, en ambientes superiores:
-        *   `t`: 6 (del Ambiente 1).
-        *   `y`: 18 (del Ambiente 1).
-        *   `z`: Se busca en el Ambiente 0, donde vale 1.
-    *   Sustituyendo los valores:
-        *   `(- z 3)`: `1 - 3 = -2`.
-        *   `(+ y (- z 3))`: `18 + (-2) = 16`.
-        *   `(+ t (+ y (- z 3)))`: `6 + 16 = 22`.
-
-**Resultado Final:**
-
-El resultado final de la evaluación del código es **22**.
-
-**Conclusión:**
-
-La práctica constante de la diagramación de ambientes es crucial para comprender cómo se resuelven las variables y expresiones en diferentes ámbitos de un programa. Esta habilidad será fundamental para evaluar procedimientos, funciones y la recursividad en futuras clases.
+####
+Finalmente, se evalúa la expresión principal del código en el contexto del último ambiente creado (E3). La expresión es una suma anidada que involucra `t`, `y`, y la resta de `z` con 3. La búsqueda de variables se resuelve de la siguiente manera: `t` se encuentra en E3 con valor 6; `y` se encuentra en E2 con valor 24; y `z` se encuentra en el ambiente inicial E0 con valor 1. La operación se resuelve como `t + (y + (z - 3))`. Sustituyendo los valores: `6 + (24 + (1 - 3))`, que equivale a `6 + (24 - 2)`, y finalmente a `6 + 22`. El resultado de la evaluación de todo el bloque de código es 28.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=oKIbrtKiCx8

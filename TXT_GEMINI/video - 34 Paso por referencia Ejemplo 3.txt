@@ -1,74 +1,28 @@
-Aquí tienes la transcripción de clase limpia y formateada para estudio:
+Para analizar el paso por referencia en la evaluación de expresiones, se examina un código cuyo resultado esperado es 103. El proceso de evaluación se traza mediante la construcción de ambientes. El proceso inicia con un ambiente vacío, sobre el cual se construyen los ambientes subsecuentes a medida que se procesan las declaraciones.
 
----
+####
+La evaluación comienza con la creación de un ambiente `M0` que extiende el ambiente vacío. Este ambiente contiene las definiciones de los procedimientos `A` y `B`, los cuales son `direct targets` hacia clausuras que capturan el ambiente vacío. Posteriormente, se crea un ambiente `M1` que extiende a `M0`. `M1` contiene las declaraciones de `K` y `M`, donde `K` es un `direct target` al valor 3 y `M` es un `direct target` al valor 4.
 
-### Análisis de Expresiones con Paso por Referencia
+####
+A continuación, se define un ambiente `M2R` a través de una expresión `letrec`. Este tipo de ambiente tiene la particularidad de que las clausuras de los procedimientos definidos en él capturan el propio ambiente `M2R`, permitiendo así la recursividad. En este caso, el procedimiento `T` es un `direct target` a una clausura que contiene una referencia al ambiente `M2R`.
 
-Para trabajar con expresiones que utilizan paso por referencia, consideraremos un ejemplo cuyo resultado esperado es 103.
+####
+Finalmente, se crea un ambiente `M3` mediante una expresión `let` que extiende `M2R`. En este ambiente se define el procedimiento `F`, que es un `direct target` a una clausura que captura el ambiente `M2R`. Sobre este ambiente `M3` se evalúa la expresión principal: `T(F(K), K)`. La evaluación de los argumentos de un procedimiento se realiza de izquierda a derecha.
 
-**1. Configuración Inicial del Entorno:**
+####
+El primer paso es evaluar el argumento `F(K)`. Al invocar `F` pasándole la variable `K`, se crea un nuevo ambiente donde el parámetro `X` se convierte en un `indirect target` hacia `K`. El cuerpo de `F` ejecuta la suma `A(X) + B(X)`.
+1.  Se invoca `A(X)`. El parámetro de `A` también se convierte en un `indirect target` hacia `K`. La operación interna le suma 1 a `K`, modificando su valor de 3 a 4 a través del `indirect target`. La función `A` devuelve este nuevo valor, 4.
+2.  Se invoca `B(X)`. Su parámetro `Y` se convierte en un `indirect target` hacia `K`, que ahora vale 4. La operación le suma 3, cambiando el valor de `K` a 7. La función `B` devuelve `K + 2`, es decir, `7 + 2 = 9`.
+El resultado de `F(K)` es la suma de los valores devueltos: `4 + 9 = 13`.
 
-*   Comenzamos con un ambiente vacío.
-*   Se crea el ambiente `M0` que contiene las declaraciones `A` y `B`. Ambas son *direct targets* hacia clausuras que contienen el ambiente vacío. Como son declaraciones `let`, se consideran *direct targets*.
-*   En el ambiente `1`, se declaran `K` y `M`.
-    *   `K` es un *direct target* hacia el valor 3.
-    *   `M` es un *direct target* hacia el valor 4.
+####
+Con el primer argumento resuelto, se procede a evaluar la llamada principal `T(13, K)`. Se crea un nuevo ambiente donde el parámetro `X` es un `direct target` al valor 13, y el parámetro `Y` es un `indirect target` a la variable `K`, cuyo valor actual es 7. El procedimiento `T` es recursivo: mientras `X` sea mayor que 0, se llama a sí mismo decrementando `X` en 1 y suma el valor de `Y`. Dado que `Y` es un `indirect target` a `K`, en cada una de las 13 llamadas recursivas se consulta el valor de `K`, que permanece en 7 durante esta fase. Por lo tanto, se acumula la suma de 7, trece veces.
 
-**2. Definición de Procedimientos `T` y `F`:**
+####
+Cuando `X` llega a 0 en la llamada recursiva número 14, se ejecuta el caso base: `B(Y)`. Al invocar `B`, su parámetro recibe un `indirect target` hacia `Y`, que a su vez apunta a `K`. Dentro de `B`, se le suma 3 a `K`, cambiando su valor de 7 a 10. Luego, `B` devuelve `K + 2`, que es `10 + 2 = 12`. El resultado final de la expresión completa es la suma acumulada en las llamadas recursivas (`7 * 13 = 91`) más el resultado del caso base (12), lo que da un total de `91 + 12 = 103`. El valor final de la variable `K` es 10.
 
-*   Se define un ambiente `let` (llamado `2R`) para `T`. `T` es un *direct target* hacia una clausura que contiene el ambiente `2R`.
-*   Finalmente, se define otro `let` (ambiente `3`) para `F`. `F` es un *direct target* hacia una clausura que contiene a `X` y referencia el ambiente `2R`.
-
-**3. Evaluación de la Expresión Principal `T(F(K), K)`:**
-
-La evaluación procede de izquierda a derecha. Primero, se evalúa `F(K)`.
-
-**3.1. Evaluación de `F(K)`:**
-
-*   La función `F` (que extiende del ambiente `2R`) recibe `X` como un *indirect target* hacia `K`. Esto es crucial: cualquier modificación a `X` dentro de `F` afectará directamente a la variable `K` original.
-*   `F` ejecuta una suma que involucra dos procedimientos internos: `a` y `b`.
-
-    *   **Procedimiento `a`:**
-        *   Recibe `X` como un *indirect target* hacia `K`.
-        *   `a` suma 1 a `X`. Dado que `X` es un *indirect target* a `K` (cuyo valor inicial es 3), `K` se actualiza de 3 a 4. Ahora, `K` es un *direct target* hacia 4.
-        *   `a` devuelve el valor actual de `K`, que es 4.
-
-    *   **Procedimiento `b`:**
-        *   Recibe `Y` como un *indirect target* hacia `K`.
-        *   `b` suma 3 a `Y`. `K` (cuyo valor actual es 4) se actualiza a 7. Ahora, `K` es un *direct target* hacia 7.
-        *   `b` devuelve el resultado de 7 + 2, que es 9.
-
-*   El resultado final de `F(K)` es la suma de los resultados de `a` y `b`: 4 + 9 = 13.
-*   En este punto, el valor de `K` es 7.
-
-**3.2. Evaluación de `T(13, K)`:**
-
-Ahora se llama al procedimiento `T` con el valor de `F(K)` (13) y el valor actual de `K` (7).
-
-*   `T` es un procedimiento recursivo que se ejecuta mientras su primer argumento `X` sea mayor que 0.
-    *   `X` se pasa como un *direct target* con el valor 13.
-    *   `Y` se pasa como un *indirect target* hacia `K`. Esto significa que `Y` siempre referenciará el valor más actualizado de `K`.
-*   En cada llamada recursiva, `X` se decrementa en 1, y se suma el valor actual de `Y` (el valor de `K` en ese momento) al resultado acumulado.
-*   La recursión de `T` se realizará 13 veces (desde X=13 hasta X=1). Durante estas 13 llamadas, el valor de `Y` (que es `K`) permanece en 7.
-*   Cuando `X` finalmente llega a 0, se realiza una llamada final a `B(Y)` (donde `Y` es el *indirect target* hacia `K`).
-
-    *   **Llamada a `B(Y)` (con `Y` como indirect target a `K`):**
-        *   `B` recibe `Y` (el *indirect target* a `K`).
-        *   `B` suma 3 a `Y`. `K` (que valía 7) se actualiza a 10. Ahora, `K` es un *direct target* hacia 10.
-        *   `B` devuelve el resultado de 10 + 2, que es 12.
-
-**4. Cálculo del Resultado Final:**
-
-*   Las 13 llamadas recursivas de `T` suman el valor de `Y` (que es 7) 13 veces: 7 * 13 = 91.
-*   A este valor se le suma el resultado de la llamada final a `B(Y)`: 91 + 12 = 103.
-
-El resultado final de 103 coincide con el valor esperado. Al verificar los valores finales de las variables, se observa que `M` no fue modificado, mientras que `K` (que inició en 3) finaliza con un valor de 10.
-
-**Conclusión Clave:**
-
-Cuando se utilizan pasos de procedimientos que comparten un *indirect target*, se pasa el target interno de la variable. Esto permite observar directamente el efecto de los cambios realizados sobre las variables originales a lo largo de la ejecución de diferentes procedimientos.
-
----
+####
+El principio fundamental ilustrado es el manejo de `indirect targets` en el paso por referencia. Cuando una variable es pasada como argumento a un procedimiento, se crea un `indirect target` que apunta a la variable original. Cualquier modificación realizada a través de este `indirect target` afecta directamente al valor de la variable original. Si un procedimiento recibe un `indirect target` y lo pasa a otro procedimiento, lo que se transmite es el `target` interno, manteniendo siempre la conexión con la variable original. Esto permite que los efectos de las modificaciones sean visibles a través de múltiples llamadas a procedimientos anidados o secuenciales.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=jWgdJYlW6KA

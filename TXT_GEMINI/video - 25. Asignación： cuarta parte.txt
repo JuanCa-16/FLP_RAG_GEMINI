@@ -1,63 +1,24 @@
-Aquí tienes la transcripción limpia y formateada:
+Para trabajar con referencias y estado mutable, se modifica la función de consulta del ambiente, `apply-env`. Se introducen dos versiones: `apply-env-ref` y `apply-env`. La función `apply-env-ref` es la responsable de buscar una variable en el ambiente y devolver una referencia a su ubicación, no su valor. Por otro lado, la función `apply-env` se redefine como un simple contenedor que invoca a `apply-env-ref` y luego desreferencia el resultado para obtener el valor actual de la variable. Este diseño asegura que cada consulta construya una referencia fresca, permitiendo que los cambios de estado sean visibles durante toda la ejecución.
 
----
+####
 
-### Implementación de Referencias y Asignación
+La implementación de `apply-env-ref` se adapta para manejar un vector de valores en lugar de una lista. La función busca una variable de forma recursiva a través de los ambientes anidados. Cuando se busca en un ambiente extendido, que ahora contiene un vector de valores, la recursión no se realiza mediante `cdr`, sino incrementando un índice de posición que recorre el vector. Cuando la variable es encontrada en la posición actual, la función no devuelve el valor, sino que construye y retorna una estructura de datos de referencia (`a-ref`), que encapsula tanto el vector como la posición específica donde se encuentra el valor. Si la variable no se encuentra en el ambiente actual, la búsqueda continúa recursivamente en el ambiente anterior.
 
-En esta sesión, realizaremos modificaciones a las funciones `applyM` y `applyM-ref` para incorporar el manejo de referencias, lo cual es fundamental para la asignación de valores en nuestro interpretador.
+####
 
-#### Modificación de `applyM` y `applyM-ref`
+La expresión `begin` se implementa para permitir la evaluación secuencial de una lista de expresiones. Su lógica de evaluación se gestiona de forma recursiva. Si la lista de expresiones a evaluar contiene un único elemento (es decir, el `cdr` de la lista es nulo), simplemente se evalúa esa expresión y se devuelve su resultado. Si la lista contiene múltiples expresiones, se evalúa la primera expresión (el `car` de la lista) y luego se realiza una llamada recursiva para evaluar el resto de las expresiones (el `cdr` de la lista). El valor de retorno de toda la construcción `begin` es el valor de la última expresión evaluada en la secuencia.
 
-1.  **Concepto de Referencias:**
-    *   Las referencias permiten que los cambios de estado (asignaciones) sean visibles y gestionados durante la ejecución del programa.
-    *   A diferencia de un valor directo, una referencia se construye cada vez que es consultada, asegurando que siempre apunte al estado más reciente.
+####
 
-2.  **Definición de `applyM-ref`:**
-    *   La función `applyM-ref` se encargará de retornar una *referencia* a una variable dentro del ambiente.
-    *   Su comportamiento para ambientes vacíos o extendidos será similar a la búsqueda de variables previa, pero con un cambio crucial.
+La expresión de asignación `set!` permite modificar el valor de una variable ya existente. Su implementación utiliza la primitiva `set-ref!`. Primero, se invoca a `apply-env-ref` con el identificador de la variable y el ambiente actual para obtener una referencia a la ubicación de la variable. A continuación, se evalúa la expresión del lado derecho de la asignación para obtener el nuevo valor. Finalmente, `set-ref!` utiliza la referencia y el nuevo valor para actualizar la ubicación de memoria correspondiente. Por convención, tras una asignación exitosa, la expresión `set!` devuelve un valor simbólico, como el número 1, para indicar que la operación se completó.
 
-3.  **Definición de `applyM`:**
-    *   La función original `applyM` ahora se redefinirá para ser un "deref" (desreferenciación) de lo que retorna `applyM-ref`.
-    *   Es decir, `(applyM ambiente variable)` ejecutará `(deref (applyM-ref ambiente variable))`.
+####
 
-4.  **Detalles de Implementación de `applyM-ref`:**
-    *   **Retorno:** Cuando `applyM-ref` encuentra la variable, debe construir y devolver una referencia (`a-ref`). Esta referencia se compone del vector que contiene el valor y la posición de la variable dentro de ese vector.
-    *   **Estructura del Ambiente:** La estructura interna del ambiente cambia de una lista (`eleval`) a un `vector` para facilitar el acceso posicional y la mutabilidad.
-    *   **Recorrido del Ambiente:** En lugar de usar `CDR` para la recursión en ambientes extendidos, se introduce un parámetro `posición`. Esta `posición` se inicializa en `0` y se incrementa en cada llamada recursiva para localizar la variable en el vector.
+Las asignaciones realizadas con `set!` tienen un efecto persistente dentro del ámbito léxico donde la variable fue definida. Esto significa que si una variable es modificada, el cambio se refleja en todas las consultas posteriores a esa variable dentro del mismo ciclo de ejecución del intérprete. Por ejemplo, si se define una función que accede a una variable externa y luego se usa `set!` para cambiar el valor de esa variable, las futuras invocaciones de la función verán el nuevo valor, demostrando que el cambio de estado es permanente y respeta las reglas del alcance léxico.
 
-#### Inclusión de Asignación (`set`) y Bloques Secuenciales (`begin`)
+####
 
-Una vez modificadas las funciones de ambiente, se procede a implementar las expresiones `set` y `begin`.
-
-1.  **`set` (Asignación):**
-    *   La expresión `set` permite asignar un nuevo valor a una variable existente.
-    *   Su implementación utiliza `set-ref`, una función que recibe una referencia y un valor.
-    *   El proceso es el siguiente:
-        *   Obtener la referencia de la variable (`id`) utilizando `applyM-ref` en el ambiente actual.
-        *   Evaluar la expresión de valor (`expr`) en el ambiente actual.
-        *   Aplicar `set-ref` con la referencia obtenida y el valor evaluado.
-        *   Convencionalmente, retorna `1` para indicar éxito.
-    *   La sintaxis esperada es `(set-expression identificador expresión)`.
-
-2.  **`begin` (Bloque Secuencial):**
-    *   La expresión `begin` permite ejecutar una secuencia de expresiones, devolviendo el valor de la última expresión.
-    *   Su implementación utiliza una función recursiva auxiliar, `evaluar-begin`, que procesa una lista de expresiones.
-    *   **`evaluar-begin` lógica:**
-        *   **Caso Base:** Si la lista de expresiones tiene un solo elemento (el `CDR` es nulo), se evalúa esa única expresión y se devuelve su resultado.
-        *   **Caso Recursivo:** Se evalúa la primera expresión de la lista. Luego, se realiza una llamada recursiva a `evaluar-begin` con el resto de la lista (el `CDR`).
-
-#### Pruebas y Verificación
-
-Se realizaron diversas pruebas para verificar la correcta implementación de las nuevas características:
-
-*   **`let` y `let-fun`:** Comprobación del funcionamiento de la creación de variables y funciones.
-*   **`begin` y `set`:**
-    *   Se demostró que `set` modifica el valor de una variable de forma permanente dentro del contexto de ejecución actual del interpretador. Por ejemplo, `(begin (set x 10) x)` devuelve `10`.
-    *   Se evidenció la mutabilidad al reasignar una variable global `x` dentro de una función definida con `let-fun`, confirmando que la función accede al valor actualizado.
-*   **`let-rec`:** Verificación del funcionamiento de funciones recursivas como el factorial.
-*   **Reasignación de Funciones:** Se demostró la capacidad de `set` para reasignar incluso una función a un valor numérico, mostrando la flexibilidad y potencia del sistema de referencias. Por ejemplo, una función `f` definida con `let-rec` puede ser reasignada a un número `6` con `(set f 6)`, y operaciones posteriores sobre `f` usarán este nuevo valor numérico.
-
-A partir de este punto, el interpretador cuenta con la capacidad de asignación, lo que permite manejar estados mutables y es un paso crucial en la construcción de un lenguaje más expresivo.
+En este lenguaje interpretado, los procedimientos son valores de primera clase, lo que implica que una variable que está ligada a un procedimiento puede ser reasignada a un valor de un tipo diferente, como un número. Utilizando `set!`, es posible modificar la referencia de una variable, que inicialmente apuntaba a una función (por ejemplo, un factorial definido con `letrec`), para que apunte a un valor numérico. Esto demuestra que las ataduras de nombres a procedimientos no son inmutables y pueden ser alteradas dinámicamente durante la ejecución, permitiendo cambiar el comportamiento del programa de forma radical.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=-qYggrtY6bQ

@@ -1,20 +1,32 @@
-Aquí tienes la transcripción limpia y formateada:
+Para implementar las operaciones matemáticas, se trabajará sobre la variante `prim-expression`, que recibe una primitiva y una lista de expresiones. El desafío principal consiste en que la lista de expresiones llega en formato de sintaxis abstracta y debe ser transformada en una lista de números para poder operar sobre ella. Este proceso se dividirá en dos partes: primero, evaluar cada expresión de la lista y, segundo, aplicar la operación primitiva correspondiente a la lista de valores resultante.
 
----
+####
 
-Hemos implementado la expresión de variable (`var expression`) y la expresión literal (`literal expression`). La expresión literal es un número; si es un número, se evalúa como tal. Ahora implementaremos las operaciones matemáticas. Para ello, trabajaremos con `prim expression`, que recibe una primitiva y una lista de expresiones.
+El primer paso dentro de la implementación de `prim-expression` es convertir la lista de expresiones de sintaxis abstracta en una lista de valores numéricos. Para ello, se utiliza la función `map`, que aplica una función dada a cada elemento de una lista. En este caso, se aplicará la función `eval-expression` a cada elemento de la lista de expresiones de entrada. El resultado de esta operación será una lista de números, que se almacenará en una variable local utilizando una construcción `let`. Una vez obtenida esta lista de valores, se pasará, junto con la primitiva original, a una función auxiliar encargada de ejecutar la operación matemática.
 
-La lista de expresiones llega en sintaxis abstracta y debe transformarse en números. Para esto, utilizaremos la función `map` para aplicar `eval-expression` a cada elemento de la lista. Posteriormente, construiremos una función separada para desglosar las primitivas y realizar las operaciones de forma recursiva. Usando `let` para definir `lista-de-expresiones` y `lista-de-valores`, aplicaremos `map` a la lista de expresiones, transformando cada elemento `x` mediante `eval-expression x ambiente`. Esto convertirá la lista de expresiones en una lista de números.
+####
 
-Luego, se define la función `evaluar-primitiva`, que recibirá la primitiva y la lista de valores (ya convertida a números). Es crucial recordar que `eval-expression` siempre devuelve un valor expresado (un número). La función `evaluar-primitiva` se implementa como un `lambda` que toma la primitiva y los valores. Dentro de ella, se manejan los diferentes casos (`cases`) según el tipo de primitiva: `sum-prim`, `minus-prim`, `multiplication`, `division`, `increment`, y `decrement`.
+Se define una función auxiliar, `evaluar-primitiva`, que recibe como argumentos una primitiva y una lista de valores ya evaluados (números). Esta función utiliza una estructura `case` para desglosar el tipo de primitiva y ejecutar la lógica correspondiente a cada operación. La función `evaluar-primitiva` es el núcleo que gestiona las distintas operaciones aritméticas definidas en el lenguaje.
 
-Para `increment` y `decrement`, solo se considera el primer número de la lista de valores. `increment` suma 1 a este número (`car lista-de-valores + 1`), y `decrement` le resta 1 (`car lista-de-valores - 1`).
+####
 
-Para la suma, multiplicación, resta y división, se definirá una función recursiva auxiliar `define-operacion-primitiva`. Esta función recibe una lista de valores, la operación a aplicar y un valor de terminación. El valor de terminación es 0 para la suma/resta (elemento neutro) y 1 para la multiplicación/división. Si la lista de valores es nula, devuelve el valor de terminación. En caso contrario, aplica la operación entre el `car` de la lista y el resultado de la llamada recursiva con el `cdr` de la lista, la misma operación y el valor de terminación. Luego, se aplicaría esta `operacion-primitiva` con la función de suma, resta, multiplicación y división respectivamente, aprovechando las funciones como ciudadanos de primera clase.
+Las operaciones de incremento (`inc1-prim`) y decremento (`sub1-prim`) se manejan de forma directa. Por diseño, estas operaciones solo consideran el primer número de la lista de valores proporcionada, ignorando cualquier argumento adicional. La implementación consiste en tomar el primer elemento de la lista de valores (`car`) y sumarle o restarle uno, según corresponda. Si se deseara un comportamiento más estricto que valide la cantidad de argumentos, sería necesario modificar la gramática del lenguaje.
 
-Una vez corregidos los errores de sintaxis y la omisión del valor de terminación en la función `define-operacion-primitiva` (0 para suma/resta, 1 para multiplicación/división), se pueden probar las operaciones. Por ejemplo: `(division 1 2 3)` -> `3/2`, `(plus 1 2 3 4 5)` -> `15/8`, `(plus 1 2 3)` -> `6`, `(minus 1 2 3)` -> `2` (interpretado como 1 - 2 - 3, si es asociativo a izquierda), `(increment 5)` -> `6`. El incremento solo considera el primer argumento. Finalmente, se demuestra un ejemplo combinado como `(plus (minus 1 2) (times 2 3))`, resultando en 5 (1-2 = -1, 2*3 = 6, -1+6 = 5). Con esto se ha completado la primera parte del intérprete.
+####
 
-Las próximas clases cubrirán la adición de condicionales, ligaduras locales (requiriendo un entendimiento de ambientes), procedimientos y, finalmente, procedimientos recursivos.
+Para las operaciones que admiten un número variable de argumentos, como la suma, resta, multiplicación y división, se crea una función recursiva genérica llamada `operacion-primitivas`. Esta función recibe tres argumentos: la lista de valores numéricos, la operación a aplicar (una función como `+` o `*`) y un valor de terminación. La recursión se basa en aplicar la operación entre el primer elemento de la lista (`car`) y el resultado del llamado recursivo sobre el resto de la lista (`cdr`).
+
+####
+
+El "valor de terminación" en la función recursiva `operacion-primitivas` es un concepto crucial que corresponde al elemento neutro de la operación. Cuando la lista de valores se vacía, la recursión termina y devuelve este valor. Para la suma y la resta, el elemento neutro es 0, ya que sumar o restar cero no altera el resultado. Para la multiplicación y la división, el elemento neutro es 1, porque multiplicar o dividir por uno tampoco afecta al resultado. Este parámetro asegura la correcta computación de la operación sobre la secuencia de valores.
+
+####
+
+La implementación final dentro de `evaluar-primitiva` invoca a la función genérica `operacion-primitivas` para cada operación aritmética. Para la suma (`sum-prim`), se pasa la operación `+` y el valor de terminación 0. Para la resta (`minus-prim`), se pasa la operación `-` y el valor 0. Para la multiplicación (`mult-prim`), se pasa `*` y el valor 1. Finalmente, para la división (`div-prim`), se pasa `/` y el valor 1. Este diseño aprovecha el concepto de funciones como ciudadanos de primera clase, permitiendo pasar las operaciones como argumentos. Con esta estructura, el intérprete puede manejar expresiones anidadas, como `(+ (- 1 2) (* 2 3))`.
+
+####
+
+Una vez implementadas las operaciones primitivas, la evolución del intérprete seguirá una secuencia de adición de nuevas características. Los próximos pasos en el curso incluyen: la incorporación de estructuras condicionales, seguida de la introducción de ligaduras locales (`let`), lo que requerirá la gestión de ambientes para asociar variables a valores. Posteriormente, se implementarán procedimientos (funciones definidas por el usuario) y, finalmente, se añadirá la capacidad de definir procedimientos recursivos.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=rY7EvYy-4B0

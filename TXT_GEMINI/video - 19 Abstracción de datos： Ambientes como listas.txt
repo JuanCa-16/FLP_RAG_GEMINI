@@ -1,124 +1,47 @@
-Aquí tienes la transcripción limpia y formateada:
+Para representar ambientes computacionales se utilizan listas como estructura de datos subyacente. La manipulación de este tipo de dato se gestiona a través de tres categorías de funciones:
+1.  **Constructoras**: Permiten crear instancias del tipo de dato.
+2.  **Observadoras**: Permiten extraer información de una instancia del tipo de dato. Se subdividen en:
+    *   **Predicados**: Verifican si un dato pertenece a una variante específica del tipo. Responden verdadero o falso.
+    *   **Extractores**: Acceden a los componentes internos de una instancia del tipo de dato.
 
----
+####
+Las funciones constructoras para el tipo de dato "ambiente" son `empty-env` y `extend-env`.
+*   `empty-env`: Crea un ambiente vacío, representado por una lista que contiene únicamente el símbolo `'empty-env` como una etiqueta de tipo.
+*   `extend-env`: Recibe un identificador (símbolo), un valor y un ambiente existente. Devuelve un nuevo ambiente que extiende el anterior con el nuevo par identificador-valor. Su representación es una lista con la etiqueta `'extend-env`, seguida del identificador, el valor y el ambiente anidado.
 
-A continuación, se detalla la representación de ambientes utilizando listas, incluyendo funciones constructoras, observadoras y una función de búsqueda.
+Ejemplo de construcción de un ambiente anidado:
+`(define an-env
+  (extend-env 'x 3
+    (extend-env 'y 4
+      (extend-env 'j 9
+        (extend-env 'x 4
+          (extend-env 'w 9
+            (empty-env)))))))`
 
-### Representación de Ambientes con Listas
+####
+Las funciones predicado permiten identificar el tipo de ambiente.
+*   `empty-env?`: Recibe un ambiente y devuelve verdadero si es un ambiente vacío. Esto se comprueba verificando si el primer elemento de la lista (`car`) es el símbolo `'empty-env`.
+*   `extend-env?`: Recibe un ambiente y devuelve verdadero si es un ambiente extendido. Se verifica si el primer elemento de la lista (`car`) es el símbolo `'extend-env`.
 
-Se definirán los siguientes elementos:
+Estas funciones son fundamentales en la lógica condicional para procesar los ambientes, permitiendo diferenciar entre el caso base (ambiente vacío) y el caso recursivo (ambiente extendido).
 
-1.  **Funciones constructoras:** Permiten construir el tipo de dato ambiente.
-2.  **Funciones observadoras:** Permiten extraer información de un tipo de dato. Se subdividen en:
-    *   **Predicados:** Determinan si un elemento es de un tipo de dato específico (ej. ambiente vacío, ambiente extendido).
-    *   **Extractores:** Obtienen componentes específicos de un tipo de dato (ej. identificador, valor, ambiente previo).
+####
+Las funciones extractoras se definen para los ambientes extendidos (`extend-env`) y permiten acceder a sus componentes individuales: el identificador, el valor y el ambiente anidado.
+*   `extend-env-id`: Extrae el identificador de la variable, que corresponde al segundo elemento de la lista (`cadr`).
+*   `extend-env-val`: Extrae el valor asociado al identificador, que corresponde al tercer elemento de la lista (`caddr`).
+*   `extend-env-env`: Extrae el ambiente anidado sobre el cual se realizó la extensión, que corresponde al cuarto elemento de la lista (`cadddr`).
 
-#### 1. Funciones Constructoras
+No se definen extractores para el ambiente vacío (`empty-env`), ya que no contiene información que extraer.
 
-*   **`en_TN` (Ambiente Vacío):** Retorna una lista que contiene el símbolo `'en_TN'`. Este símbolo sirve como identificador para un ambiente vacío.
-    ```scheme
-    (define (en_TN)
-      (list 'en_TN))
-    ```
-*   **`en` (Ambiente Extendido):** Recibe un identificador (`id`), un valor (`val`) y un ambiente previo (`ambiente_previo`). Retorna una lista que contiene el símbolo `'en'`, el identificador, el valor y el ambiente previo. Se utiliza `list` explícitamente para evitar que los elementos se transformen automáticamente en símbolos.
-    ```scheme
-    (define (en id val ambiente_previo)
-      (list 'en id val ambiente_previo))
-    ```
+####
+La función `apply-env` busca el valor asociado a un símbolo (variable) dentro de un ambiente. Su lógica es recursiva y se basa en los predicados y extractores definidos.
+1.  **Caso Base**: Si el ambiente es vacío (`empty-env?` es verdadero), el símbolo no se encuentra y la función reporta un error.
+2.  **Caso Recursivo**: Si el ambiente es extendido (`extend-env?` es verdadero), la función compara el símbolo buscado con el identificador de la capa actual del ambiente (`extend-env-id`).
+    *   Si coinciden, devuelve el valor correspondiente (`extend-env-val`).
+    *   Si no coinciden, realiza una llamada recursiva a `apply-env` sobre el ambiente anidado (`extend-env-env`), continuando la búsqueda en la siguiente capa.
 
-#### 2. Ejemplo de Construcción de un Ambiente
-
-Utilizando las funciones constructoras, se puede crear un ambiente anidado:
-
-```scheme
-(define a
-  (en 'x 3
-    (en 'y 4
-      (en 'j 9
-        (en 'x 4
-          (en 'w 9
-            (en_TN)))))))
-```
-Este ambiente se representa como una lista anidada.
-
-#### 3. Predicados (Observadores)
-
-Permiten verificar si un ambiente es vacío o extendido.
-
-*   **`es_en_TN?`:** Determina si un ambiente dado es un ambiente vacío.
-    ```scheme
-    (define (es_en_TN? n)
-      (equal? (car n) 'en_TN))
-    ```
-*   **`es_en?`:** Determina si un ambiente dado es un ambiente extendido.
-    ```scheme
-    (define (es_en? n)
-      (equal? (car n) 'en))
-    ```
-
-**Ejemplo de uso:**
-*   `(es_en_TN? (en_TN))` retorna `#t`.
-*   `(es_en? (en 'a 1 (en_TN)))` retorna `#t`.
-
-#### 4. Extractores (Observadores)
-
-Estos extractores operan sobre ambientes extendidos para obtener sus componentes. Un ambiente vacío (`en_TN`) no contiene componentes extraíbles.
-
-*   **`en_id`:** Extrae el identificador de un ambiente extendido.
-    ```scheme
-    (define (en_id n)
-      (cadr n))
-    ```
-*   **`en_valor`:** Extrae el valor de un ambiente extendido.
-    ```scheme
-    (define (en_valor n)
-      (caddr n))
-    ```
-*   **`en_ambiente`:** Extrae el ambiente previo (el ambiente que se extiende) de un ambiente extendido.
-    ```scheme
-    (define (en_ambiente n)
-      (cadddr n))
-    ```
-
-**Ejemplo de uso con el ambiente `a` definido previamente:**
-*   `(en_valor a)` debería retornar `3`.
-*   `(en_id a)` debería retornar `'x'`.
-
-Esto demuestra cómo manipular el tipo de dato abstracto ambiente, aunque internamente esté representado como una lista.
-
-### Función `aplicar_ambiente`
-
-Esta función busca el valor asociado a un símbolo en un ambiente dado.
-
-```scheme
-(define (aplicar_ambiente ambiente simbolo_buscado)
-  (cond
-    ((es_en_TN? ambiente)
-     (error (string-append
-              "Error: El símbolo '"
-              (symbol->string simbolo_buscado)
-              "' no se encuentra en el ambiente.")))
-    ((es_en? ambiente)
-     (if (equal? (en_id ambiente) simbolo_buscado)
-         (en_valor ambiente)
-         (aplicar_ambiente (en_ambiente ambiente) simbolo_buscado)))
-    (else
-     (error "Tipo de ambiente desconocido."))))
-```
-
-#### Ejemplos de uso de `aplicar_ambiente`:
-
-```scheme
-(aplicar_ambiente a 'y)   ; Retorna 4
-(aplicar_ambiente a 'w)   ; Retorna 9
-(aplicar_ambiente a 'x)   ; Retorna 3 (el 'x' más externo es el primero que se encuentra)
-(aplicar_ambiente a 'z)   ; Lanza un error: "Error: El símbolo 'z' no se encuentra en el ambiente."
-```
-La función busca el identificador de forma recursiva, retornando el valor de la primera ocurrencia encontrada (la más cercana al principio de la cadena de ambientes). Esto simula el *shadowing* de variables, donde una definición más reciente de una variable oculta una definición anterior en un ámbito más externo.
-
-### Principios de Diseño
-
-La función `aplicar_ambiente` está diseñada para utilizar los predicados (`es_en_TN?`, `es_en?`) para identificar el tipo de ambiente y los extractores (`en_id`, `en_valor`, `en_ambiente`) para acceder a sus componentes. Esta abstracción permite que la lógica de búsqueda sea independiente de la implementación interna del tipo de dato ambiente, facilitando la reutilización y la posibilidad de cambiar la representación subyacente del ambiente sin afectar la lógica de la función `aplicar_ambiente`.
+####
+El comportamiento de la función `apply-env` demuestra el concepto de **variable shadowing** (ocultamiento de variables). En un ambiente con múltiples asignaciones para el mismo identificador, como en el ejemplo donde `x` se define primero con valor 3 y luego con valor 4, `apply-env` siempre encontrará la primera ocurrencia desde el inicio de la búsqueda (la más interna). Al buscar `x` en el ambiente de ejemplo, la función devolverá `3`, ya que esta es la primera vinculación que encuentra. La vinculación posterior de `x` a `4` queda "oculta" o "ensombrecida" por la más reciente.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=hsHRvKwYGU8

@@ -1,31 +1,24 @@
-Aquí tienes la transcripción limpia y formateada:
+Un procedimiento recursivo es aquel que se llama a sí mismo para resolver un problema. Un ejemplo clásico es la serie de Fibonacci, donde para evaluar un valor F(n) se requiere conocer los dos valores anteriores, F(n-1) y F(n-2). Otro ejemplo es la regla recursiva del factorial, donde el factorial de N se define como N multiplicado por el factorial de N-1. En ambos casos, para que una función pueda invocarse a sí misma, su identificador debe estar reconocido dentro del ambiente de ejecución en el que se realiza la llamada.
 
----
+####
 
-Los procedimientos recursivos se caracterizan por llamarse a sí mismos. Como ejemplo, en la serie Fibonacci, para evaluar F(N) (N >= 1), se requieren los dos valores anteriores (ej. F(8) = F(7) + F(6)). Esto implica que la función F debe "conocerse a sí misma", es decir, cada invocación de F requiere que F esté reconocida en el ambiente. Este es un problema actual.
+La implementación de procedimientos mediante clausuras y ambientes extendidos estándar no soporta la recursividad de forma nativa. Al evaluar una llamada recursiva, como `fact(x-1)` dentro del cuerpo del procedimiento `fact`, el intérprete busca el identificador `fact` en el ambiente actual. Dado que el ambiente de ejecución de la función no contiene su propia definición, la búsqueda continúa en los ambientes padres hasta llegar al ambiente vacío. Si la definición no se encuentra, el sistema arroja un error por variable no encontrada. Esto ocurre porque la clausura captura el ambiente en el momento de su definición, el cual no incluye una referencia al procedimiento que se está definiendo.
 
-Consideremos un procedimiento que calcula el factorial de forma recursiva, cuya regla es N! = N * (N-1)!.
+####
 
-Al evaluar la función factorial recursiva en un ambiente vacío, se crea un ambiente M0 que contiene la ligadura `fact`. Esta ligadura es una clausura que captura la variable `X` (la entrada) y el ambiente vacío en el momento de su declaración.
+Para habilitar la definición de procedimientos recursivos, se introduce una nueva expresión en el lenguaje denominada `letrec`. A diferencia de la construcción `let`, que se utiliza para definiciones no recursivas, `letrec` está diseñada específicamente para permitir que los procedimientos se llamen a sí mismos. Su uso en este lenguaje está restringido exclusivamente a la declaración de uno o más procedimientos, no de variables simples.
 
-Al evaluar una llamada a `fact` con `X=6`, se crea un nuevo ambiente. Si `X > 0`, la expresión a evaluar es `X * fact(X-1)`. Cuando se busca `fact` dentro de la llamada recursiva, el mecanismo de búsqueda actual (comenzando en el ambiente actual y subiendo por la cadena de ambientes) no encuentra `fact` porque no está definida en el ambiente local ni en el ambiente capturado por la clausura original.
+####
 
-Esto produce un error, ya que la variable `fact` no puede ser encontrada. La implementación actual de clausuras no permite que un procedimiento recursivo se conozca a sí mismo dentro de su propio cuerpo.
+La sintaxis de la expresión `letrec` se estructura para definir simultáneamente uno o varios procedimientos recursivos. La gramática es `letrec <nombres> (<args>) = <cuerpos> in <expr_final>`. Los componentes son:
+1.  **Nombres**: Una lista de identificadores para los procedimientos que se van a definir (ej: `fact`, `double`).
+2.  **Args**: Una lista de listas de identificadores, donde cada sublista corresponde a los parámetros de un procedimiento. Por ejemplo, si se definen `f(x, y)` y `g(a, b)`, este componente sería `((x, y), (a, b))`.
+3.  **Cuerpos**: Una lista de expresiones que constituyen la implementación de cada procedimiento.
+4.  **Expr_final**: La expresión principal donde estos procedimientos recién definidos pueden ser invocados. Dentro de esta expresión, los procedimientos se conocen a sí mismos y entre sí.
 
-Para resolver este problema, se introduce una nueva expresión llamada `letrec`. A diferencia de `let` (usado para definiciones no recursivas), `letrec` está exclusivamente diseñado para la declaración de procedimientos recursivos.
+####
 
-La estructura gramatical de `letrec` es:
-`letrec identificador (identificador*, ...) = expresión in expresión`
-
-Donde:
-*   El primer `identificador` o lista de ellos, son los nombres de los procedimientos recursivos a definir (ej. `fact`, `double`).
-*   `identificador*` (entre paréntesis y separados por comas): Representan los parámetros (argumentos) de cada procedimiento. Si hay múltiples procedimientos, esto se organiza como una lista de listas de parámetros (ej. `F(X,Y), G(A,B)` resultaría en una lista de listas `[[X,Y], [A,B]]`).
-*   `expresión` (después del `=`) : Es el cuerpo de cada procedimiento.
-*   `in expresión`: Es el cuerpo principal donde se aplican estos procedimientos recursivos. A partir de este punto, los procedimientos definidos en `letrec` se conocen a sí mismos y entre sí.
-
-La implementación actual de la función de evaluación de expresiones no contempla este nuevo caso (`letrec expression`), lo que generará un error hasta que se agregue el manejo correspondiente.
-
-Aunque se ha extendido la gramática con `letrec`, las clausuras existentes no son adecuadas para generar procedimientos recursivos. Por lo tanto, se introducirá un nuevo tipo de ambiente, el `ambiente extendido recursivo`, para manejar estas definiciones.
+Las estructuras existentes, como las clausuras y los ambientes extendidos, no son suficientes para implementar correctamente la semántica de `letrec`. Para resolver esto, se debe crear un nuevo tipo de ambiente: el ambiente extendido recursivo. Este tipo de ambiente está diseñado específicamente para manejar las definiciones de `letrec`, garantizando que los procedimientos declarados dentro de él puedan referenciarse a sí mismos durante su ejecución.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=ojG64qQkdZo

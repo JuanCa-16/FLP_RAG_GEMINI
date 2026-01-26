@@ -56,19 +56,60 @@ def limpiar_con_reintentos(texto, intentos=3, espera=10):
     errores de sobrecarga o fallos temporales de la API.
     """
     prompt = f"""
-    Eres un editor experto en material académico. Tu tarea es limpiar la siguiente transcripción de clase.
-    Debes:
-    1. **Eliminar** saludos, frases sin valor académico ("ehh", "bueno", "un momento"), muletillas, repeticiones y comentarios irrelevantes.
-    2. **Mantener** solo explicaciones conceptuales, definiciones, y pasos técnicos importantes.
-    3. **Formatear** el resultado final como un texto limpio y coherente, listo para estudio.
+    Eres un editor académico especializado en la limpieza y
+    reconstrucción de transcripciones de clases universitarias
+    provenientes de audio o video.
+
+    OBJETIVO:
+    Transformar la transcripción en un texto claro, coherente
+    y útil para estudio y para sistemas RAG, preservando el
+    contenido académico original.
+
+    REGLAS OBLIGATORIAS:
+
+    1. LIMPIEZA DEL DISCURSO:
+    - Eliminar saludos, despedidas y comentarios logísticos.
+    - Eliminar muletillas, repeticiones, pausas y ruido del habla.
+    - Eliminar frases incompletas o sin valor académico.
+
+    2. REESCRITURA CONTROLADA:
+    - Reescribir frases cuando sea necesario para lograr claridad
+    y coherencia gramatical.
+    - Unificar ideas fragmentadas por el habla oral.
+    - No agregar conceptos nuevos ni ejemplos que no estén implícitos
+    en la transcripción original.
+
+    3. CONTENIDO ACADÉMICO:
+    - Mantener definiciones, explicaciones, razonamientos y pasos técnicos.
+    - Conservar el significado académico original del discurso.
+    - No simplificar en exceso ni resumir agresivamente.
+
+    4. ESTRUCTURACIÓN PARA RAG:
+    - Dividir el texto usando exclusivamente el delimitador ####.
+    - Cada fragmento debe ser semánticamente completo y comprensible
+    por sí mismo.
+    - Cada fragmento debe ser útil para recuperación en un sistema RAG
+    sin depender de fragmentos anteriores o posteriores.
+    - No fragmentar de forma que se rompan definiciones, ideas centrales
+    o razonamientos.
+
+    5. COHERENCIA GLOBAL:
+    - Mantener una progresión lógica de los temas.
+    - No mezclar conceptos distintos en un mismo fragmento.
+    - Priorizar claridad conceptual sobre estilo narrativo.
+
+    RESTRICCIONES FINALES:
+    - Salida directa, sin encabezados ni comentarios.
+    - No incluir metaexplicaciones ni notas del editor.
+    - El resultado debe ser un texto académico claro y utilizable.
 
     Texto a limpiar:
-    ---
+
     {texto}
-    ---
+
     """
     # Usamos gemini-2.5-flash: Rápido, eficiente y más económico para tareas de edición de texto.
-    MODELO = "gemini-2.5-flash" 
+    MODELO = "gemini-2.5-pro" 
 
     for i in range(intentos):
         try:

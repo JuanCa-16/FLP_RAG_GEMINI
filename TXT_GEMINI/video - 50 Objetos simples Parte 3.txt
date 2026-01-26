@@ -1,88 +1,28 @@
-Aquí tienes la transcripción limpia y formateada:
+El procedimiento `find-method` se encarga de localizar un método y devolver su representación. Para aplicar o ejecutar un método, su cuerpo debe ser evaluado dentro de un ambiente de ejecución específico. Este ambiente debe contener las ligaduras para `self` (la instancia del objeto), los parámetros formales del método y todos los campos que son visibles desde el ámbito del método, de acuerdo con las reglas de herencia y encapsulamiento.
 
----
+####
+Al ejecutar una llamada a un método, como `o3.m1(7, 8)`, donde el método `m1` está definido en la clase `c2` (que hereda de `c1`), el ambiente de ejecución debe proporcionar una vista completa del objeto. Este ambiente incluirá ligaduras para `self` (la instancia del objeto), `super` (para acceder a la superclase), los parámetros formales del método (`u` y `v` en este caso), los campos definidos en la clase `c2` (como `y`) y los campos heredados de la clase `c1` (como `x` e `y`), cada uno con sus valores correspondientes.
 
-A continuación, se presenta una explicación sobre la implementación de métodos en un entorno de objetos, la construcción de ambientes y la evaluación de ejemplos.
+####
+Para construir el ambiente que representa la vista completa de un objeto, se utiliza un procedimiento recursivo denominado `build-env`. Este procedimiento recibe las "partes" de una clase y, si no encuentra el método en la parte actual, invoca recursivamente con las partes de la clase padre. El resultado es un ambiente extendido que se construye iterativamente a lo largo de la jerarquía de herencia (por ejemplo, para `c2` y luego para `c1`), mapeando todos los campos visibles a sus valores actuales en la instancia del objeto.
 
-### **Método `find-method` y Aplicación**
+####
+El procedimiento `apply-method` gestiona la ejecución de un método. Recibe como entrada el nombre del método, la instancia del objeto (`self`) y los argumentos de la llamada. Utiliza funciones auxiliares para extraer de la declaración del método su lista de parámetros formales (IDs) y su cuerpo. La operación central consiste en evaluar el cuerpo del método dentro de un nuevo ambiente extendido, el cual se crea a partir del ambiente base del objeto y se amplía con las ligaduras para `super`, `self` y los parámetros formales asociados a los argumentos proporcionados.
 
-El método `find-method` busca un método específico y devuelve su representación.
+####
+La construcción del ambiente de ejecución se puede ilustrar con la llamada `m(7, 8)` en un objeto cuya clase `c2` define el método `m`. El ambiente se estructura de la siguiente manera: primero, se crean ligaduras para `super` (referencia a la clase padre de `c2`), `self` (la instancia del objeto), y los parámetros `u` y `v` con los valores 7 y 8. Luego, este ambiente se extiende con los campos del objeto, comenzando por los de la clase `c2` y continuando hacia arriba en la jerarquía con los de su clase padre, `c1`. El cuerpo del método se evalúa en este ambiente final y completo.
 
-Para aplicar un método (`apply-method`), se ejecuta el cuerpo del método en un ambiente. Este ambiente debe ligar:
-*   El valor apropiado de `self` (la ligadora `self`).
-*   Los parámetros formales del método.
-*   El resto del ambiente, que proviene de la ligadora para cada campo, definiendo la visibilidad del método.
+####
+La implementación de este sistema de objetos se apoya en funciones auxiliares para procesar declaraciones de clases y métodos. Estas funciones son principalmente extractores de datos, implementados con expresiones `case` para desestructurar la información, y no son conceptualmente complejas. La implementación concreta de `apply-method` utiliza procedimientos preexistentes como `eval-expression` y `extended-env` para construir el contexto de ejecución, adaptándolos para manejar la representación del objeto.
 
-**Ejemplo de Vista de Objeto:**
-Al ejecutar `o3.m1(7,8)`, donde `m1` pertenece a la clase `c2`, la vista del objeto incluye:
-*   `super`
-*   `self`
-*   `u` y `v` (parámetros del método)
-*   `y` (parámetro de `c2`)
-*   `x` e `y` (parámetros de `c1`)
-Este ambiente representa una vista integral del objeto con sus respectivos valores.
+####
+Un primer ejemplo para probar el sistema es una clase simple `c1` con campos `x` e `y`, inicializados a 1 y 2. La clase define dos métodos: `m1`, que retorna el valor de `x`, y `m2`, que retorna el valor de `y`. Al crear una instancia `o1` y ejecutar `(list (o1 m1) (o1 m2))`, el resultado esperado y correcto es la lista `(1 2)`, confirmando el acceso básico a los campos.
 
-### **Construcción de la Vista del Objeto y el Ambiente**
+####
+Un segundo ejemplo demuestra la herencia y el despacho dinámico. Se define una clase base `c1` con un campo `x` igual a 1 y un método `m2` que invoca `(self m1)`. Una clase `c2` hereda de `c1`, redefine el campo `x` con el valor 9 y define su propio método `m1`. Al llamar a `(o2 m2)` sobre una instancia de `c2`, se ejecuta el método `m2` de `c1`. Sin embargo, la llamada `(self m1)` dentro de `m2` se resuelve dinámicamente: como `self` se refiere a la instancia `o2` de la clase `c2`, se invoca el método `m1` de `c2`, devolviendo el valor de su campo `x`, que es 9.
 
-Para construir la vista del objeto, se utiliza el procedimiento `build-object-view`. Este procedimiento recibe las partes de la clase.
-*   Si la clase actual contiene el método buscado (ej., `m1`), construye la vista.
-*   De lo contrario, realiza una llamada recursiva con el resto de la jerarquía de herencia (ej., si `m1` no está en `c3`, lo busca en `c2` y devuelve la vista de `c2`).
-
-A partir de la vista del objeto, se genera un ambiente. Cada elemento de este ambiente liga los campos de una parte de la clase utilizando un vector pre-construido. El procedimiento `build-full-environment` recibe las partes de la clase y construye este ambiente.
-*   Si las partes están vacías, se devuelve un ambiente vacío.
-*   De lo contrario, se construye un ambiente extendido que contiene los IDs de los campos y sus valores.
-*   Funciones auxiliares como `get-ids` y `get-values` se encargan de extraer esta información.
-*   `build-full-environment` construye este ambiente para cada parte de la jerarquía de herencia (ej., `c3`, `c2`, `c1`), creando un ambiente extendido para las clases relevantes como `c2` y `c1` en nuestro ejemplo.
-
-### **Definición de `apply-method`**
-
-El método `apply-method` se define para recibir:
-*   El nombre del método (`method-name`).
-*   `self` (la instancia del objeto).
-*   Los argumentos.
-
-Los IDs de los parámetros y el cuerpo del método se extraen de su declaración utilizando funciones auxiliares (`get-method-ids`, `get-method-body`). El cuerpo del método se evalúa en un ambiente extendido que contiene:
-*   `super`
-*   `self`
-*   Los IDs correspondientes a los argumentos del procedimiento (ej., `x`, `y`, `u`, `v`).
-Este ambiente extendido representa el objeto y su contexto de ejecución.
-
-**Ejecución Detallada de un Método:**
-Al ejecutar `m(7,8)` (donde `m` toma `u` y `v` como parámetros y está en `c2`):
-1.  El `super` de `c2` se refiere al objeto mismo (`self`), representado por la lista de partes.
-2.  Los argumentos `u=7` y `v=8` se ligan.
-3.  El ambiente se extiende con los campos de las clases `c2` y `c1`. Por ejemplo, de `c2` se obtienen `y` (con valor 22) y de `c1` se obtienen `x` (con valor 11) e `y` (con valor 12).
-Este es el ambiente sobre el cual se evaluará el cuerpo del método, representando fielmente la estructura y estado del objeto.
-
-### **Consideraciones de Implementación**
-
-La implementación de objetos ha concluido. Métodos como `class-method-declaration` o `class-declaration` son funciones auxiliares de bajo nivel (constructores de `cases`) que manejan la estructura de las declaraciones y no requieren mayor detalle conceptual. Se han realizado correcciones menores en la implementación, como un error en `evaluate-expression` relacionado con un `lambda`. En `apply-method`, se utilizan los nombres `basic-environment` y `extended-environment`, donde el `extended-environment` se construye transformando una lista de ambientes en un vector.
-
-### **Ejemplos Prácticos**
-
-A continuación, se presentarán ejemplos para ilustrar el funcionamiento:
-
-**Primer ejemplo:**
-*   **Clase `C`:**
-    *   Campos: `x` (inicializado a 1), `y` (inicializado a 2).
-    *   Métodos: `m1` (retorna `x`), `m2` (retorna `y`).
-*   **Evaluación:** Al crear una instancia `o1` de `C` y evaluar `(list (o1.m1) (o1.m2))`, se espera obtener `(1 2)`.
-
-**Segundo ejemplo (con herencia):**
-*   **Clase `C1`:**
-    *   Campo: `x1` (inicializado a 2).
-    *   Métodos: `m1` (retorna `x1`), `m2` (retorna `self.m1`).
-*   **Clase `C2`:** Hereda de `C1` y redefine `m1` (retorna 9).
-*   **Evaluación:** Al instanciar `o2` de `C2` y evaluar `o2.m2()`:
-    *   Se busca `m2` en `C2` (no está).
-    *   Se encuentra `m2` en `C1`.
-    *   `m2` llama a `self.m1()`.
-    *   Debido al despacho dinámico, `self.m1()` invocará el `m1` de `C2` (el objeto actual `o2`), que retorna 9, no el `m1` de `C1`.
-
-**Tercer ejemplo:**
-El ejemplo previamente revisado, cuya ejecución resulta en `(2 -3)` y `(5 -5)`.
-
-La siguiente etapa es evaluar estos ejemplos detallando cómo operan los ambientes, lo que permitirá avanzar a la segunda implementación de objetos planos.
+####
+Un tercer ejemplo, ya analizado previamente, involucra el uso de `super` y la anulación de métodos (method overriding). La ejecución de este caso de prueba confirma que el sistema maneja correctamente la interacción entre métodos heredados y redefinidos, produciendo los resultados esperados, como `(3 -3)` y `(5 -5)`. El siguiente paso es analizar en detalle cómo se construyen y operan los ambientes en estos ejemplos prácticos.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=nJ5ANKnZpfU

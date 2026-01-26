@@ -1,1424 +1,603 @@
-Nuestro lenguaje será extendido para incorporar creación y aplicación de procedimientos.
-El lenguaje consistirá de las expresiones especificadas anteriormente y de expresiones para creación de procedimientos proc( ... ) ... y de aplicación de procedimientos (... ...) .
-Para este lenguaje se extiende el conjunto de valores expresados y denotados de la siguiente manera:
-Valor Expresado
-=
-Numero + Booleano + ProcVal
-Valor Denotado
-=
-Numero + Booleano + ProcVal.
+Nuestro lenguaje será extendido para incorporar creación y aplicación de procedimientos. El lenguaje consistirá de las expresiones especificadas anteriormente y de expresiones para creación de procedimientos `proc(...) ...` y de aplicación de procedimientos `(... ...)`. Para este lenguaje se extiende el conjunto de valores expresados y denotados de la siguiente manera:
 
+*   **Valor Expresado**: Número + Booleano + ProcVal
+*   **Valor Denotado**: Número + Booleano + ProcVal
+
+####
 Se añaden las siguientes producciones a la gramática:
-⟨ expresion ⟩
-::=
-proc ( {⟨ identificador ⟩} ∗ ( , ) ) ⟨ expresion ⟩
-proc-exp (ids body)
-::=
-( ⟨ expresion ⟩{⟨ expresion ⟩} ∗ )
-app-exp (rator rands).
 
-Se deben añadir las siguientes producciones a la especificación de la gramática:
-( e x p r e s s i o n
-( "proc" "("
-( s e p a r a t e d = l i s t
-i d e n t i f i e r
-"," )
-")"
-e x p r e s s i o n )
-proc = exp )
-( e x p r e s s i o n
-(
-"("
-e x p r e s s i o n
-( arbno
-e x p r e s s i o n )
-")" )
-app = exp ).
+`<expresión> ::= proc ( {<identificador>}*[,] ) <expresión>`
+Representado como: `proc-exp (ids body)`
 
-#####
+`<expresión> ::= ( <expresión> {<expresión>}* )`
+Representado como: `app-exp (rator rands)`
 
-De esta manera se puedan crear programas como:
-let
-f = proc
-( y ,
-z ) +(y ,
-= (z ,
-5) )
-in
-( f
-2 28)
-let
-f = proc
-( z )
-* ( z
-2)
-g = proc
-( x y ) +(x y )
-in
-( g
-( f
-3)
-( f
-4) ).
+####
+Se deben añadir las siguientes producciones a la especificación de la gramática del intérprete:
+```racket
+(expression
+ ("proc" "(" (separated-list identifier ",") ")" expression)
+ proc-exp)
 
-#####
+(expression
+ ("(" expression (arbno expression) ")")
+ app-exp)
+```
+Esta especificación define la sintaxis para las expresiones de procedimiento (`proc-exp`) y las aplicaciones de procedimientos (`app-exp`) dentro del lenguaje.
 
-El valor de una expresión correspondiente a la creación de un procedimiento ( proc (ids) body ) es la representación interna del tipo de dato procedimiento.
-Para determinar el valor de una expresión de aplicación de un procedimiento ( (proc-exp exp1 exp2 ... expn) ) se debe evaluar la expresión proc-exp (correspondiente al procedimiento a aplicar) y las expresiones exp1 exp2 ... expn (correspondientes a los argumentos).
+####
+De esta manera se pueden crear programas como:
+```racket
+let f = proc (y, z) (+ y z)
+in let g = proc (z) (* z 2)
+   in let h = proc (x, y) (+ x y)
+      in ...
+```
+El valor de una expresión correspondiente a la creación de un procedimiento, `(proc (ids) body)`, es la representación interna del tipo de dato procedimiento.
 
-Posteriormente, debe crearse un nuevo ambiente que extiende el ambiente empaquetado en el procedimiento con la ligadura de los parámetros formales del procedimiento a los argumentos de la aplicación (valores de las expresiones exp1 exp2 ... expn ).
-Finalmente, se evalúa el cuerpo del procedimiento en el nuevo ambiente extendido.
+Para determinar el valor de una expresión de aplicación de un procedimiento, `(rator rand1 rand2 ... randN)`, se debe evaluar la expresión `rator` (correspondiente al procedimiento a aplicar) y las expresiones `rand1`, `rand2`, ..., `randN` (correspondientes a los argumentos).
 
-#####
+####
+Posteriormente, debe crearse un nuevo ambiente que extiende el ambiente empaquetado en el procedimiento con la ligadura de los parámetros formales del procedimiento a los argumentos de la aplicación (los valores de las expresiones `rand1`, `rand2`, ..., `randN`). Finalmente, se evalúa el cuerpo del procedimiento en el nuevo ambiente extendido.
 
+####
 Se tiene el siguiente programa:
+```racket
 let x = 5
-in let
-f = proc
-( y ,
-z ) +(y ,
-= (z ,
-x ) )
-x = 28
-in
-( f
-2 x )
-Cuando se llama a f , su cuerpo debe ser evaluado en un ambiente que liga y a 2, z a 28 y x a 5.
-x es ligado a 5 ya que el alcance de la declaración interna no incluye la declaración del procedimiento.
-Las variables que ocurren libres en el procedimiento se evalúan en el ambiente que envuelve al procedimiento.
-El valor de la expresión (f 2 x) es 25.
+in let f = proc (y, z) (+ y (- z x))
+   in let x = 28
+      in (f 2 x)
+```
+Cuando se llama a `f`, su cuerpo debe ser evaluado en un ambiente que liga `y` a 2, `z` a 28 y `x` a 5. La variable `x` es ligada a 5 ya que el alcance de la declaración interna (`let x = 28`) no incluye la declaración del procedimiento `f`. Las variables que ocurren libres en el procedimiento se evalúan en el ambiente que envuelve al procedimiento (alcance léxico). El valor de la expresión `(f 2 x)` es 25.
 
-El valor de las expresiones que contemplan procedimientos depende en gran medida del ambiente en el cual son evaluadas.
-Por esta razón, un procedimiento debe empaquetar los parámetros formales de la función, la expresión correspondiente al cuerpo de la función y el ambiente en el que es creado el procedimiento.
-Este paquete es denominado clausura ( closure ) y corresponde al conjunto de valores ProcVal .
+####
+El valor de las expresiones que contemplan procedimientos depende en gran medida del ambiente en el cual son evaluadas. Por esta razón, un procedimiento debe empaquetar los parámetros formales de la función, la expresión correspondiente al cuerpo de la función y el ambiente en el que es creado el procedimiento. Este paquete es denominado clausura (*closure*) y corresponde al conjunto de valores `ProcVal`.
 
-#####
+####
+La interfaz del tipo de dato `closure` consiste de un procedimiento constructor y del procedimiento observador `apply-procedure`, que determina cómo aplicar un valor de tipo procedimiento. La definición de este tipo de dato es la siguiente:
+<CODIGO_BLOCK>
+```racket
+(define-datatype procval procval?
+  (closure
+   (ids (list-of symbol?))
+   (body expression?)
+   (env environment?)))
+```
+Esta estructura de datos `closure` encapsula el código de un procedimiento (`body`), sus parámetros (`ids`) y su ambiente de definición (`env`), permitiendo el alcance léxico.
+</CODIGO_BLOCK>
 
-La interfase del tipo de dato closure consiste de un procedimiento constructor y del procedimiento observador apply-procedure que determina como aplicar un valor de tipo procedimiento.
-La definición de este tipo de dato es la siguiente:
-( define-datatype
-p r o c v a l
-p r o c v a l ?
-( c l o s u r e
-( i d s
-( l i s t = o f
-symbol ?) )
-( body
-e x p r e s s i o n ?)
-( env
-environment ?) ) ).
+####
+La definición del procedimiento `apply-procedure` es la siguiente:
+<CODIGO_BLOCK>
+```racket
+(define apply-procedure
+  (lambda (proc args)
+    (cases procval proc
+      (closure (ids body env)
+        (eval-expression body (extend-env ids args env))))))
+```
+`apply-procedure` toma una clausura (`proc`) y una lista de argumentos evaluados (`args`). Extiende el ambiente capturado en la clausura con las nuevas ligaduras de parámetros a argumentos y luego evalúa el cuerpo del procedimiento en este nuevo ambiente extendido.
+</CODIGO_BLOCK>
 
-La definición del procedimiento apply-procedure es la siguiente:
-( define
-apply = procedure
-( lambda
-( proc
-args )
-( cases
-p r o c v a l
-proc
-( c l o s u r e
-( i d s
-body
-env )
-( e v a l = e x p r e s s i o n
-body
-( extend = env
-i d s
-args
-env ) ) ) ) ) ).
+####
+El comportamiento de las expresiones de creación y aplicación de procedimientos se obtiene agregando las siguientes cláusulas en el procedimiento `eval-expression`:
+<CODIGO_BLOCK>
+```racket
+(proc-exp (ids body)
+  (closure ids body env))
 
-El comportamiento de las expresiones de creación y aplicación de procedimientos, se obtiene agregando las siguientes cláusulas en el procedimiento eval-expression:
-( proc = exp
-( i d s
-body )
-( c l o s u r e
-i d s
-body
-env ) )
-( app = exp
-( r a t o r
-rands )
-( let
-(( proc
-( e v a l = e x p r e s s i o n
-r a t o r
-env ) )
-( args
-( eval = rands
-rands
-env ) ) )
-( if
-( p r o c v a l ?
-proc )
-( apply = procedure
-proc
-args )
-( eopl : error
-’ e v a l = e x p r e s s i o n
-"Attempt
-to apply
-non-procedure ~s"
-proc ) ) ) ).
+(app-exp (rator rands)
+  (let ((proc (eval-expression rator env))
+        (args (eval-rands rands env)))
+    (if (procval? proc)
+        (apply-procedure proc args)
+        (eopl:error 'eval-expression
+          "Attempt to apply non-procedure ~s"
+          proc))))
+```
+La cláusula para `proc-exp` crea una clausura, capturando el ambiente actual. La cláusula para `app-exp` evalúa el operador y los operandos, y si el operador es un procedimiento (`procval?`), lo aplica a los argumentos.
+</CODIGO_BLOCK>
 
-#####
+####
+Sea el ambiente `env0` con símbolos `(x y z)` y valores `(4 2 5)` el ambiente inicial de computación. Se quiere evaluar la expresión:
+```racket
+let f = proc (x) (* x x)
+in (f z)
+```
+La expresión anterior corresponde a un `let` con la declaración de una variable `f` que es ligada a un procedimiento y con la aplicación de ese procedimiento como cuerpo del `let`.
 
-Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el ambiente inicial de computación.
-Se quiere evaluar la expresión:
-let
-f = proc ( x )
-* ( x , x )
-in
-( f
-z ).
+####
+Dada la semántica de las expresiones `let`, se debe evaluar inicialmente la expresión `proc(x) (* x x)`. La evaluación de esta expresión de creación de procedimiento da como resultado la creación de la clausura `(closure '(x) '(* x x) env0)`. Posteriormente, se crea un nuevo ambiente `env1` que extiende el ambiente `env0` con la variable `f` y el valor de dicha clausura.
 
-La expresión anterior corresponde a un let con la declaración de una variable f que es ligada a un procedimiento y con la aplicación de ese procedimiento como cuerpo del let .
-La expresión anterior corresponde a un let con la declaración de una variable f que es ligada a un procedimiento y con la aplicación de ese procedimiento como cuerpo del let .
-La expresión anterior corresponde a un let con la declaración de una variable f que es ligada a un procedimiento y con la aplicación de ese procedimiento como cuerpo del let .
-Dada la semántica de las expresiones let se debe evaluar inicialmente la expresión proc(x) *(x x) .
+####
+Luego, debe evaluarse el cuerpo del `let`, la expresión `(f z)`, en el ambiente `env1`. Como esta expresión corresponde a una aplicación de procedimiento, se debe evaluar la subexpresión `f` para determinar cuál procedimiento se debe ejecutar y la subexpresión `z` para saber con cuáles argumentos. Al evaluar estas subexpresiones en el ambiente `env1`, se obtienen los valores `(closure '(x) '(* x x) env0)` y `5`.
 
-La expresión de creación de procedimiento proc(x) *(x x) es evaluada y el resultado es la creación de la clausura
-closure(’(x) *(x x) env 0 ) .
-La expresión de creación de procedimiento proc(x) *(x x) es evaluada y el resultado es la creación de la clausura
-closure(’(x) *(x x) env 0 ) .
-Posteriormente se crea un nuevo ambiente env 1 que extiende el ambiente env 0 con la variable f y el valor closure(’(x) *(x x) env 0 ) .
+####
+Dada la semántica de la aplicación de procedimientos, se debe evaluar el cuerpo del procedimiento, que corresponde a la expresión `(* x x)`, en un ambiente nuevo que extiende el ambiente interno del procedimiento (`env0`) con la variable `x` y el valor `5`. Finalmente, el valor de esta expresión y de la expresión original es `25`.
 
-Luego, debe evaluarse el cuerpo del let (la expresión (f z) ) en el ambiente env 1 .
-Luego, debe evaluarse el cuerpo del let (la expresión (f z) ) en el ambiente env 1 .
-Como esta expresión corresponde a una expresión de aplicación de procedimiento, se debe evaluar la subexpresión f para determinar cual procedimiento se debe ejecutar y la subexpresión z para saber con cuales argumentos.
-Como esta expresión corresponde a una expresión de aplicación de procedimiento, se debe evaluar la subexpresión f para determinar cual procedimiento se debe ejecutar y la subexpresión z para saber con cuales argumentos.
-Al evaluar estas subexpresiones en el ambiente env 1 se obtienen los valores closure(’(x) *(x x) env 0 ) y 5.
+####
+<IMG_BLOCK>
+Diagrama de ambientes mostrando `env0` extendido para crear `env_proc`, que es el ambiente capturado por una clausura para el procedimiento `f`.
+</IMG_BLOCK>
 
-Dada la semántica de la aplicación de procedimientos, se debe evaluar el cuerpo del procedimiento que corresponde a la expresión *(x x) en un ambiente nuevo que extiende el ambiente interno del procedimiento ( env 0 ) con la variable x y el valor de 5.
-Dada la semántica de la aplicación de procedimientos, se debe evaluar el cuerpo del procedimiento que corresponde a la expresión *(x x) en un ambiente nuevo que extiende el ambiente interno del procedimiento ( env 0 ) con la variable x y el valor de 5.
-Finalmente, el valor de esta expresión y de la expresión original es 25.
+####
+Sea el ambiente `env0` con símbolos `(x y z f)` y valores `(4 2 5 (closure '(y) (* y (sub1 y)) (empty-env)))` el ambiente inicial de computación. Evaluar la siguiente expresión anidada:
+```racket
+let g = proc (x) (+ y (f x))
+in let m = 6
+   in let g = proc (x, y) (* x (g y))
+      in let h = proc () (g m)
+         in let q = 7
+            in (- ((h) q))
+```
 
-Los ambientes creados en la evaluación de la expresión anterior se pueden visualizar así:.
+####
+Dada la semántica de las expresiones `let`, se debe evaluar inicialmente la parte derecha de las primeras declaraciones, que corresponden a las expresiones `proc(x) (+ y (f x))` y `6`. La expresión de creación de procedimiento es evaluada y el resultado es la creación de la clausura `(closure '(x) '(+ y (f x)) env0)`.
 
-<IMG_BLOCK_START>
-n< x
-nt envo = dlosure('(9 *(xx) envo) ‘env_proc
-//DESCRIPCION IMAGEN: Fórmulas matemáticas
-<IMG_BLOCK_END>
+####
+Posteriormente se crea un nuevo ambiente `env1` que extiende el ambiente `env0` con las variables `g` y `m` y los valores `(closure '(x) '(+ y (f x)) env0)` y `6` respectivamente. Luego debe evaluarse el cuerpo del `let` anidado en el ambiente `env1`.
 
-#####
+####
+Nuevamente, se evalúan las expresiones de la parte derecha de las declaraciones del siguiente `let`, pero esta vez en el ambiente `env1`. La expresión `proc(x, y) (* x (g y))` es evaluada y el resultado es la creación de la clausura `(closure '(x y) '(* x (g y)) env1)`.
 
-Sea el ambiente env 0 con símbolos ( x y z f ) y valores (4 2 5 (closure’(y) *(y, sub1(y)) empty-env) ) el ambiente inicial de computación. Evaluar:
-let
-g = proc ( x ) +(y ,
-( f
-x ) )
-m = 6
-in
-let
-g = proc ( x y )
-* ( x ,
-( g y ) )
-h = proc ()
-( g m)
-q = 7
-in
-= ((h ) , q ).
+####
+Luego se crea un nuevo ambiente `env2` que extiende el ambiente `env1` con las variables `g`, `h` y `q` y los valores `(closure '(x y) '(* x (g y)) env1)`, `(closure '() '(g m) env1)` y `7` respectivamente. Posteriormente debe evaluarse la expresión `(- ((h) q))` en el ambiente `env2`. Esta expresión corresponde a una aplicación de primitiva, por esta razón se deben evaluar los argumentos en el ambiente actual (`env2`).
 
-Dada la semántica de las expresiones let se debe evaluar inicialmente la parte derecha de las declaraciones que corresponden a las expresiones proc(x) +(y, (f x)) y 6.
-Dada la semántica de las expresiones let se debe evaluar inicialmente la parte derecha de las declaraciones que corresponden a las expresiones proc(x) +(y, (f x)) y 6.
-La expresión de creación de procedimiento proc(x) +(y, f(x)) es evaluada y el resultado es la creación de la clausura (closure ’(x) +(y, (f x)) env 0 ) .
+####
+El valor de la expresión `q` en el ambiente `env2` es `7`. La expresión `(h)` corresponde a una aplicación de procedimiento, en este caso sin argumentos. Se debe evaluar la subexpresión `h` para determinar cuál procedimiento se debe ejecutar. Al evaluar esta subexpresión en el ambiente `env2` se obtiene el valor `(closure '() '(g m) env1)`.
 
-Posteriormente se crea un nuevo ambiente env 1 que extiende el ambiente env 0 con las variables g y m y los valores (closure ’(x) +(y, (f x)) env 0 ) y 6 respectivamente.
-Posteriormente se crea un nuevo ambiente env 1 que extiende el ambiente env 0 con las variables g y m y los valores (closure ’(x) +(y, (f x)) env 0 ) y 6 respectivamente.
-Luego debe evaluarse la expresión
-let
-g = proc ( x y )
-* ( x ,
-( g y ) )
-h = proc ()
-( g m)
-q = 7
-in
-= ((h ) q )
-en el ambiente env 1 .
+####
+Dada la semántica de la aplicación de procedimientos, se debe evaluar el cuerpo del procedimiento `h`, que corresponde a la expresión `(g m)`, en un ambiente nuevo `env_proc_h` que extiende el ambiente interno del procedimiento (`env1`) sin añadir ninguna variable. Para evaluar la expresión `(g m)`, se deben evaluar las subexpresiones `g` y `m` en el ambiente `env_proc_h`. Los valores de estas expresiones son `(closure '(x) '(+ y (f x)) env0)` y `6`.
 
-Nuevamente se evalúan las expresiones de la parte derecha de las declaraciones del let , pero esta vez en el ambiente env 1 .
-Nuevamente se evalúan las expresiones de la parte derecha de las declaraciones del let , pero esta vez en el ambiente env 1 .
-La expresión de creación de procedimiento proc(x) *(x, (g y)) es evaluada y el resultado es la creación de la clausura (closure ’(x) *(x, (g y)) env 1 ) .
+####
+Nuevamente, debido a la semántica de la aplicación de procedimientos, se debe evaluar la expresión `(+ y (f x))` en un ambiente nuevo `env_proc_g` que extiende el ambiente `env0` con la variable `x` y el valor `6`. La expresión `(+ y (f x))` corresponde a una aplicación de una primitiva, por lo que se deben evaluar cada uno de sus argumentos en el ambiente `env_proc_g`. El valor de la expresión `y` en este ambiente es `2`.
 
-Luego se crea un nuevo ambiente env 2 que extiende el ambiente env 1 con las variables g , h y q y los valores (closure ’(x) *(x, g(y)) env 1 ) , (closure ’() (g m) env 1 ) y 7 respectivamente.
-Posteriormente debe evaluarse la expresión -((h) q) en el ambiente env 2 .
-Luego se crea un nuevo ambiente env 2 que extiende el ambiente env 1 con las variables g , h y q y los valores (closure ’(x) *(x, g(y)) env 1 ) , (closure ’() (g m) env 1 ) y 7 respectivamente.
-Posteriormente debe evaluarse la expresión -((h) q) en el ambiente env 2 .
-Esta expresión corresponde a una expresión de aplicación de primitiva, por esta razón se deben evaluar los argumentos en el ambiente actual ( env 2 ).
+####
+Para evaluar la expresión `(f x)`, se deben evaluar las subexpresiones `f` y `x` en el ambiente `env_proc_g`. Los valores de estas expresiones son `(closure '(y) '(* y (sub1 y)) (empty-env))` y `6`. Posteriormente, se debe evaluar la expresión `(* y (sub1 y))` en un ambiente nuevo `env_proc_f` que extiende el ambiente `empty-env` con la variable `y` y el valor `6`. El valor de esta expresión y de la expresión `(f x)` es `30`.
 
-El valor de la expresión q en el ambiente env 2 es 7.
-La expresión (h) corresponde a una expresión de aplicación de procedimiento, en este caso sin argumentos.
-Se debe evaluar la subexpresión h para determinar cual procedimiento se debe ejecutar.
-El valor de la expresión q en el ambiente env 2 es 7.
-La expresión (h) corresponde a una expresión de aplicación de procedimiento, en este caso sin argumentos.
-Se debe evaluar la subexpresión h para determinar cual procedimiento se debe ejecutar.
-El valor de la expresión q en el ambiente env 2 es 7.
-La expresión (h) corresponde a una expresión de aplicación de procedimiento, en este caso sin argumentos.
-Se debe evaluar la subexpresión h para determinar cual procedimiento se debe ejecutar.
-Al evaluar esta subexpresión en el ambiente env 2 se obtiene el valor (closure ’() (g m) env 1 ) .
+####
+Luego, el valor de la expresión `(+ y (f x))` es `32`, dado que `y` vale `2` y `(f x)` vale `30`. Finalmente, dada la evaluación en cadena de las expresiones, el valor de la expresión original `(- ((h) q))` es `(- (32 7))`, que resulta en `25`.
 
-Dada la semántica de la aplicación de procedimientos, se debe evaluar el cuerpo del procedimiento que corresponde a la expresión (g m) en un ambiente nuevo env proc h que extiende el ambiente interno del procedimiento ( env 1 ) sin añadir ninguna variable.
-Dada la semántica de la aplicación de procedimientos, se debe evaluar el cuerpo del procedimiento que corresponde a la expresión (g m) en un ambiente nuevo env proc h que extiende el ambiente interno del procedimiento ( env 1 ) sin añadir ninguna variable.
-Para evaluar la expresión (g m) , se deben evaluar las subexpresiones g y m en el ambiente env proc h .
-Los valores de estas expresiones son los valores (closure ’(x) +(y, (f x)) env 0 ) y 6.
+####
+<IMG_BLOCK>
+Diagrama de ambientes mostrando una cadena de extensiones desde `empty-env` a `env0`, `env1`, `env2` y los ambientes de procedimiento generados para las llamadas a `h`, `g` y `f`.
+</IMG_BLOCK>
 
-Nuevamente, debido a la semántica de la aplicación de procedimientos, se debe evaluar la expresión +(y, (f x)) en un ambiente nuevo env proc g que extiende el ambiente env 0 con la variables x y el valor 6.
-Nuevamente, debido a la semántica de la aplicación de procedimientos, se debe evaluar la expresión +(y, (f x)) en un ambiente nuevo env proc g que extiende el ambiente env 0 con la variables x y el valor 6.
-La expresión +(y, (f x)) corresponde a una expresión de aplicación de una primitiva, por lo que se deben evaluar cada uno de sus argumentos en el ambiente env proc g .
-El valor de la expresión y en este ambiente es 2.
+####
+Para evaluar una expresión, se puede hacer uso de una especificación que utiliza ecuaciones y las reglas definidas para cada tipo de expresión. `<<exp>>` denota el árbol de sintaxis abstracta asociado a la expresión `exp`. Se escribe `[x=a, y=b]env` en lugar de `(extend-env '(x y) '(a b) env)`.
 
-Para evaluar la expresión (f x) , se deben evaluar las subexpresiones f y x en el ambiente env proc g .
-Los valores de estas expresiones son los valores (closure ’(y) *(y, sub1(y)) empty-env) y 6.
-Posteriormente, se debe evaluar la expresión *(y, sub1(y)) en un ambiente nuevo env proc f que extiende el ambiente empty-env con la variable y y el valor 6.
-Luego, el valor de esta expresión y de la expresión (f x) es 30.
+####
+A continuación se muestra la evaluación de la expresión del ejemplo anterior.
+```racket
+(eval-expression
+  <<let g = proc (x) (+ y (f x))
+    in let m = 6
+       in let g = proc (x, y) (* x (g y))
+          in let h = proc () (g m)
+             in let q = 7
+                in (- ((h) q)) >>
+  env0)
+```
 
-Luego el valor de la expresión +(y, (f x)) es 32, dado que y vale 2 y (f x) vale 30.
-Finalmente, dado la evaluación en cadena de las expresiones el valor de la expresión original es 25.
+####
+```racket
+(eval-expression
+  <<let g = proc (x, y) (* x (g y))
+    in let h = proc () (g m)
+       in let q = 7
+          in (- ((h) q)) >>
+  [g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0)
+```
 
-Los ambientes creados en la evaluación de la expresión anterior se pueden visualizar así:.
+####
+```racket
+(eval-expression
+  <<(- ((h) q))>>
+  [g=(closure '(x y) <<(* x (g y))>> [g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0),
+   h=(closure '() <<(g m)>> [g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0),
+   q=7]
+  [g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0)
+```
 
-<IMG_BLOCK_START>
-empty-env env_procf aN x closure(‘(y) *(y, subi(y) empty-env) | AO aa closure(’(x) +(y, (Fx)) envo! 9 losure('(x y) *(% (g y)) envi)
-= dosure('() (gm) envi! 9
-h
-//DESCRIPCION IMAGEN: Fórmulas matemáticas
-<IMG_BLOCK_END>
+####
+```racket
+(-
+  (eval-expression
+    <<(h)>>
+    [... env2 ...])
+  (eval-expression
+    <<q>>
+    [... env2 ...]))
+```
+Donde `[... env2 ...]` es el ambiente extendido con `g`, `h` y `q`.
 
-#####
+####
+```racket
+(apply-procedure
+  (closure '() <<(g m)>> [g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0)
+  '())
+```
 
-Para evaluar una expresión, se puede hacer uso de una especificación que utiliza ecuaciones y las reglas definidas para cada tipo de expresión.
-<< exp >> denota el arbol de sintaxis abstracta a asociado a la expresión exp .
-Se escribe [ x = a , y = b ] env en lugar de (extend-env ’(x y) ’(a b) env)) .
+####
+```racket
+(eval-expression
+  <<(g m)>>
+  [][g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0)
+```
 
-<CODIGO_BLOCK_START>
-Evaluar la expresion del ejemplo anterior.
-<CODIGO_BLOCK_END>
+####
+```racket
+(apply-procedure
+  (closure '(x) <<(+ y (f x))>> env0)
+  (eval-rands '(<<m>>) [][g=(closure '(x) <<(+ y (f x))>> env0), m=6]env0))
+```
 
-( e v a l = e x p r e s s i o n
-<< let
-g = proc ( x ) +(y ,
-( f
-x ) )
-m = 6
-in
-let
-g = proc ( x y )
-* ( x ,
-( g y ) )
-h = proc ()
-( g m)
-q = 7
-in
-= ((h ) , q ) >>
-env0 ).
+####
+```racket
+(apply-procedure
+  (closure '(x) <<(+ y (f x))>> env0)
+  '(6))
+```
 
-=
-( e v a l = e x p r e s s i o n
-<< let
-g = proc ( x y )
-* ( x ,
-( g y ) )
-h = proc ()
-( g m)
-q = 7
-in
-= ((h ) , q ) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m=6] env0 ).
+####
+```racket
+(eval-expression
+  <<(+ y (f x))>>
+  [x=6]env0)
+```
 
-=
-( e v a l = e x p r e s s i o n
-<< let
-g = proc ( x y )
-* ( x ,
-( g y ) )
-h = proc ()
-( g m)
-q = 7
-in
-= ((h ) , q ) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m=6] env0 )
-=
-( e v a l = e x p r e s s i o n
-<< = ((h ) , q ) >>
-[ g=( c l o s u r e
-’ ( x y ) << * ( x ,
-(g , y ) ) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >>
-env0 ) , m=6] env0 ) ,
-h=( c l o s u r e
-’ () << ( g m) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >>
-env0 ) , m=6] env0 ) ,
-q=7]
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m=6]
-env0 ).
-
-=
-(
-( e v a l = e x p r e s s i o n
-<< (h ) >>
-[ g=( c l o s u r e
-’ ( x y ) << * ( x ,
-(g , y ) ) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) ,
-m=6] env0 ) ,
-h=( c l o s u r e
-’ () << ( g m) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) ,
-m=6] env0 ) ,
-q=7]
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m
-=6] env0 )
-( e v a l = e x p r e s s i o n
-<< q >>
-[ g=( c l o s u r e
-’ ( x y ) << * ( x ,
-(g , y ) ) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m
-=6] env0 ) ,
-h=( c l o s u r e
-’ () << ( g m) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m
-=6] env0 ) ,
-q=7]
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m
-6]
-0 ) ).
-
-=
-( =
-( apply = procedure
-( c l o s u r e
-’ () << ( g m) >>
-[ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m=6]
-env0 )
-’ ( ) )
-7).
-
-=
-( =
-( e v a l = e x p r e s s i o n
-<< ( g m) >>
-[ ] [ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m=6]
-env0 )
-7).
-
-=
-( =
-( e v a l = e x p r e s s i o n
-<< ( g m) >>
-[ ] [ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m=6]
-env0 )
-7)
-=
-( =
-( apply = procedure
-( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 )
-( eval = rands
-’( << m >> )
-[ ] [ g=( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 ) , m
-=6] env0 ) )
-7).
-
-=
-( =
-( apply = procedure
-( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 )
-’ (6) )
-7).
-
-=
-( =
-( apply = procedure
-( c l o s u r e
-’ ( x ) << +(y ,
-( f
-x ) ) >> env0 )
-’ (6) )
-7)
-=
-( =
-( e v a l = e x p r e s s i o n
-<< +(y ,
-( f
-x ) ) >>
-[ x=6] env0 )
-7).
-
-=
-( =
+####
+```racket
 (+
-2
-( apply = procedure
-( c l o s u r e
-’ ( y )
-* ( y ,
-sub1 ( y ) )
-empty = env )
-( eval = rands
-’( << x >> )
-[ x=6] env0 )
-7).
+  (eval-expression <<y>> [x=6]env0)
+  (eval-expression <<(f x)>> [x=6]env0))
+```
+El primer término evalúa a `2`. El segundo implica otra aplicación de procedimiento:
+```racket
+(apply-procedure
+  (closure '(y) '(* y (sub1 y)) (empty-env))
+  (eval-rands '(<<x>>) [x=6]env0))
+```
 
-= ( =
-(+
-2
-( apply = procedure
-( c l o s u r e
-’ ( y )
-* ( y ,
-sub1 ( y ) )
-empty = env )
-’ (6) )
-7).
+####
+```racket
+(apply-procedure
+  (closure '(y) '(* y (sub1 y)) (empty-env))
+  '(6))
+```
 
-= ( =
-(+
-2
-( apply = procedure
-( c l o s u r e
-’ ( y )
-* ( y ,
-sub1 ( y ) )
-empty = env )
-’ (6) )
-7)
-= ( =
-(+
-2
-( e v a l = e x p r e s s i o n
-<< * ( y ,
-sub1 ( y ) ) >>
-[ y=6]empty = env )
-7).
+####
+```racket
+(eval-expression
+  <<(* y (sub1 y))>>
+  [y=6](empty-env))
+```
+Esto evalúa a `(* 6 (sub1 6))`, que es `30`.
 
-= ( =
-(+
-2
-( *
-6
-5) )
-7).
-
-= ( =
-(+
-2
-( *
-6
-5) )
-7)
-= ( =
+####
+La evaluación continúa:
+```racket
 (+ 2 30)
-7).
+```
+Resultando en `32`.
 
-= ( =
-(+
-2
-( *
-6
-5) )
-7)
-= ( =
-(+ 2 30)
-7)
-= ( = 32
-7).
+####
+Finalmente, la expresión original se convierte en:
+```racket
+(- 32 7)
+```
+Cuyo resultado es `25`.
 
-= ( =
-(+
-2
-( *
-6
-5) )
-7)
-= ( =
-(+ 2 30)
-7)
-= ( = 32
-7)
-= 25.
+####
+**1. Procedimientos**
+*   Sintaxis de los procedimientos
+*   Semántica de los procedimientos
+*   Ejemplos
 
-#####
+**2. Procedimientos Recursivos**
+*   Introducción
+*   Sintaxis de los procedimientos recursivos
+*   Semántica de los procedimientos recursivos
+*   Ejemplos
 
-1 Procedimientos
-Sintaxis de los procedimientos
-Semantica de los procedimientos
+####
+Los procedimientos que pueden ser definidos en nuestro lenguaje hasta este punto pueden tener invocaciones a otros procedimientos definidos en ambientes superiores a su propio ambiente. No obstante, estos procedimientos no pueden ser recursivos, esto es, no pueden invocarse a sí mismos en su definición.
 
-<CODIGO_BLOCK_START>
-Ejemplos
-2 Procedimientos Recursivos
-Introduccion
-Sintaxis de los procedimientos recursivos
-Semantica de los procedimientos recursivos
-Ejemplos.
-<CODIGO_BLOCK_END>
+####
+Para ilustrar esto, evaluemos la siguiente expresión en el ambiente vacío `empty-env`:
+```racket
+let fact = proc (x)
+  (if (> x 0)
+      (* x (fact (sub1 x)))
+      1)
+in (fact 6)
+```
 
-Los procedimientos que pueden ser definidos en nuestro lenguaje hasta este punto, pueden tener invocaciones a otros procedimientos definidos en ambientes superiores a su propio ambiente.
-No obstante, estos procedimientos no pueden ser recursivos, esto es, no pueden invocarse a si mismos en su definición.
+####
+La traza de la evaluación comienza así:
+```racket
+(eval-expression
+  <<let fact = proc (x) (if (> x 0) (* x (fact (sub1 x))) 1)
+    in (fact 6)>>
+  (empty-env))
+```
 
-Para ilustrar esto, evaluar la siguiente expresión:
-let
-f a c t = proc ( x )
-if > (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) ) )
-else 1
-in
-( f a c t
-6)
-Ejecutándose en el ambiente vacío empty-env .
+####
+```racket
+(eval-expression
+  <<(fact 6)>>
+  [fact=(closure '(x) <<if (> x 0) (* x (fact (sub1 x))) else 1>> (empty-env))]
+  (empty-env))
+```
 
-Tenemos
-( e v a l = e x p r e s s i o n
-<< let
-f a c t = proc ( x )
-if > (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) )
-)
-else 1
-in
-( f a c t
-6) >>
-empty = env ).
+####
+```racket
+(apply-procedure
+  (closure '(x) <<if (> x 0) (* x (fact (sub1 x))) else 1>> (empty-env))
+  '(6))
+```
 
-Tenemos
-( e v a l = e x p r e s s i o n
-<< let
-f a c t = proc ( x )
-if > (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) )
-)
-else 1
-in
-( f a c t
-6) >>
-empty = env )
-= ( e v a l = e x p r e s s i o n
-<< ( f a c t
-6) >>
-[ f a c t =( c l o s u r e
-’ ( x )
-<< if
-> (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x )
-) )
-else 1 >>
-empty = env ) ]
-empty = env ).
+####
+```racket
+(eval-expression
+  <<if (> x 0) (* x (fact (sub1 x))) else 1>>
+  [x=6](empty-env))
+```
 
-= ( apply = procedure
-( c l o s u r e
-’ ( x )
-<< if
-> (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) ) )
-else
-1 >>
-empty = env )
-’ (6) ).
+####
+```racket
+(if (eval-expression <<(> x 0)>> [x=6](empty-env))
+    (eval-expression <<(* x (fact (sub1 x)))>> [x=6](empty-env))
+    (eval-expression <<1>> [x=6](empty-env)))
+```
+La condición `(> 6 0)` es verdadera.
 
-= ( apply = procedure
-( c l o s u r e
-’ ( x )
-<< if
-> (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) ) )
-else
-1 >>
-empty = env )
-’ (6) )
-= ( e v a l = e x p r e s s i o n
-<< if
-> (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) ) )
-else 1 >>
-[ x =6]empty = env ).
+####
+```racket
+(eval-expression
+  <<(* x (fact (sub1 x)))>>
+  [x=6](empty-env))
+```
 
-= ( if
-( e v a l = e x p r e s s i o n
-<< x >>
-[ x =6]empty = env )
-( e v a l = e x p r e s s i o n
-<< * ( x ,
-( f a c t
-sub1 ( x ) ) ) >>
-[ x =6]empty = env )
-( e v a l = e x p r e s s i o n
-<< 1 >>
-[ x =6]empty = env ).
+####
+```racket
+(* (eval-expression <<x>> [x=6](empty-env))
+   (eval-expression <<(fact (sub1 x))>> [x=6](empty-env)))
+```
+El primer argumento evalúa a `6`.
 
-= ( e v a l = e x p r e s s i o n
-<< * ( x ,
-( f a c t
-sub1 ( x ) ) ) >>
-[ x =6]empty = env ).
+####
+Al evaluar `(eval-expression <<(fact (sub1 x))>> [x=6](empty-env))`, la expresión `(fact (sub1 x))` debe ser evaluada en el ambiente extendido `[x=6](empty-env)`. No obstante, en ese ambiente no se encuentra un procedimiento con el nombre `fact`. El nombre `fact` solo existe en el ambiente exterior a la clausura, no en el ambiente en el que se evalúa su cuerpo. Por esta razón, no es posible definir procedimientos que se invoquen a sí mismos, dado que el ambiente en el que se ejecutan no los contiene.
 
-= ( e v a l = e x p r e s s i o n
-<< * ( x ,
-( f a c t
-sub1 ( x ) ) ) >>
-[ x =6]empty = env )
-= *
-(
-( e v a l = e x p r e s s i o n
-<< x >>
-[ x =6]empty = env )
-( e v a l = e x p r e s s i o n
-<< ( f a c t
-sub1 ( x ) ) >>
-[ x =6]empty = env ) ).
+####
+Para añadir recursión a nuestro lenguaje, este será extendido con algunas características. El lenguaje consistirá de las expresiones especificadas anteriormente y de un nuevo tipo de expresión, `letrec`. Esta expresión permitirá la creación de procedimientos recursivos. El tipo de dato ambiente será extendido para contemplar ambientes que faciliten la creación de procedimientos recursivos.
 
-= *
-(
-6
-( e v a l = e x p r e s s i o n
-<< ( f a c t
-sub1 ( x ) ) >>
-[ x =6]empty = env ) ).
-
-= *
-(
-6
-( e v a l = e x p r e s s i o n
-<< ( f a c t
-sub1 ( x ) ) >>
-[ x =6]empty = env ) )
-La expresión (fact sub1(x)) debe ser evaluada en el ambiente extendido con los argumentos del procedimiento.
-La expresión (fact sub1(x)) debe ser evaluada en el ambiente extendido con los argumentos del procedimiento.
-No obstante, en ese ambiente no se encuentra un procedimiento con el nombre fact (el mismo nombre de la función).
-Por esta razón, no es posible definir procedimientos que se invoquen a si mismos dado que el ambiente en el que se ejecutan no los contiene.
-
-#####
-
-Para añadir recursión a nuestro lenguaje, este será extendido con algunas características.
-El lenguaje consistirá de las expresiones especificadas anteriormente y de un nuevo tipo de expresión letrec .
-Esta expresión permitirá la creación de procedimientos recursivos.
-El tipo de dato ambiente será extendido para contemplar ambientes que faciliten la creación de procedimientos recursivos.
-
+####
 Se añadirá la siguiente producción a la gramática:
-⟨ expresion ⟩ ::=
-letrec
-{⟨ identificador ⟩ ( {⟨ identificador ⟩} ∗ ( , ) ) = ⟨ expresion ⟩} ∗
-in ⟨ expresion ⟩
-letrec-exp (proc-names idss bodies letrec-body).
+`<expresión> ::= letrec {<identificador> ( {<identificador>}*[,] ) = <expresión>}* in <expresión>`
+Representado como: `letrec-exp (proc-names idss bodies letrec-body)`
 
-Se deben añadir las siguientes producciones a la especificación de la gramática:
-( e x p r e s s i o n
-( "letrec"
-( arbno
-i d e n t i f i e r
-"("
-( s e p a r a t e d = l i s t
-i d e n t i f i e r
-"," )
-")"
-"="
-e x p r e s s i o n )
-"in"
-e x p r e s s i o n )
-letrec = exp ).
+####
+Se deben añadir las siguientes producciones a la especificación de la gramática del intérprete:
+```racket
+(expression
+ ("letrec" (arbno identifier "(" (separated-list identifier ",") ")" "=" expression) "in" expression)
+ letrec-exp)
+```
+Esta producción define la sintaxis para `letrec`, que permite la declaración de procedimientos mutuamente recursivos.
 
-#####
+####
+De esta manera se pueden crear programas como:
+```racket
+letrec fact(x) = if (> x 0)
+                   (* x (fact (sub1 x)))
+                   else 1
+in (fact 6)
 
-De esta manera se puedan crear programas como:
-l e t r e c
-f a c t ( x ) = if
-> (x , 0 )
-then
-* ( x ,
-( f a c t
-sub1 ( x ) ) )
-else 1
-in
-( f a c t
-6)
-l e t r e c
-double ( x ) = if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else
-0
-in
-( double
-4).
+letrec double(x) = if (> x 0)
+                     (+ (double (sub1 x)) 2)
+                     else 0
+in (double 3)
+```
 
-#####
+####
+Para determinar el valor de una expresión `letrec`, es necesario crear un ambiente que extiende el ambiente original, en el que se almacenen los nombres, parámetros y cuerpos de las declaraciones de procedimientos recursivos en la expresión. Posteriormente, se evalúa el cuerpo de la expresión en ese nuevo ambiente.
 
-Para determinar el valor de una expresión letrec , es necesario crear un ambiente que extiende el ambiente original en el que se almacenen los nombres, parámetros y cuerpos de las declaraciones de procedimientos recursivos en la expresión.
-Posteriormente, se evalúa el cuerpo de la expresión en ese nuevo ambiente.
+####
+El tipo de dato `environment` es modificado para admitir una nueva variante para ambientes recursivos:
+<CODIGO_BLOCK>
+```racket
+(define-datatype environment environment?
+  (empty-env-record)
+  (extended-env-record
+   (syms (list-of symbol?))
+   (vals (list-of scheme-value?))
+   (env environment?))
+  (recursively-extended-env-record
+   (proc-names (list-of symbol?))
+   (idss (list-of (list-of symbol?)))
+   (bodies (list-of expression?))
+   (env environment?)))
+```
+La nueva variante `recursively-extended-env-record` almacena la información necesaria para construir las clausuras recursivas bajo demanda.
+</CODIGO_BLOCK>
 
-El tipo de dato ambiente es modificado para admitir una nueva variante:
-( define-datatype
-environment
-environment ?
-( empty = env = record )
-( extended = env = record
-( syms
-( l i s t = o f
-symbol ?) )
-( v a l s
-( l i s t = o f
-scheme = value ?) )
-( env
-environment ?) )
-( recursively = extended = env = record
-( proc = names
-( l i s t = o f
-symbol ?) )
-( i d s s
-( l i s t = o f
-( l i s t = o f
-symbol ?) ) )
-( b o d i e s
-( l i s t = o f
-e x p r e s s i o n ?) )
-( env
-environment ?) ) ).
+####
+El comportamiento de `(apply-env e' name)` para la nueva variante del tipo ambiente es el siguiente:
+Sea `e' = (extend-env-recursively proc-names idss bodies e)`.
+1.  Si `name` es uno de los nombres en `proc-names`, se debe producir una clausura con los parámetros y cuerpo almacenados en `e'` para ese procedimiento. Así mismo, esta clausura debe contener un ambiente en el cual `name` está ligado a este procedimiento. Este ambiente corresponde a `e'`. De esta manera `(apply-env e' name) = (closure ids body e')`, donde `ids` y `body` corresponden a los parámetros y al cuerpo del procedimiento.
+2.  En caso contrario, `(apply-env e' name) = (apply-env e name)`.
 
-El comportamiento de (apply-env e ′ name) para la nueva variante del tipo ambiente es el siguiente:
-Sea e ′ = (extend-env-recursively proc-names idss bodies e) , entonces
-1 Si name es uno de los nombres en proc-names , se debe producir una clausura con los parámetros y cuerpo almacenados en e ′ para ese procedimiento. Asimismo esta clausura debe contener un ambiente en el cual name esta ligado a este procedimiento. Este ambiente corresponde a e ′ .
+####
+La definición del procedimiento `apply-env` es modificada de la siguiente manera:
+<CODIGO_BLOCK>
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+        (eopl:error 'apply-env "No binding for ~s" sym))
+      (extended-env-record (syms vals old-env)
+        (let ((pos (list-find-position sym syms)))
+          (if (number? pos)
+              (list-ref vals pos)
+              (apply-env old-env sym))))
+      (recursively-extended-env-record (proc-names idss bodies old-env)
+        (let ((pos (list-find-position sym proc-names)))
+          (if (number? pos)
+              (closure (list-ref idss pos) (list-ref bodies pos) env)
+              (apply-env old-env sym)))))))
+```
+La nueva cláusula para ambientes recursivos crea la clausura en el momento de la búsqueda, incluyendo el propio ambiente recursivo (`env`) en la clausura, lo que permite la auto-referencia.
+</CODIGO_BLOCK>
 
-De esta manera (apply-env e ′ name) = (closure ids body e’) donde ids y body corresponden a los parámetros y al cuerpo del procedimiento almacenados en e ′ .
-2 En caso contrario, (apply-env e ′ name) = (apply-env e name) .
+####
+El comportamiento de la expresión de creación de procedimientos recursivos se obtiene agregando la siguiente cláusula en el procedimiento `eval-expression`:
+<CODIGO_BLOCK>
+```racket
+(letrec-exp (proc-names idss bodies letrec-body)
+  (eval-expression letrec-body
+    (extend-env-recursively proc-names idss bodies env)))
+```
+Esta regla extiende el ambiente actual con un nuevo ambiente recursivo que contiene las definiciones de los procedimientos y luego evalúa el cuerpo del `letrec` en este nuevo ambiente.
+</CODIGO_BLOCK>
 
-La definición del procedimiento apply-env es modificada de la siguiente manera:
-( define
-apply = env
-( lambda
-( env sym )
-( cases
-environment
-env
-( empty = env = record
-()
-( eopl : error
-’ empty = env "No
-binding
-for ~s" sym )
-)
-( extended = env = record
-( syms
-v a l s
-old = env )
-( let
-(( pos
-( l i s t = f i n d = p o s i t i o n
-sym syms ) ) )
-( if
-( number ?
-pos )
-( l i s t = r e f
-v a l s
-pos )
-( apply = env
-old = env sym ) ) ) )
-( recursively = extended = env = record
-( proc = names
-i d s s
-b o d i e s
-old = env )
-( let
-(( pos
-( l i s t = f i n d = p o s i t i o n
-sym proc = names ) )
-)
-( if
-( number ?
-pos )
-( c l o s u r e
-( l i s t = r e f
-i d s s
-pos )
-( l i s t
-r e f
-b o d i e s
-pos ).
+####
+Para determinar el valor del ejemplo factorial anterior, se debe crear un nuevo ambiente `env1` (con la variante `recursively-extended-env-record`) que extiende el original con el nombre de procedimiento `fact`, el argumento `x` y el cuerpo `if (> x 0) then (* x (fact (sub1 x))) else 1`.
 
-El comportamiento de la expresión de creación de procedimientos recursivos se obtiene agregando la siguiente cláusula en el procedimiento eval-expression :
-( letrec = exp
-( proc = names
-i d s s
-b o d i e s
-letrec = body )
-( e v a l = e x p r e s s i o n
-letrec = body
-( extend = env = recursively
-proc = names
-i d s s
-b o d i e s
-env ) ) ).
+####
+Posteriormente se debe evaluar la expresión `(fact 6)` en el ambiente `env1`. Para ello se deben evaluar las subexpresiones `fact` y `6`. Dada la semántica de los ambientes como `env1`, al evaluar la expresión `fact` se produce la clausura `(closure '(x) <cuerpo-fact> env1)`.
 
-#####
+####
+Luego, se debe evaluar el cuerpo del procedimiento (la expresión `if (> x 0) ...`) en un nuevo ambiente `env_fact_0` que extiende a `env1` con la variable `x` y el valor `6`. Dado que `x = 6`, se debe evaluar la expresión `(* x (fact (sub1 x)))` en el ambiente `env_fact_0`.
 
-Para determinar el valor de la expresión anterior, se debe crear un nuevo ambiente env 1 (con la variante recursively-extended-env-record ) que extiende el original con el nombre de procedimiento fact , el argumento x y el cuerpo if >(x,0) then *(x, (fact sub1(x))) else 1 .
-Para determinar el valor de la expresión anterior, se debe crear un nuevo ambiente env 1 (con la variante recursively-extended-env-record ) que extiende el original con el nombre de procedimiento fact , el argumento x y el cuerpo if >(x,0) then *(x, (fact sub1(x))) else 1 .
-Posteriormente se debe evaluar la expresión (fact 6) en el ambiente env 1 . Para ello se deben evaluar las subexpresiones fact y 6.
+####
+El valor de la expresión `x` es `6`. Nuevamente, al evaluar la expresión `(fact 5)`, se debe evaluar la subexpresión `fact` en `env_fact_0`. Esta evaluación busca `fact` en `env1` y produce la misma clausura `(closure '(x) <cuerpo-fact> env1)`. Posteriormente se evalúa el cuerpo de esta clausura de la misma forma en que se hizo anteriormente, en un nuevo ambiente `env_fact_1` que extiende a `env1` con la variable `x` y el valor `5`.
 
-Dada la semántica de los ambientes como env 1 , al evaluar la expresión fact se produce la clausura (closure ’(x) if >(x,0) then +(x, (fact sub1(x))) else 1 env 1 ) .
-Dada la semántica de los ambientes como env 1 , al evaluar la expresión fact se produce la clausura (closure ’(x) if >(x,0) then +(x, (fact sub1(x))) else 1 env 1 ) .
-Dada la semántica de los ambientes como env 1 , al evaluar la expresión fact se produce la clausura (closure ’(x) if >(x,0) then +(x, (fact sub1(x))) else 1 env 1 ) .
-Luego, se debe evaluar el cuerpo del procedimiento (la expresión if >(x,0) then +(x, (fact sub1(x))) else 1 ) en un nuevo ambiente env fact 0 que extiende a env 1 con la variable x y el valor 6.
+####
+En algún momento, al evaluar el cuerpo del procedimiento para el caso base (`x=0`), se evalúa la expresión `1` y se llega al final del cálculo, obteniendo el valor `720`.
 
-Dado que x = 6 , se debe evaluar la expresión +(x, (fact sub1(x))) en el ambiente env fact 0 .
+####
+<IMG_BLOCK>
+Diagrama de ambientes para una llamada recursiva, mostrando `env0` extendido para crear `env1`, que se auto-referencia. A partir de `env1`, se generan ambientes sucesivos para cada llamada recursiva (`env_fact_0`, `env_fact_1`, ..., `env_fact_6`).
+</IMG_BLOCK>
 
-El valor de la expresión x es 6.
-Nuevamente, al evaluar la expresión (fact 5) , se debe evaluar la subexpresión fact . Esta evaluación produce la clausura (closure ’(x) if >(x,0) then +(x, (fact sub1(x))) else 1 env 1 ) .
-Nuevamente, al evaluar la expresión (fact 5) , se debe evaluar la subexpresión fact . Esta evaluación produce la clausura (closure ’(x) if >(x,0) then +(x, (fact sub1(x))) else 1 env 1 ) .
-Posteriormente se evalúa el cuerpo de esta clausura de la misma forma en que se hizo anteriormente en un nuevo ambiente env fact 1 que extiende a env 1 con la variable x y el valor 5.
-Nuevamente, al evaluar la expresión (fact 5) , se debe evaluar la subexpresión fact . Esta evaluación produce la clausura (closure ’(x) if >(x,0) then +(x, (fact sub1(x))) else 1 env 1 ) .
-Posteriormente se evalúa el cuerpo de esta clausura de la misma forma en que se hizo anteriormente en un nuevo ambiente env fact 1 que extiende a env 1 con la variable x y el valor 5.
-En algun momento, al evaluar el cuerpo del procedimiento (la expresión if >(x,0) then +(x, (fact sub1(x))) else 1 ), se evalúa la expresión 1 y se llega al final del cálculo obteniendo el valor 720.
+####
+Sea el ambiente `env0` con símbolos `(x y z)` y valores `(4 2 5)` el ambiente inicial de computación. Se quiere evaluar la expresión:
+```racket
+letrec double(x) = if (> x 0)
+                     (+ (double (sub1 x)) 2)
+                     else 0
+in (double 3)
+```
 
-Los ambientes creados en la evaluación de la expresión anterior se pueden visualizar así:.
+####
+La evaluación comienza así:
+```racket
+(eval-expression
+  <<letrec double(x) = if (> x 0) (+ (double (sub1 x)) 2) else 0
+    in (double 3)>>
+  env0)
+```
 
-<IMG_BLOCK_START>
-envo = '(fact) '(G9) "(fx then (fact sub1(x)) else 1) env_fact_0 env_fact1 ‘env_fact_6
-//DESCRIPCION IMAGEN: Código o pseudocódigo
-<IMG_BLOCK_END>
+####
+```racket
+(eval-expression
+  <<(double 3)>>
+  (extend-env-recursively '(double) '((x)) '(<cuerpo-if>) env0))
+```
+Donde `<cuerpo-if>` es `<<if (> x 0) (+ (double (sub1 x)) 2) else 0>>`.
 
-#####
+####
+```racket
+(apply-procedure
+  (eval-expression <<double>> (extend-env-recursively ... env0))
+  (eval-expression <<3>> (extend-env-recursively ... env0)))
+```
 
-Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el ambiente inicial de computación.
-Se quiere evaluar la expresión:
-l e t r e c
-double ( x ) = if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0
-in
-( double
-3).
+####
+La evaluación de `<<double>>` en el ambiente recursivo produce una clausura:
+```racket
+(apply-procedure
+  (closure '(x) <cuerpo-if> (extend-env-recursively ... env0))
+  '(3))
+```
 
-Tenemos
-( e v a l = e x p r e s s i o n
-<< l e t r e c
-double ( x ) = if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else
-0
-in
-( double
-3) >>
-env0 ).
+####
+```racket
+(eval-expression
+  <<if (> x 0) (+ (double (sub1 x)) 2) else 0>>
+  [x=3](extend-env-recursively ... env0))
+```
 
-Tenemos
-( e v a l = e x p r e s s i o n
-<< l e t r e c
-double ( x ) = if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else
-0
-in
-( double
-3) >>
-env0 )
-= ( e v a l = e x p r e s s i o n
-<< ( double
-3) >>
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 ).
+####
+```racket
+(if (eval-expression <<(> x 0)>> [x=3]...)
+    (eval-expression <<(+ (double (sub1 x)) 2)>> [x=3]...)
+    (eval-expression <<0>> [x=3]...))
+```
+La condición es verdadera.
 
-= ( e v a l = e x p r e s s i o n
-<< ( double
-3) >>
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 )
-= ( apply = procedure
-( e v a l = e x p r e s s i o n
-<< double >>
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 )
-( e v a l = e x p r e s s i o n
-<< 3 >>
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 ) ).
+####
+```racket
+(eval-expression
+  <<(+ (double (sub1 x)) 2)>>
+  [x=3](extend-env-recursively ... env0))
+```
 
-= ( apply = procedure
-( c l o s u r e
-’ ( x ) << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) ,
-= 2)
-else 0 >>
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 ) )
-3).
+####
+```racket
+(+
+  (eval-expression <<(double (sub1 x))>> [x=3]...)
+  (eval-expression <<2>> [x=3]...))
+```
 
-= ( apply = procedure
-( c l o s u r e
-’ ( x ) << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) ,
-= 2)
-else 0 >>
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 ) )
-3)
-= ( e v a l = e x p r e s s i o n
-<< if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 ).
+####
+La evaluación de `(double (sub1 x))` resulta en una llamada recursiva:
+```racket
+(apply-procedure
+  (eval-expression <<double>> [x=3]...)
+  (eval-expression <<(sub1 x)>> [x=3]...))
+```
+El segundo argumento evalúa a `2`.
 
-= ( if
-( e v a l = e x p r e s s i o n
-<< x >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 )
-( e v a l = e x p r e s s i o n
-<< = (( double
-sub1 ( x ) ) , = 2) >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 )
-( e v a l = e x p r e s s i o n
-<< 0 >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >> ) ] env0 ) ).
+####
+```racket
+(apply-procedure
+  (closure '(x) <cuerpo-if> (extend-env-recursively ... env0))
+  '(2))
+```
 
-= ( e v a l e x p r e s s i o n
-<< = (( double
-sub1 ( x ) ) , = 2) >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 ).
+####
+```racket
+(eval-expression
+  <<if (> x 0) (+ (double (sub1 x)) 2) else 0>>
+  [x=2](extend-env-recursively ... env0))
+```
+Esto continúa hasta que `x` es `0`.
 
-= ( e v a l e x p r e s s i o n
-<< = (( double
-sub1 ( x ) ) , = 2) >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 )
-= ( =
-( e v a l = e x p r e s s i o n
-<< ( double
-sub1 ( x ) ) >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 )
-( e v a l = e x p r e s s i o n
-<< = 2 >>
-[ x=3]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 ) ).
+####
+```racket
+(+ (eval-expression <<...>> [x=2]...) 2)
+```
 
-= ( =
-( e v a l = e x p r e s s i o n
-<< ( double
-sub1 ( x ) ) >>
-[ x=3]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> ) ]
-env0 )
-= 2).
+####
+La cadena de llamadas recursivas se desenvuelve:
+```racket
+... (+ (+ 0 2) 2) ...
+```
 
-= ( =
-( apply = procedure
-( e v a l = e x p r e s s i o n
-<< double >>
-[ x=3]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 )
-( e v a l = e x p r e s s i o n
-<< sub1 ( x ) >>
-[ x=3]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 ) )
-= 2).
+####
+```racket
+... (+ 2 2) ...
+```
+Resultando en `4`.
 
-= ( =
-( apply = procedure
-( c l o s u r e
-’ ( x ) << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >>
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 )
-2)
-= 2).
-
-= ( =
-( apply = procedure
-( c l o s u r e
-’ ( x ) << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2)
-else 0 >>
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 )
-2)
-= 2)
-= ( =
-( e v a l = e x p r e s s i o n
-<< if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 )
-= 2).
-
-= ( ( if
-( e v a l = e x p r e s s i o n
-<< x >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> ) ]
-env0 )
-( e v a l = e x p r e s s i o n
-<< = (( double
-sub1 ( x ) ) , = 2) >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> ) ]
-env0 )
-( e v a l = e x p r e s s i o n
-<< 0 >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 )
-)
-2).
-
-= ( =
-( e v a l = e x p r e s s i o n
-<< = (( double
-sub1 ( x ) ) , = 2) >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> ) ]
-env0 )
-= 2).
-
-= ( =
-( =
-( e v a l = e x p r e s s i o n
-<< ( double
-sub1 ( x ) ) >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 )
-( e v a l = e x p r e s s i o n
-<< = 2 >>
-[ x=2]
-[ ’ ( double )
-’ ( ( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0 >> )
-] env0 ) )
-= 2).
-
-= ( =
-( =
-( apply = procedure
-( e v a l = e x p r e s s i o n
-<< double >>
-[ x=2]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 )
-( e v a l = e x p r e s s i o n
-<< sub1 ( x ) >>
-[ x=2]
-[ ’ ( double )
-’ (( x ) )
-’( << if
-> (x , 0 )
-then
-= (( double
-sub1 ( x ) ) , = 2) else 0
->> ) ] env0 ) )
-= 2)
-= 2).
-
-. . .
-= ( =
-( =
-( = 0 = 2)
-= 2)
-= 2).
-
-. . .
-= ( =
-( =
-( = 0 = 2)
-= 2)
-= 2)
-= ( = ( = 2 = 2)
-= 2).
-
-. . .
-= ( =
-( =
-( = 0 = 2)
-= 2)
-= 2)
-= ( = ( = 2 = 2)
-= 2)
-= ( = 4 = 2).
-
-. . .
-= ( =
-( =
-( = 0 = 2)
-= 2)
-= 2)
-= ( = ( = 2 = 2)
-= 2)
-= ( = 4 = 2)
-= 6.
+####
+```racket
+(+ 4 2)
+```
+El resultado final es `6`.
 
 --- METADATA ---
 CORTE: Corte 1

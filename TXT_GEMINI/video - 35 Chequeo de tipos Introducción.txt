@@ -1,88 +1,32 @@
-Aquí tienes la transcripción limpia y formateada:
+El concepto de "tipos" es fundamental en los lenguajes de programación, ya que define las estructuras de almacenamiento disponibles para representar la información. Los tipos permiten administrar adecuadamente la memoria, indicando al compilador cómo interpretar y manejar los datos. Por ejemplo, en lenguajes como Java o C++, un tipo entero (integer) se almacena en 32 bits, mientras que un doble (double) utiliza 64 bits. Esta gestión previene errores y optimiza el uso de recursos.
 
----
+####
 
-## Tipos y Chequeo de Tipos en Lenguajes de Programación
+Un error de tipo ocurre cuando se aplica una operación a un dato con características diferentes a las esperadas por dicha operación. Ejemplos comunes incluyen intentar multiplicar una cadena de texto (string) con un número o intentar aplicar una operación lógica a operandos no booleanos. El análisis de tipos es una fase del procesamiento de un lenguaje de programación que busca detectar y prevenir estos errores antes de la ejecución, garantizando la integridad del programa.
 
-Este documento introduce el concepto de tipos en lenguajes de programación, explorando su implementación inicial a través del chequeo de tipos, y posteriormente la inferencia de tipos.
+####
 
-### 1. Conceptos Fundamentales de Tipos
+Los lenguajes de programación se clasifican según la rigidez de su sistema de tipos. Los lenguajes fuertemente tipados, como Pascal, C++ o Java, requieren que todas las variables tengan un tipo definido explícitamente y no permiten operaciones que violen estas reglas, rechazando el programa durante la compilación si se encuentra un error de tipo.
 
-Los tipos son un concepto fundamental en los lenguajes de programación. Definen las estructuras de almacenamiento disponibles para representar información. Por ejemplo:
-*   Un entero suele almacenar 32 bits (como en Java o C++).
-*   Un doble (double) almacena 64 bits.
-*   Un flotante (float) almacena 32 bits.
+####
 
-Esta capacidad permite una administración adecuada de la memoria. Los tipos asisten al compilador a interpretar cómo se almacenará y manejará la información en memoria.
+A diferencia de los fuertemente tipados, los lenguajes débilmente tipados ofrecen mayor flexibilidad y pueden realizar conversiones implícitas o tomar medidas correctivas ante un error de tipo. Por ejemplo, si se intenta sumar un número con una cadena de texto, un lenguaje débilmente tipado podría convertir el número a texto y realizar una concatenación en lugar de generar un error. Esta flexibilidad, sin embargo, puede ocultar errores lógicos en el programa.
 
-### 2. Errores de Tipo
+####
 
-Un error de tipo ocurre cuando se aplica una operación a un dato con características diferentes a las esperadas. Ejemplos incluyen intentar multiplicar un *string* con un número o concatenar dos enteros. La capacidad de controlar estos errores es una característica esencial que se puede agregar a un interpretador de lenguaje.
+El análisis de tipos es un paso posterior al análisis sintáctico cuyo objetivo principal es evitar que ocurran errores de tipo durante el tiempo de ejecución. Un sistema de tipos se considera adecuado o con "sonido" (soundness) cuando garantiza que si a una expresión se le asigna un tipo `t`, el valor resultante de su evaluación siempre será de ese tipo `t`. El analizador inspecciona cada invocación de una operación para verificar que los tipos de los argumentos son los apropiados.
 
-### 3. Clasificación de Lenguajes por Tipado
+####
 
-Los lenguajes de programación se clasifican en:
+El tipado dinámico es una característica de lenguajes como Python o Racket donde el tipo de una variable no se define en la declaración, sino que se asocia al valor que contiene en tiempo de ejecución. Esto significa que una misma variable puede contener valores de diferentes tipos a lo largo de la ejecución del programa. En estos lenguajes, cada valor lleva una etiqueta que indica su tipo, permitiendo verificar la compatibilidad de las operaciones en el momento en que se realizan. Por ejemplo, en Python, una variable `a` puede ser asignada a un entero, luego a una cadena y después a una lista, y su tipo cambiará dinámicamente con cada asignación.
 
-*   **Lenguajes Fuertemente Tipados:** Requieren definiciones de tipos explícitas y no permiten errores de tipo en tiempo de compilación o ejecución. Ejemplos: Pascal, C++, Java. Ante un error de tipo, el programa suele ser rechazado o se produce un error en tiempo de ejecución.
-*   **Lenguajes Débilmente Tipados:** Ofrecen flexibilidad, pero pueden permitir errores de tipo o realizar coerciones implícitas. Por ejemplo, en algunos lenguajes, intentar sumar dos *strings* podría resultar en una concatenación en lugar de un error.
+####
 
-### 4. Análisis de Tipos
+El tipado dinámico, aunque flexible, presenta desventajas como la dificultad para realizar abstracciones de datos robustas, ya que los tipos no se definen estáticamente en el código. En el extremo opuesto se encuentran los lenguajes de ejecución no tipados, como el lenguaje ensamblador (Assembly). En estos lenguajes, no se detectan operaciones inapropiadas, y el resultado de operar con datos de tipos incompatibles (por ejemplo, sumar la representación en bytes de un entero y un string) dependerá directamente de lo que el hardware subyacente realice con esos bits.
 
-El análisis de tipos es un paso crucial en el procesamiento de un lenguaje de programación, que ocurre después del análisis sintáctico. Su objetivo principal es evitar errores de tipo en tiempo de ejecución.
+####
 
-**4.1. Asignación de Tipos a Valores y Expresiones**
-
-Todo valor expresado en un lenguaje tiene un tipo asociado:
-*   Un número como `5` o `8` se clasifica como entero.
-*   Un valor lógico como `true` se clasifica como booleano.
-*   Un procedimiento como un valor procedimiento.
-*   Una cadena de texto como un *string*.
-
-El analizador asigna un tipo a cada expresión en el programa. Si a una expresión `e` se le asigna un tipo `T`, entonces cualquier valor resultante de su interpretación será del tipo `T`. Esta propiedad se conoce como **sonido de tipos (type soundness)**, asegurando que los valores se comporten como su tipo declarado.
-
-**4.2. Inspección de Operaciones**
-
-El analizador también inspecciona cada invocación de operación:
-*   Para una suma, se espera que ambos operandos sean números.
-*   Para una operación lógica como `OR`, se espera que los argumentos sean booleanos.
-
-Si los tipos de los argumentos no coinciden con los tipos esperados por la operación (ej., sumar un *string* con un número), el analizador generará un mensaje de error de tipo.
-
-**4.3. Manejo de Errores de Tipo**
-
-*   **Lenguajes Fuertemente Tipados:** Ante un error de tipo, el compilador o interpretador puede rehusarse a ejecutar el programa, exigiendo al programador que corrija el error.
-*   **Lenguajes Débilmente Tipados:** Pueden aplicar medidas correctivas. Por ejemplo, al intentar sumar un número y un *string*, el lenguaje podría convertir el número a *string* y realizar una concatenación. El comportamiento exacto varía según el lenguaje.
-
-### 5. Tipado Dinámico y Estático
-
-El diseño de un lenguaje define qué tipos existen, si un valor puede tener múltiples tipos y cuándo se determinan los tipos.
-
-*   **Tipado Dinámico:** En estos lenguajes, los valores incluyen una etiqueta en tiempo de ejecución para indicar su tipo. El tipo de una variable puede cambiar durante la ejecución. Python es un claro ejemplo:
-    ```python
-    a = 3        # a es un entero
-    a = "hola"   # a es ahora un string
-    a = [1, 2, 3] # a es ahora una lista
-    ```
-    Aquí, la variable `a` no tiene un tipo fijo; su tipo se asocia al valor que contiene en un momento dado. Racket también es un lenguaje con tipado dinámico, donde las variables se definen sin un tipo explícito (`(define a 8)`). Una desventaja del tipado dinámico es que la abstracción de datos puede ser limitada, ya que los tipos se definen directamente en el núcleo del lenguaje y se verifican en tiempo de ejecución.
-
-*   **Tipado Estático:** Los tipos se declaran explícitamente y se verifican antes de la ejecución (generalmente durante la compilación). Lenguajes como C++ o Java requieren la declaración del tipo de una variable al momento de su creación (ej., `int x = 5;`).
-
-### 6. Ejecución No Tipada
-
-Algunos entornos, como el lenguaje ensamblador, permiten operaciones directamente sobre las representaciones en bytes de los datos sin un sistema de tipos que las valide. Si se suma la representación de bytes de un entero con la de un *string*, la operación se realizará a nivel de hardware, y el resultado será lo que el hardware compute, lo que se considera un comportamiento indefinido o dependiente de la implementación.
-
-### 7. Chequeo de Tipos Estáticos
-
-Para evitar las dificultades de los errores de tipo en tiempo de ejecución, los lenguajes tipados realizan un análisis del programa antes de la ejecución. Este proceso se conoce como **chequeo de tipos estáticos**.
-
-En lenguajes como Java o C++, los tipos se declaran explícitamente. Si se detecta un error de tipo durante el análisis estático, el compilador puede:
-*   Emitir una advertencia (*warning*).
-*   Insertar código para revisión en tiempo de ejecución (menos común en tipado estático puro).
-*   Rechazar el programa, impidiendo la compilación hasta que se corrija el error. Esta última es la acción más frecuente en lenguajes fuertemente tipados.
-
-### 8. Próximos Pasos
-
-Para implementar el soporte de tipos en nuestro interpretador, se procederá a modificar el interpretador de asignación.
+El chequeo de tipos estático es el proceso de análisis que se realiza antes de la ejecución del programa, característico de lenguajes como Java o C++. Durante esta fase, el analizador verifica la consistencia de los tipos en todo el código fuente. Si se detecta un error, el compilador puede tomar diferentes acciones: rechazar el programa por completo, emitir una advertencia (warning) al programador, o en algunos casos, insertar código adicional para manejar la inconsistencia en tiempo de ejecución. Generalmente, en lenguajes fuertemente tipados, la opción preferida es rechazar la compilación hasta que el error sea corregido.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=m_Th0xGC8oo
