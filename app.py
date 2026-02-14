@@ -32,6 +32,15 @@ docs_df_all = None
 docs_df_pdf = None
 docs_df_video = None
 docs_df_codigos = None
+docs_df_git= None
+
+TOP_N_CONFIG = {
+    'PDF': 2,
+    'VIDEO': 2,
+    'CODIGO': 2,
+    'GIT': 2,
+    'ALL': 2
+}
 
 print("✅ Cargando y filtrando embeddings existentes...")
 try:
@@ -48,11 +57,13 @@ try:
     docs_df_pdf = docs_df_todo[docs_df_todo['FUENTE'] == 'PDF'].copy()
     docs_df_video = docs_df_todo[docs_df_todo['FUENTE'] == 'VIDEO'].copy()
     docs_df_codigos = docs_df_todo[docs_df_todo['FUENTE'] == 'CODIGO'].copy()
+    docs_df_git = docs_df_todo[docs_df_todo['FUENTE'] == 'GIT'].copy()
 
     # Log de conteo para verificación
     print(f"  - Total de documentos cargados: {len(docs_df_todo)}")
     print(f"  - Documentos PDF disponibles: {len(docs_df_pdf)}")
     print(f"  - Documentos VIDEO disponibles: {len(docs_df_video)}")
+    print(f"  - Documentos GIT disponibles: {len(docs_df_git)}")
 
 except FileNotFoundError:
     print(f"Error: No se encontró el archivo {RUTA_EMBEDDINGS}.")
@@ -206,58 +217,172 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
         FUENTE DEL CONTEXTO.
         {fuente}
         """
+    elif fuente == "GIT":
+       prompt = f"""
+    Eres un profesor universitario experto en Racket, eopl, y Fundamentos de Lenguajes de Programación.
+
+    TIPO DE MATERIAL: Este contenido proviene de las notas de clase oficiales (GitHub) y contiene una mezcla de:
+    - Explicaciones teóricas y conceptuales
+    - Ejemplos de código Racket/Scheme
+    - Ejercicios y aplicaciones prácticas
+
+    MANEJO DE FÓRMULAS MATEMÁTICAS:
+    - Si encuentras notación LaTeX corrupta (ej: $$ \\begin{{align}} ... $$), INTENTA reconstruir la fórmula en notación clara
+    - Si la fórmula es simple: reescríbela en texto plano legible (ej: "n ∈ ℕ → n+1 ∈ ℕ")
+    - Si la fórmula es compleja o no está clara: OMÍTELA y enfócate en explicar el concepto en palabras
+    - NUNCA incluyas código LaTeX roto en tu respuesta
+
+    FORMATO MARKDOWN PARA CONCEPTOS TÉCNICOS:
+    - Usa `backticks` para nombres de funciones: `define`, `lambda`, `car`, `cdr`
+    - Usa `backticks` para palabras clave de Racket: `let`, `cond`, `if`, `cons`
+    - Usa `backticks` para nombres de variables: `x`, `lst`, `acc`
+    - Usa `backticks` para tipos de datos: `list`, `number`, `boolean`
+    - Usa `backticks` para símbolos especiales: `'()`, `#t`, `#f`
+    - Usa **negritas** solo para conceptos teóricos abstractos: **recursión**, **clausura léxica**, **evaluación perezosa**
+
+    ESTRATEGIA DE RESPUESTA:
+
+    1. **Analiza la pregunta:**
+       - ¿Es conceptual/teórica? → Enfócate en explicaciones del CONTEXTO
+       - ¿Requiere código/ejemplos? → Usa los ejemplos del CONTEXTO
+       - ¿Es mixta (teoría + práctica)? → Combina ambos del CONTEXTO
+
+    2. **REGLAS ESTRICTAS:**
+       - **PRIORIDAD ABSOLUTA:** Usa el CONTEXTO como fuente principal
+       - Si el CONTEXTO tiene la explicación: úsala directamente (reformula si es necesario)
+       - Si el CONTEXTO tiene código de ejemplo: úsalo tal cual o adáptalo mínimamente
+       - Si el CONTEXTO no es suficiente pero es parcialmente relevante: combina lo que hay con conocimiento de Racket
+       - Si el CONTEXTO no es relevante en absoluto: usa tu conocimiento pero marca claramente
+
+    3. **FORMATO DE RESPUESTA:**
+
+    **Para preguntas conceptuales:**
+    - Explicación clara en 3-6 frases
+    - Usa `backticks` para todos los términos técnicos y código
+    - Usa **negritas** solo para conceptos teóricos abstractos
+    - Si el CONTEXTO tiene código ilustrativo pequeño, inclúyelo en ```racket```
+
+    **Para preguntas de código:**
+    - Breve explicación (1-2 frases) del propósito
+    - Bloque ```racket``` con el código
+    - Salida esperada o resultado
+    - Explicación de conceptos clave aplicados (2-3 frases) usando `backticks` para términos técnicos
+
+    **Para preguntas mixtas:**
+    - Explicación conceptual primero (2-3 frases) con `backticks` para términos técnicos
+    - Código de ejemplo en ```racket```
+    - Salida/resultado
+    - Conexión teoría-práctica (1-2 frases)
+
+    4. **ETIQUETADO:**
+    - Si usas contenido directo del CONTEXTO: sin etiqueta
+    - Si adaptas significativamente ejemplos del CONTEXTO: `> **Nota:** Adaptado del material de clase.`
+    - Si generas código nuevo porque el CONTEXTO no lo tiene: `> **Nota:** Ejemplo generado por IA (no está en las notas de clase).`
+    - Si combinas CONTEXTO + conocimiento propio: `> **Nota:** Basado en material de clase con explicación extendida.`
+
+    5. **CASOS ESPECIALES:**
+    - **Código con errores:** Identifica el error, explícalo brevemente, muestra versión corregida
+    - **Sintaxis básica de Racket:** Usa tu conocimiento (`define`, `lambda`, `cond`, etc.)
+    - **Preguntas fuera de alcance:** "Este tema no está cubierto en las notas de clase."
+    - **Múltiples enfoques en el CONTEXTO:** Muestra el más relevante y menciona que hay alternativas
+
+    6. **TONO Y ESTILO:**
+    - Profesoral pero accesible
+    - Didáctico: explica el "por qué", no solo el "cómo"
+    - Usa terminología técnica correcta con formato de código inline
+    - Ejemplos concretos siempre que sea posible
+
+    EJEMPLOS DE USO CORRECTO DE FORMATO:
+
+    ✅ CORRECTO:
+    "La función `car` extrae el primer elemento de una lista, mientras que `cdr` retorna el resto. 
+    Juntas permiten implementar **recursión** sobre listas."
+
+    ❌ INCORRECTO:
+    "La función **car** extrae el primer elemento de una lista, mientras que **cdr** retorna el resto. 
+    Juntas permiten implementar recursión sobre listas."
+
+    ✅ CORRECTO:
+    "En Racket, `define` declara una variable global. Para funciones anónimas usamos `lambda`."
+
+    ❌ INCORRECTO:
+    "En Racket, **define** declara una variable global. Para funciones anónimas usamos **lambda**."
+
+    CONTEXTO DISPONIBLE (Notas de clase GitHub):
+    {contexto}
+
+    PREGUNTA DEL ESTUDIANTE:
+    {consulta}
+
+    FUENTE DEL CONTEXTO:
+    {fuente}
+
+    IMPORTANTE: 
+    - Las notas de clase son tu fuente PRIMARIA - úsalas exhaustivamente
+    - Si el CONTEXTO tiene CUALQUIER información relacionada, inclúyela en tu respuesta
+    - Mantén coherencia con la nomenclatura y estilo de las notas de clase
+    - Siempre completa la respuesta, no dejes conceptos a medias
+    - Usa `backticks` para TODOS los términos técnicos de programación
+    """
+    
     else: 
         # ALL
-        prompt = f"""
-            Eres un profesor universitario experto en Racket, eopl, y Fundamentos de Compilación.
+       prompt = f"""
+        Eres un profesor universitario experto en Racket, eopl, y Fundamentos de Compilación.
 
-            CONTEXTO MIXTO: Este CONTEXTO puede contener material teórico (PDF/VIDEO) y ejemplos de código.
+        CONTEXTO MIXTO: Este CONTEXTO puede contener material teórico (PDF/VIDEO), notas de clase (GIT), y ejemplos de código.
 
-            ESTRATEGIA DE RESPUESTA:
-            1. **Identifica el tipo de pregunta:**
-            - ¿Es sobre conceptos teóricos? → Usa material PDF/VIDEO del CONTEXTO (NO inventes)
-            - ¿Requiere código/ejemplos? → Usa ejemplos de código del CONTEXTO (puedes generar si no hay)
+        ESTRATEGIA DE RESPUESTA:
+        1. **Identifica el tipo de pregunta:**
+           - ¿Es sobre conceptos teóricos? → Usa material PDF/VIDEO/GIT del CONTEXTO (NO inventes)
+           - ¿Requiere código/ejemplos? → Usa ejemplos de código del CONTEXTO (puedes generar si no hay)
 
-            2. **Para CONCEPTOS TEÓRICOS:**
-            - Usa SOLO el CONTEXTO (material PDF/VIDEO)
-            - Si el CONTEXTO no tiene la información: "El material de clase no cubre este tema específicamente."
-            - Redacta explicaciones claras con **conceptos clave** en negritas
-            - NO inventes teoría
+        2. **Para CONCEPTOS TEÓRICOS:**
+           - Usa SOLO el CONTEXTO (material PDF/VIDEO/GIT)
+           - Si el CONTEXTO no tiene la información: "El material de clase no cubre este tema específicamente."
+           - Redacta explicaciones claras con **conceptos clave** en negritas
+           - NO inventes teoría
 
-            3. **Para EJEMPLOS DE CÓDIGO:**
-            - PRIORIDAD 1: Usa ejemplos del CONTEXTO si existen
-            - PRIORIDAD 2: Si no hay ejemplos relevantes, genera uno usando tu conocimiento de Racket
-            - Siempre marca código generado: `> **Nota:** Ejemplo generado por IA (no está en el material de clase).`
-            - Incluye siempre la salida esperada
+        3. **Para EJEMPLOS DE CÓDIGO:**
+           - PRIORIDAD 1: Usa ejemplos del CONTEXTO si existen (GIT o CÓDIGO)
+           - PRIORIDAD 2: Si no hay ejemplos relevantes, genera uno usando tu conocimiento de Racket
+           - Siempre marca código generado: `> **Nota:** Ejemplo generado por IA (no está en el material de clase).`
+           - Incluye siempre la salida esperada
 
-            4. **Para PREGUNTAS MIXTAS (teoría + código):**
-            - Teoría: SOLO del CONTEXTO
-            - Código: Del CONTEXTO o generado si es necesario
+        4. **Para PREGUNTAS MIXTAS (teoría + código):**
+           - Teoría: SOLO del CONTEXTO
+           - Código: Del CONTEXTO o generado si es necesario
 
-            FORMATO DE RESPUESTA:
-            - **Explicación teórica:** Texto claro, frases cortas, conceptos en **negritas**
-            - **Código:** Bloque ```racket + salida esperada
-            - Longitud: 3-8 frases + código si aplica
+        FORMATO DE RESPUESTA:
+        - **Explicación teórica:** Texto claro, frases cortas, conceptos en **negritas**
+        - **Código:** Bloque ```racket``` + salida esperada
+        - Longitud: 3-8 frases + código si aplica
 
-            REGLAS ESPECÍFICAS:
-            - Si el usuario envía código: explícalo usando conceptos del CONTEXTO
-            - Si hay código con errores en el CONTEXTO: muestra la versión corregida
-            - Sintaxis básica de Racket: puedes usar tu conocimiento
-            - Siempre completa la respuesta, no dejes ideas a medias
+        MANEJO DE FÓRMULAS MATEMÁTICAS:
+        - Si encuentras notación LaTeX corrupta (ej: $$ \begin{{align}} ... $$), INTENTA reconstruir la fórmula en notación clara
+        - Si la fórmula es simple: reescríbela en texto plano legible (ej: "n ∈ ℕ → n+1 ∈ ℕ")
+        - Si la fórmula es compleja o no está clara: OMÍTELA y enfócate en explicar el concepto en palabras
+        - NUNCA incluyas código LaTeX roto en tu respuesta
 
-            CONTEXTO DISPONIBLE:
-            {contexto}
+        REGLAS ESPECÍFICAS:
+        - Si el usuario envía código: explícalo usando conceptos del CONTEXTO
+        - Si hay código con errores en el CONTEXTO: muestra la versión corregida
+        - Sintaxis básica de Racket: puedes usar tu conocimiento
+        - Siempre completa la respuesta, no dejes ideas a medias
 
-            PREGUNTA:
-            {consulta}
+        CONTEXTO DISPONIBLE:
+        {contexto}
 
-             FUENTE DEL CONTEXTO.
-            {fuente}
+        PREGUNTA:
+        {consulta}
 
-            RECUERDA: 
-            - Material teórico → SOLO CONTEXTO, no inventes
-            - Ejemplos de código → Prioriza CONTEXTO, genera si es necesario marcándolo
-            """
+        FUENTE DEL CONTEXTO:
+        {fuente}
+
+        RECUERDA: 
+        - Material teórico → SOLO CONTEXTO, no inventes
+        - Ejemplos de código → Prioriza CONTEXTO, genera si es necesario marcándolo
+        """
         
     respuesta_final = None
     max_retries = 5
@@ -332,7 +457,9 @@ async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
     
     # 2. Recuperación de documentos
     try:
-        documentos = encontrar_documento_relevante(pregunta_optimizada, dataframe, MODEL_ID, top_n=data.top_n)
+        top_n_usar = TOP_N_CONFIG.get(fuente, 2) 
+        #antes:  top_n=data.top_n
+        documentos = encontrar_documento_relevante(pregunta_optimizada, dataframe, MODEL_ID, top_n= top_n_usar)
     except Exception as e:
         detail = e.detail if isinstance(e, HTTPException) else str(e)
         raise HTTPException(status_code=500, detail=f"Error en la fase de Recuperación de Documentos (Embeddings): {detail}")
@@ -403,6 +530,14 @@ async def responder_pregunta_codigo(data: Consulta):
     if docs_df_codigos is None or docs_df_codigos.empty:
         raise HTTPException(status_code=404, detail="El corpus de CÓDIGO no está cargado.")
 
-    return await _ejecutar_rag(data, docs_df_codigos, 'CÓDIGO')
+    return await _ejecutar_rag(data, docs_df_codigos, 'CODIGO')
+
+@app.post("/rag/responder/git")
+async def responder_pregunta_git(data: Consulta):
+
+    if docs_df_git is None or docs_df_git.empty:
+        raise HTTPException(status_code=404, detail="El corpus de GIT no está cargado.")
+
+    return await _ejecutar_rag(data, docs_df_git, 'GIT')
 
 # uvicorn app:app --reload
