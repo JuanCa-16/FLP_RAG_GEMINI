@@ -28,7 +28,7 @@ MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
 RUTA_EMBEDDINGS = "src/embeddings/corpus_con_ejemplos_embeddings.jsonl"
 
-docs_df_all = None
+docs_df_todo = None
 docs_df_pdf = None
 docs_df_video = None
 docs_df_codigos = None

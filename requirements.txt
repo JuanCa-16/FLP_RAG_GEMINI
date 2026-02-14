@@ -4,3 +4,4 @@ python-dotenv==1.0.1
 pandas==2.2.2
 numpy==1.26.4
 google-genai==0.3.0
+# Invluir la que lee las url del git
