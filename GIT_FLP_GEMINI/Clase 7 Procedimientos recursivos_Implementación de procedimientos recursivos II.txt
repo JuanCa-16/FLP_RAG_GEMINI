@@ -1,0 +1,114 @@
+Vamos a incluir la directiva `letrec` para definir procedimientos recursivos.
+La gramática permite escribir definiciones de la siguiente forma:
+
+<expression> ::= "letrec"
+             (
+                <identificador> "(" (<identificador>)* (,)")" "=" <expression>
+            )*
+            "in"
+            <expression>
+
+Se van a poder escribir cosas como este ejemplo, donde `f` y `g` se llaman mutuamente:
+
+```
+letrec
+  f(x,y) = if >(x,0) then g(-(x,1), y) else y
+  g(a,b) = if >(a,0) then +(b, f(-(x,y), y)) else y
+in
+  (f 10 2)
+```
+
+###
+La modificación a la gramática para soportar `letrec` se estructura de la siguiente manera:
+
+```racket
+;; Modificación a la gramática para soportar letrec
+(expression
+ ("letrec"
+  (arbno
+   identifier
+   "(" (separated-list identifier ",") ")"
+   "="
+   expression)
+  "in"
+  expression)
+ letrec-exp)
+```
+Esto define una expresión `letrec` con un constructor `letrec-exp`.
+
+###
+La estructura general de un bloque `letrec` es:
+
+```
+letrec
+  proc1(param1, param2, ...) = cuerpo1
+  proc2(arg1, arg2, ...) = cuerpo2
+  ...
+in
+  expresión-cuerpo
+```
+Aquí, `letrec` es la palabra clave que indica un bloque de definiciones recursivas mutuas, diferenciándose de `let` o `let*`.
+
+###
+Los componentes clave de la modificación de la gramática son:
+-   `(arbno ...)`: Permite cero o más definiciones de procedimientos recursivos. Cada definición sigue el patrón `nombre(param1, param2, ...) = cuerpo`.
+-   `(separated-list identifier ",")`: Define los parámetros formales de un procedimiento, como en `f(x, y, z)`.
+-   `expression` después de `=`: Es el cuerpo del procedimiento, donde puede haber referencias a otros procedimientos definidos en el mismo `letrec`.
+-   `expression` después de `in`: Es el cuerpo principal, el contexto de ejecución donde las definiciones recursivas están en alcance.
+
+###
+Un ejemplo de uso que ilustra la definición de procedimientos mutuamente recursivos `es-par?` y `es-impar?`:
+
+```racket
+;; Definición de procedimientos mutuamente recursivos
+(letrec
+ es-par?(n) = if =(n,0) #t (es-impar? -(n,1))
+ es-impar?(n) = if =(n,0) #f (es-par? -(n,1))
+ in
+ (es-par? 4))
+; → #t
+```
+Este ejemplo muestra cómo `es-par?` llama a `es-impar?` y viceversa, resultando en `true` para `(es-par? 4)`.
+
+###
+Las características importantes de `letrec` incluyen:
+-   **Recursión mutua**: Los procedimientos definidos pueden referenciarse entre sí.
+-   **Ámbito extendido**: Las definiciones son visibles en todos los cuerpos de los procedimientos definidos y en la expresión principal.
+-   **Evaluación perezosa**: Las clausuras se crean con el ambiente extendido recursivo, lo que permite la evaluación solo cuando se invocan.
+-   **Consistencia**: El mecanismo de ambientes recursivos gestiona las referencias circulares sin problemas.
+
+###
+El manejo de expresiones `letrec` en la función `eval-expression` se realiza de la siguiente manera:
+
+```racket
+;; Manejo de expresiones letrec en eval-expression
+(letrec-exp (procnames llargs bodies expn)
+ (eval-expression
+  expn
+  (extend-recursively-env
+   procnames
+   llargs
+   bodies
+   env)))
+```
+Este fragmento muestra que la expresión principal (`expn`) se evalúa en un ambiente que ha sido extendido recursivamente con los procedimientos definidos.
+
+###
+El flujo de ejecución para una expresión `letrec` implica los siguientes pasos:
+1.  **Parseo de la expresión**: Se identifican los nombres de los procedimientos (`procnames`), sus listas de argumentos (`llargs`), los cuerpos de los procedimientos (`bodies`) y la expresión principal (`expn`).
+2.  **Extensión del ambiente**: La función `(extend-recursively-env procnames llargs bodies env)` crea un nuevo ambiente que contiene las definiciones recursivas, permitiendo referencias mutuas.
+3.  **Evaluación del cuerpo**: La expresión `expn` se evalúa en el contexto de este nuevo ambiente extendido, haciendo que las definiciones de `letrec` estén disponibles.
+
+###
+Las características clave de esta implementación son:
+-   **Evaluación Pospuesta**: Los cuerpos de los procedimientos no se evalúan de inmediato, sino que se crean clausuras que se ejecutan solo cuando se invocan.
+-   **Ambiente Recursivo**: La función `extend-recursively-env` asegura que cada clausura tenga acceso a todas las definiciones dentro del bloque `letrec`, resolviendo así el problema de las referencias circulares.
+Esta implementación es elegante porque delega la complejidad de la recursión mutua al mecanismo de ambientes, manteniendo `eval-expression` simple y consistente.
+
+---
+METADATA
+---
+TEMATICA: Clase 7 Procedimientos recursivos
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Implementación de procedimientos recursivos II.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20II/

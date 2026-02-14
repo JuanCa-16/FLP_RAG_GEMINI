@@ -1,0 +1,124 @@
+Es un lenguaje de programación multiparadigma, que trabaja diferentes paradigmas de programación
+Funcional
+Procedural
+Objetos
+Eventos
+Vamos a trabajar en el enfoque funcional
+Utiliza notación prefija, primero va la función y después los argumentos. Utiliza una notación basada en paréntesis
+
+###
+#lang eopl se utiliza para especificar el dialecto de Racket.
+Aquí se definen dos variables:
+
+(define pollito 5)
+(define gaillinita (* pollito 2))
+
+###
+Las funciones se van a declarar con lambda, no se acepta otra notación, porque las funciones van a ser valores:
+
+(define funcion
+  (lambda (x y)
+    (+ x y)))
+
+Esta función puede ser invocada así:
+
+(funcion 1 2)
+
+###
+Funciones con parámetros por defecto:
+
+(define funcionPro
+  (lambda (x [p 8])
+    (+ x p)))
+
+Al invocarla, si no se provee el segundo argumento, usa el valor por defecto:
+
+(funcionPro 4)
+;12
+
+Si se provee, usa el valor dado:
+
+(funcionPro 4 9)
+;13
+
+###
+Racket utiliza `cond` para estructuras condicionales, que permite evaluar múltiples condiciones:
+
+(define funcion
+  (lambda (x y)
+    (cond
+      [(> x 5) (+ x y)]
+      [(and (> x 0) (< x 5)) (* x y)]
+      [else (+ x y 2)])))
+
+###
+Las listas se pueden crear de varias maneras, usando la función `list`, `cons` con `empty`, o con una comilla simple para crear una lista literal:
+
+(list 1 2 3 5)
+;(1 2 3 4)
+
+(cons 1 (cons 2 (cons 3 (cons 5 empty))))
+;(1 2 3 4)
+
+'(1 2 3 4 a b (1 2 3))
+
+También se pueden crear listas que contengan diferentes tipos de datos, incluyendo otras listas:
+
+(list 1 2 3 'a 'b (list 1 2 3))
+
+###
+Para acceder a los elementos de una lista, se utilizan las funciones `car` y `cdr`. `car` devuelve el primer elemento (la cabeza) y `cdr` devuelve el resto de la lista (la cola).
+
+Primero, definimos una lista de ejemplo:
+
+(define l '(1 2 3 4 5))
+
+Ejemplos de acceso:
+
+(car l)
+; 1
+
+(cdr l)
+; '(2 3 4 5)
+
+Se pueden encadenar para acceder a elementos más profundos:
+
+(car (cdr l))
+; 2
+
+(car (cdr (cdr l)))
+; 3
+
+Existen atajos para combinaciones comunes:
+
+(cadr l)
+; car del cdr
+
+(caddr l)
+; car del cdr del cdr
+
+###
+Aquí se muestra una función recursiva para sumar los elementos de una lista:
+
+(define sumarL
+  (lambda (lst)
+    (cond
+      [(null? l) 0]
+      [else (+ (car l) (sumarL (cdr l)))])))
+
+###
+Esta es otra forma de sumar los elementos de una lista usando un acumulador, lo que puede ser útil para la recursión de cola:
+
+(define sumarColita
+  (lambda (lst [acc 0])
+    (cond
+      [(null? l) acc]
+      [else (sumarL (cdr l) (+ acc (car l)))])))
+
+---
+METADATA
+---
+TEMATICA: Clase 2 Especificación recursiva de datos y programas
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Repaso de Racket.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Racket/

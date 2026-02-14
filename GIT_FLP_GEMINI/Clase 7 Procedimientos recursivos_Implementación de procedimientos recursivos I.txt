@@ -1,0 +1,71 @@
+Para implementar los ambiente recursivos necesitamos modificar la noción de ambiente, vamos a incluir un nuevo caso que se refiere a los ambientes recursivos, estos únicamente van a permitir definir procedimientos.
+
+###
+Vamos a agregar un nuevo caso al datatype de ambientes el cual va a incluir el ambiente extendido recursivo:
+
+```racket
+(extend-recursively-env
+ (procname (list-of symbol?))
+ (argss (list-of (list-of symbol?)))
+ (bodies (list-of expression?))
+ (old-env environment?))
+```
+
+`procname` es una lista de los nombres de los procedimientos.
+`argss` es una lista de listas de los argumentos.
+`bodies` son los cuerpos de los procedimientos.
+`old-env` es el ambiente del cual extiende.
+
+###
+Modificamos `apply-env` para manejar este nuevo tipo de ambiente. Cuando `apply-env` encuentra un ambiente `extend-recursively-env`, usa `letrec` para definir una función de búsqueda local que permite la recursión mutua entre los procedimientos.
+
+```racket
+(extend-recursively-env (procnames llargs bodies old-env)
+ (letrec
+  ((search-proc
+    (lambda (procs args bodies)
+      (cond
+        [(null? procs)
+         (apply-env old-env var)]
+        [(eqv? (car procs) var)
+         (closure (car args) ; Parámetros formales
+                  (car bodies) ; Cuerpo del procedimiento
+                  env)] ; Ambiente actual (¡clave importante!)
+        [else
+         (search-proc (cdr procs)
+                      (cdr args)
+                      (cdr bodies))])))
+  (search-proc procnames llargs bodies)))
+```
+
+###
+La función `search-proc` realiza una búsqueda lineal a través de tres listas paralelas: `procnames` (nombres de los procedimientos definidos recursivamente), `llargs` (listas de argumentos formales para cada procedimiento) y `bodies` (cuerpos de cada procedimiento).
+
+-   Caso 1: Si el procedimiento buscado no se encuentra en la lista actual de procedimientos, la búsqueda continúa en el ambiente anterior (`old-env`).
+-   Caso 2: Si se encuentra el procedimiento buscado, se crea una clausura.
+-   Caso 3: Si no es ninguno de los anteriores, se continúa la búsqueda en el resto de las listas.
+
+###
+Cuando se encuentra un procedimiento, se crea una clausura. La clave fundamental es que el `env` utilizado en la clausura se refiere al ambiente que se está construyendo actualmente, no al `old-env`. Esto es lo que permite la recursión mutua entre los procedimientos definidos en este ambiente recursivo.
+
+Por ejemplo, la clausura se crea con:
+
+```racket
+(closure (car args) ; Parámetros del procedimiento
+         (car bodies) ; Cuerpo del procedimiento
+         env)        ; Ambiente actual
+```
+
+###
+Este mecanismo garantiza consistencia porque:
+-   No hay ligaduras duplicadas: Solo se almacenan definiciones de procedimientos en el ambiente extendido recursivo.
+-   Autorreferencia: Cuando un procedimiento dentro del grupo recursivo referencia a otro procedimiento del mismo grupo, la búsqueda encontrará la definición en el ambiente actual (`env`).
+-   Encapsulación: Las definiciones recursivas están contenidas en su propio ámbito sin contaminar el ambiente exterior.
+
+---
+METADATA
+---
+TEMATICA: Clase 7 Procedimientos recursivos
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Implementación de procedimientos recursivos I.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20I/

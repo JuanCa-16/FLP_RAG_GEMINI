@@ -1,0 +1,20 @@
+El `let` genera un ambiente extendido de tipos, considerando las declaraciones y la expresión en el `in` que se evalúa en el ambiente extendido de tipos. La regla de tipado para una expresión `let` es:
+
+```racket
+(let-exp (lid lval exp)
+  (type-of-expression exp
+    (extend-env lid
+                (list->vector
+                 (map (lambda (x) (type-of-expression x tenv))
+                      lval))
+                tenv)))
+```
+Se calculan los tipos de los valores (`lval`) y se crea un ambiente extendido con ellos, utilizando los identificadores (`lid`). En este nuevo ambiente se evalúa la expresión principal (`exp`).
+
+---
+METADATA
+---
+TEMATICA: Clase 11 Implementacion del interpretador de tipos
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Interpretador tipos chequeo IV.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20IV/

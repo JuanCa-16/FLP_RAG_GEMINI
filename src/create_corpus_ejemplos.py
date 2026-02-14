@@ -16,6 +16,7 @@ ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "embeddings", "corpus_con_ejemplos.jso
 CARPETA_ENTRADA = os.path.join(BASE_DIR, "TXT_METADATA")
 CARPETA_ENTRADA_GEMINI = os.path.join(BASE_DIR, "TXT_GEMINI")
 CARPETA_EJEMPLOS = os.path.join(BASE_DIR, "TXT_EJEMPLOS")
+CARPETA_GIT_FLP= os.path.join(BASE_DIR, "GIT_FLP_GEMINI")
 ARCHIVO_CONSOLIDADO = os.path.join(BASE_DIR, "txt_global.txt")
 MIN_PALABRAS = 60
 MAX_PALABRAS = 100
@@ -210,7 +211,6 @@ def procesar_archivos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
             fragmentos = dividir_por_hashtag(contenido)
             logica_usada = "Hashtag (#)"
         else:
-
             fragmentos = dividir_bloques_por_hash(contenido) # ⬅️ CAMBIO AQUÍ
             logica_usada = "Delimitador (#####)"
     
@@ -315,6 +315,98 @@ def procesar_ejemplos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
         })
 
     return fragmentos_global
+
+def procesar_github(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]:
+    """
+    Procesa archivos de GitHub organizados por Gemini.
+    Divide el contenido en chunks delimitados por '###'.
+    Extrae metadata y la agrega al final de cada documento.
+    """
+    fragmentos_global = []
+
+    for archivo in os.listdir(carpeta):
+        if not archivo.endswith(".txt"):
+            continue
+
+        ruta = os.path.join(carpeta, archivo)
+        
+        try:
+            with open(ruta, "r", encoding="utf-8") as f:
+                contenido = f.read()
+        except Exception as e:
+            print(f"⚠️ No se pudo leer el archivo {archivo}: {e}")
+            continue
+        # ===== EXTRACCIÓN DE METADATA DEL CONTENIDO =====
+        meta_match = re.search(r'---\s*METADATA\s*---([\s\S]*?)$', contenido)
+        metadata = {}
+        
+        if meta_match:
+            meta_texto = meta_match.group(1)
+            for linea in meta_texto.split("\n"):
+                linea = linea.strip()
+                if ":" in linea:
+                    k, v = linea.split(":", 1)
+                    metadata[k.strip()] = v.strip()
+            # Eliminar la metadata del contenido a procesar
+            contenido_sin_metadata = contenido[:meta_match.start()].strip()
+        else:
+            contenido_sin_metadata = contenido.strip()
+
+        # ===== DIVISIÓN EN CHUNKS POR '###' =====
+        # El contenido puede empezar directamente (sin ### inicial)
+        # o puede empezar con ###
+        
+        chunks = []
+        chunk_actual = []
+        lineas = contenido_sin_metadata.split('\n')
+        
+        # Si la primera línea no es ###, estamos en el primer chunk
+        en_primer_chunk = True
+        
+        for linea in lineas:
+            linea_limpia = linea.strip()
+            
+            if linea_limpia == "###":
+                # Guardar chunk anterior si existe
+                if chunk_actual:
+                    texto_chunk = "\n".join(chunk_actual).strip()
+                    if texto_chunk:
+                        chunks.append(texto_chunk)
+                # Resetear para nuevo chunk
+                chunk_actual = []
+                en_primer_chunk = False
+            else:
+                # Agregar línea al chunk actual
+                chunk_actual.append(linea)
+        
+        # Agregar último chunk
+        if chunk_actual:
+            texto_chunk = "\n".join(chunk_actual).strip()
+            if texto_chunk:
+                chunks.append(texto_chunk)
+        
+        print(f"📄 {archivo}: {len(chunks)} fragmentos generados (GitHub)")
+
+        # ===== ENRIQUECIMIENTO DE FRAGMENTOS =====
+        for chunk_texto in chunks:
+            if not chunk_texto.strip():
+                continue
+            
+            # Limpiar texto para palabras clave
+            texto_limpio = limpiar_texto(chunk_texto)
+            
+            # Extraer palabras clave
+            palabras_clave = extraer_palabras_clave(texto_limpio, vectorizador)
+            
+            fragmentos_global.append({
+                "tipo": "github",
+                "contenido": chunk_texto,
+                "metadata": metadata,
+                "palabras_clave": palabras_clave,
+                "titulo": os.path.splitext(archivo)[0]
+            })
+
+    return fragmentos_global
 # EJECUCIÓN
 
 print("🧠 Cargando vectorizador global...")
@@ -332,6 +424,11 @@ resultado.extend(
 # Procesar ejemplos (TXT_EJEMPLOS)
 resultado.extend(
     procesar_ejemplos(CARPETA_EJEMPLOS, vectorizador_global)
+)
+
+# Procesar ejemplos (TXT_EJEMPLOS)
+resultado.extend(
+    procesar_github(CARPETA_GIT_FLP, vectorizador_global)
 )
 print(f"💾 Guardando {len(resultado)} fragmentos en formato JSONL...")
 with open(ARCHIVO_SALIDA, "w", encoding="utf-8") as f:

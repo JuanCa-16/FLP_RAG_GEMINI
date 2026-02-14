@@ -1,0 +1,100 @@
+Hasta el momento hemos implementado un interpretador bajo el paradigma funcional, que toda computación tiene un valor y el programa se ejecuta a partir de las relaciones entre funciones. Ahora vamos a introducir el concepto en que una operación puede introducir un efecto en la computación, el cual es potencialmente global. Para esto, vamos a trabajar un único efecto: la asignación, que permite gestionar ubicaciones en memoria.
+
+###
+Una ligadura es una acción local. Por ejemplo, en el siguiente `let`, `x` e `y` son ligaduras locales:
+
+```
+let x = 3
+    y = 8
+in
++ (x,y)
+```
+
+La ligadura crea una nueva asociación con un nombre, mientras que la asignación cambia el valor de una ligadura existente.
+
+###
+La ligadura asocia nombres con valores en ambientes. Para manejar esto, se puede definir un tipo de dato `environment` así:
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+    (lid (list-of symbol?)) ;;Nombres
+    (lval (list-of value?)) ;;Valores
+    (old-env environment?)))
+```
+
+Ahora vamos a introducir la capacidad de cambiar esos valores. Esto implica una operación de efecto que es cambiar una ligadura, y esta operación no retorna un valor.
+
+###
+Dado que vamos a tener cambios de las variables, ahora el programa es gobernado por la secuenciación, es decir, por el orden en que se realizan las operaciones. Para esto, se introducen nuevas formas de expresión:
+
+```
+<expression> ::= set <identifier> "=" <expression>  (set-exp)
+             ::= begin <expression> (";" <expression>) "end" (begin-exp)
+```
+
+Esto nos va a permitir tener los dos elementos que requerimos: asignación (`set`) y secuenciación (`begin`).
+
+###
+La expresión `begin` evalúa una serie de expresiones y nos retorna el último valor generado. El siguiente fragmento de gramática describe su estructura:
+
+```racket
+(expression
+  ("begin" expression (arbno ";" expression) "end")
+  begin-exp)
+```
+
+Esto es una cerradura positiva, lo que significa que el `begin` siempre va a tener al menos una expresión.
+
+###
+La implementación de `eval-expression` para el `begin-exp` se encarga de evaluar las expresiones en el orden en que aparecen, asegurándose de retornar el valor de la última expresión.
+
+```racket
+(define eval-expression
+  ;...
+  (begin-exp (exp lexp)
+    (letrec
+      ((evaluation
+        (lambda (lexp)
+          (cond
+            [(null? (cdr lexp))
+             (eval-expression (car lexp) env)]
+            [else
+             (begin
+               (eval-expression (car lexp) env)
+               (evaluation (cdr lexp)))]))))
+      (evaluation (cons exp lexp))))
+  ;...
+  )
+```
+
+Este código evalúa las expresiones en el orden que tiene el `begin`, primero la expresión y luego ordenadamente el resto de la lista, y se asegura de retornar el valor de la última expresión.
+
+###
+De acuerdo a esto, podemos hacer expresiones como las siguientes, donde `begin` siempre retorna el valor de la última expresión evaluada:
+
+```
+-->begin
+    1
+    end
+```
+Retorna `1`.
+
+```
+-->begin
+    1
+    ;2
+    ;3
+    ;4
+    end
+```
+Retorna `4`.
+
+---
+METADATA
+---
+TEMATICA: Clase 9. Asignación y paso por referencia
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Asignación.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Asignaci%C3%B3n/

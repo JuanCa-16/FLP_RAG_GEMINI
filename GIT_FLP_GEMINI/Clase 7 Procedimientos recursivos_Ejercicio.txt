@@ -1,0 +1,111 @@
+###
+El ejercicio comienza con la configuración inicial del repositorio. Esto implica clonar la plantilla, navegar al directorio del proyecto y eliminar el historial de Git para empezar desde cero.
+
+```bash
+git clone git@github.com:cardel/plantilla-funcional.git
+cd plantilla-funcional
+rm -rf .git
+```
+
+###
+Para el desarrollo de la aplicación de promedio móvil en Scala, se necesitan varias importaciones. `scala.util.Random` se usa para generar números aleatorios, `common._` (asumido para funciones de paralelismo como `parallel`), y `org.scalameter._` para el benchmarking. Todo el código se organiza dentro del objeto `Promedio`.
+
+```scala
+import scala.util.Random
+import common._
+import org.scalameter._
+
+object Promedio {
+  // Aquí se definen las funciones y el método main
+}
+```
+
+###
+La función principal `promedioMovil` toma un `Vector[Int]` y un entero `k` (el tamaño de la ventana) y devuelve un `Vector[Double]` con los promedios móviles. Itera desde el índice 0 hasta `n - k`, calculando la suma de los elementos en cada ventana de tamaño `k` y dividiéndola por `k` para obtener el promedio.
+
+```scala
+def promedioMovil(a: Vector[Int], k: Int): Vector[Double] = {
+  val n = a.length
+  // Genera promedios móviles para cada ventana de tamaño k
+  (0 to n - k).map { i =>
+    // Suma los elementos en la ventana actual y calcula el promedio
+    (0 until k).map(t => a(i + t)).sum / k.toDouble
+  }.toVector
+}
+```
+
+###
+Dentro del método `main`, se incluye una prueba básica de la función `promedioMovil` con un vector pequeño (`v = Vector(2, 4, 5, 1, 3)`) y un tamaño de ventana `k = 3`. Esto permite verificar rápidamente el comportamiento esperado de la función antes de realizar pruebas de rendimiento.
+
+```scala
+def main(arr: Array[String]): Unit = {
+  // Prueba básica con vector pequeño
+  val v = Vector(2, 4, 5, 1, 3)
+  println(promedioMovil(v, 3))
+}
+```
+
+###
+Para el benchmarking de rendimiento, se inicializa un vector grande de un millón de elementos (`n = 1000000`) con números enteros aleatorios, y se establece un tamaño de ventana `k = 10`. Este vector `v2` será la base para comparar la ejecución secuencial y paralela de la función `promedioMovil`.
+
+```scala
+  // Benchmarking con vector grande
+  val n = 1000000
+  val k = 10
+  val rand = new Random()
+  val v2 = (1 to n).map(_ => rand.nextInt(1000)).toVector
+```
+
+###
+Se mide el tiempo de ejecución de la versión secuencial de `promedioMovil` sobre el vector grande `v2` usando `scalameter` para un benchmarking preciso. Después de registrar el tiempo, se calcula el resultado nuevamente para poder mostrar los primeros 10, los últimos 10 elementos y la longitud total del vector de promedios resultantes.
+
+```scala
+  // Versión secuencial
+  val t1 = withWarmer(new Warmer.Default) measure {
+    val res = promedioMovil(v2, k)
+  }
+  println(s"Tiempo secuencial ${t1}")
+
+  // Mostrar primeros y últimos resultados
+  val res = promedioMovil(v2, k) // Se necesita calcular fuera del measure para mostrarlo
+  println(res.take(10))
+  println(res.drop(res.length - 10))
+  println(res.length)
+```
+
+###
+Para la versión paralela del promedio móvil, el vector `v2` se divide en dos sub-vectores, `v21` y `v22`. Esta división se calcula cuidadosamente para asegurar que cada porción pueda ser procesada de forma independiente, considerando el tamaño de la ventana `k` para evitar solapamientos o datos faltantes.
+
+```scala
+  // Versión paralela dividiendo el vector
+  val v21 = v2.slice(0, (n - k) / 2 + k)
+  val v22 = v2.slice((n - k) / 2 + 1, n)
+```
+
+###
+Finalmente, se mide el rendimiento de la ejecución paralela. Se utiliza una función `parallel` para ejecutar `promedioMovil` en los dos sub-vectores simultáneamente. Los resultados `r1` y `r2` se concatenan para formar el vector `rt` completo. Se imprime el tiempo total de ejecución de esta versión con dos hilos, y se muestran las primeras y últimas partes del resultado, junto con su longitud, para verificar la integridad.
+
+```scala
+  val t2 = withWarmer(new Warmer.Default) measure {
+    val (r1, r2) = parallel(promedioMovil(v21, k), promedioMovil(v22, k))
+  }
+  val (r1, r2) = parallel( // Se necesita calcular fuera del measure para usar los resultados
+    promedioMovil(v21, k),
+    promedioMovil(v22, k)
+  )
+  val rt = r1 ++ r2
+  println(rt.take(10))
+  println(rt.drop(rt.length - 10))
+  println(rt.length)
+  println(s"Tiempo con dos hilos ${t2}")
+} // Fin del método main
+} // Fin del objeto Promedio
+```
+
+---
+METADATA
+---
+TEMATICA: Clase 7 Procedimientos recursivos
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Ejercicio.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%2012/Ejercicio/

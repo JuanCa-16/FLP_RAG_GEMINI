@@ -1,0 +1,77 @@
+Cuando escribimos `int a = 3`, `int` es una expresión de tipo que indica el tipo de la variable, no su representación en memoria.
+
+###
+La gramática de tipos se define de la siguiente manera:
+`<tipo-exp> ::= int`
+`            int-type-exp()`
+`           ::= bool`
+`            bool-type-exp()`
+`           ::= (<tipo-exp>*(,) -> <tipo-exp>)`
+`            proc-type-exp(targs result-type)`
+
+###
+Aquí se muestran algunos ejemplos de expresiones tipadas:
+`proc (int a, int b) + (a,b) ; (int * int) -> int`
+`5 ; int`
+`true ; bool`
+
+###
+Ejemplos de tipos de procedimientos:
+`even? (x) ; int -> bool`
+`+ ; int * int -> int`
+`(lambda (x) (lambda (y) (+ x y))) ; int -> (int -> int)`
+`(lambda (f x) (zero? (f (+ x 1)))) ; ((int -> int) * int) -> bool`
+
+###
+Ejercicio de inferencia de tipos:
+`- (32, 26) ; int`
+`proc (x) (x 26) ; (int -> t) -> t`
+`proc (x) if x then 1 else 3 ; bool -> int`
+`proc (f, x) if (f x) then 1 else 2 ; (tx -> bool) * tx -> int`
+`proc (x) proc (y) if y then x else 3 ; int -> (bool -> int)`
+
+Cuando un tipo no se puede determinar unívocamente, se conoce como tipo polimórfico.
+
+###
+El lenguaje será fuertemente y estáticamente tipado. Se emitirán errores de tipo cuando:
+*   Se intente aplicar algo distinto a un `procVal` (evaluación de no-procedimiento)
+*   Se envíe un número incorrecto de argumentos a un procedimiento
+*   Se aplique un argumento de tipo incorrecto a una primitiva (ej: booleano en suma)
+*   Se use algo diferente a un booleano en la condición de un condicional
+
+No se consideran errores de tipo las divisiones por cero (errores semánticos).
+
+###
+Para implementar el verificador de tipos, definiremos un procedimiento `type-of-expression` que recibe una expresión y un ambiente de tipos, y asigna un tipo a la expresión.
+El ambiente inicial de tipos contendrá los tipos de los valores primitivos del ambiente inicial.
+
+###
+El comportamiento de `type-of-expression` para distintos tipos de expresiones es el siguiente:
+*   **Número**: retorna `int`.
+*   **Booleano**: retorna `bool`.
+*   **Variable**: busca la ligadura en el ambiente de tipos.
+*   **Condicional** (`if`): La condición debe ser de tipo `bool`. Las expresiones `then` y `else` deben tener el mismo tipo. Retorna el tipo común de `then` y `else`.
+*   **Procedimiento** (`proc`): retorna `(t_1 x t_2 x ... x t_n) -> t` donde `t_i` son los tipos de los parámetros y `t` es el tipo del cuerpo.
+*   **Aplicación** (llamada a procedimiento): para `(rator rand₁ ... randₙ)`, `rator` debe tener tipo `(t_1 x t_2 x ... x t_n) -> t`. Cada `randᵢ` debe tener tipo `t_i`. Retorna tipo `t`.
+
+###
+Al evaluar una aplicación de procedimiento, surge un problema cuando no tenemos forma de determinar directamente los tipos de los parámetros del `rator`. Esto ocurre en casos como el siguiente:
+`let f = proc (x, y) ... in (f 1 2)`
+Aquí, debemos contrastar el tipo del `rator` (`(t_1 x t_2 x ... x t_n) -> t`) con los tipos de los argumentos `rands` (`t_1, t_2, ..., t_n`), pero los tipos de `x` e `y` no están explícitos en la definición de `f`.
+
+###
+Existen dos estrategias principales para solucionar esta limitación:
+
+1.  **Chequeo de tipos explícito**: Colocar anotaciones de tipo directamente en los procedimientos.
+    `let f = proc (int x, int y) ... in (f 1 2)`
+
+2.  **Inferencia de tipos**: Utilizar reglas de tipado junto con un mecanismo de inferencia lógica para determinar los tipos automáticamente basándose en el contexto de uso. Esto implica el uso de un sistema de ecuaciones de tipos y unificación.
+    `let f = proc (? x, ? y) ... in (f 1 2)`
+
+---
+METADATA
+---
+TEMATICA: Clase 5 Semantica de LP Interprete simple
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Interpretador I.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/

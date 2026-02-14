@@ -1,0 +1,33 @@
+Vamos a utilizar gramáticas regulares. Los terminales se definen y procesan de izquierda a derecha. Considera el siguiente ejemplo de tokens:
+
+var
+x
+=
+10
+var
+y
+
+Estos tokens pueden producir un conflicto, porque 'var x' y 'var y' inician de la misma manera en la gramática, lo que requeriría una resolución clara.
+
+###
+Gramáticas en forma BNC se utilizan para definir estructuras. Un ejemplo de una gramática en forma BNC para una lista (que puede ser vacía o contener un entero seguido de otra lista) es:
+
+<lista> ::= <empty>
+        ::= <int> <lista>
+
+###
+Alternativamente, la misma estructura de lista puede ser definida de manera más concisa utilizando operadores de Kleene. Para una lista de cero o más enteros, se utiliza el asterisco (*):
+
+<lista> ::= <int>*
+
+Para una lista que contiene uno o más enteros, se utiliza el signo de más (+):
+
+<lista> ::= <int>+
+
+---
+METADATA
+---
+TEMATICA: Clase 1 Clase de repaso
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Repso Gramaticas.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/
