@@ -1,36 +1,16 @@
-Aquí tienes la transcripción limpia y formateada:
+Un árbol binario se define recursivamente de dos maneras: puede ser un número entero, o puede ser una lista compuesta por un símbolo seguido de dos subárboles binarios. En esta representación de lista, el primer elemento es el símbolo que representa el nodo, el segundo elemento es el subárbol izquierdo y el tercer elemento corresponde al subárbol derecho.
 
----
+####
+Al diseñar una función recursiva para sumar los números de un árbol binario, la primera consideración es el caso base o condición de parada. Este caso se presenta cuando la función recibe un árbol que es simplemente un número. En esta situación, la función debe devolver ese mismo número, ya que no hay más operaciones que realizar.
 
-**Estructura y Suma de Árboles Binarios**
+####
+El paso recursivo del algoritmo de suma se aplica cuando el árbol no es un número, sino una lista con un símbolo y dos subárboles. En este caso, la función debe realizar dos llamados recursivos: uno para el subárbol izquierdo y otro para el subárbol derecho. El resultado final es la suma de los valores devueltos por estos dos llamados recursivos, explorando así ambas ramas del árbol para encontrar todos los números.
 
-Un árbol binario se define como un entero o un símbolo seguido de dos árboles binarios. Se representa comúnmente con una lista simbólica, donde:
-*   El primer elemento (K) es el símbolo del nodo.
-*   El segundo elemento (KDR) es el árbol binario izquierdo.
-*   El tercer elemento (KDDR) es el árbol binario derecho.
+####
+La implementación de algoritmos en árboles mediante doble recursión, como en el caso de la suma, tiene un costo computacional significativo. Cada nodo que no es una hoja genera dos nuevos llamados a la función, lo que provoca un crecimiento exponencial de la pila de llamadas (call stack). El orden de ejecución típicamente resuelve primero toda la rama izquierda hasta llegar a los casos base, y luego procede con las ramas derechas. Este comportamiento puede llevar a una "explosión" de llamados recursivos, haciendo que estos algoritmos sean costosos.
 
-**Diseño de una Función para Sumar Elementos de un Árbol**
-
-Al diseñar una función para sumar los elementos numéricos de un árbol binario, es fundamental considerar dos casos:
-
-1.  **Condición de Parada (Caso Base):** Si la función recibe como entrada un elemento que es un número, la suma de ese "árbol" es simplemente ese número. Esto se debe a que, según la gramática definida, un entero es una forma válida de árbol (una hoja).
-
-2.  **Caso Recursivo:** Si la función recibe un nodo que es un símbolo seguido de dos subárboles (árbol izquierdo y árbol derecho), se deben realizar dos llamados recursivos a la función:
-    *   Uno para explorar y sumar los elementos del subárbol izquierdo (KDR).
-    *   Otro para explorar y sumar los elementos del subárbol derecho (KDDR).
-    La suma total del nodo actual será la suma de los resultados de estas dos llamadas recursivas.
-
-**Consideraciones sobre la Recursión**
-
-Se realizan dos llamados recursivos para asegurar la exploración completa de ambos subárboles (izquierda y derecha). Es importante notar que las operaciones recursivas sobre árboles, especialmente los de gran profundidad, pueden ser computacionalmente costosas en términos de consumo de pila debido a la cantidad de llamados anidados.
-
-La ejecución de la recursión prioriza la resolución completa de todos los llamados del subárbol izquierdo antes de proceder con los llamados del subárbol derecho.
-
-**Validación de la Entrada**
-
-Es crucial que el árbol de entrada respete estrictamente la gramática definida: un nodo es un número, o es un símbolo seguido de dos árboles binarios. Si la estructura del árbol no se ajusta a esta gramática (por ejemplo, un nodo intermedio que debería ser un símbolo es un número), el algoritmo no funcionará correctamente y podría generar errores.
-
----
+####
+Para que el algoritmo de suma funcione correctamente, es fundamental que el árbol de entrada cumpla estrictamente con la gramática definida: ser un número entero o una lista con un símbolo seguido de dos subárboles. El algoritmo no contempla la validación de la estructura de entrada y asume que está bien formada. Si se proporciona un árbol que no respeta la gramática (por ejemplo, un número en lugar de un símbolo en un nodo interno), el comportamiento es indefinido y el resultado no será el esperado.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=OyhD6yR9vmY

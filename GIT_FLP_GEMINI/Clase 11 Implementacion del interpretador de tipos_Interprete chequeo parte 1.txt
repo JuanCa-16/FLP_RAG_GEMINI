@@ -1,0 +1,612 @@
+#lang eopl
+
+Este código implementa un intérprete para un lenguaje sencillo utilizando la librería EOPL (Essentials of Programming Languages). Comienza con la definición de la especificación léxica, que describe los tokens del lenguaje, y la gramática, que define la estructura sintáctica del Abstract Syntax Tree (AST).
+
+La especificación léxica (`lexical`) define cómo se reconocen elementos como comentarios, espacios en blanco, números (positivos y negativos) e identificadores.
+
+```racket
+; Especificación léxica: define tokens y patrones regex
+(define lexical
+  '(
+    (comment ("%" (arbno (not #\newline))) skip)
+    ; Comentarios: % hasta newline (se ignoran)
+    (whitespace (whitespace) skip)
+    ; Espacios en blanco (se ignoran)
+    (number (digit (arbno digit)) number)
+    ; Números positivos: dígitos
+    (number ("-" digit (arbno digit)) number)
+    ; Números negativos: - seguido de dígitos
+    (identifier (letter (arbno (or letter digit))) symbol)
+    ; Identificadores: letra seguida de letras/dígitos
+    ))
+```
+
+###
+La gramática (`grammar`) define las reglas de producción para el parser, especificando cómo se construyen las expresiones del lenguaje. Esto incluye desde expresiones básicas como variables y literales, hasta estructuras más complejas como `if`, `let`, `proc`, `letrec`, `set!`, `begin`, y aplicaciones de funciones. También se definen las primitivas del lenguaje (suma, resta, lógica booleana, comparaciones) y los tipos de expresiones.
+
+```racket
+; Gramática para el parser (producciones y constructores del AST)
+(define grammar
+  '(
+    (program (expression) a-program)
+    ; Programa: una expresión
+    (expression (identifier) var-exp)
+    ; Expresión: variable
+    (expression (number) lit-exp)
+    ; Expresión: literal numérico
+    (expression ("true") true-exp)
+    ; Expresión: booleano true
+    (expression ("false") false-exp)
+    ; Expresión: booleano false
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    ; Expresión primitiva con argumentos
+    (expression ("if" expression "then" expression "else" expression) if-exp)
+    (expression ("let" (arbno identifier "=" expression) "in" expression) let-exp)
+    (expression ("proc" "(" (separated-list type-exp identifier ",") ") " expression) proc-exp)
+    (expression ("letrec" (arbno type-exp identifier "(" (separated-list type-exp identifier ",") ")" "=" expression) "in" expression) letrec-exp)
+    (expression ("set" identifier "=" expression) set-exp)
+    (expression ("begin" expression (arbno ";" expression) "end") begin-exp)
+    (expression ("(" expression (arbno expression) ")") app-exp)
+    (primitive ("+") add-prim)
+    ; Primitiva: suma
+    (primitive ("-") sub-prim)
+    ; Primitiva: resta
+    (primitive ("*") prod-prim)
+    ; Primitiva: multiplicación
+    (primitive ("/") div-prim)
+    ; Primitiva: división
+    (primitive ("and") and-prim)
+    ; Primitiva: and lógico
+    (primitive ("or") or-prim)
+    ; Primitiva: or lógico
+    (primitive ("<") less-prim)
+    ; Primitiva: menor que
+    (primitive ("<=") lesseq-prim)
+    ; Primitiva: menor o igual
+    (primitive (">") more-prim)
+    ; Primitiva: mayor que
+    (primitive (">=") moreeq-prim)
+    ; Primitiva: mayor o igual
+    (primitive ("==") eq-prim)
+    ; Primitiva: igualdad
+    (primitive ("!=") neq-prim)
+    ; Primitiva: desigualdad
+    (type-exp ("int") int-exp)
+    (type-exp ("bool") bool-exp)
+    (type-exp ("(" (separated-list type-exp "*") "->" type-exp ")") proc-type-exp)
+    )))
+```
+
+###
+Una vez definidas las reglas léxicas y gramaticales, se utilizan las herramientas de EOPL para generar automáticamente los tipos de datos (datatypes) que representarán el AST y para crear las funciones de escaneo (scanner) y parsing (parser) a partir de estas definiciones. El scanner convierte una cadena de texto en una lista de tokens, y el parser transforma esa lista de tokens en el AST correspondiente.
+
+```racket
+;; Generar datatypes automáticamente a partir de lexical/grammar
+(sllgen:make-define-datatypes lexical grammar)
+
+; Scanner: convierte string en lista de tokens
+; scanner -> string -> lista de tokens
+(define scanner
+  (lambda (program)
+    ((sllgen:make-string-scanner lexical grammar) program)))
+
+; Parser: convierte string en AST usando la gramática
+; parser: string -> ast
+(define parser
+  (lambda (program)
+    ((sllgen:make-string-parser lexical grammar) program)))
+```
+
+###
+El entorno (`environment`) se define como una estructura de datos crucial para el intérprete, que almacena las asociaciones entre identificadores y sus valores. Puede ser un entorno vacío, extenderse con nuevas asociaciones de variables y valores, o extenderse recursivamente para procedimientos.
+
+```racket
+; Definición del entorno (environment) como estructura de datos
+(define-datatype environment environment?
+  (empty-env)
+  ; Entorno vacío
+  (extend-env
+   ; Extender entorno con nuevos bindings
+   (lid (list-of symbol?))
+   ; Lista de identificadores
+   (lval vector?)
+   ; Lista de valores
+   (old-env environment?))
+  ; Entorno anterior
+  (extend-recursively-env
+   (procname (list-of symbol?))
+   (argss (list-of (list-of symbol?)))
+   (bodies (list-of expression?))
+   (old-env environment?)))
+```
+
+###
+`value?` es un predicado simple que indica que cualquier valor es considerado válido en esta implementación. La función `apply-env` se encarga de buscar un símbolo en el entorno y retornar su valor, mientras que `apply-env-ref` retorna una referencia a dicho valor, permitiendo su modificación posterior. La búsqueda se realiza recursivamente a través de los entornos extendidos.
+
+```racket
+; Predicado value?: cualquier valor es válido (implementación simplificada)
+(define value?
+  (lambda (v) #T))
+
+; Aplicar entorno: busca un símbolo en el entorno y retorna su valor
+; apply-env: environment -> valor
+(define apply-env
+  (lambda (env var)
+    (deref (apply-env-ref env var))))
+
+; apply-env: environment -> referencia
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+                 (eopl:error "Variable not found" var))
+      ; Error si no se encuentra
+      (extend-env (lid vec old-env)
+                  (letrec
+                      ((search-var
+                        ; Búsqueda recursiva en la lista de bindings
+                        (lambda (lid lval [pos 0])
+                          (cond
+                            [(null? lid) (apply-env-ref old-env var)]
+                            ; Buscar en entorno anterior
+                            [(equal? (car lid) var) (a-ref pos vec)]
+                            ; Voy a generar una referencia cuando encuentro la variable
+                            [else (search-var (cdr lid) vec (+ pos 1))])))
+                        ; Continuar búsqueda
+                        )
+                    (search-var lid vec)))
+      (extend-recursively-env (procnames llargs bodies old-env)
+                              (letrec
+                                  ((search-proc
+                                    (lambda (procs args bodies)
+                                      (cond
+                                        [(null? procs) (apply-env-ref old-env var)]
+                                        [(eqv? (car procs) var) (a-ref 0 (list->vector (list (closure (car args) (car bodies) env))))]
+                                        [else (search-proc (cdr procs) (cdr args) (cdr bodies))])))
+                                    )
+                                (search-proc procnames llargs bodies))))))
+```
+
+###
+La función `eval-program` es el punto de entrada principal para la evaluación de un programa. Toma un AST de programa y evalúa su expresión principal en un entorno inicial predefinido.
+
+```racket
+; Evaluar programa: punto de entrada, evalúa la expresión del programa
+; eval-program: program -> value
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp)
+                 (eval-expression exp init-env))
+      ; Evalúa la expresión con entorno inicial
+      )))
+```
+
+###
+`eval-expression` es la función central del intérprete, encargada de evaluar recursivamente cada tipo de expresión en un entorno dado. Para expresiones básicas como variables o literales, simplemente busca su valor en el entorno o retorna el literal.
+
+```racket
+; Evaluar expresión: recursivamente evalúa según el tipo de expresión
+; eval-expression: expression -> value
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id)
+               (apply-env env id))
+      ; Variable: busca en entorno
+      (lit-exp (datum) datum)
+      ; Literal: retorna el número
+      (true-exp () #t)
+      ; True: retorna #t
+      (false-exp () #f)
+      ; False: retorna #f
+```
+
+###
+Para las expresiones primitivas (`prim-exp`), evalúa sus argumentos y luego aplica la operación correspondiente. Las expresiones condicionales (`if-exp`) evalúan la condición y, si es un booleano, ejecutan la rama `true` o `false` según el resultado.
+
+```racket
+      (prim-exp (prim lrands)
+                ; Primitiva: evalúa argumentos y aplica
+                (let ((values (map (lambda (x) (eval-expression x env)) lrands)))
+                  (apply-primitive prim values)))
+      (if-exp (cond-exp true-exp false-exp)
+              (let ((cond-value (eval-expression cond-exp env)))
+                (if (boolean? cond-value)
+                    (if cond-value
+                        (eval-expression true-exp env)
+                        (eval-expression false-exp env))
+                    (eopl:error "The condition must be a boolean " cond-exp))))
+```
+
+###
+El manejo de `let-exp` implica evaluar las expresiones asociadas a los identificadores, crear un nuevo entorno extendido con estos bindings y luego evaluar la expresión del cuerpo. `proc-exp` simplemente crea un objeto `closure` que encapsula los parámetros, el cuerpo y el entorno actual. `app-exp` evalúa el operador para obtener el procedimiento, evalúa los operandos y luego aplica el procedimiento al extender su entorno original con los argumentos de la llamada.
+
+```racket
+      (let-exp (lid lexpr expr)
+               (let ((vexpr (map (lambda (x) (eval-expression x env)) lexpr)))
+                 (eval-expression expr (extend-env lid (list->vector vexpr) env))))
+      (proc-exp (types lid exp)
+                (closure lid exp env))
+      (app-exp (rator rands)
+               (let ((procv (eval-expression rator env))
+                     (vrands (map (lambda (x) (eval-expression x env)) rands)))
+                 (if (and (procVal? procv)
+                          (= (length (procVal->lid procv)) (length vrands)))
+                     (cases procVal procv
+                       (closure (lid exp old-env)
+                                (eval-expression exp (extend-env lid (list->vector vrands) old-env))))
+                     (eopl:error "Not a procedure or incorrect of number of args"))))
+```
+
+###
+Las expresiones `letrec-exp` se utilizan para definir procedimientos mutuamente recursivos. Se extiende el entorno con estos procedimientos antes de evaluar el cuerpo principal. `begin-exp` ejecuta una secuencia de expresiones y retorna el valor de la última. `set-exp` modifica el valor de una variable existente en el entorno, para lo cual utiliza referencias.
+
+```racket
+      ;; Manejo de expresiones letrec en eval-expression
+      (letrec-exp (type procnames lltypes llargs bodies expn)
+                  ; Componentes de la expresión letrec
+                  (eval-expression expn
+                                   ; Expresión del cuerpo principal (después de "in")
+                                   (extend-recursively-env
+                                    ; Extender el ambiente con definiciones recursivas
+                                    procnames
+                                    ; Lista de nombres de procedimientos
+                                    llargs
+                                    ; Lista de listas de argumentos (parámetros formales)
+                                    bodies
+                                    ; Lista de cuerpos de los procedimientos
+                                    env)))
+                  ; Ambiente actual (base para la extensión)
+      (begin-exp (exp lexp)
+                 (letrec ((evaluation
+                           (lambda (lexp)
+                             (cond
+                               [(null? (cdr lexp)) (eval-expression (car lexp) env)]
+                               [else (begin (eval-expression (car lexp) env)
+                                            (evaluation (cdr lexp)))]))))
+                   (evaluation (cons exp lexp))))
+      (set-exp (id exp)
+               (begin
+                 (setref! (apply-env-ref env id)
+                          (eval-expression exp env))
+                 (void)))
+      (else "Not implemented yet"))))
+    ; Default (no debería ocurrir)
+```
+
+###
+La función auxiliar `operation` es una operación genérica que aplica una función binaria acumulativa a una lista de valores, comenzando con un valor inicial.
+
+```racket
+; Operación genérica: aplica una función binaria acumulativa a una lista
+; operation: (T,T)->T, lista de valores, T -> value
+(define operation
+  (lambda (f lst acc)
+    (cond
+      [(null? lst) acc]
+      ; Caso base: retorna acumulador
+      [else (operation f (cdr lst) (f (car lst) acc))])))
+    ; Aplica f y acumula
+```
+
+###
+`apply-primitive` implementa la lógica para cada operación primitiva definida en el lenguaje. Toma el identificador de la primitiva y una lista de valores, y ejecuta la operación correspondiente (suma, resta, producto, división, operadores lógicos y comparaciones).
+
+```racket
+; Aplicar primitiva: ejecuta la operación correspondiente sobre los valores
+; apply-primitive: primitive, lista valores -> value
+(define apply-primitive
+  (lambda (prim values)
+    (cases primitive prim
+      (add-prim () (operation + values 0))
+      ; Suma acumulativa
+      (sub-prim () (- (car values) (operation + (cdr values) 0)))
+      ; Resta (first - sum(rest))
+      (prod-prim () (operation * values 1))
+      ; Producto acumulativo
+      (div-prim () (/ (car values) (operation * (cdr values) 1)))
+      ; División (first / product(rest))
+      (and-prim () (operation (lambda (a b) (and a b)) values #t))
+      ; AND acumulativo
+      (or-prim () (operation (lambda (a b) (or a b)) values #f))
+      ; OR acumulativo
+      (less-prim () (< (car values) (cadr values)))
+      ; < (2 args)
+      (lesseq-prim () (<= (car values) (cadr values)))
+      ; <= (2 args)
+      (more-prim () (> (car values) (cadr values)))
+      ; > (2 args)
+      (moreeq-prim () (>= (car values) (cadr values)))
+      ; >= (2 args)
+      (eq-prim () (= (car values) (cadr values)))
+      ; == numérico (2 args)
+      (neq-prim () (not (= (car values) (cadr values))))
+      ; != numérico (2 args)
+      )))
+```
+
+###
+La estructura de datos `procVal` representa los procedimientos (closures). Un `closure` encapsula la lista de identificadores de sus parámetros (`lid`), el cuerpo de la expresión (`exp`) y el entorno (`old-env`) en el que fue definido. `procVal->lid` es un extractor para obtener los identificadores de los parámetros de un procedimiento.
+
+```racket
+; Closure
+; Representación de los procedimientos
+(define-datatype procVal procVal?
+  (closure
+   (lid (list-of symbol?))
+   (exp expression?)
+   (old-env environment?)))
+
+;;Extractor para lid en un closure
+(define procVal->lid
+  (lambda (cls)
+    (cases procVal cls
+      (closure (lid exp old-env) lid))))
+```
+
+###
+Para permitir la mutabilidad de las variables (usada por `set-exp`), se define la estructura `reference`. Una referencia (`a-ref`) apunta a una posición en un vector, que a su vez contiene el valor. Las funciones `deref` y `setref!` permiten acceder al valor referenciado y modificarlo, respectivamente.
+
+```racket
+;;References
+(define-datatype reference reference?
+  (a-ref
+   (position integer?)
+   (vec vector?)))
+
+;;dref: reference -> value
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+;primitive-refef: reference -> valor
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-ref vec pos)))))
+
+;setref
+;Setref es un procedimiento para cambiar el valor de una referencia
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-set! vec pos val)))))
+```
+
+###
+La estructura `nulltype` se utiliza para representar un valor nulo o "void", a menudo el resultado de operaciones con efectos secundarios que no retornan un valor significativo.
+
+```racket
+;;defininición del valor nulo
+(define-datatype nulltype nulltype?
+  (void))
+```
+
+###
+El sistema de tipos del intérprete se define mediante el datatype `type`, que puede ser un `atomic-type` (como `int` o `bool`) o un `proc-type` (para tipos de procedimientos, especificando los tipos de argumentos y el tipo de resultado). Se definen `int-type` y `bool-type` como instancias de `atomic-type`.
+
+```racket
+; Tipos
+(define-datatype type type?
+  (atomic-type
+   (nombre symbol?))
+  (proc-type
+   (arg-type (list-of type?))
+   (result-t type?)))
+
+;int
+(define int-type (atomic-type 'int))
+
+;bool
+(define bool-type (atomic-type 'bool))
+```
+
+###
+Las funciones `expand-type-expression` y `expand-type-expressions` se encargan de transformar las expresiones de tipo definidas en la gramática (`type-exp`) en las representaciones internas del sistema de tipos (`type`).
+
+```racket
+;expand-type-expression: expresion de tipos -> tipo
+(define expand-type-expression
+  (lambda (texp)
+    (cases type-exp texp
+      (int-exp () int-type)
+      (bool-exp () bool-type)
+      (proc-type-exp (targs tresult)
+                     (proc-type (expand-type-expressions targs)
+                                (expand-type-expression tresult))))))
+
+;expand-type-expressions: list of type-exp -> list of types
+(define expand-type-expressions
+  (lambda (texps)
+    (map expand-type-expression texps)))
+```
+
+###
+`type-of-expression` es el verificador de tipos principal. Para expresiones básicas como literales, booleanos o variables, determina su tipo directamente. Para expresiones `if`, verifica que la condición sea booleana y que las ramas `then` y `else` tengan tipos compatibles, retornando el tipo común.
+
+```racket
+;type-of-expression: expression -> type
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (lit-exp (d) int-type)
+      (true-exp () bool-type)
+      (false-exp () bool-type)
+      (var-exp (id)
+               (deref (apply-tenv tenv id)))
+      (if-exp (test-exp true-exp false-exp)
+              (let ((test-type (type-of-expression test-exp tenv))
+                    (true-type (type-of-expression true-exp tenv))
+                    (false-type (type-of-expression false-exp tenv)))
+                (begin
+                  (check-equal-type! test-type bool-type test-exp)
+                  (check-equal-type! true-type false-type exp)
+                  true-type ;false-type
+                  )))
+```
+
+###
+Continuando con `type-of-expression`, esta sección maneja la inferencia de tipos para procedimientos (`proc-exp`), aplicaciones de función (`app-exp`) y bloques `let` (`let-exp`). Para procedimientos, infiere el tipo de retorno y crea un tipo de procedimiento. Para aplicaciones, verifica la compatibilidad de los tipos del operador y los operandos. Para `let`, extiende el entorno de tipos con las nuevas variables.
+
+```racket
+      (proc-exp (targs args body)
+                (type-of-proc-exp targs args body tenv))
+      (app-exp (rator rands)
+               (let ((trator (type-of-expression rator tenv))
+                     (trands (map (lambda (x) (type-of-expression x tenv)) rands)))
+                 (type-of-application trator trands rator rands exp)))
+      (let-exp (lid lval exp)
+               (type-of-expression exp (extend-env lid
+                                                   (list->vector
+                                                    (map (lambda (x) (type-of-expression x tenv)) lval))
+                                                   tenv)))
+      (else 0))))
+```
+
+###
+`init-tenv` define el entorno de tipos inicial, preestableciendo los tipos de algunas variables globales. La función `apply-tenv` es similar a `apply-env`, pero en lugar de valores, busca los tipos asociados a los identificadores en el entorno de tipos.
+
+```racket
+;Type enviroment
+(define init-tenv
+  (extend-env '(x y z f)
+              (list->vector (list int-type int-type int-type (proc-type (list int-type int-type int-type) int-type)))
+              (extend-env '(a b c)
+                          (list->vector (list int-type int-type int-type))
+                          (empty-env))))
+
+; apply-env: environment -> type
+(define apply-tenv
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+                 (eopl:error "Variable not found" var))
+      ; Error si no se encuentra
+      (extend-env (lid vec old-env)
+                  (letrec
+                      ((search-var
+                        ; Búsqueda recursiva en la lista de bindings
+                        (lambda (lid lval [pos 0])
+                          (cond
+                            [(null? lid) (apply-tenv old-env var)]
+                            ; Buscar en entorno anterior
+                            [(equal? (car lid) var) (a-ref pos vec)]
+                            ; Voy a generar una referencia cuando encuentro la variable
+                            [else (search-var (cdr lid) vec (+ pos 1))])))
+                        ; Continuar búsqueda
+                        )
+                    (search-var lid vec)))
+      (extend-recursively-env (procnames llargs bodies old-env)
+                              (letrec
+                                  ((search-proc
+                                    (lambda (procs args bodies)
+                                      (cond
+                                        [(null? procs) (apply-env-ref old-env var)]
+                                        [(eqv? (car procs) var) (a-ref 0 (list->vector (list (closure (car args) (car bodies) env))))]
+                                        [else (search-proc (cdr procs) (cdr args) (cdr bodies))])))
+                                    )
+                                (search-proc procnames llargs bodies))))))
+```
+
+###
+`check-equal-type!` es una función auxiliar que verifica si dos tipos son iguales y lanza un error si no lo son. `type-to-external-form` y `arg-types-to-external-form` son funciones de ayuda para convertir la representación interna de los tipos a una forma más legible y externa, útil para mensajes de error.
+
+```racket
+;check-equal-type: type, type -> type
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'type-check "Types didn't match ~s != ~s in ~%~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2)
+                    exp)
+        t1)))
+
+(define type-to-external-form
+  (lambda (t)
+    (cases type t
+      (atomic-type (name) name)
+      (proc-type (targs tresult)
+                 (append (arg-types-to-external-form targs)
+                         '(-->)
+                         (list (type-to-external-form tresult)))))))
+
+(define arg-types-to-external-form
+  (lambda (ty)
+    (cond
+      [(null? ty) '()]
+      [(null? (cdr ty)) (list (type-to-external-form (car ty)))]
+      [else (append (list (type-to-external-form (car ty)))
+                    (list "*")
+                    (arg-types-to-external-form (cdr ty)))])))
+```
+
+###
+`type-of-proc-exp` determina el tipo de un procedimiento, infiriendo el tipo del cuerpo en un entorno de tipos extendido con los parámetros. `type-of-application` verifica que el operador sea un tipo de procedimiento y que los tipos de los argumentos coincidan con los tipos esperados por el procedimiento.
+
+```racket
+;type-of-proc-exp list of types, list of idenfier, exp => type
+(define type-of-proc-exp
+  (lambda (targs args body tenv)
+    (let* ((args-types (expand-type-expressions targs))
+           (result-type (type-of-expression body (extend-env args (list->vector args-types) tenv))))
+      (proc-type args-types result-type))))
+
+(define type-of-application
+  (lambda (trator trands rator rands exp)
+    (cases type trator
+      (proc-type (args-types result-type)
+                 (if (= (length args-types) (length trands))
+                     (begin
+                       (for-each check-equal-type! trands args-types rands)
+                       result-type)
+                     (eopl:error 'type-of-application "Length of the args mismatch ~s ~s"
+                                 args-types trands)))
+      (else
+       (eopl:error 'type-of-expression "Rator isn't a proc-type ~s is a type ~s"
+                   rator
+                   (type-to-external-form trator))))))
+```
+
+###
+Finalmente, se definen `env0` y `init-env` como entornos iniciales para la evaluación del intérprete. `env0` es un entorno base con algunas variables numéricas, y `init-env` extiende `env0` con variables adicionales y un procedimiento de ejemplo.
+
+```racket
+; Entorno inicial predefinido (variables x,y,z y a,b,c con valores numéricos)
+(define env0
+  (extend-env '(a b c)
+              (list->vector '(4 5 6))
+              (empty-env)))
+
+(define init-env
+  (extend-env '(x y z f)
+              (list->vector
+               (list 1 2 3
+                     (closure '(x y)
+                              (prim-exp (add-prim) (list (var-exp 'x) (var-exp 'y)))
+                              env0)))
+              env0))
+```
+
+###
+El intérprete interactivo se inicia utilizando `sllgen:make-rep-loop`, proporcionando un prompt `-->`, la función de evaluación `eval-program` y el parser.
+
+```racket
+; Iniciar el intérprete
+(interpreter)
+```
+
+---
+METADATA
+---
+TEMATICA: Clase 11 Implementacion del interpretador de tipos
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Interprete chequeo parte 1.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interprete%20chequeo%20parte%201/

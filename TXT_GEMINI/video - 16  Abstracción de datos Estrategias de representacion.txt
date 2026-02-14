@@ -1,32 +1,23 @@
-Aquí tienes la transcripción limpia y formateada:
+La abstracción de datos otorga a los programas independencia de la representación. Una estrategia para ilustrar esto es mediante el tipo de dato abstracto "ambiente". Un ambiente asocia un valor con cada variable perteneciente a un conjunto finito. Este tipo de dato es fundamental en la implementación de lenguajes de programación para gestionar la asociación entre variables y sus valores. Las variables pueden ser representadas de diversas formas, como símbolos, referencias en tablas hash o números, siempre que se pueda verificar la igualdad entre ellas.
 
----
+####
 
-Se explorarán estrategias para la representación de datos, haciendo énfasis en cómo la abstracción de datos permite a los programas tener independencia de la representación. Se ilustrarán estas estrategias usando el tipo de datos "ambiente".
+Formalmente, un ambiente puede ser modelado como una función cuyo dominio es un conjunto finito de variables y cuyo codominio es el conjunto de todos los valores posibles. El tipo de dato ambiente se define a través de tres procedimientos principales: `empty-env`, `apply-env` y `extend-env`.
 
-Un tipo de datos ambiente asocia un valor con cada elemento de un conjunto finito de variables. En la implementación de un lenguaje de programación, el ambiente se usa para asociar variables con sus valores.
+- `empty-env`: Produce una representación del ambiente vacío, que no contiene ninguna asociación variable-valor.
+- `apply-env`: Aplica un ambiente a una variable para buscar y devolver el valor asociado a dicha variable.
+- `extend-env`: Produce un nuevo ambiente que se comporta como un ambiente previo, pero extendido con una nueva asociación entre una variable y un valor.
 
-Las variables pueden ser representadas de diversas maneras (símbolos, referencias a tablas hash, números), siempre que sea posible verificar la igualdad entre ellas.
+####
 
-**Definición de Ambiente:**
-Un ambiente es una función cuyo dominio es un conjunto finito de variables y cuyo rango (codominio) son los valores asociados.
+La estructura de un ambiente es inherentemente recursiva. El caso base es el ambiente vacío (`empty-env`), que sirve como condición de parada. A partir de este, se pueden construir ambientes más complejos de forma incremental. Por ejemplo, un ambiente que asocia `d` con 6, `y` con 8, `x` con 7 y otra `y` con 14 (sobrescribiendo la anterior) se construye extendiendo sucesivamente el ambiente vacío. La construcción de cualquier ambiente se puede describir formalmente mediante la siguiente gramática:
 
-**Procedimientos Fundamentales del Tipo de Datos Ambiente:**
+`<ambiente> ::= empty-env`
+`<ambiente> ::= extend-env(<identificador>, <valor>, <ambiente>)`
 
-El tipo de datos ambiente tiene tres procedimientos fundamentales:
-*   **NTL:** Crea una representación del ambiente vacío.
-*   **Applian:** Busca el valor de una variable dada dentro de la representación de un ambiente.
-*   **Stenent:** Produce una nueva representación de un ambiente extendido, que contiene una variable y su valor, y hace referencia a un ambiente previo.
+####
 
-**Ejemplo de Definición de un Ambiente:**
-Al definir un ambiente, este puede contener variables con sus valores. Por ejemplo: D=6, Y=8, X=7, Y=14. El ambiente vacío es la condición de parada en una definición recursiva de ambientes.
-
-**Estructura Gramatical para Construir Ambientes:**
-La representación de ambientes puede realizarse mediante estructuras de datos, siguiendo una gramática que define:
-*   Un ambiente vacío.
-*   Un ambiente extendido, compuesto por un identificador (variable), un valor y una referencia a otro ambiente (el ambiente base del que se extiende).
-
-Se explorarán dos estrategias de implementación para estos ambientes: una basada en listas y otra basada en procedimientos.
+El tipo de dato abstracto "ambiente", definido por sus operaciones y su estructura recursiva, puede implementarse utilizando diferentes estrategias y estructuras de datos concretas. Dos enfoques comunes para su implementación son las representaciones basadas en listas y las representaciones basadas en procedimientos. Cada una de estas estrategias ofrece distintas características en términos de eficiencia y diseño.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=oq0ZwXqmJT0

@@ -1,47 +1,16 @@
-Aquí tienes la transcripción limpia y formateada:
+La función `de-ref`, encargada de obtener el valor de una referencia, se modifica para gestionar distintos tipos de "blancos" o `targets`. Cuando una variable es representada como un `target`, se distinguen dos casos. Si el `target` es directo, la función simplemente retorna su valor contenido, ya que no hay indirección. Si el `target` es indirecto, significa que la referencia apunta a otra referencia. En esta situación, `de-ref` debe buscar y devolver el valor de esa referencia interna, estableciendo así la conexión entre ellas.
 
----
+####
+La implementación de `de-ref` se actualiza para manejar la lógica de `targets` directos e indirectos. La función recibe una referencia y primero evalúa su `target`. Si es un `direct-target`, extrae y devuelve el valor expresado contenido en él. Si es un `indirect-target`, procede a dereferenciar la referencia interna que contiene. A continuación, se evalúa el `target` de esta referencia interna: si es un `direct-target`, se devuelve su valor; si resulta ser otro `indirect-target`, se genera un error. Esta restricción impide referencias anidadas a múltiples niveles, como una referencia que apunta a otra referencia que a su vez apunta a una tercera, permitiendo únicamente un solo nivel de indirección.
 
-A continuación, se presenta la implementación de los cambios en el manejador de referencias.
+####
+El procedimiento `set-ref!`, que modifica el valor de una referencia, también se adapta para considerar si el `target` es directo o indirecto. Si el `target` es directo, `set-ref!` modifica el valor de la referencia de entrada, siguiendo el comportamiento estándar. En cambio, si el `target` es indirecto, la operación de modificación no se aplica sobre la referencia de entrada, sino sobre la referencia interna a la que esta apunta. De esta manera, se logra la conexión y se asegura que el cambio se propague a la variable final. En ambos casos, el nuevo valor asignado se almacena siempre como un `direct-target`.
 
-### Modificación de `de-ref`
+####
+La implementación de `set-ref!` determina primero cuál es la referencia efectiva que debe ser modificada. Al recibir una referencia y un nuevo valor, se inspecciona el `target` de la referencia de entrada. Si es un `direct-target`, la propia referencia de entrada es seleccionada para la modificación. Si se trata de un `indirect-target`, se extrae la referencia interna que contiene y esta se convierte en el objetivo de la operación de asignación. Una vez identificada la referencia correcta, se invoca a la función primitiva `primitive-set-ref!`, pasándole dicha referencia y el nuevo valor, que siempre se empaqueta como un `direct-target`. Este mecanismo desvía la asignación a la variable a la que se apunta en casos de indirección.
 
-La función `de-ref` se encarga de obtener el valor de una referencia. Las variables se representan como "blancos" (targets).
-*   Si el blanco es **directo**, se retorna su valor directamente.
-*   Si el blanco es **indirecto** (corresponde a una referencia a otra referencia), se busca el valor de la referencia interna.
-
-**Detalles de la implementación de `de-ref`:**
-1.  `de-ref` recibe una `referencia`.
-2.  Si la `referencia` es un `direct target`, devuelve el valor interno.
-3.  Si la `referencia` es un `indirect target`:
-    *   Contiene una `referencia interna` (`ref1`).
-    *   Se aplica `primitive-de-ref` a `ref1` para obtener su representación.
-    *   Si la representación de `ref1` es un `direct target`, se devuelve su valor expresado.
-    *   Si la representación de `ref1` es un `indirect target`, se genera un error. Esto ocurre porque se ha encontrado una referencia indirecta anidada dentro de otra, lo cual no está permitido más allá de un nivel. La referencia no es válida.
-
-### Modificación de `set-ref`
-
-El procedimiento `set-ref` modifica el valor de una referencia y debe considerar los distintos tipos de blancos.
-
-**Detalles de la implementación de `set-ref`:**
-1.  `set-ref` recibe una `referencia` y un `nuevo valor`.
-2.  Se determina qué referencia modificar:
-    *   Se aplica `primitive-de-ref` a la `referencia` de entrada para obtener su `target`.
-    *   Si el `target` es un `direct target`, se modifica la `referencia` de entrada misma.
-    *   Si el `target` es un `indirect target`, este contiene una `referencia interna` (`ref2`). En este caso, lo que se modifica es `ref2` (la variable a la que apunta la referencia indirecta).
-3.  El `nuevo valor` se almacena siempre como un `direct target`.
-4.  Finalmente, se invoca `primitive-set-ref` con la referencia determinada (la original o la interna) y el `nuevo valor`.
-
-De esta manera, si se intenta modificar una variable que es un `indirect target`, la modificación se desvía a la variable a la que ya está apuntando.
-
-### Resumen y Próximos Pasos
-
-Se han modificado las funciones `de-ref` y `set-ref` para manejar adecuadamente las referencias, incluyendo los casos de `direct target` e `indirect target`.
-
-*   `de-ref` consulta el target al que apunta una referencia, resolviendo un nivel de indirección si es necesario.
-*   `set-ref` modifica la referencia directamente si el target es directo, o modifica la referencia interna si el target es indirecto, redirigiendo la asignación a la variable apuntada.
-
-A continuación, será necesario modificar otras partes del código, como la evaluación de expresiones y procedimientos, para integrar correctamente estas nuevas funcionalidades de manejo de referencias.
+####
+Se han modificado las funciones `de-ref` y `set-ref!` para manejar correctamente las referencias que pueden tener `targets` directos o indirectos. `de-ref` ahora resuelve la indirección consultando la referencia interna cuando encuentra un `indirect-target`. Por su parte, `set-ref!` desvía la operación de asignación a la referencia apuntada si el `target` es indirecto, o modifica la referencia de entrada si es directo. Estas adaptaciones son fundamentales para el correcto funcionamiento del paso por referencia. A continuación, será necesario realizar ajustes adicionales en otras partes del interpretador, como en la evaluación de expresiones y procedimientos, para integrar completamente esta nueva funcionalidad.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=WtgIKHO4FcM

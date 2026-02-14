@@ -1,80 +1,82 @@
-A continuación, se presenta la limpieza y estructuración de la transcripción de clase, enfocándose en los conceptos y pasos técnicos:
+El procedimiento `expand-type-of-expression` tiene como objetivo calcular el tipo denotado por una expresión de tipo proveniente de la especificación gramatical. Por ejemplo, si recibe una expresión de tipo numérico, la convierte en una representación interna como un `atomic-type` con la etiqueta `INT`. El revisor de tipos (`type-checker`) invocará esta función siempre que necesite la representación interna de un tipo definido en la gramática.
 
----
+La implementación se realiza mediante un `case` sobre la expresión de tipo:
+-   Para `int-type-expression`, retorna `int-type`.
+-   Para `bool-type-expression`, retorna `bool-type`.
+-   Para `proc-type-expression`, que contiene los tipos de los argumentos y el tipo del resultado, construye un `proc-type`. Para ello, aplica recursivamente `expand-type-of-expression` a cada tipo de argumento (usando una función auxiliar `expand-type-expressions` que mapea la función sobre una lista) y al tipo de resultado.
 
-### Implementación del Chequeador de Tipos
+```scheme
+(define expand-type-of-expression
+  (lambda (type-exp)
+    (cases type-expression type-exp
+      (int-type-expression () (int-type))
+      (bool-type-expression () (bool-type))
+      (proc-type-expression (arg-tes result-te)
+        (proc-type
+          (expand-type-expressions arg-tes)
+          (expand-type-of-expression result-te))))))
 
-Se procederá a implementar el chequeador de tipos, comenzando por la definición de `SPAND_TYPE_EXPRESSION`.
+(define expand-type-expressions
+  (lambda (arg-tes)
+    (map
+      (lambda (x) (expand-type-of-expression x))
+      arg-tes)))
+```
 
-#### 1. Procedimiento `SPAND_TYPE_EXPRESSION`
+####
+El revisor de tipos se implementa como un procedimiento principal llamado `type-of-expression`, que recibe una expresión del lenguaje y un ambiente de tipos (`tenv`). Su función es retornar el tipo correspondiente a dicha expresión o señalar un error de tipos si la expresión no es válida según las reglas. Este procedimiento tendrá una cláusula para cada regla de producción de la gramática de expresiones, asociando a cada estructura sintáctica su tipo correspondiente.
 
-Este procedimiento calcula el tipo denotado por una expresión de tipo. El revisor de tipos lo invocará cada vez que requiera el tipo de una expresión.
+####
+Las primeras cláusulas de `type-of-expression` gestionan los casos base: literales y variables.
+-   Para una `literal-expression` que contiene un número, el tipo retornado es `int-type`.
+-   Para una `literal-expression` que contiene un valor booleano (`#t` o `#f`), el tipo retornado es `bool-type`.
+-   Para una `var-expression`, que representa una variable, se busca su tipo en el ambiente de tipos (`tenv`) utilizando el procedimiento `apply-tenv`. Este es análogo al `apply-env` del intérprete, pero opera sobre ambientes de tipos y emite errores específicos de tipado si la variable no se encuentra.
 
-*   **Entrada:** Una expresión de tipo (`TYPE_EXPRESSION_EXP`), definida en la especificación gramatical.
-*   **Casos:**
-    *   Si la expresión es un `INT_EXPRESSION`, retorna `INT_TYPE`. Esto vincula la definición gramatical con la representación interna de tipos.
-    *   Si la expresión es un `BULT_TYPE_EXPRESSION`, retorna `BULT_TYPE`.
-    *   Para un `PROT_TYPE_EXPRESSION`, que contiene los argumentos (`ARG_TEST`) y el tipo del resultado (`RESULT_T_EXPRESSION`), se construye un `PROT_TYPE`. Esto implica el cálculo recursivo de los tipos: se utiliza `SPAND_TYPE_EXPRESSIONS` para la lista de argumentos y `SPAND_TYPE_EXPRESSION` para el tipo del resultado.
+```scheme
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (literal-expression (val)
+        (if (number? val)
+            (int-type)
+            (bool-type)))
+      (var-expression (var) (apply-tenv tenv var))
+      ...
+      )))
+```
 
-#### 2. Procedimiento `SPAND_TYPE_EXPRESSIONS`
+####
+La regla de tipado para una expresión condicional (`if-expression`) establece tres condiciones. Primero, la expresión de prueba (`test-exp`) debe evaluarse a un tipo booleano (`bool-type`). Segundo, las expresiones de la rama verdadera (`true-exp`) y la rama falsa (`false-exp`) deben tener el mismo tipo. El tipo resultante de la expresión `if` completa será el tipo común de estas dos ramas.
 
-Esta función auxiliar procesa una lista de expresiones de tipo para obtener una lista de tipos.
+Para implementar esto, se calculan recursivamente los tipos de las tres subexpresiones. Luego, se utilizan aserciones o funciones de verificación para confirmar que el tipo de la prueba es booleano y que los tipos de las dos ramas son iguales. Si se cumplen las condiciones, se retorna el tipo de la rama verdadera.
 
-*   **Entrada:** Una lista de expresiones (ej. `ARG_TEST`).
-*   **Funcionamiento:** Aplica la función `SPAND_TYPE_EXPRESSION` (la versión singular) a cada elemento de la lista, utilizando una operación de mapeo (ej. `MAP` con una `LAMBDA`).
+```scheme
+(if-expression (test-exp true-exp false-exp)
+  (let ((type-test (type-of-expression test-exp tenv))
+        (type-true (type-of-expression true-exp tenv))
+        (type-false (type-of-expression false-exp tenv)))
+    (begin
+      (check-equal-type type-test (bool-type) test-exp)
+      (check-equal-type type-true type-false exp)
+      type-true)))
+```
 
-Estas funciones constituyen la primera parte de la interfaz para la representación de tipos, mapeando cada tipo a su `data type` correspondiente para la verificación.
+####
+La función auxiliar `check-equal-type` se utiliza para verificar que dos tipos son idénticos. Recibe tres argumentos: un tipo `t1`, un tipo `t2` y la expresión `exp` que se está evaluando. Si `t1` y `t2` no son iguales (`equal?`), la función genera un error de tipado, informando que los tipos no coinciden. El mensaje de error incluye la representación externa de ambos tipos y la expresión que causó el fallo, proporcionando contexto para la depuración. Si los tipos son iguales, la función no retorna valor y la ejecución continúa.
 
----
+```scheme
+(define check-equal-type
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'check-equal-type
+          "Types do not match: ~s and ~s in ~s"
+          (type->external-form t1)
+          (type->external-form t2)
+          exp))))
+```
 
-### Implementación del Revisor de Tipos (`CHECKER`)
-
-El revisor de tipos (`checker`) se implementará como un procedimiento que recibe una expresión y un ambiente de tipos, retornando el tipo correspondiente o un error. Este revisor se denomina `TAVIO_EXPRESSION` y contendrá cláusulas que implementan las reglas de producción para expresiones tipadas, asociando un tipo a cada expresión de la gramática.
-
-#### 1. Definición Inicial de `TAVIO_EXPRESSION`
-
-`TAVIO_EXPRESSION` recibe una expresión (`EXPRESSION_ES`) y un ambiente de tipos. Se respetarán los nombres definidos previamente para los casos de evaluación.
-
-*   **Casos Iniciales (Literales y Variables):**
-    *   Para `LITERAL_EXPRESSION`:
-        *   Si es un literal numérico, retorna `INT_TYPE`.
-        *   Si es un literal booleano, retorna `BULT_TYPE`.
-    *   Para `VAR_EXPRESSION`: Se invoca `APPLY_TM`, un procedimiento similar a `TUEM` pero con un mensaje de error específico para tipos no encontrados o inconsistencias de tipo.
-
-#### 2. Manejo de Expresiones Condicionales (`IF_EXPRESSION`)
-
-El siguiente caso a implementar son las expresiones condicionales (`IF_EXPRESSION`), que reciben `TEST_EXPRESSION`, `TRUE_EXPRESSION`, y `FALSE_EXPRESSION`.
-
-*   **Pasos:**
-    1.  Se calculan los tipos de cada componente:
-        *   `type_test` para `TEST_EXPRESSION`.
-        *   `type_true` para `TRUE_EXPRESSION`.
-        *   `type_false` para `FALSE_EXPRESSION`.
-        Esto se realiza utilizando `TAVIO_EXPRESSION` en el ambiente actual, almacenando los resultados en una estructura `LET`.
-    2.  **Verificación de Reglas de Tipo:**
-        *   `type_test` debe ser `BULT_TYPE`.
-        *   `type_true` debe ser igual a `type_false`.
-        Estas verificaciones se realizan utilizando la función `CHECK_EQUAL_TYPE`, la cual recibe la expresión original para generar mensajes de error contextualizados.
-
-#### 3. Función Auxiliar `CHECK_EQUAL_TYPE`
-
-Esta función compara dos tipos y genera un error si no son iguales.
-
-*   **Definición:** `CHECK_EQUAL_TYPE(T1, T2, S)`
-    *   **Lógica:** Si `T1` y `T2` no son iguales (`NOT EQUAL T1 T2`), se genera un error `EOPLERROR` con un mensaje indicando que "los tipos no corresponden" (`S != S`). Los tipos (`T1`, `T2`) y la expresión (`S`) se formatean para el mensaje de error utilizando `TYPE_EXTERNAL_FORM`.
-
-#### 4. Función Auxiliar `TYPE_EXTERNAL_FORM`
-
-Esta función formatea la representación interna de los tipos a una cadena legible para los mensajes de error.
-
-*   **Definición:** `TYPE_EXTERNAL_FORM(T)`
-    *   **Casos:**
-        *   Si `T` es un `ATOMIC_TYPE`, retorna su nombre.
-        *   Si `T` es un `PROT_TYPE`, transforma la lista de tipos de argumentos y el tipo de resultado en una cadena con un formato específico (ej. `INT * BOOL -> INT`), calculando recursivamente los formatos externos de sus componentes.
-
-Con esto se concluye la implementación de los casos iniciales. A continuación, se abordará la implementación de procedimientos, aplicación de procedimientos, `LET` y `LETREC`.
-
----
+####
+Para mejorar la legibilidad de los mensajes de error de tipos, se utiliza una función de formato llamada `type->external-form`. Esta función toma una representación de tipo interna del sistema (como `atomic-type` o `proc-type`) y la convierte en una cadena de texto más comprensible para el programador. Por ejemplo, un `atomic-type` con la etiqueta `INT` se convierte en el símbolo `'int`. Un `proc-type` se formatea para mostrar los tipos de sus argumentos y su tipo de retorno, a menudo en una notación como `(T1 * T2 -> TResult)`. Esta conversión es crucial para que los errores de tipado sean informativos y fáciles de diagnosticar.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=KCAnqIIBwMY

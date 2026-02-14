@@ -1,15 +1,20 @@
+######## RESUMEN ########
+Implementa un intérprete básico en Racket para evaluar expresiones aritméticas con variables y operaciones primitivas.
+
+######## CONCEPTOS ########
+análisis léxico, análisis sintáctico, árbol sintáctico abstracto (AST), ambiente de ejecución, alcance léxico
+
 ######## EXPLICACION ########
-Implementa un intérprete simple para un lenguaje con primitivas.
-Ejemplo de especificación léxica.
-Ejemplo de especificación gramatical.
-Ejemplo de evaluación de expresiones.
-Ejemplo de manejo de ambiente de variables.
-Ejemplo de evaluación de operaciones primitivas.
+Este código implementa un intérprete simple en Racket para un lenguaje aritmético con expresiones literales, variables y operaciones básicas.
+Permite procesar y evaluar cadenas de texto que representan operaciones matemáticas, demostrando la ejecución de un programa paso a paso. Se utiliza para simular cómo un computador entiende y resuelve cálculos como `x + add1(y)`.
+Aplica los principios de análisis léxico y sintáctico mediante `especificacion-lexica` y `especificacion-gramatical`, generando un AST que es recorrido por `evaluar-expresion` y `evaluar-primitiva`.
+La gestión de `ambiente` y `apply-env` ilustra la resolución de variables y el alcance léxico.
+Este ejemplo es fundamental para comprender la semántica operacional y el diseño de compiladores e intérpretes.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 3. SematicaLenguajesPrimitivas/2.InterpretadorSimple.rkt
 FUENTE: CODIGO
-lenguaje: Racket (eopl)
+lenguaje: Racket
 
 ######## CODIGO ########
 #lang eopl

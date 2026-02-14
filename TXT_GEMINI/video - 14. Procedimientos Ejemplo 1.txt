@@ -1,44 +1,13 @@
-A continuación, se presenta la transcripción limpia y formateada, lista para estudio:
+Se presenta un ejemplo de evaluación de una expresión en un contexto de ambientes computacionales. El ambiente inicial, denominado `ambiente_0`, se define con las siguientes ligaduras de variables: X=4, Y=2 y Z=5. La expresión a evaluar es `let F = proc(X) (X * X) in F(Z)`.
 
----
+####
+La definición de un procedimiento, como `F = proc(X) (X * X)`, no crea un nuevo ambiente en el momento de su declaración, sino una estructura de datos denominada clausura (closure). Una clausura encapsula dos componentes esenciales: el código del procedimiento (en este caso, el parámetro `X` y la expresión `X * X`) y una referencia al ambiente en el que fue creado. Para este ejemplo, la clausura de `F` almacena una referencia al ambiente de su definición, que es `ambiente_0`.
 
-Se desea evaluar una expresión dada una configuración inicial del ambiente de computación.
+####
+La invocación de un procedimiento, como en la expresión `F(Z)`, desencadena la creación de un nuevo ambiente para la ejecución del cuerpo de dicho procedimiento. Este nuevo ambiente se extiende a partir del ambiente que fue capturado en la clausura del procedimiento, es decir, `ambiente_0`. En este nuevo ambiente se crea una ligadura para el parámetro formal del procedimiento (`X`) con el valor del argumento evaluado (`Z`, cuyo valor en `ambiente_0` es 5). Por lo tanto, el nuevo ambiente contendrá la ligadura `X=5` y tendrá acceso a todas las ligaduras de `ambiente_0`.
 
-**Configuración Inicial del Ambiente:**
-
-El ambiente inicial (denominado Ambiente 0) se establece con las siguientes ligaduras de variables a valores:
-*   `X = 2`
-*   `Y = 4`
-*   `Z = 5`
-
-**Definición y Evaluación de Procedimientos:**
-
-1.  **Creación del procedimiento `F`:**
-    Se define el procedimiento `F` utilizando la sintaxis `let F = prot(X) (X * X)`.
-    Este procedimiento se representa como una **clausura (closure)**. Una clausura es una estructura que encapsula:
-    *   El parámetro formal del procedimiento (`X`).
-    *   La expresión que el procedimiento debe evaluar (`X * X`).
-    *   El ambiente en el que la clausura fue creada (`Ambiente 0`).
-
-2.  **Invocación del procedimiento `F(Z)`:**
-    Para evaluar la expresión `F(Z)`, se siguen los siguientes pasos:
-    *   Cada vez que se invoca un procedimiento, se crea un **nuevo ambiente** de ejecución para esa llamada específica.
-    *   Este nuevo ambiente extiende (o referencia) al ambiente en el que la clausura de `F` fue creada, es decir, el `Ambiente 0`. Esto significa que el nuevo ambiente tiene acceso a las variables definidas en `Ambiente 0` si no han sido redefinidas localmente.
-    *   El argumento `Z` se evalúa en el ambiente de invocación (el `Ambiente 0` en este caso). Según la configuración inicial, el valor de `Z` es `5`.
-    *   El parámetro formal `X` del procedimiento `F` se enlaza al valor del argumento pasado. Por lo tanto, dentro del nuevo ambiente de `F`, la variable `X` toma el valor `5`.
-
-3.  **Evaluación de la expresión dentro de `F`:**
-    *   Finalmente, se evalúa la expresión `X * X` en el contexto del nuevo ambiente de `F`, donde `X` es `5`.
-    *   El resultado de la evaluación es `5 * 5 = 25`.
-
-**Conceptos Clave del Manejo de Ambientes en Procedimientos:**
-
-*   **Clausura (Closure):** Un procedimiento se almacena como una clausura que incluye su código y el ambiente donde fue definido, lo que permite el acceso a variables no locales en el momento de su definición.
-*   **Creación de Ambiente en Invocación:** Cada llamada a un procedimiento genera un ambiente de ejecución nuevo y local para esa instancia de la llamada.
-*   **Extensión de Ambiente:** El nuevo ambiente creado durante la invocación extiende del ambiente almacenado en la clausura, asegurando que las variables del contexto de definición estén disponibles.
-*   **Ligadura de Parámetros:** Los parámetros formales del procedimiento se ligan a los valores de los argumentos en el ambiente recién creado para la invocación.
-
----
+####
+La evaluación de la expresión se realiza dentro del nuevo ambiente creado por la invocación de la función. El cuerpo del procedimiento `F` es la expresión `X * X`. Al buscar el valor de `X` en este nuevo ambiente, se encuentra la ligadura `X=5` que fue creada durante la invocación. Por consiguiente, la operación `5 * 5` se ejecuta, dando como resultado final el valor 25.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=91lReaV1wcU

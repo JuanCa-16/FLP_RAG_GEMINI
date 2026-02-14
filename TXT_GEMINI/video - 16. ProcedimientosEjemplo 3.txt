@@ -1,98 +1,40 @@
-Aquí tienes la transcripción limpia y formateada:
+Este análisis se centra en un ejemplo de evaluación de código que involucra clausuras y ambientes anidados. El ambiente inicial, o ambiente vacío, es el punto de partida. Sobre este, se define un ambiente cero (`env0`) que contiene las variables `x`, `y`, `z` con valores 4, 2 y 5 respectivamente, y una variable `f`. La variable `f` es una clausura, que es un procedimiento que encapsula su cuerpo y el ambiente léxico en el que fue definido. En este caso, `f` es un procedimiento que recibe un argumento `y` y almacena una referencia al ambiente vacío, lo que significa que cualquier invocación de `f` se ejecutará en un nuevo ambiente que extiende el ambiente vacío.
 
----
+####
 
-Este documento detalla la evaluación de un ejemplo que involucra variables, clausuras y manejo de ambientes.
+A partir del ambiente cero (`env0`), se define un primer ambiente anidado (`env1`) mediante una estructura `let`. Este `env1` introduce dos nuevas variables: `g` y `m`. La variable `m` tiene un valor de 6. La variable `g` es una clausura que representa un procedimiento que recibe un argumento `x`. Crucialmente, esta clausura `g` almacena o "captura" una referencia al ambiente en el que fue creada, es decir, `env0`. Esto determina el alcance de las variables a las que `g` podrá acceder cuando sea invocada.
 
-**Configuración Inicial**
+####
 
-Las variables `x`, `y`, `z` tienen valores iniciales de `4`, `2`, y `5` respectivamente.
-`f` se define como una **clausura** (procedimiento) que:
-*   Toma `y` como variable de entrada.
-*   Realiza la operación `y * (y - 1)`.
-*   Almacena el ambiente vacío (`empty_env`). Esto implica que cualquier llamada a `f` extenderá de este ambiente vacío para resolver sus referencias.
+Posteriormente, se crea un segundo ambiente anidado (`env2`) que extiende a `env1`. Este `env2` define tres variables: `g`, `h` y `q`. La variable `g` aquí es una nueva clausura que sombrea o redefine a la `g` de `env1`; esta nueva `g` espera dos argumentos (`x`, `y`) y captura el ambiente actual de su creación, `env1`. La variable `h` es una clausura sin argumentos que también captura el ambiente `env1`. Finalmente, la variable `q` se define con el valor 7.
 
-El programa principal incluye dos bloques `let` anidados y finaliza con la evaluación de la expresión `- h, q`.
+####
 
----
+La evaluación final se realiza sobre el ambiente `env2` y corresponde a la expresión `h() - q`. El primer paso es resolver las variables en esta expresión. La variable `q` se busca en `env2` y se encuentra su valor, que es 7. La expresión se simplifica a `h() - 7`. A continuación, se procede a evaluar la invocación del procedimiento `h`.
 
-**Ambientes y Ejecución Paso a Paso**
+####
 
-1.  **Ambiente 0 (Global/Inicial):**
-    *   `x = 4`
-    *   `y = 2`
-    *   `z = 5`
-    *   `f = closure(y, y * (y - 1), empty_env)`
+Para ejecutar `h()`, se busca `h` en el ambiente actual (`env2`), encontrando la clausura definida previamente. Esta clausura no recibe argumentos y tiene como cuerpo la expresión `g(m)`. Al ser una clausura, para su ejecución se crea un nuevo ambiente (`env_h`) que extiende el ambiente que `h` capturó en su definición, es decir, `env1`. Dentro de este `env_h`, se evalúa el cuerpo `g(m)`.
 
-2.  **Ambiente 1 (Resultado del primer `let`):**
-    Este ambiente se crea tras la evaluación del primer bloque `let`:
-    *   `g = closure(x, + y, f(x), env0)`
-        *   Esta clausura `g` toma `x` como entrada y realiza `y + f(x)`.
-        *   Almacena el `env0` como su ambiente de creación.
-    *   `m = 6`
+####
 
-3.  **Ambiente 2 (Resultado del segundo `let`):**
-    Este ambiente se crea tras la evaluación del segundo bloque `let` (que incluye la definición de `h` y `q`).
-    *   `h = closure([], g(m), env1)`
-        *   La clausura `h` no toma argumentos.
-        *   Su cuerpo invoca `g(m)`.
-        *   Almacena el `env1` (ambiente donde fue creada).
-    *   `q = 7`
+La evaluación de `g(m)` dentro de `env_h` requiere resolver `g` y `m`. La variable `m` se busca primero en `env_h` (no está), luego en `env1`, donde se encuentra con valor 6. La variable `g` se busca de la misma manera: no está en `env_h`, pero sí en `env1`. Es importante notar que la `g` que se encuentra es la primera que fue definida, la que espera un solo argumento (`x`) y capturó `env0`. No es la `g` de `env2` que esperaba dos argumentos. Por lo tanto, la expresión se convierte en la invocación de esta primera `g` con el argumento 6.
 
-4.  **Evaluación Final: `- h, q` en `env2`**
-    *   Primero, se resuelve `q`, cuyo valor es `7`.
-    *   Luego, se invoca `h()`.
+####
 
-    **Ejecución de `h()`:**
-    *   Se crea un nuevo ambiente para la ejecución de `h`. Este ambiente extiende de `env1` (el ambiente capturado por `h`) y está vacío, ya que `h` no recibe argumentos.
-    *   Dentro de `h`, se evalúa `g(m)`.
-    *   `m` se busca en `env1` (el ambiente léxico de `h`), y su valor es `6`.
-    *   Se invoca `g(6)`. El `g` que se invoca es la clausura definida en `env1` (el primer `g`), porque `h` extiende de `env1`.
+La invocación del procedimiento `g(6)` implica la creación de un nuevo ambiente (`env_g`). Este ambiente extiende el ambiente capturado por la clausura `g`, que es `env0`. En `env_g`, se enlaza la variable del procedimiento, `x`, con el valor del argumento, 6. Dentro de este `env_g`, se ejecuta el cuerpo de `g`, que es la expresión `y + f(x)`.
 
-    **Ejecución de `g(6)`:**
-    *   Se crea un nuevo ambiente para la ejecución de `g`. Este ambiente extiende de `env0` (el ambiente capturado por el primer `g`).
-    *   La variable `x` dentro de este ambiente de `g` toma el valor `6` (el argumento recibido).
-    *   Se evalúa la expresión `+ y, f(x)`.
-        *   `y` se busca en `env0` (a través de la extensión), y su valor es `2`.
-        *   `x` es `6`. Se evalúa `f(6)`.
+####
 
-        **Ejecución de `f(6)`:**
-        *   Se crea un nuevo ambiente para la ejecución de `f`. Este ambiente extiende del `empty_env` (el ambiente capturado por `f`).
-        *   La variable `y` dentro de este ambiente de `f` toma el valor `6` (el argumento recibido).
-        *   Se evalúa la expresión `y * (y - 1)`.
-        *   Sustituyendo `y = 6`: `6 * (6 - 1) = 6 * 5 = 30`.
-        *   `f(6)` retorna `30`.
+Dentro del ambiente `env_g`, se evalúa `y + f(x)`. La variable `y` no se encuentra en `env_g`, por lo que se busca en el ambiente que extiende, `env0`, donde se encuentra con valor 2. La variable `x` se encuentra directamente en `env_g` con valor 6. La expresión se convierte en `2 + f(6)`. Para resolver esto, se debe invocar al procedimiento `f` con el argumento 6.
 
-    *   De vuelta en la ejecución de `g(6)`: La expresión `+ y, f(x)` se convierte en `+ 2, 30`, lo que resulta en `32`.
-    *   `g(6)` retorna `32`.
+####
 
-    *   De vuelta en la ejecución de `h()`: `g(m)` retorna `32`.
-    *   `h()` retorna `32`.
+La ejecución de `f(6)` crea un nuevo ambiente, `env_f`. Este ambiente extiende el ambiente capturado por la clausura `f`, que es el ambiente vacío. En `env_f`, se enlaza la variable `y` del procedimiento con el valor 6. El cuerpo de `f` es `y * (y - 1)`. Al evaluarse en `env_f`, se resuelve como `6 * (6 - 1)`, lo que da como resultado 30. Este valor, 30, es el retorno de la llamada `f(6)`.
 
-5.  **Resultado Final:**
-    *   La evaluación inicial `- h, q` se convierte en `- 32, 7`.
-    *   El resultado final es `25`.
+####
 
----
-
-**Código del Ejemplo**
-
-A continuación, se presenta el código que corresponde con la ejecución descrita:
-
-```
-x = 4
-y = 2
-z = 5
-f = proc(y) y * (y - 1)
-
-let g = proc(x) + y, f(x)
-    m = 6
-in
-let h = proc() g(m) // h captura el 'g' del ambiente exterior (Ambiente 1)
-    q = 7
-in
-- h, q
-```
+El resultado de `f(6)`, que es 30, se utiliza para completar la evaluación pendiente en `env_g`. La expresión `2 + f(6)` se convierte en `2 + 30`, resultando en 32. Este valor es el resultado de la llamada `g(m)`. A su vez, `g(m)` era el cuerpo de `h()`, por lo que el resultado de `h()` es 32. Finalmente, la expresión original `h() - q` se resuelve como `32 - 7`, dando un resultado final de 25.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=JJcxJbQPn_U

@@ -1,71 +1,37 @@
-Aquí tienes la transcripción limpia y formateada para estudio:
+Para analizar el chequeo de tipos en un ejemplo elaborado, se examina el tipo de cada procedimiento involucrado. El procedimiento `G` se define con un tipo que recibe dos enteros, un booleano y otro booleano, y retorna un valor booleano. Su firma de tipo sería `(int * int * bool * bool) -> bool`.
 
----
+####
 
-**Análisis y Verificación de Tipos en un Ejemplo Complejo**
+El procedimiento `F` presenta una firma de tipo más compleja. Recibe como primer argumento un procedimiento `H` cuyo tipo es `(int * int * bool * bool) -> bool`. Como segundo argumento, recibe un procedimiento `P` de tipo `(int) -> bool`. Los siguientes argumentos son un entero `M` y un booleano. El valor de retorno de `F` es un booleano. Por lo tanto, la firma completa de `F` es `((int * int * bool * bool -> bool) * (int -> bool) * int * bool) -> bool`.
 
-Este documento detalla un ejemplo avanzado de verificación de tipos, enfocándose en determinar los tipos de retorno de varios procedimientos y validar la consistencia de una expresión compleja.
+####
 
-**1. Declaración de Tipos de Procedimientos y Variables:**
+El chequeo de tipos se aplica a la llamada `F(G, Q, 5, I)`. Se debe verificar que los tipos de los argumentos coincidan con la firma de `F`.
+1.  El primer argumento `G` debe ser un procedimiento de tipo `(int * int * bool * bool) -> bool`, lo cual es correcto según su definición.
+2.  El segundo argumento `Q` debe ser un procedimiento de tipo `(int) -> bool`, lo cual se cumple.
+3.  El tercer argumento `5` debe ser un entero, lo cual es correcto.
+4.  El cuarto argumento `I` debe ser un booleano, lo cual se cumple.
+Todos los argumentos pasados a `F` son consistentes con su declaración de tipos.
 
-*   **Procedimiento G:**
-    *   **Parámetros:** Tres enteros y tres booleanos.
-    *   **Retorno:** Un booleano.
-*   **Procedimiento H (alias `tgf`):**
-    *   **Parámetro:** Un procedimiento anidado.
-        *   Este procedimiento anidado, a su vez, recibe dos enteros y tres booleanos.
-        *   Retorna un booleano.
-    *   **Retorno de H:** Un booleano.
-*   **Procedimiento P:**
-    *   **Parámetros:** Un entero.
-    *   **Retorno:** Un booleano.
-*   **Procedimiento Q:**
-    *   **Parámetros:** Un entero.
-    *   **Retorno:** Un booleano.
-*   **Variable `i`:**
-    *   **Tipo:** Booleano.
+####
 
-**2. Verificación de Tipos para la Expresión `f(g, q, 5, i)`:**
+Internamente, el cuerpo del procedimiento `F` también debe ser verificado. La expresión condicional `if p(m)` es válida porque `p` es un procedimiento que toma un entero (`m`) y devuelve un booleano, que es el tipo requerido por la condición de un `if`. Posteriormente, se evalúa la llamada al procedimiento `h`. Se verifica que los argumentos pasados a `h` (`n`, `m`, `p(n)`, `p(2*n)`) coinciden con su firma de tipo `(int * int * bool * bool)`, lo cual es correcto, ya que `n` y `m` son enteros, y la evaluación de `p` siempre produce un booleano.
 
-Se procede a validar que cada argumento pasado a la función `f` es compatible con el tipo esperado:
+####
 
-1.  **Primer argumento (`g`):** Se confirma que el procedimiento `g` cumple con el tipo esperado por `f` (recibe tres enteros y tres booleanos, y retorna un booleano).
-2.  **Segundo argumento (`q`):** El procedimiento `q` (que recibe un entero y retorna un booleano) es compatible con el tipo esperado.
-3.  **Tercer argumento (`5`):** El valor `5` es un entero, compatible con el parámetro correspondiente.
-4.  **Cuarto argumento (`i`):** La variable `i` es de tipo booleano, compatible con el parámetro correspondiente.
+La evaluación completa de la expresión `F(G, Q, 5, I)` resultará en un valor booleano. Esto se debe a que la declaración del procedimiento `F` especifica un booleano como su tipo de retorno. Es fundamental distinguir entre la declaración de tipo de un procedimiento (su firma) y el valor que retorna tras su evaluación. En este caso, al no haber errores de tipo, la expresión se evalúa correctamente y produce un resultado del tipo esperado.
 
-**3. Verificación Interna de `f` y `h`:**
+####
 
-*   **Dentro de `f`:** Se evalúa una condición `if pm`. La expresión `pm` debe retornar un booleano (lo cual `p` cumple). El parámetro `m` (utilizado en la evaluación de `p`) debe ser un entero, lo cual se verifica.
-*   **Evaluación de `h`:** El procedimiento `h` espera un entero (`n`), un entero (`m`), un booleano (`p(n)`), y un booleano (`p(2*n)`). Se confirma que todas estas condiciones de tipo se cumplen. Además, el tipo de `h` en este contexto es consistente con el tipo de `g`.
+Un error de tipos ocurriría si los tipos de los argumentos en una llamada no coincidieran con los tipos de los parámetros en la declaración del procedimiento. Por ejemplo, pasar un valor numérico donde se espera un booleano generaría un error. Otro error común es proporcionar un número incorrecto de argumentos a un procedimiento. Igualmente, utilizar un valor no booleano en la condición de una estructura `if` también provocaría un error de tipos, ya que la expresión condicional debe evaluarse como verdadera o falsa.
 
-**4. Resultado de la Verificación de Tipos:**
+####
 
-Tras el análisis, no se encontraron errores de tipos en la expresión `f(g, q, 5, i)`. La expresión completa, al ser evaluada, retorna un booleano.
+El proceso de chequeo de tipos consiste en verificar la correspondencia entre la declaración de los procedimientos y su uso en las evaluaciones. Se debe asegurar que cada variable y cada llamada a procedimiento respeten las firmas de tipo definidas. Esto incluye validar que las entradas de los procedimientos coincidan con los tipos de los argumentos proporcionados y que las estructuras de control, como los condicionales, operen sobre los tipos correctos.
 
-**5. Distinción entre Declaración y Evaluación de Tipos:**
+####
 
-Es crucial diferenciar entre la *declaración* de un procedimiento (su firma de tipos, es decir, los tipos de sus parámetros y su valor de retorno definidos en su estructura) y su *evaluación* (el valor concreto que retorna al ser ejecutado con argumentos específicos).
-
-**6. Ejemplos de Errores de Tipos Comunes:**
-
-*   **Discrepancia de tipos:** Ocurre cuando un valor de un tipo es proporcionado donde se espera otro tipo (ej., pasar un booleano donde se espera un entero).
-*   **Número incorrecto de argumentos:** Se produce al llamar a un procedimiento con una cantidad de argumentos diferente a la especificada en su declaración.
-*   **Condición no booleana en `if`:** La expresión que define la condición de una estructura `if` debe ser estrictamente de tipo booleano.
-*   **Tipos inconsistentes en ramas `if-then-else`:** Las expresiones en las ramas `then` y `else` de una instrucción `if` deben retornar valores del mismo tipo.
-
-**7. Principios Clave del Chequeo de Tipos:**
-
-Para llevar a cabo una verificación de tipos efectiva, es esencial seguir estos principios:
-1.  **Comprobación Individual:** Verificar el tipo de cada variable, literal y subexpresión.
-2.  **Coherencia Declaración-Uso:** Relacionar la declaración formal de un procedimiento (su firma) con los tipos de los argumentos pasados en su evaluación.
-3.  **Verificación Interna:** Revisar, dentro de los procedimientos, que las variables y expresiones locales cumplen con los tipos esperados. Esto incluye asegurar que las condiciones de control (como en un `if`) son booleanas y que las ramas de control mantienen la consistencia de tipos.
-
-**8. Introducción a la Inferencia de Tipos:**
-
-El siguiente concepto es la inferencia de tipos. A diferencia del chequeo de tipos (donde los tipos son conocidos y verificados), la inferencia busca *estimar* o deducir los tipos de las expresiones y variables cuando no están explícitamente declarados. Esto se logra modificando el interpretador para que, basándose en un conjunto de reglas predefinidas y el contexto de uso, pueda determinar los tipos faltantes.
-
----
+A diferencia del chequeo de tipos, donde los tipos son explícitamente declarados y verificados, la inferencia de tipos es un proceso en el cual el sistema (como un intérprete o compilador) estima o deduce automáticamente los tipos de las expresiones basándose en su uso y en un conjunto de reglas predefinidas. El objetivo es agregar la capacidad de inferir tipos a un sistema que previamente solo los verificaba.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=yKNOAasafJI

@@ -1,10 +1,16 @@
+######## RESUMEN ########
+Implementa números naturales y aritmética básica con abstracción de datos usando listas en Racket.
+
+######## CONCEPTOS ########
+Representación unaria de datos, abstracción de datos, recursión, aritmética de Peano, listas Racket
+
 ######## EXPLICACION ########
-Implementa aritmética unaria usando listas.
-Ejemplo de cero es una lista vacía.
-Ejemplo de un número es una lista de #t.
-Ejemplo de sucesor añade un elemento.
-Ejemplo de predecesor elimina un elemento.
-Ejemplo de suma de números unarios.
+El fragmento de código define números naturales y operaciones aritméticas básicas utilizando una representación unaria.
+Demuestra cómo construir sistemas numéricos desde cero, como la adición de cantidades con `plus`.
+Permite simular una aritmética básica, verificando cero (`zero?`) e implementando el sucesor (`succ`) y predecesor (`pred`).
+Aplica el principio de la abstracción de datos representando números mediante listas (`zero`, `succ`, `pred`).
+Utiliza recursión para definir la operación de suma `plus`, reflejando los principios de la aritmética de Peano.
+Es fundamental para comprender cómo se construyen tipos de datos abstractos y operaciones sobre ellos.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/1.RepresentacionDatosUnaria.rkt

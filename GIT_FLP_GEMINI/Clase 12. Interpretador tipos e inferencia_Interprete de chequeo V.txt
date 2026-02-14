@@ -1,0 +1,224 @@
+Las primitivas se trabajan como procedimientos de acuerdo al tipo que tengan:
+Primitivas numéricas: ingresan `int` y emiten `int`
+Primitivas relacionales: ingresan dos `int` y emiten `bool`
+Primitivas booleanas: ingresan `bool` y emiten `bool`
+
+###
+Las primitivas se manejan como aplicaciones de procedimientos dentro de `type-of-expression`. Esto se debe a que una primitiva realiza una operación con argumentos, por ello las manejamos como tipos.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (prim-exp (prim rands)
+        ; Las primitivas se manejan como aplicaciones de procedimientos
+        (type-of-application
+          (type-of-primitive prim rands) ; Tipo de la primitiva
+          (map
+            (lambda (x)
+              (type-of-expression x tenv))
+            rands) ; Tipos de los argumentos
+          prim
+          rands
+          exp)))))
+```
+
+###
+La función `type-of-primitive` determina el tipo de una primitiva basándose en su categoría (aritmética, booleana o relacional) y los tipos de sus argumentos esperados.
+
+```racket
+(define type-of-primitive
+  (lambda (prim rands)
+    (cases primitive prim
+      ; Primitivas aritméticas: toman N enteros y retornan un entero
+      (add-prim ()
+        (proc-type
+          (map
+            (lambda (x) int-type)
+            rands)
+          int-type))
+      (sub-prim ()
+        (proc-type
+          (map
+            (lambda (x) int-type)
+            rands)
+          int-type))
+      (prod-prim ()
+        (proc-type
+          (map
+            (lambda (x) int-type)
+            rands)
+          int-type))
+      (div-prim ()
+        (proc-type
+          (map
+            (lambda (x) int-type)
+            rands)
+          int-type))
+      ; Primitivas booleanas: toman N booleanos y retornan un booleano
+      (and-prim ()
+        (proc-type
+          (map
+            (lambda (x) bool-type)
+            rands)
+          bool-type))
+      (or-prim ()
+        (proc-type
+          (map
+            (lambda (x) bool-type)
+            rands)
+          bool-type))
+      ; Primitivas relacionales: toman 2 enteros y retornan un booleano
+      (less-prim ()
+        (proc-type
+          (list int-type int-type)
+          bool-type))
+      (lesseq-prim ()
+        (proc-type
+          (list int-type int-type)
+          bool-type))
+      (more-prim ()
+        (proc-type
+          (list int-type int-type)
+          bool-type))
+      (moreeq-prim ()
+        (proc-type
+          (list int-type int-type)
+          bool-type))
+      (eq-prim ()
+        (proc-type
+          (list int-type int-type)
+          bool-type))
+      (neq-prim ()
+        (proc-type
+          (list int-type int-type)
+          bool-type)))))
+```
+
+###
+El tipo `letrec` permite definir procedimientos recursivos. Ejemplo:
+
+```
+letrec
+  int f (int x, int y) = if > (x,0) then (f - (x,1) + (y,1)) else y
+  bool g (int x) = if > (x,0) (g - (x,1)) else false
+in
+  (f 20 30)
+```
+
+###
+El proceso de verificación de tipos para `letrec` implica:
+1.  Primero debemos crear los tipos para los procedimientos definidos (ej. tf = (int * int) → int, tg = int → bool).
+2.  Verificamos que los cuerpos de los procedimientos cumplan con emitir un `int` y un `bool` respectivamente.
+3.  Retornamos el tipo de la expresión principal del `letrec` (el cuerpo `in`).
+
+###
+La función `type-of-expression` delega el manejo de `letrec-exp` a `type-of-letrec`.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (letrec-exp (typesproc procnames ttargs args bodies exp-body)
+        (type-of-letrec typesproc procnames ttargs args bodies exp-body tenv)))))
+```
+
+###
+La función `type-of-letrec` se encarga de verificar los tipos de las definiciones recursivas. Primero expande los tipos de argumentos y resultados, luego crea los tipos de procedimiento y extiende el ambiente con ellos. Finalmente, verifica que cada cuerpo cumpla con su tipo declarado y retorna el tipo de la expresión principal del `letrec`.
+
+```racket
+(define type-of-letrec
+  (lambda (tprocs procnames ttargs args bodies exp-body tenv)
+    (let* (
+      ; Expandir tipos de argumentos y resultados
+      (arg-types (map (lambda (x) (expand-type-expression x)) ttargs))
+      (result-types (map (lambda (x) (expand-type-expression x)) tprocs))
+      ; Crear tipos de procedimiento
+      (the-proc-types (map proc-type arg-types result-types))
+      ; Extender ambiente con los procedimientos definidos
+      (the-env-body (extend-env procnames (list->vector the-proc-types) tenv)))
+      ; Verificar que cada cuerpo tenga el tipo declarado
+      (for-each
+        (lambda (ids args-types body result-type)
+          (check-equal-type!
+            (type-of-expression
+              body
+              (extend-env ids (list->vector args-types) the-env-body))
+            result-type
+            body))
+        args
+        arg-types
+        bodies
+        result-types)
+      ; Retornar tipo de la expresión del cuerpo del letrec
+      (type-of-expression exp-body the-env-body))))
+```
+
+###
+La expresión `set` modifica el valor de una variable. No tiene tipo en el sentido tradicional, pero asumimos que retorna un `int` para evitar tener que crear un tipo nulo (void).
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (set-exp (id exp)
+        ; Asignación retorna int por convención (evita tipo void)
+        int-type))))
+```
+
+###
+La expresión `begin` evalúa una secuencia de expresiones y retorna el valor de la última expresión.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (begin-type-exp (exps)
+        (begin-type-exp exps tenv)))))
+```
+
+###
+La función `begin-type-exp` procesa una lista de expresiones. Si es la última expresión, retorna su tipo. De lo contrario, evalúa el tipo de la expresión actual y procede recursivamente con el resto.
+
+```racket
+(define begin-type-exp
+  (lambda (lexp tenv)
+    (cond
+      ; Última expresión: su tipo es el tipo del begin
+      [(null? (cdr lexp))
+        (type-of-expression (car lexp) tenv)]
+      [else
+        ; Evaluar tipos de expresiones intermedias
+        (begin
+          (type-of-expression (car lexp) tenv)
+          (begin-type-exp (cdr lexp) tenv))])))
+```
+
+###
+El intérprete realiza dos procesos fundamentales: la verificación de tipos, que evalúa el tipo de la expresión, y la evaluación, que obtiene su valor.
+
+```racket
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp)
+        ; Primero verificar tipos, luego evaluar
+        (if (type? (type-of-expression exp init-tenv))
+          (eval-expression exp init-env)
+          (eopl:error "The evaluation of types is incorrect!"))))))
+```
+
+###
+Algunos conceptos teóricos importantes en el contexto de los intérpretes de tipos incluyen:
+*   **Sistema de tipos**: Garantiza que las operaciones se realicen sobre valores del tipo correcto.
+*   **Verificación estática**: Se realiza antes de la ejecución del programa.
+*   **Ambiente de tipos (tenv)**: Mantiene información sobre los tipos de las variables.
+*   **Polimorfismo limitado**: Las primitivas pueden trabajar con diferentes cantidades de argumentos del mismo tipo.
+
+---
+METADATA
+---
+TEMATICA: Clase 12. Interpretador tipos e inferencia
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Interprete de chequeo V.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo%20V/

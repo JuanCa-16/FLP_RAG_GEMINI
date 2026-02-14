@@ -1,528 +1,385 @@
-Cuando se escribe un procedimiento, se debe definir qué clase
-de valores se espera como entrada y como salida.
+Cuando se escribe un procedimiento, se debe definir qué clase de valores se espera como entrada y como salida.
 
-<CODIGO_BLOCK_START>
-Ejemplo, la función suma tiene como entrada dos números
-naturales y tiene como salida un número natural.
-Los datos en las funciones recursivas, pueden tener también
-definiciones recursivas que faciliten la programación.
-<CODIGO_BLOCK_END>
+<CODIGO_BLOCK>
+;; Ejemplo de contrato para una función.
+;; La función 'suma' tiene como entrada dos números
+;; naturales y como salida un número natural.
+;; Los datos en las funciones recursivas pueden tener también
+;; definiciones recursivas que faciliten la programación.
+</CODIGO_BLOCK>
 
-#####
-
+####
 Técnicas
+
 Existen dos técnicas para la definición recursiva de datos:
-1 Especificación inductiva
-2 Especificación mediante gramáticas.
+1.  Especificación inductiva.
+2.  Especificación mediante gramáticas.
 
-#####
-
+####
 Definición
-Se define un conjunto S , el cual es el conjunto más pequeño que
-satisface las siguientes dos propiedades:
-1 Algunos valores específicos que deben estar en S .
-2 Si algunos valores están en S , entonces otros valores también
-están en S .
 
-#####
+Se define un conjunto S, el cual es el conjunto más pequeño que satisface las siguientes dos propiedades:
+1.  Algunos valores específicos que deben estar en S.
+2.  Si algunos valores están en S, entonces otros valores también están en S.
 
+####
 Números pares
-1 Si n = 2 entonces n es par
-2 Si n es par, entonces n + 2 también es par.
+1.  Si n = 2, entonces n es par.
+2.  Si n es par, entonces n + 2 también es par.
+
 Lista de números
-1 empty es una lista de números
-2 Si n es un número y l es una lista entonces (n l) es una lista
-de números.
+1.  `empty` es una lista de números.
+2.  Si n es un número y l es una lista, entonces `(cons n l)` es una lista de números.
 
-#####
-
+####
 Especificación formal
+
 Ahora formalmente:
+
 Números pares
-1 2 ∈ S
-2
-n ∈ S
-( n +2) ∈ S
+1.  2 ∈ S
+2.  Si n ∈ S, entonces (+ n 2) ∈ S.
+
 Lista de números
-1 () ∈ S
-2
-l ∈ S , n ∈ N
-(n l) ∈ S.
+1.  `'()` ∈ S
+2.  Si l ∈ S y n ∈ N, entonces `(cons n l)` ∈ S.
 
-#####
+####
+<CODIGO_BLOCK>
+;; Demostración de que una lista anidada con `cons`
+;; se ajusta a la definición recursiva de lista.
+;;
+;; Demuestre que (cons 1 (cons 2 (cons 3 '()))) es una lista de números.
+;;
+;; Solución:
+;; 1. '() ∈ S (por la regla base).
+;; 2. 3 ∈ N y '() ∈ S, por lo tanto, (cons 3 '()) ∈ S.
+;; 3. 2 ∈ N y (cons 3 '()) ∈ S, por lo tanto, (cons 2 (cons 3 '())) ∈ S.
+;; 4. 1 ∈ N y (cons 2 (cons 3 '())) ∈ S, por lo tanto, (cons 1 (cons 2 (cons 3 '()))) ∈ S.
+;; Se puede seguir hasta llegar al caso fundamental '() ∈ S.
+</CODIGO_BLOCK>
 
-<CODIGO_BLOCK_START>
-Ejemplo
-Demuestre que (1(2(3()))) es una lista de números.
-Solución
-1 1 ∈ N, (2(3())) ∈ S
-2 (1(2(3()))) ∈ S
-Se puede seguir hasta llegar al caso fundamental () ∈ S.
-<CODIGO_BLOCK_END>
-
-#####
-
+####
 Especificación formal
+
 Ahora realicemos la especificación inductiva de:
-1 Una lista de números pares
-2 Múltiplos de 5.
+1.  Una lista de números pares.
+2.  Múltiplos de 5.
 
 Lista de números pares
-1 2 ∈ P
-2
-n ∈ S
-( n +2) ∈ P
-1 () ∈ S
-2
-l ∈ S , x ∈ P
-(x l) ∈ S
+1.  2 ∈ P
+2.  Si n ∈ P, entonces `(+ n 2)` ∈ P.
+3.  `'()` ∈ S
+4.  Si l ∈ S y x ∈ P, entonces `(cons x l)` ∈ S.
+
 Múltiplos de 5
-1 5 ∈ S
-2
-n ∈ S
-( n +5) ∈ S.
+1.  5 ∈ S
+2.  Si n ∈ S, entonces `(+ n 5)` ∈ S.
 
-#####
+####
+<CODIGO_BLOCK>
+;; Ejercicios para identificar conjuntos definidos por reglas inductivas.
+;;
+;; Indique qué tipo de conjuntos están definidos por las siguientes reglas:
+;; 1. (list 0 1) ∈ S
+;;    Si (list n k) ∈ S, entonces (list (+ n 1) (+ k 7)) ∈ S.
+;;
+;; 2. (list 0 1) ∈ S
+;;    Si (list n k) ∈ S, entonces (list (+ n 1) (* 2 k)) ∈ S.
+;;
+;; 3. (list 0 1 5) ∈ S
+;;    Si (list i j k) ∈ S, entonces (list (+ i 1) (+ j 2) (+ i j)) ∈ S.
+;;
+;; Para cada una de las especificaciones, dé dos ejemplos numéricos que las cumplan.
+</CODIGO_BLOCK>
 
-<CODIGO_BLOCK_START>
-Ejercicios
-Indique qué tipo de conjuntos están definidos por las siguientes
-reglas:
-1 (0 , 1) ∈ S ,
-( n , k ) ∈ S
-( n +1 , k +7) ∈ S
-2 (0 , 1) ∈ S , ( n , k ) ∈ S
-( n +1 , 2 k )
-3 (0 , 1 , 5) ∈ S
-( i , j , k ) ∈ S
-( i +1 , j +2 , i + j ) ∈ S
-Para cada una de las especificaciones de dos ejemplos numéricos
-que las cumplan.
-<CODIGO_BLOCK_END>
-
-#####
-
-Una forma sencilla de especificar datos recursivos es con
-gramáticas regulares en forma Backus-Nour.
+####
+Una forma sencilla de especificar datos recursivos es con gramáticas regulares en forma Backus-Naur.
 Las gramáticas se componen de:
-1 Símbolos no terminales, que son aquellos que se componen de
-otros símbolos, son conocidos como categorías sintácticas
-2 Símbolos terminales: corresponden a elementos del alfabeto
-3 Reglas de producción.
+1.  Símbolos no terminales, que son aquellos que se componen de otros símbolos. Son conocidos como categorías sintácticas.
+2.  Símbolos terminales: corresponden a elementos del alfabeto.
+3.  Reglas de producción.
 
-#####
+####
+<CODIGO_BLOCK>
+;; Conceptos básicos de lenguajes formales y gramáticas.
+;;
+;; Alfabeto: Conjunto de símbolos, ejemplo P = {a, b, c, ...}
+;;
+;; Reglas de producción: Construcción del lenguaje.
+;;
+;; Cerradura de Kleene:
+;; {'a}* = {'(), '(a), '(a a), '(a a a), ...}
+;;
+;; Cerradura positiva:
+;; {'b}+ = {'(b), '(b b), '(b b b), ...}
+</CODIGO_BLOCK>
 
-<CODIGO_BLOCK_START>
-Alfabeto: Conjunto de símbolos, ejemplo P = { a , b , c , ... }
-Reglas de producción: Construcción del lenguaje:
-Cerradura de Kleene: { a } ∗ = { ϵ, { a } , { a , a } , { a , a , a } ... }
-Cerradura positiva: { b } + = {{ b } , { b , b } , { b , b , b } ... }.
-<CODIGO_BLOCK_END>
+####
+Lista de números
+`<lista-de-enteros> ::= '()`
+`::= (<entero> <lista-de-enteros>)`
 
-#####
+O de forma compacta:
+`<lista-de-enteros> ::= '() | (<entero> <lista-de-enteros>)`
 
-Lista números
-<lista-de-enteros> ::= ()
-::= (<int> <lista-de-enteros>)
-<lista-de-enteros> ::= ()|(<int> <lista-de-enteros>)
-<lista-de-enteros> ::= (<int>)*.
+O usando la notación de Kleene:
+`<lista-de-enteros> ::= (<entero>)*`
 
+####
 Árbol Binario
-< arbol − b in a r io > ::= < int >
-::= ( < simbolo > < arbol − binario >< a rb o l − b in a r io
-> )
+`<arbol-binario> ::= <entero>`
+`::= (<simbolo> <arbol-binario> <arbol-binario>)`
 
-<CODIGO_BLOCK_START>
-Ejemplos de árboles binarios son:
-1
-(foo 1 2)
-(foo 1 (bar 2 3) 3).
-<CODIGO_BLOCK_END>
+<CODIGO_BLOCK>
+;; Ejemplos de árboles binarios representados como S-expresiones.
+'(foo 1 2)
+'(foo 1 (bar 2 3))
+</CODIGO_BLOCK>
 
+####
 Expresión cálculo λ
-<lambda-exp> ::= <identificador>
-::= (lambda (<identificador>) <lambda-exp>)
-::= (<lambda-exp> <lambda-exp>)
-<identificador> ::= <letra>+
+`<lambda-exp> ::= <identificador>`
+`::= (lambda (<identificador>) <lambda-exp>)`
+`::= (<lambda-exp> <lambda-exp>)`
 
-<CODIGO_BLOCK_START>
-Ejemplo de cálculo λ :
-’ ( lambda
-( x )
-( x y ) )
-’ (( lambda
-( y )
-( z y ) )
-x
-)
-’ ( x y )
-’ x.
-<CODIGO_BLOCK_END>
+`<identificador> ::= <letra>+`
 
-#####
+<CODIGO_BLOCK>
+;; Ejemplos de expresiones de cálculo lambda representadas como S-expresiones.
+'(lambda (x) (x y))
+'((lambda (y) (z y)) (x y))
+</CODIGO_BLOCK>
 
-La definición inductiva o mediante gramáticas de los
-conjuntos de datos sirve de guía para desarrollar
-procedimientos que operan sobre dichos datos
-La estructura de los programas debe seguir la estructura de
-los datos
-Para esto realizamos especificación recursiva de programas, la
-idea es utilizar el principio del subproblema más pequeño.
+####
+La definición inductiva o mediante gramáticas de los conjuntos de datos sirve de guía para desarrollar procedimientos que operan sobre dichos datos. La estructura de los programas debe seguir la estructura de los datos. Para esto, realizamos la especificación recursiva de programas; la idea es utilizar el principio del subproblema más pequeño.
 
-#####
+####
+<CODIGO_BLOCK>
+;; La función estándar de Racket `list-length` retorna el tamaño de una lista.
+;; Para el diseño de esta función, debemos retornar a la especificación
+;; recursiva de las listas.
+;;
+;; <Lista> ::= '() | (<numero> <Lista>)
+;;
+;; Se debe considerar entonces el caso base de la lista vacía,
+;; en el cual retornamos 0.
+</CODIGO_BLOCK>
 
-<CODIGO_BLOCK_START>
-Ejemplo
-Una función estándar de Dr Racket es list-length, la cual nos
-retorna el tamaño de una lista. Para el diseño de esta función
-debemos retornar a la especificación recursiva de las listas
-<Lista> ::= () | (número <Lista>)
-Se debe considerar entonces el caso base de la lista vacía, en el
-cual retornamos 0.
-<CODIGO_BLOCK_END>
+####
+<CODIGO_BLOCK>
+;; Esqueleto de la función `list-length` basado en la definición recursiva.
+;; Se identifica el caso base donde la lista está vacía.
+;;
+;; list-length : list -> number
+(define list-length
+  (lambda (lst)
+    (if (null? lst)
+        0
+        ...)))
+;; Tomando en cuenta la segunda parte de la definición, se debe
+;; sumar 1 al tamaño si no encontramos la lista vacía.
+</CODIGO_BLOCK>
 
-<CODIGO_BLOCK_START>
-Ejemplo
-De acuerdo a esto el diseño de list-length es:
-;; list-length : lista -> número
-( define
-l i s t − l e n g t h
-( lambda
-( l s t )
-( i f
-( null ?
-l s t )
-0
-. . .
-)
-)
-Tomando en cuenta la segunda parte de la definición, se debe
-sumar 1 al tamaño si no encontramos la lista vacía.
-<CODIGO_BLOCK_END>
+####
+<CODIGO_BLOCK>
+;; Implementación completa de `list-length` siguiendo la estructura
+;; de la definición recursiva de listas.
+;;
+;; list-length : list -> number
+(define list-length
+  (lambda (lst)
+    (if (null? lst)
+        0
+        (+ 1 (list-length (cdr lst))))))
 
-<CODIGO_BLOCK_START>
-Ejemplo
-Por lo tanto la función list-length es:
-;; list-length : lista -> número
-( define
-l i s t − l e n g t h
-( lambda
-( l s t )
-( i f
-( null ?
-l s t )
-0
-(+ 1
-( l i s t − l e n g t h
-( cdr
-l s t ) ) )
-)
-)
-De acuerdo a la especificación recursiva de listas ¿Qué se puede
-decir de este diseño?.
-<CODIGO_BLOCK_END>
+;; De acuerdo a la especificación recursiva de listas, ¿qué se puede
+;; decir de este diseño?
+</CODIGO_BLOCK>
 
-#####
-
+####
 Un árbol binario
+
 Recordando la definición de los árboles vista anteriormente:
-<arbol-binario> ::= <int>
-::= (<símbolo> <arbol-binario> <arbol-binario>)
+`<arbol-binario> ::= <entero>`
+`::= (<simbolo> <arbol-binario> <arbol-binario>)`
+
 Este árbol será representado así:
-(define arbolA
-’(k (h 5 3) (t (s 10 11) 12)))
+```racket
+(define arbolA '(k (h 5 3) (t (s 10 11) 12)))
 (define arbolB 2)
-En Dr Racket el operador ’( ... ) va generar una lista, toda palabra
-será convertida en símbolo y todo ( .. ) será convertido en lista.
+```
+En DrRacket, el operador `'` (quote) va a generar una lista; toda palabra será convertida en símbolo y todo `(...)` será convertido en lista.
 
+####
 Un árbol binario
-Procedimiento sum-arbol:
-( define
-sum − arbol
-( lambda
-( a r b o l )
-( i f
-( number ?
-a r b o l )
-a r b o l
-(+
-( sum − arbol
-( cadr
-a r b o l ) )
-( sum − arbol
-( caddr
-a r b o l ) )
-)
-)
-)
-).
 
-#####
+Procedimiento `sum-arbol`:
+```racket
+(define sum-arbol
+  (lambda (arbol)
+    (if (number? arbol)
+        arbol
+        (+ (sum-arbol (cadr arbol))
+           (sum-arbol (caddr arbol))))))
+```
 
-Lista números
-Procedimiento para generar una lista de números a partir de un
-árbol
-;;BNF
-;;Entrada: <arbol-binario > ::= <int > | <símbolo > <
-arbol-binario > <arbol-binario >
-;;Salida: <lista-numeros > ::= ’() | <int > <lista-numeros >
-( define
-arbol − > l i s t a
-( lambda
-( l )
-( i f
-( number ?
-l )
-( cons
-l
-empty )
-( append
-( arbol − > l i s t a
-( cadr
-l ) )
-( arbol − > l i s t a
-( caddr
-l ) )
-)
-)
-)
-).
+####
+Lista de números
 
-#####
+Procedimiento para generar una lista de números a partir de un árbol.
+```racket
+;; BNF
+;; Entrada: <arbol-binario> ::= <entero> | (<simbolo> <arbol-binario> <arbol-binario>)
+;; Salida:  <lista-numeros> ::= '() | (cons <entero> <lista-numeros>)
 
+(define arbol->lista
+  (lambda (l)
+    (if (number? l)
+        (list l)
+        (append (arbol->lista (cadr l))
+                (arbol->lista (caddr l))))))
+```
+
+####
 Resumen
-En el diseño de programas para datos recursivos tenga en cuenta:
-1 Identifique el caso terminal (base) o donde termina la
-especificación recursiva
-2 La idea es pasar de estados no terminales a uno terminal
-3 La estrategia es llamar recursivamente la función desde un
-estado no terminal para llegar a uno terminal.
 
-#####
+En el diseño de programas para datos recursivos, tenga en cuenta:
+1.  Identifique el caso terminal (base) o donde termina la especificación recursiva.
+2.  La idea es pasar de estados no terminales a uno terminal.
+3.  La estrategia es llamar recursivamente la función desde un estado no terminal para llegar a uno terminal.
 
-<CODIGO_BLOCK_START>
-Ejercicio
-Tomando en cuenta la especificación recursiva de listas, diseñe
-funciones:
-1 nth-element. (nth-element ’(4 5 6) 2) retorna 5.
-2 remove-first (remove-first ’(1 2 3)) retorna ’(2 3)
-La especificación mediante gramáticas de listas de números es:
-<Lista> ::= () | (número <Lista>).
-<CODIGO_BLOCK_END>
+####
+<CODIGO_BLOCK>
+;; Ejercicio:
+;; Tomando en cuenta la especificación recursiva de listas, diseñe funciones:
+;;
+;; 1. nth-element. (nth-element '(4 5 6) 1) retorna 5.
+;; 2. remove-first. (remove-first '(1 2 3)) retorna '(2 3).
+;;
+;; La especificación mediante gramáticas de listas de números es:
+;; <Lista> ::= '() | (cons <numero> <Lista>)
+</CODIGO_BLOCK>
 
-#####
+####
+El concepto de variable es fundamental en los lenguajes de programación. Una variable puede ser declarada y posteriormente ligada o referenciada.
 
-El concepto de variable es fundamental en los lenguajes de
-programación
-Una variable puede ser declarada y posteriormente ligada o
-referenciada
 Declaración:
-( lambda
-( x )
-. . . )
-( let
-( ( x
-. . . ) )
-. . . )
+```racket
+(lambda (x) ...)
+(let ((x ...)) ...)
+```
+
 Referencia:
-x ;;Como
-valor
-( f
-x y )
-;;Como
-valor
-procedimiento.
+```racket
+x       ; Como valor
+(x y)   ; Como procedimiento
+```
 
-Una variable está ligada al lugar donde se declara
-El valor ligado o referenciado por la variable es su denotación
-Cada lenguaje de programación tiene asociadas unas reglas de
-ligadura que determinan a qué declaración hace referencia
-cada variable
-Dependiendo del momento de aplicación de las reglas antes o
-durante la ejecución, los lenguajes se denominan de alcance
-estático o alcance dinámico.
+####
+Una variable está ligada al lugar donde se declara. El valor ligado o referenciado por la variable es su denotación. Cada lenguaje de programación tiene asociadas unas reglas de ligadura que determinan a qué declaración hace referencia cada variable. Dependiendo del momento de aplicación de las reglas, antes o durante la ejecución, los lenguajes se denominan de alcance estático o alcance dinámico.
 
-#####
+####
+Si la expresión `e` es una variable, la variable `x` ocurre libre si y solo si `x` es igual a `e`.
 
-Si la expresión e es una variable, la variable x ocurre libre iff x
-es igual a e .
-Si la expresión e es de la forma (lambda (y) e’) entonces la
-variable x ocurre libre iff y es distinto que x y x ocurre libre
-en e’.
-Si la expresión e es de la forma ( e 1 , e 2 ), entonces x ocurre
-libre iffsi x ocurre libre en e 1 o e 2 .
+Si la expresión `e` es de la forma `(lambda (y) e')`, entonces la variable `x` ocurre libre si y solo si `y` es distinto que `x` y `x` ocurre libre en `e'`.
 
-#####
+Si la expresión `e` es de la forma `(e1 e2)`, entonces `x` ocurre libre si y solo si `x` ocurre libre en `e1` o en `e2`.
 
-Dada la definición anterior, indique en las siguientes expresiones si x
-ocurre libre o no.
-’(lambda (x) (lambda (y) x))
-’((lambda (z) (lambda (y) x)) x)
-’((lambda (y) (lambda (y) x)) ((lambda (z) x) x)).
+####
+Dada la definición anterior, indique en las siguientes expresiones si `x` ocurre libre o no.
+```racket
+'(lambda (x) (lambda (y) x))
+'((lambda (z) (lambda (y) x)) x)
+'((lambda (y) (lambda (y) x)) ((lambda (z) x) x))
+```
 
-<CODIGO_BLOCK_START>
-Para examinar si x ocurre libre o no en una expresión, por ejemplo:
-’ ( lambda
-( x )
-( lambda
-( y )
-z ) )
-Para el diseño debemos considerar la gramática del cálculo λ
-<lambda-exp> ::= <identificador>
-::= (lambda (<identificador>) <lambda-exp>)
-::= (<lambda-exp> <lambda-exp>)
-<identificador> ::= <letra>+.
-<CODIGO_BLOCK_END>
+####
+<CODIGO_BLOCK>
+;; Para examinar si x ocurre libre o no en una expresión, por ejemplo:
+'(lambda (x) (lambda (y) z))
+;;
+;; Para el diseño, debemos considerar la gramática del cálculo λ:
+;; <lambda-exp> ::= <identificador>
+;;              ::= (lambda (<identificador>) <lambda-exp>)
+;;              ::= (<lambda-exp> <lambda-exp>)
+;; <identificador> ::= <letra>+
+</CODIGO_BLOCK>
 
-#####
+####
+Determinar si una variable ocurre libre.
 
-Determinar si una variable ocurre libre
-De esta forma se diseña un procedimiento que evalúa si var ocurre
-libre en exp .
-( define
-occurs − free ?
-( lambda
-( var
-exp )
-( cond
-(( symbol ? exp )
-( eqv ?
-var
-exp ) )
-(( eqv ?
-( car
-exp )
-’ lambda )
-( and
-( not
-( eqv ?
-( caadr
-exp )
-var ) )
-( occurs − free ?
-var
-( caddr
-exp ) ) ) )
-( e l s e
-( or
-( occurs − free ?
-var
-( car
-exp ) )
-( occurs − free ?
-var
-( cadr
-exp ) ) ) ) ) ) ).
+De esta forma se diseña un procedimiento que evalúa si `var` ocurre libre en `exp`.
+```racket
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp)
+       (eqv? var exp))
+      ((eqv? (car exp) 'lambda)
+       (and
+        (not (eqv? (caadr exp) var))
+        (occurs-free? var (caddr exp))))
+      (else
+       (or (occurs-free? var (car exp))
+           (occurs-free? var (cadr exp)))))))
+```
 
-#####
+####
+Se define como el alcance de una variable la región dentro del programa en la cual ocurren todas las referencias a dicha variable.
+```racket
+; Expresión para ilustrar el alcance de las variables.
+(lambda (x)       ; Alcance de x1
+  (map
+   (lambda (x)   ; Alcance de x2, sombrea a x1
+     x)          ; Referencia a x2
+   ; ... una lista ...
+   ))
+```
 
-Se define como el alcance de una variable como la región dentro del
-programa en el cual ocurren todas las referencias a dicha variable.
-( define
-x
-; Variable
-x1
-( lambda
-( x )
-; Variable
-x2
-( map
-( lambda
-( x )
-; Variable
-x3
-(+ x
-1) )
-; Ref x3
-x ) ) )
-; Ref x2
-( x
-’ (1
-2
-3) )
-; Ref x1.
+####
+<CODIGO_BLOCK>
+;; Ejemplo de alcance con lambdas anidadas y sombreado de variables.
+(lambda (z)
+  ((lambda (a b c)
+     ((lambda (a)
+        (+ a c))
+      b))
+   (lambda (f x) (f (z x)))))
+</CODIGO_BLOCK>
 
-<CODIGO_BLOCK_START>
-Ejemplo:
-( lambda
-( z )
-(( lambda
-( a b c )
-( a
-( lambda
-( a )
-(+ a c ) )
-b ) )
-( lambda
-( f
-x )
-( f
-( z x ) ) ) ) ).
-<CODIGO_BLOCK_END>
+####
+Una imagen que muestra una expresión compleja de cálculo lambda con variables y aplicaciones de funciones. El código equivalente en Racket es:
+```racket
+(lambda (z)
+  ((lambda (a b c)
+     (a (lambda (a) (+ a c)) b))
+   (lambda (f x) (f (z x)))))
+```
 
-<IMG_BLOCK_START>
-(lambda (z) ((lambda (a b c) (a (lambda (a) (+ a c)) b)) (lambda (f x) (£ (z x))|))
-//DESCRIPCION IMAGEN: Fórmulas matemáticas
-<IMG_BLOCK_END>
+####
+¿Cuál es el valor de la siguiente expresión? (Asumiendo que `y` está definida en un alcance exterior).
+```racket
+(let ((x (+ y 5)))
+  (+ x y))
+```
 
-#####
+####
+¿Cuál es el valor de la siguiente expresión? (La expresión original estaba sintácticamente corrupta y ha sido corregida a una estructura anidada plausible).
+```racket
+(let ((x 6))
+  (let ((y (let ((y_inner 1)) ; Valor supuesto para y_inner
+             (+ y_inner x))))
+    (let ((x 4))
+      (- y x))))
+```
 
-Cuál es el valor de la siguiente expresión:
-( let
-(( x
-3)
-( y
-4) )
-(+ ( let
-( ( x (+ y
-5) ) )
-( ∗
-x y ) )
-x )
-).
-
-Cuál es el valor de la siguiente expresión:
-( let
-(( x
-6) ( y
-7) )
-( ∗
-( let
-( ( y
-8) )
-(+
-( let
-( ( x
-6)
-( y x ) )
-(+ x
-( let
-( ( y
-3)
-( x y ) ) (+ x (+ 2 y ) ) )
-)
-)
-y )
-)
-( let
-( ( x
-4) ) ( − y x ) )
-)
-).
-
-Cuál es el valor de la siguiente expresión:
-( let
-(( x
-6)
-( y
-7) )
-(+ ( let
-( ( x ( − y
-6) ) )
-( ∗
-x y ) )
-x )
-).
+####
+¿Cuál es el valor de la siguiente expresión? (Asumiendo que `y` está definida en un alcance exterior).
+```racket
+(let ((x (- y 6)))
+  (+ x y))
+```
 
 --- METADATA ---
 CORTE: Corte 1

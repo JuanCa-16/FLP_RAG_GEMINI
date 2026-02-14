@@ -1,108 +1,75 @@
-Aquí tienes la transcripción limpia y formateada:
+En este ejemplo se analiza la evaluación de un programa que combina procedimientos anidados y recursivos. Dado que no se especifica un ambiente inicial, se asume un ambiente vacío, al que llamaremos `E0`. En este ambiente se definen dos procedimientos, `f` y `g`, y se asigna un valor a `x`.
 
----
+-   `f` es una clausura que toma los parámetros `a` y `b`, y su cuerpo es `2 * (a + b)`. Cierra sobre el ambiente vacío `E0`.
+-   `g` es una clausura que toma los parámetros `c` y `d`, y su cuerpo es `c * (d + 2)`. También cierra sobre el ambiente vacío `E0`.
+-   La variable `x` recibe el valor `5`.
 
-Este documento presenta un ejemplo detallado sobre la evaluación de procedimientos y procedimientos recursivos.
+El ambiente `E0` contiene las clausuras para `f` y `g`, y el enlace `x = 5`.
 
-### 1. Configuración Inicial (Ambiente Global)
+####
 
-Se comienza con un ambiente vacío. Se definen los siguientes procedimientos y variables:
+A continuación, se evalúa una expresión `let` que define los procedimientos `h` e `i`, y la variable `y`. Estas definiciones ocurren en un nuevo ambiente `E1`, que extiende a `E0`.
 
-*   **`f`**: Una clausura que toma dos parámetros `a` y `b`. Su operación es `(a + b) * 2`. Guarda el ambiente vacío.
-*   **`g`**: Una clausura que toma dos parámetros `c` y `d`. Su operación es `c * (d + 2)`. Guarda el ambiente vacío.
-*   **`i`**: Inicialmente asignado con el valor `5`.
+-   `h` es una clausura que toma los parámetros `m` y `n`, y cierra sobre `E0`.
+-   `i` es una clausura que toma los parámetros `op` y `p`, y cierra sobre `E0`.
+-   La variable `y` se define mediante la evaluación de `f(x, g(x, x))` en el ambiente `E0`.
 
-### 2. Evaluación de la Expresión `i = f(5, g(5,5))`
+Para calcular el valor de `y`:
+1.  Se sustituye `x` por `5`, resultando en la expresión `f(5, g(5, 5))`.
+2.  Se evalúa la llamada interna `g(5, 5)`. Se crea un ambiente temporal que extiende a `E0` con `c=5` y `d=5`. El cuerpo de `g` calcula `5 * (5 + 2)`, lo que resulta en `35`.
+3.  La expresión se reduce a `f(5, 35)`.
+4.  Se evalúa la llamada `f(5, 35)`. Se crea un ambiente temporal que extiende a `E0` con `a=5` y `b=35`. El cuerpo de `f` calcula `2 * (5 + 35)`, lo que resulta en `80`.
 
-Esta evaluación sobrescribe el valor de `i`.
+Por lo tanto, la variable `y` queda ligada al valor `80` en el ambiente `E1`.
 
-1.  **Evaluación de `g(5,5)`:**
-    *   Se crea un ambiente para la invocación de `g` (`env_g1`).
-    *   Los parámetros son `c = 5` y `d = 5`.
-    *   La operación `c * (d + 2)` se resuelve como `5 * (5 + 2) = 5 * 7 = 35`.
-    *   `g(5,5)` devuelve `35`.
+####
 
-2.  **Evaluación de `f(5, 35)`:**
-    *   La expresión se transforma en `f(5, 35)`.
-    *   Se crea un ambiente para la invocación de `f` (`env_f1`).
-    *   Los parámetros son `a = 5` y `b = 35`.
-    *   La operación `(a + b) * 2` se resuelve como `(5 + 35) * 2 = 40 * 2 = 80`.
-    *   `f(5, 35)` devuelve `80`.
+Posteriormente, se encuentra una expresión `letrec` que define un procedimiento recursivo `j`. Esta estructura crea un ambiente extendido recursivo, `E2`, que permite que `j` se llame a sí misma.
 
-*   **Regla Importante**: Los ambientes para las clausuras se generan en el *momento de su llamado* (invocación), no en su declaración.
-*   El resultado final de esta evaluación (`80`) se asigna a la variable global `i`. Ahora, `i = 80`.
+-   El procedimiento `j` toma dos parámetros, `q` y `r`.
+-   Su cuerpo define una condición de parada: si `q` es mayor que `0`, se ejecuta una llamada recursiva. En caso contrario (el caso base), se ejecuta otra expresión.
 
-### 3. Evaluación de un Procedimiento Recursivo (`letrec j(q,r) = ... in ...`)
+La evaluación comienza con la llamada `j(x, y)`, que, utilizando los valores de los ambientes anteriores, se convierte en `j(5, 80)`.
 
-Se introduce un bloque `letrec` que define un procedimiento recursivo `j` con parámetros `q` y `r`. Este `letrec` crea un ambiente extendido y recursivo (`env_rec2`).
+####
 
-La estructura de `j(q,r)` es la siguiente:
-*   **Caso Base**: Si `q = 0`, la función devuelve `h(5 + g(g(5, 80), 80), 80)`. (Donde el `80` final es el valor `r` original de la llamada inicial a `j`).
-*   **Paso Recursivo**: Si `q > 0`, la función devuelve `r + j(q - 1, r + 2)`.
+Se inicia el proceso de evaluación de la llamada recursiva `j(5, 80)`. La traza de las llamadas es la siguiente:
 
-La llamada a evaluar es `j(x, y)`, donde `x=5` (el valor inicial de `i`) e `y=80` (el valor calculado de `i`).
-**Primer llamado**: `j(5, 80)`.
+1.  **j(5, 80):** Como `5 > 0`, retorna `80 + j(4, 80 + 2)`, es decir, `80 + j(4, 82)`.
+2.  **j(4, 82):** Como `4 > 0`, retorna `82 + j(3, 82 + 2)`, es decir, `82 + j(3, 84)`.
+3.  **j(3, 84):** Como `3 > 0`, retorna `84 + j(2, 84 + 2)`, es decir, `84 + j(2, 86)`.
+4.  **j(2, 86):** Como `2 > 0`, retorna `86 + j(1, 86 + 2)`, es decir, `86 + j(1, 88)`.
+5.  **j(1, 88):** Como `1 > 0`, retorna `88 + j(0, 88 + 2)`, es decir, `88 + j(0, 90)`.
 
-#### 3.1. Desarrollo de la Recursión de `j`
+En este punto, la recursión se detiene y se debe evaluar la llamada `j(0, 90)`. El resultado acumulado de las sumas parciales hasta ahora es `80 + 82 + 84 + 86 + 88`.
 
-Aplicando el paso recursivo:
-*   `j(5, 80) = 80 + j(4, 82)`
-*   `j(4, 82) = 82 + j(3, 84)`
-*   `j(3, 84) = 84 + j(2, 86)`
-*   `j(2, 86) = 86 + j(1, 88)`
-*   `j(1, 88) = 88 + j(0, 90)`
+####
 
-#### 3.2. Evaluación del Caso Base de `j`: `h(5 + g(g(5, 80), 80), 80)`
+La evaluación de `j(0, 90)` activa el caso base de la recursión, ya que la condición `q > 0` es falsa. El caso base ejecuta la expresión `h(i(x, y))`. Los valores de `x` e `y` se toman del ambiente de la llamada original, siendo `x=5` e `y=80`.
 
-Cuando `q = 0` (en `j(0, 90)`), se ejecuta el caso base. Para ello, necesitamos evaluar primero el primer argumento de `h`: `5 + g(g(5, 80), 80)`.
+1.  **Evaluar `i(5, 80)`:**
+    -   Se crea un ambiente con `op=5` y `p=80`.
+    -   El cuerpo de `i` es `op + g(g(op, p), p)`, que se convierte en `5 + g(g(5, 80), 80)`.
+    -   Llamada interna: `g(5, 80)` calcula `5 * (80 + 2) = 410`.
+    -   Llamada externa: `g(410, 80)` calcula `410 * (80 + 2) = 33620`.
+    -   El resultado de `i(5, 80)` es `5 + 33620 = 33625`.
 
-1.  **Evaluación de `g(5, 80)`:**
-    *   `c = 5`, `d = 80`.
-    *   `c * (d + 2) = 5 * (80 + 2) = 5 * 82 = 410`.
-    *   `g(5, 80)` devuelve `410`.
+2.  **Evaluar `h(33625, 80)`:**
+    -   Se crea un ambiente con `m=33625` y `n=80`.
+    -   El cuerpo de `h` es `m + f(m, n)`, que se convierte en `33625 + f(33625, 80)`.
+    -   Se evalúa la llamada `f(33625, 80)`, que calcula `2 * (33625 + 80) = 2 * 33705 = 67410`.
+    -   El resultado de `h(33625, 80)` es `33625 + 67410 = 101035`.
 
-2.  **Evaluación de `g(410, 80)`:**
-    *   Ahora, con el resultado anterior, `c = 410`, `d = 80`.
-    *   `c * (d + 2) = 410 * (80 + 2) = 410 * 82 = 33620`.
-    *   `g(410, 80)` devuelve `33620`.
+El valor devuelto por el caso base `j(0, 90)` es `101035`.
 
-3.  **Suma final para el primer argumento de `h`:**
-    *   `5 + 33620 = 33625`.
+####
 
-Así, el llamado al caso base es `h(33625, 80)`.
+El resultado final de la evaluación del programa es la suma de los valores acumulados durante las llamadas recursivas y el valor del caso base.
 
-Ahora, definimos la función `h`:
-*   **`h`**: Una clausura que toma dos parámetros `m` y `n`. Su operación es `m + f(m, n)`. Guarda el ambiente `env_rec2`.
+-   Suma de los valores de `r` en cada paso recursivo: `80 + 82 + 84 + 86 + 88 = 420`.
+-   Valor devuelto por el caso base (`j(0, 90)`): `101035`.
 
-4.  **Evaluación de `h(33625, 80)`:**
-    *   Se crea un ambiente para la invocación de `h` (`env_h`).
-    *   Los parámetros son `m = 33625` y `n = 80`.
-    *   La operación de `h` es `m + f(m, n)`. Esto se traduce a `33625 + f(33625, 80)`.
-
-5.  **Evaluación de `f(33625, 80)` (dentro de `h`):**
-    *   Se crea un ambiente para la invocación de `f` (`env_f2`).
-    *   Los parámetros son `a = 33625` y `b = 80`.
-    *   La operación `(a + b) * 2` se resuelve como `(33625 + 80) * 2 = 33705 * 2 = 67410`.
-    *   `f(33625, 80)` devuelve `67410`.
-
-6.  **Resultado final de `h(33625, 80)`:**
-    *   `33625 + 67410 = 101035`.
-    *   Este valor (`101035`) es el resultado de `j(0, 90)`.
-
-### 4. Cálculo del Resultado Final de `j(5, 80)`
-
-El resultado total de la llamada inicial `j(5, 80)` se obtiene sumando el valor del caso base con los valores de `r` de cada paso recursivo:
-
-`101035` (resultado de `j(0, 90)`) `+ 88 + 86 + 84 + 82 + 80`.
-Sumando los valores de `r` desde el último paso recursivo: `88 + 86 + 84 + 82 + 80 = 420`.
-
-El resultado final es `101035 + 420 = 101455`.
-
-### Conclusión
-
-Este ejercicio ha demostrado la evaluación de procedimientos con ambientes anidados y la gestión de la recursión en procedimientos, destacando cómo los ambientes se crean y extienden en cada llamada. El valor final obtenido es `101455`.
-
-**Próxima Clase**: Se abordará el tema de la asignación de variables, explorando cómo se modifican los valores en el interpretador y las diferencias entre paso por valor y paso por referencia. Este tema marca el cierre del primer bloque de contenido.
+El resultado total es la suma de estos dos componentes: `420 + 101035 = 101455`.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=Qs9Mx82uQrE

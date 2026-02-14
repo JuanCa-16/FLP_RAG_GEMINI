@@ -1,15 +1,19 @@
+######## RESUMEN ########
+Implementa un sistema de ambientes léxicos para gestionar la ligadura y resolución de nombres de variables.
+
+######## CONCEPTOS ########
+Ambiente léxico, Ligadura (binding), Alcance (scope), Sombreamiento (shadowing), Tipo de datos algebraico, `define-datatype`
+
 ######## EXPLICACION ########
-Define ambientes y operaciones para un lenguaje.
-Ejemplo de `define-datatype` para `environment`.
-Ejemplo de constructores `empty-env-record` y `extended-env-record`.
-Ejemplo de `empty-env` crea un ambiente vacío.
-Ejemplo de `extend-env` añade enlaces.
-Ejemplo de `apply-env` busca valores en ambientes.
+Este código implementa un sistema básico de gestión de ambientes que asocia identificadores a sus valores.
+Permite crear y extender nuevos entornos léxicos con la función `extend-env` para ligar variables a sus datos, y resolver el valor de un símbolo con `apply-env`.
+Demuestra el uso del macro `define-datatype` para definir estructuras de datos recursivas inmutables. Ilustra cómo gestionar el alcance y el sombreamiento de variables durante las búsquedas.
+Concepto fundamental para la implementación de intérpretes, evaluadores y la comprensión de la semántica operacional de lenguajes de programación.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-datatype.rkt
 FUENTE: CODIGO
-lenguaje: Racket (EOPL dialect)
+lenguaje: Racket
 
 ######## CODIGO ########
 #lang eopl

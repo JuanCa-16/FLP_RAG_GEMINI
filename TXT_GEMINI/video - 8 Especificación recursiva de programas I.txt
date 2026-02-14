@@ -1,54 +1,21 @@
-Aquí tienes la transcripción limpia y formateada:
+La especificación de recursión de programas se fundamenta en la especificación de recursión de datos, la cual utiliza gramáticas como la de Backus-Naur Form (BNF) y definiciones inductivas. Una definición inductiva de un tipo de dato sirve como guía para desarrollar los procedimientos que operan sobre él. Por ejemplo, una lista de enteros se define como una estructura que puede ser vacía o estar compuesta por un entero seguido de otra lista de enteros. Por lo tanto, cualquier función que procese una lista debe considerar esta estructura dual, utilizando operaciones como `CAR` para acceder al primer elemento y `CDR` para acceder al resto de la lista.
 
----
+####
 
-### Especificación de Recursión en Programas
+En el diseño de una función recursiva, el primer paso es identificar y manejar el caso base, que corresponde al símbolo terminal en la gramática del tipo de dato y representa la condición de parada de la recursión. Al evaluar una función, se debe preguntar primero si se ha alcanzado esta condición. Si es así, la función debe devolver una respuesta inmediata y, a menudo, trivial, sin realizar ningún llamado recursivo adicional. Por ejemplo, en una función que suma los elementos de una lista, el caso base es la lista vacía, y su respuesta inmediata es 0.
 
-Para la especificación de recursión de datos, se utilizan las expresiones gramaticales de Backus-Naur (BNF) y las definiciones inductivas. Ahora pasaremos a la especificación de programas.
+####
 
-La definición inductiva, o mediante gramáticas, sirve como guía para desarrollar procedimientos que operan sobre esos datos. Por ejemplo, al definir un tipo de dato como una lista, se establece su estructura: un entero seguido de una lista de enteros, o una lista vacía. El acceso a los elementos se realiza mediante operaciones como `CAR` (para el primer elemento) y `CDR` (para el resto de la lista).
+El caso recursivo de una función se encarga de procesar las variantes no terminales de la estructura de datos. Para una lista de enteros, el caso recursivo se presenta cuando la lista no está vacía, es decir, está compuesta por un entero y otra lista. La estrategia consiste en descomponer el problema: se procesa el elemento actual (el entero, obtenido con `CAR`) y se realiza un llamado recursivo con el resto de la estructura (la sub-lista, obtenida con `CDR`). De esta manera, el problema se reduce progresivamente en cada llamada hasta que se alcanza el caso base. Para sumar una lista, se suma el primer elemento al resultado de la llamada recursiva sobre el resto de la lista.
 
-Toda función que trabaja sobre un tipo de dato recursivo debe considerar la estructura de dicho dato. En el caso de una lista, esto implica considerar tanto el caso de la lista vacía como el caso de la lista no vacía (un elemento seguido de otra lista).
+####
 
-**Ejemplo: Suma de elementos en una lista (`sumar-lista`)**
+La estrategia fundamental de la recursión es reducir un problema a una versión más pequeña de sí mismo hasta alcanzar el caso más simple, que puede resolverse directamente. En el contexto de las listas, el caso más simple es la lista vacía. Por ejemplo, para diseñar una función como `list-length` que cuenta los elementos de una lista, se sigue la misma estructura:
 
-Consideremos una función para sumar los elementos de una lista. Para su diseño, se deben contemplar dos casos principales:
+1.  **Caso base**: Si la lista es vacía, el número de elementos es 0.
+2.  **Caso recursivo**: Si la lista no es vacía, contiene al menos un elemento. El total de elementos será 1 (el elemento actual) más la cantidad de elementos en el resto de la lista.
 
-1.  **Caso Base (Símbolo Terminal / Condición de Parada):**
-    Este es el caso más sencillo, que tiene una respuesta trivial y no incluye ninguna llamada recursiva. Para una lista, el caso base es cuando la lista es vacía.
-    *   **Pregunta:** ¿La lista es vacía?
-    *   **Respuesta:** Si la lista es vacía y se pide sumar sus elementos, la suma es `0`.
-
-2.  **Caso Recursivo:**
-    Este caso se aplica cuando la lista no es vacía, siguiendo la estructura definida por la gramática (un entero seguido de una lista de enteros). Aquí, se resuelve una parte del problema y se realiza una llamada recursiva para el resto.
-    *   **Estrategia:** Se suma el primer elemento (`CAR`) de la lista y se realiza una llamada recursiva a la misma función con el resto de la lista (`CDR`). Esto se debe a que el `CDR` de una lista no vacía siempre es otra lista, manteniendo la estructura recursiva.
-
-**Principio fundamental:** Las funciones deben seguir la estructura de los datos sobre los que operan. La idea es descomponer el problema en una versión más pequeña hasta alcanzar el caso base, que es el problema más simple de resolver.
-
-**Ejemplo: Función para obtener la longitud de una lista (`list-length`)**
-
-Para diseñar una función que devuelve el número de elementos de una lista, se deben considerar los mismos dos casos:
-
-1.  **Caso Base:**
-    *   Si la lista es vacía, su longitud es `0`. Esta es la respuesta inmediata.
-
-2.  **Caso Recursivo:**
-    *   Si la lista no es vacía, significa que hay al menos un elemento. Por lo tanto, se suma `1` (por el elemento actual) y se realiza una llamada recursiva a la función `list-length` con el `CDR` de la lista, que es una lista más pequeña.
-
-**Estructura de la función en Racket (usando `if`):**
-
-El diseño de la función `list-length` en Racket podría ser:
-
-```racket
-(define (list-length l)
-  (if (empty? l)         ; Pregunta: ¿Es la lista vacía? (caso base)
-      0                  ; Respuesta si es verdadero: 0
-      (+ 1 (list-length (cdr l))))) ; Respuesta si es falso: 1 + llamada recursiva con el CDR
-```
-
-En el caso recursivo, la función cuenta un elemento y se llama a sí misma para contar los elementos restantes en la sub-lista (el `CDR`). Este proceso continúa hasta que se encuentra la lista vacía, momento en el que se devuelve `0` y las sumas pendientes se resuelven en orden inverso a las llamadas.
-
----
+La implementación en Racket utiliza una estructura condicional `if`: `(if <pregunta> <respuesta_si_verdadero> <respuesta_si_falso>)`. Así, la función `list-length` se implementaría verificando si la lista es vacía. Si lo es, devuelve 0. Si no, devuelve `(+ 1 (list-length (cdr lista)))`, sumando uno por el elemento actual y llamando recursivamente a la función con el resto de la lista.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=VpJGNtKpskI

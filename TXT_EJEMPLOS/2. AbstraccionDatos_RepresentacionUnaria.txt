@@ -1,15 +1,21 @@
+######## RESUMEN ########
+Implementa números naturales y operaciones aritméticas básicas usando una representación unaria recursiva en Racket.
+
+######## CONCEPTOS ########
+Representación unaria, recursión, abstracción de datos, listas enlazadas, aritmética básica
+
 ######## EXPLICACION ########
-Implementa números unarios y operaciones aritméticas.
-Ejemplo de definición de cero.
-Ejemplo de sucesor y predecesor.
-Ejemplo de función es-cero.
-Ejemplo de suma de números unarios.
-Ejemplo de multiplicación unaria.
+Este código implementa números naturales y operaciones aritméticas básicas, como suma y multiplicación, mediante una representación unaria basada en listas.
+Demuestra cómo construir abstracciones de datos para números enteros, simulando su comportamiento con `successor` y `predecessor`.
+Permite explorar la creación de tipos de datos personalizados para realizar cálculos aritméticos, manejando incluso casos límite como `is-zero?`.
+Aplica recursión de manera extensiva para las funciones `plus` y `mult`, ilustrando la programación funcional.
+Subraya el manejo de invariantes y errores al determinar el `predecessor` de un número representado unariamente.
+Fortalece la comprensión de la abstracción de datos, la composición funcional y el diseño de APIs internas en Racket.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionUnaria.rkt
 FUENTE: CODIGO
-lenguaje: Racket (EOPL)
+lenguaje: Racket
 
 ######## CODIGO ########
 #lang eopl

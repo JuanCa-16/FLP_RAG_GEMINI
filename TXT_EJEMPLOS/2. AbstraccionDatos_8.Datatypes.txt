@@ -1,10 +1,14 @@
+######## RESUMEN ########
+Define y manipula árboles binarios personalizados empleando datatypes y recursión estructural en Racket.
+
+######## CONCEPTOS ########
+Algebraic Datatypes, Structural Recursion, Pattern Matching, Abstract Syntax Tree, Parsing
+
 ######## EXPLICACION ########
-Define y manipula un tipo de dato abstracto para árboles binarios.
-Ejemplo de definición de un tipo de dato algebraico.
-Ejemplo de construcción de árboles binarios.
-Ejemplo de recorrido y suma de elementos.
-Ejemplo de extracción de símbolos de un árbol.
-Ejemplo de parseo de sintaxis concreta a tipo abstracto.
+Este código implementa la definición y manipulación de árboles binarios personalizados usando el sistema de datatypes de Racket.
+Permite construir representaciones de estructuras jerárquicas y aplicar transformaciones como `sumar-arbol` para calcular valores o `arbol-b->listS` para extraer componentes.
+Aplica `define-datatype` para modelar la estructura del árbol y `cases` para realizar pattern matching y recursión estructural de manera idiomática.
+Sirve como base para comprender la implementación de intérpretes y compiladores, transformando sintaxis concreta a Abstract Syntax Trees mediante `parse` y `unparse`.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/8.Datatypes.rkt

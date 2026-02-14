@@ -1,59 +1,19 @@
-Aquí tienes la transcripción de clase limpia y formateada:
+El procedimiento `FindMethodOnApply` no se modifica, ya que opera sobre la representación estática de las declaraciones de objetos. En cambio, `ApplyMethod` se redefine para manejar un vector de campos. Su nueva implementación consiste en evaluar el cuerpo del método en un ambiente extendido. Este ambiente se construye con la información del método, incluyendo el nombre del super, una referencia a `self`, y un ambiente adicional que mapea los identificadores de los campos a sus valores correspondientes, extraídos del vector de campos del objeto.
 
----
+####
+La función `rollup_file_disks` se encarga de construir una lista completa de los identificadores de campos (fields) de una clase, recorriendo la cadena de herencia hacia arriba. Por ejemplo, para una jerarquía C1(x,y) <- C2(x) <- C3(z), esta función generaría la lista de identificadores correspondiente a toda la cadena. Es importante notar que la cantidad de identificadores puede ser mayor que el vector de campos de un objeto específico, especialmente cuando un método de una superclase se invoca sobre una instancia de una subclase. En estos casos, se utilizan índices, como una "última posición", para delimitar la porción del vector de campos que es relevante para el contexto del método en ejecución, garantizando el acceso correcto a los datos.
 
-### Manejo de Métodos y Optimización de la Ejecución
+####
+Durante la ejecución de un método, el vector de campos del objeto (`self`) contendrá los valores de todos los campos definidos en su clase y en todas sus superclases. Por ejemplo, si se invoca un método `M1` definido en la clase `C2` sobre un objeto de la clase `C3` (donde `C3` hereda de `C2`, que a su vez hereda de `C1`), el vector de campos del objeto `self` incluirá los campos de `C1`, `C2` y `C3`. Sin embargo, el método `M1` solo debe tener acceso a los campos definidos hasta `C2`. Para gestionar esto, se utiliza un índice que marca la "última posición" relevante en el vector, asegurando que el método no acceda a campos de subclases que no le corresponden. La lista completa de identificadores de campos se construye en orden inverso a la cadena de herencia.
 
-Para manejar métodos, el procedimiento `FindMethodOnApply` no cambia, ya que trabaja con la representación del objeto de las declaraciones. Sin embargo, `ApplyMethod` se define con un vector de campos, construyendo un elemento por cada campo.
+####
+La tarea de construir la lista de identificadores de campos para cada método (`rollup_file_disks`) en cada invocación es ineficiente, ya que esta información es estática y no cambia durante la ejecución. Para optimizar este proceso, se introduce una nueva representación para los métodos. Esta nueva estructura no solo almacena la declaración original del método, sino que también precalcula y guarda el nombre de la superclase y la lista de símbolos (identificadores de campos) que le corresponden. De esta manera, la información necesaria está disponible de inmediato en tiempo de ejecución, eliminando la necesidad de recalcularla repetidamente.
 
-En `ApplyMethod`, se considera el cuerpo del método, el nombre del padre (`super name`), y el `file disk`. La expresión se evalúa en un ambiente extendido que incluye `super`, `self` y estos campos.
+####
+Para soportar la optimización de los métodos, la representación de las clases también debe ser enriquecida. Una clase se representará mediante una estructura de datos que almacena información estática y precalculada: el nombre de la clase, el nombre de la superclase, el tamaño total del vector de campos (incluyendo los heredados), los identificadores de sus propios campos y un entorno de métodos. Este entorno de métodos contendrá la lista de las nuevas representaciones de métodos, que ya incluyen la información precalculada sobre los campos. Esta estructura consolidada permite que, una vez declaradas las clases, toda la información necesaria para la ejecución esté organizada y accesible sin necesidad de cálculos adicionales.
 
-La diferencia clave radica en los `file disks` (relacionados con `RollupFileDisks` y `files`), que implican la extracción de un vector. Se construye un ambiente que contiene toda la información necesaria: el ambiente propio del método más un ambiente extendido con dicho vector. Esto facilita la ejecución.
-
-`FindMethodOnApply` se simplifica considerablemente. Los `file.dis` se extraen mediante funciones como `method.file.dis` y `method.supername`, que actúan como *cases* para las representaciones de métodos y objetos. El cambio es sencillo.
-
-`ApplyMethod` invoca a `RollupFileDisks` para construir y extraer una lista de identificadores. Esta lista tiene el mismo tamaño que el vector de campos de la clase cuando la clase 'wesped' y la clase 'self' son la misma. Si la clase 'wesped' está más arriba en la cadena de herencia, contendrá más elementos que el vector. Por ejemplo, si el `self` es de clase C3 pero la ejecución se da en C1, el `file disk` total puede tener 5 elementos, mientras que C1 solo tiene 2 (los correspondientes a C1). La función `find position` se utiliza para ubicar el índice correcto, indicando dónde se debe considerar el vector, utilizando índices y "banderitas" para delimitar el alcance.
-
-`RollupFileDisks` realiza la búsqueda de los `files`, creando una lista. Por ejemplo, si se tienen `xy` de C1, `x` de C2 y `xz` de C3, la función construirá la lista de identificadores `xz`, `x`, `xy`.
-
-#### Optimización: Almacenamiento Estático de la Información de Métodos
-
-Al considerar la ejecución de `Zen O3 M1 de 78`, donde `M1` es un método definido en C2 (siendo C1 el padre de C2), se observa una representación de herencia C1, C2, C3. La `last position` (una función definida previamente) indica hasta dónde considerar la lista de identificadores (por ejemplo, `X, Y` de C1 y `Y` de C2).
-
-**Problema:** Recalcular la información de `RollupFileDisks` en cada llamada a un método es ineficiente. El resultado del índice o la lista de símbolos es estático para una clase y su cadena de herencia, independientemente de la invocación específica.
-
-**Solución:** Almacenar esta información de forma precalculada. Un método ahora consistirá en:
-*   Una declaración de método (`MethodDeclaration`).
-*   El nombre de la superclase (`SuperclassName`).
-*   La lista de símbolos (`ListOfSymbols`) a usar.
-
-Esta información se almacena directamente al declarar los métodos, eliminando la necesidad de recalcular constantemente la lista de símbolos e índices. Esta nueva estructura se añade a las declaraciones de métodos en el interpretador, organizándola en un nuevo `data type` específico para métodos.
-
-#### Representación de Clases Estáticas
-
-La información almacenada es estática y no depende de valores denotados o expresiones dinámicas. Los campos dependen de la declaración de los métodos, y esta estructura permanece constante.
-
-Para mantener esta información, las clases se representarán con un nuevo `data type Class` que contendrá:
-*   `ClassName`
-*   `ParentClassName`
-*   `FieldSize` (un entero, indicando el tamaño total de los campos, incluyendo los heredados).
-*   `IDs` (un símbolo que representa los identificadores de los campos).
-*   `MethodEnvironment` (una lista de métodos precalculada).
-
-Esta representación encapsula toda la información, lo que significa que una vez declaradas las clases, se generan estas estructuras que ya tienen todo lo necesario para la ejecución, evitando recálculos constantes. La cadena de herencia y la estructura de campos/métodos son estáticas; solo los argumentos de los métodos pueden cambiar dinámicamente.
-
-**Ejemplo de representación de clases (campos heredados incluidos en `FieldSize`):**
-*   **C1:** `ClassName`: C1, `ParentClassName`: None, `FieldSize`: 2, `IDs`: `xy`.
-*   **C2:** `ClassName`: C2, `ParentClassName`: C1, `FieldSize`: 3 (incluye los de C1 y los propios), `IDs`: `x`.
-*   **C3:** `ClassName`: C3, `ParentClassName`: C2, `FieldSize`: 5 (incluye los de C3, C2 y C1), `IDs`: `xz`.
-
-#### Elaboración de Clases en el Interpretador
-
-Las clases se construyen redefiniendo el procedimiento de "elaboración de declaraciones de clase" en el interpretador. Este procedimiento inicializa y agrega cada clase a un `ClassEnvironment`, creando su representación. La representación de la clase incluirá su nombre, el nombre de la superclase, el tamaño de los IDs, los IDs, y la lista de métodos calculada por `ReloadMyMethodDeclaration` (que examina los métodos y construye la lista).
-
-Este nuevo enfoque (`LabelClass`, `elaboraciones de clase`, `setea esta variable de class environment`) reemplaza el almacenamiento previo de declaraciones de clases por estas representaciones enriquecidas. Así, toda la información (como el tamaño de los campos o el número de métodos) ya está disponible directamente, simplificando y agilizando el proceso de interpretación.
-
----
+####
+El procedimiento de elaboración de declaraciones de clases se modifica para construir las nuevas representaciones enriquecidas en lugar de simplemente almacenar las declaraciones originales. Durante esta fase de elaboración, el sistema procesa cada declaración de clase para crear una estructura que contiene su nombre, el de su superclase, el tamaño total de sus campos y un entorno de métodos completamente resuelto. Para cada método, se calcula y almacena la lista de identificadores de campos correspondiente. El resultado de este proceso es un entorno de clases que contiene estas estructuras completas y listas para ser utilizadas eficientemente por el intérprete durante la ejecución, evitando recálculos redundantes.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=9kgBLpcG2x8

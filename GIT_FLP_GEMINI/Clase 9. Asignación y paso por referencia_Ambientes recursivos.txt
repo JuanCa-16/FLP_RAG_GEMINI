@@ -1,0 +1,56 @@
+Los ambientes recursivos son estrictamente para procedimientos, no vamos a permitir modificaciones a sus valores (es posible pero requiere un proceso en el cual debemos validar que sean procedimientos).
+
+La función `apply-env-ref` busca una variable en un ambiente dado. Si la variable no se encuentra en un ambiente `empty-env`, genera un error.
+
+```racket
+; apply-env: environment -> referencia
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+        (eopl:error "Variable not found" var))
+```
+
+###
+En el caso de un ambiente `extend-env`, `apply-env-ref` busca la variable recursivamente en la lista de bindings del ambiente actual usando una función auxiliar `search-var`. Si la encuentra, devuelve una referencia a su valor. Si no, continúa la búsqueda en el ambiente anterior.
+
+```racket
+      (extend-env (lid vec old-env)
+        (letrec ((search-var
+                  ; Búsqueda recursiva en la lista de bindings
+                  (lambda (lid lval [pos 0])
+                    (cond
+                      [(null? lid)
+                       (apply-env-ref old-env var)] ; Buscar en entorno anterior
+                      [(equal? (car lid) var)
+                       (a-ref pos vec)] ; Voy a generar una referencia cuando encuentro la variable
+                      [else
+                       (search-var (cdr lid) vec (+ pos 1))])))) ; Continuar búsqueda
+          (search-var lid vec)))
+```
+
+###
+Cuando se consulta un procedimiento en un ambiente `extend-recursively-env`, se retorna una referencia con un único valor que es una clausura. La función auxiliar `search-proc` busca el procedimiento entre los nombres definidos recursivamente y, si lo encuentra, crea y devuelve una clausura encapsulando el cuerpo del procedimiento, sus argumentos y el ambiente actual.
+
+```racket
+      (extend-recursively-env (procnames llargs bodies old-env)
+        (letrec ((search-proc
+                  (lambda (procs args bodies)
+                    (cond
+                      [(null? procs)
+                       (apply-env-ref old-env var)]
+                      [(eqv? (car procs) var)
+                       (a-ref 0 (list->vector (list (closure (car args) (car bodies) env))))]
+                      [else
+                       (search-proc (cdr procs) (cdr args) (cdr bodies))])))
+                 )
+          (search-proc procnames llargs bodies))))))
+```
+
+---
+METADATA
+---
+TEMATICA: Clase 9. Asignación y paso por referencia
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Ambientes recursivos.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Ambientes%20recursivos/

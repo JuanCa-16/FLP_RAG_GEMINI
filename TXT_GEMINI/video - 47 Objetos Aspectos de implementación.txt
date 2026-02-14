@@ -1,32 +1,34 @@
-Aquí tienes la transcripción limpia y formateada:
+Al incorporar la programación orientada a objetos, un programa se compone de un conjunto de declaraciones de clases y una expresión. La evaluación del programa se realiza en dos fases: primero, las declaraciones de clases son procesadas mediante una función `elaborate_class_decls`, y posteriormente, la expresión principal es evaluada. La función `elaborate_class_decls` se encarga de procesar y almacenar las definiciones de las clases para que estén disponibles cuando se necesiten durante la ejecución. Por lo tanto, la función `eval_program` del interpretador debe ser modificada para ejecutar primero la elaboración de clases y luego la evaluación de la expresión.
 
----
+####
+La especificación gramatical del lenguaje se modifica para reflejar la nueva estructura de un programa. Un programa ahora consiste en una o más declaraciones de clases, seguidas de una única expresión a evaluar. Este cambio es fundamental para que el interpretador pueda procesar primero todas las definiciones de clases antes de proceder con la ejecución del código principal. Adicionalmente, se pueden agregar primitivas útiles, como una función para imprimir listas (`list_print`), que simplifiquen la visualización de estructuras de datos durante la ejecución.
 
-La implementación de objetos en nuestro interpretador implica varios cambios.
+####
+La introducción de objetos en el lenguaje requiere la definición de tres nuevos tipos de expresiones:
+1.  **Creación de objetos (`new`):** Permite instanciar un objeto a partir de una clase.
+2.  **Invocación de métodos (`send`):** Permite ejecutar un método sobre un objeto.
+3.  **Superllamados (`super`):** Permite que un método invoque a la implementación de ese mismo método en su superclase.
+Estos tres casos deben ser añadidos tanto a la gramática del lenguaje como a la función principal de evaluación de expresiones (`eval_expression`) del interpretador.
 
-Cuando se incorporan objetos en la programación orientada a objetos, un programa consta de un conjunto de declaraciones de clases y una expresión. Las declaraciones de clases son procesadas por `elaborate-class-decls` y luego la expresión es evaluada.
+####
+La evaluación de una expresión de invocación de método (`send`) sigue un proceso definido. Primero, se evalúa la expresión que representa al objeto y las expresiones que corresponden a los operandos (argumentos). Una vez obtenidos sus valores, se invoca una función auxiliar, denominada `find_method_and_apply`. Esta función es responsable de encontrar el método con el nombre especificado dentro de la jerarquía de clases del objeto y aplicarlo a los argumentos evaluados. Un ambiente extendido se crea para la ejecución del método, donde se vinculan los parámetros del método a los argumentos proporcionados.
 
-La función `elaborate-class-decls` se encarga de procesar y almacenar las declaraciones de clases, haciéndolas accesibles cuando son necesarias. Esto implica una modificación en `eval-program`. Originalmente, `eval-program` evaluaba directamente una expresión. Ahora, su definición cambia para primero elaborar las declaraciones de clases (`elaborate-class-decls`) y luego evaluar la expresión (`eval-expression`). En consecuencia, la estructura de un programa ahora consiste en un conjunto de una o más declaraciones de clases seguido de una expresión.
+####
+La función `find_method_and_apply` requiere cuatro argumentos para su ejecución:
+1.  El nombre del método a buscar.
+2.  El nombre de la clase desde la cual se iniciará la búsqueda del método.
+3.  El valor de `self`, que es la representación interna del objeto sobre el cual se invoca el método.
+4.  La lista de argumentos ya evaluados que se pasarán al método.
+Esta función encapsula la lógica de búsqueda de métodos en la jerarquía de herencia y su posterior aplicación.
 
-La incorporación de objetos introduce tres nuevos tipos de expresiones en la gramática del lenguaje: `creación` (instanciación), `invocación de métodos` (`method-send`), y `superllamados` (`super-call`). Estas deben ser añadidas a la especificación gramatical. Cuando una expresión de tipo `method-send` es evaluada, se utiliza un procedimiento llamado `find-method-and-apply`. Este procedimiento localiza el método asociado al nombre especificado dentro de la declaración del objeto y lo aplica con sus argumentos.
+####
+La evaluación de una expresión de creación de objeto (`new`) se encarga de instanciar una nueva clase. El proceso comienza evaluando los operandos que se pasarán al constructor. A continuación, se crea una nueva instancia del objeto de la clase especificada. Inmediatamente después, se busca e invoca el método especial `initialize` (el constructor) sobre el objeto recién creado, pasándole los argumentos evaluados. El valor de retorno del método `initialize` es ignorado. Finalmente, la expresión retorna la representación del nuevo objeto.
 
-Dentro de `eval-expression`, se deben añadir los casos para las nuevas expresiones:
-*   **`New` (Creación de objeto):** Recibe un nombre de clase (`classname`) y argumentos (`runs`) para el constructor. Implica evaluar los argumentos, crear un nuevo objeto y luego llamar al método `initialize`.
-*   **`Method-send` (Invocación de método):** Recibe el objeto, el nombre del método (`method-name`) y los argumentos (`arguments`). Los argumentos son evaluados (`eval-runs`), el objeto es evaluado (`eval-expression` de `object-expression`), y luego se invoca `find-method-and-apply` con el nombre del método, el nombre de la clase del objeto, el objeto (`self`), y los argumentos evaluados. Este procedimiento creará un ambiente extendido para la ejecución del método.
-*   **`Super-call` (Superllamado):** Por ahora, su implementación inicial no realiza una acción compleja, pero se contempla su manejo posterior.
+####
+Un superllamado (`super`) es sintácticamente similar a una invocación de método normal, pero su semántica es diferente. Se utiliza exclusivamente dentro de la implementación de un método para invocar la versión de ese mismo método definida en la superclase. Para lograr esto, el intérprete debe mantener una referencia al nombre de la superclase, típicamente en una variable especial llamada `super` dentro del entorno de ejecución del método. La función `find_method_and_apply` se utiliza nuevamente, pero la búsqueda del método comienza en la superclase en lugar de la clase del objeto actual.
 
-La función `find-method-and-apply` espera cuatro argumentos: el nombre del método, el nombre de la clase donde se inicia la búsqueda, el valor de `self` (la instancia del objeto), y la lista de argumentos.
-
-El `super-call` es similar a la invocación de un método, pero invoca un método de la superclase. Se usará una variable `super` para identificar el nombre de la superclase.
-
-En la `creación de objetos` (`new`), una vez evaluados los argumentos (`eval-runs` se implementa como un `map` que aplica `eval-expression` a cada argumento), se crea un nuevo objeto de la clase especificada. Posteriormente, se llama a su método `initialize` (constructor), ignorando su valor de retorno, y finalmente se devuelve la representación del objeto.
-
-Cualquier implementación de este sistema orientado a objetos debe proporcionar procedimientos para la orquestación de declaraciones, `find-method-and-apply`, la manipulación de objetos y nombres de clases, y la creación de nuevos objetos. Estos procedimientos, aunque su implementación específica puede variar (ej. implementación simple, implementación plana), comparten características comunes:
-*   La evaluación de métodos utiliza `find-method-and-apply` con el nombre del método, el nombre de la clase, el valor `self` y los argumentos. Esto establece un ambiente extendido para la ejecución y realiza los cambios necesarios en la representación del objeto.
-*   La creación de objetos implica la llamada al método `initialize`.
-*   Los superllamados invocan métodos de la clase padre, cuyo nombre se guarda en la variable `super`.
-
-Una declaración de clase contendrá toda la información necesaria: el nombre de la clase, su superclase y la declaración de sus métodos. A continuación, se detallará la implementación simple.
+####
+Independientemente de la estrategia de implementación específica (simple, plana, etc.), todas las implementaciones de un lenguaje orientado a objetos deben proveer un conjunto de procedimientos fundamentales. Estos incluyen funciones para elaborar declaraciones de clases, encontrar y aplicar métodos (`find_method_and_apply`), y crear nuevos objetos (`new_object`). La forma en que se representan internamente los objetos y las clases determinará los detalles de estas implementaciones, pero la interfaz funcional que exponen permanece constante, garantizando la correcta evaluación de las expresiones `send`, `new` y `super`. Una declaración de clase debe contener toda la información necesaria: su nombre, el nombre de su superclase, la lista de sus campos y las declaraciones de sus métodos.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=ZqTptDxsXCs

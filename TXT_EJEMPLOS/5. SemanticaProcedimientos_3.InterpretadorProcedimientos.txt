@@ -1,10 +1,14 @@
+######## RESUMEN ########
+Implementa un interpretador para un lenguaje sencillo, focalizado en el manejo de procedimientos y entornos léxicos.
+
+######## CONCEPTOS ########
+Interpretador, Árbol de Sintaxis Abstracta (AST), Entorno de ejecución, Clausura (Closure), Alcance léxico
+
 ######## EXPLICACION ########
-Implementa un interpretador para un lenguaje con procedimientos.
-Ejemplo de definición léxica de tokens.
-Ejemplo de definición gramatical de expresiones.
-Ejemplo de manejo de entornos para variables.
-Ejemplo de evaluación de expresiones condicionales.
-Ejemplo de creación y aplicación de procedimientos (closures).
+Este código desarrolla un interpretador paso a paso para un lenguaje de programación mínimo, validando su sintaxis y semántica.
+Permite ejecutar expresiones aritméticas, condicionales (`if`), y ligaduras locales (`let`), además de evaluar la definición y aplicación de procedimientos (`proc-exp`, `app-exp`).
+Aplica el concepto de entornos (`ambiente-extendido`) para la resolución de variables, implementando el alcance léxico, y representa los procedimientos como clausuras (`closure`) en la función `evaluar-expresion`.
+Este ejemplo ilustra los principios de la semántica operacional y es crucial para comprender cómo se modelan los procedimientos en la teoría de lenguajes de programación.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 5. SemanticaProcedimientos/3.InterpretadorProcedimientos.rkt

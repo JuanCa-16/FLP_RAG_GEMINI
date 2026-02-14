@@ -1,87 +1,32 @@
-Aquí tienes la transcripción limpia y formateada:
+Para implementar las expresiones de literales y variables (`literal_expression` y `var_expression`), es fundamental manejar el concepto de ambientes. Una `literal_expression` representa un valor numérico directo, mientras que una `var_expression` requiere la búsqueda del valor de una variable dentro de un ambiente, que es la estructura de datos donde se almacenan las variables y sus valores correspondientes.
 
----
+####
 
-**Implementación de Expresiones Literales y de Variables**
+La estructura de datos para los ambientes se define con dos variantes: el ambiente vacío y el ambiente extendido. El ambiente vacío (`empty-env`) no contiene ninguna información. El ambiente extendido (`extended-env`) se construye a partir de un ambiente previo y añade nuevas vinculaciones. Específicamente, un ambiente extendido contiene una lista de identificadores (símbolos), una lista de sus valores correspondientes y una referencia al ambiente que extiende (el ambiente "padre").
 
-Se implementarán dos tipos de expresiones fundamentales:
-1.  **Literal Expression**: Representa un número.
-2.  **Var Expression**: Representa la búsqueda de una variable en un ambiente.
+####
 
-**1. Construcción de Ambientes**
+La función `apply-env` se encarga de buscar el valor de un símbolo (una variable) dentro de un ambiente determinado. Esta función opera de forma recursiva. El caso base ocurre cuando se busca en un ambiente vacío (`empty-env`); si se llega a este punto, significa que la variable no fue encontrada en toda la cadena de ambientes, y se debe reportar un error.
 
-Las variables se almacenan en ambientes. Para su implementación, se define el tipo de dato `ambiente`, que puede ser de dos formas:
-*   **`ambiente-vacío`**: Un ambiente sin asociaciones de variables.
-*   **`ambiente-extendido`**: Un ambiente que extiende a otro ambiente y contiene:
-    *   Una lista de identificadores (`list of symbol`).
-    *   Una lista de valores (`list of valores`). Un valor es cualquier dato aceptado por el lenguaje (e.g., Scheme).
-    *   El ambiente del cual extiende (`old-env`).
+####
 
-**2. Función `apply-env` (Búsqueda en el Ambiente)**
+Cuando `apply-env` opera sobre un ambiente extendido (`extended-env`), primero busca la variable en la lista de identificadores locales de ese ambiente. Para ello, se puede utilizar una función auxiliar que recorra la lista de identificadores y la lista de valores en paralelo. Si encuentra el identificador, devuelve su valor asociado. Si el identificador no se encuentra en la lista local, la búsqueda continúa de manera recursiva en el ambiente padre, que es el ambiente que este ambiente extendido extiende.
 
-La función **`apply-env`** recibe un ambiente y un símbolo (variable) a buscar.
-*   **Caso `ambiente-vacío`**: Si el ambiente es vacío, la variable no se encuentra. Se devuelve un error: `(error "No se encuentra la variable: " simbolo)`.
-*   **Caso `ambiente-extendido`**: Se busca el símbolo en la lista de identificadores del ambiente extendido.
-    *   Si el símbolo se encuentra, se devuelve el valor asociado.
-    *   Si el símbolo no se encuentra, la búsqueda se realiza recursivamente en el ambiente del cual extiende (`old-env`).
+####
 
-Para la búsqueda en la lista de identificadores y valores, se utiliza una función auxiliar recursiva:
+Para que un programa pueda ejecutarse, necesita un punto de partida con variables predefinidas. Esto se logra mediante un ambiente inicial (`initial-env`). Este ambiente se define como un ambiente extendido que contiene un conjunto de variables y valores por defecto (por ejemplo, `x=1`, `y=2`, `a=4`, etc.) y que extiende directamente del ambiente vacío. Este ambiente inicial se pasa a la función principal de evaluación del programa.
 
-**Función `buscar-sim`**
-Esta función recibe el símbolo a buscar, una lista de identificadores (`ids`) y una lista de valores (`vals`).
-*   **Caso base**: Si la lista de identificadores (`ids`) es vacía, el símbolo no se ha encontrado en este nivel del ambiente; se devuelve `false`.
-*   **Caso recursivo**:
-    *   Si el símbolo es igual al primer identificador (`car ids`), se devuelve el primer valor asociado (`car vals`).
-    *   De lo contrario, se realiza la búsqueda recursiva con el resto de las listas: `(buscar-sim simbolo (cdr ids) (cdr vals))`.
+####
 
-**3. Ambiente Inicial (`ambiente-inicial`)**
+La función principal `eval-program` toma el programa completo y lo procesa. El único caso de programa es `a-program`, que contiene una única expresión. La tarea de `eval-program` es invocar a la función `eval-expression`, pasándole la expresión contenida en el programa y el ambiente inicial (`initial-env`) para comenzar la evaluación.
 
-Se define un ambiente inicial que contiene variables predefinidas. Este es un `ambiente-extendido` que contiene identificadores y valores iniciales, y extiende del `ambiente-vacío`.
+####
 
-*   **Ejemplo de `ambiente-inicial`**:
-    *   `x`: 1
-    *   `y`: 2
-    *   `z`: 3
-    *   `a`: 4
-    *   `b`: 5
-    *   `c`: 6
+La función `eval-expression` es el núcleo del intérprete y utiliza una estructura de casos para diferenciar los tipos de expresión. Para el caso de una `literal_expression`, que contiene un dato numérico, la evaluación es simple: se devuelve el número directamente. No se requiere ninguna operación adicional ni el uso del ambiente.
 
-**Pruebas de `apply-env` con `ambiente-inicial`:**
-*   `(apply-env ambiente-inicial 'x')` devuelve `1`.
-*   `(apply-env ambiente-inicial 'b')` devuelve `5`.
-*   `(apply-env ambiente-inicial 'd')` devuelve un error: `"No se encuentra la variable: d"`.
+####
 
-**4. Evaluación de Expresiones (`evaluar-expresión`)**
-
-La función **`evaluar-expresión`** recibe una expresión y un ambiente, y determina cómo evaluar dicha expresión.
-
-*   **Caso `literal-expression`**:
-    *   Recibe un número.
-    *   Devuelve directamente el número.
-*   **Caso `var-expression`**:
-    *   Recibe un identificador.
-    *   Utiliza `apply-env` para buscar el valor de la variable asociada al identificador en el ambiente actual.
-    *   Devuelve el valor encontrado o el error si la variable no existe.
-
-**5. Evaluación de Programas (`evaluar-programa`)**
-
-La función **`evaluar-programa`** toma un programa (que encapsula una expresión) y lo evalúa.
-*   Invoca `evaluar-expresión` con la expresión del programa y el `ambiente-inicial`.
-
-**Pruebas de `evaluar-expresión`:**
-*   **Con números:**
-    *   `(evaluar-expresión (literal-expression 5) ambiente-inicial)` devuelve `5`.
-    *   `(evaluar-expresión (literal-expression -4.5) ambiente-inicial)` devuelve `-4.5`.
-*   **Con variables:**
-    *   `(evaluar-expresión (var-expression 'x') ambiente-inicial)` devuelve `1`.
-    *   `(evaluar-expresión (var-expression 'a') ambiente-inicial)` devuelve `4`.
-    *   `(evaluar-expresión (var-expression 'no-existe') ambiente-inicial)` devuelve un error: `"No se encuentra la variable: no-existe"`.
-
-**Conclusión**
-
-Con esto, se ha implementado el manejo de números (expresiones literales) y el almacenamiento y búsqueda de variables en ambientes. Estos ambientes son fundamentales para la ejecución del código. La próxima etapa en la implementación de este interpretador será la adición de operaciones matemáticas.
-
----
+Para evaluar una `var_expression`, que contiene un identificador de variable, la función `eval-expression` debe encontrar el valor asociado a ese identificador. Para ello, invoca a la función `apply-env`, pasándole el ambiente actual y el identificador de la variable. `apply-env` se encargará de realizar la búsqueda a través de la cadena de ambientes y devolver el valor correspondiente o señalar un error si la variable no se encuentra.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=3p-1ft_KNbs

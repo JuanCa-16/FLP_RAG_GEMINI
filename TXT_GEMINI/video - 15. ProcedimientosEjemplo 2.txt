@@ -1,27 +1,24 @@
-Aquí tienes la transcripción limpia y formateada:
+La representación de ambientes permite resolver ambigüedades en la resolución de variables. El proceso comienza con un ambiente inicial, que, si no se especifica, es el ambiente vacío. En este caso, se define un primer ambiente, `e0`, donde la variable `x` se enlaza al valor 5.
 
----
+####
 
-A continuación, se revisa un ejemplo para ilustrar cómo la representación de ambientes resuelve problemas de alcance de variables.
+A continuación, se define una función `f` con parámetros `y` y `z`. Esta definición crea una clausura, que es un par compuesto por el código del procedimiento y una referencia al ambiente en el que fue creada. Por lo tanto, la clausura de `f` contiene un puntero al ambiente `e0`. Seguidamente, se define un nuevo ambiente, `e1`, que extiende a `e0` y donde la variable `x` se enlaza a un nuevo valor, 28.
 
-1.  **Ambiente Inicial:** Cuando no se especifica, el ambiente inicial es vacío.
-2.  **Ambiente 0:** Se establece un ambiente 0 donde `x = 5`.
-3.  **Definición de Clausura f:** Se define una clausura `f` que toma los parámetros `y` y `z`. Esta clausura captura el ambiente en el que fue creada, que es el ambiente 0.
-4.  **Ambiente 1:** El valor de `x` se actualiza a 28, lo que en este contexto crea o modifica el ambiente accesible en el punto de la llamada, denominado ambiente 1.
-5.  **Evaluación de f(2, x):**
-    *   El valor actual de `x` es 28, por lo que la llamada se traduce en `f(2, 28)`.
-    *   La invocación del procedimiento `f` crea un nuevo ambiente. En este ambiente, las variables `y` se vincula a 2 y `z` a 28.
-    *   Este nuevo ambiente extiende del ambiente almacenado en la clausura de `f`, es decir, del ambiente 0.
-    *   El cuerpo de `f` calcula la expresión `y + (z - x)`.
-    *   **Resolución de la expresión:**
-        *   `y` es 2 (del ambiente actual de `f`).
-        *   `z` es 28 (del ambiente actual de `f`).
-        *   `x` no se encuentra en el ambiente actual de `f`. Por lo tanto, se busca en el ambiente padre que `f` capturó (ambiente 0), donde `x` es 5.
-        *   La evaluación final es `2 + (28 - 5) = 2 + 23 = 25`.
+####
 
-Este resultado se puede verificar con el siguiente código en un intérprete:
-`let x = 5 in let f = procedure(y, z) (y + (z - x)) in x = 28; f(2, x)`
-La ejecución de este código produce el valor 25.
+La invocación de un procedimiento siempre resulta en la creación de un nuevo ambiente. Al evaluar la expresión `f(2, x)`, primero se resuelve el argumento `x` en el ambiente de llamada, `e1`, cuyo valor es 28. Por lo tanto, la llamada efectiva es `f(2, 28)`. Esto crea un nuevo ambiente para la ejecución de `f`, donde los parámetros `y` y `z` se enlazan a los valores 2 y 28, respectivamente.
+
+####
+
+Un aspecto fundamental del modelo de alcance léxico es que el nuevo ambiente creado para la llamada a una función extiende del ambiente que fue almacenado en su clausura. En este caso, el ambiente de `f` extiende del ambiente `e0`, no del ambiente de llamada `e1`. Este enlace determina qué variables no locales son visibles dentro de la función.
+
+####
+
+Para evaluar el cuerpo de la función, la expresión `(+ y (- z x))`, la búsqueda de variables se realiza de la siguiente manera: `y` y `z` se encuentran en el ambiente local de la función con valores 2 y 28. La variable `x` no está en el ambiente local, por lo que la búsqueda continúa en el ambiente padre, `e0`, donde `x` se encuentra con el valor 5. La operación es `2 + (28 - 5)`, que da como resultado final 25.
+
+####
+
+La ejecución del código equivalente en un intérprete valida este análisis. La expresión `let x = 5 in let f = proc(y, z) (+ y (- z x)) in let x = 28 in f(2, x)` produce el resultado 25. Esto confirma que el valor de la variable `x` utilizado dentro de la función `f` es el que estaba definido en el alcance léxico donde `f` fue creada, no en el alcance donde fue invocada.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=2Dnxwstls1c

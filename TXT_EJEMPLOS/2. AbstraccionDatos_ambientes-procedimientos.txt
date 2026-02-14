@@ -1,10 +1,16 @@
+######## RESUMEN ########
+Modelos ambientes de ejecución utilizando procedimientos para asociar y recuperar valores de variables.
+
+######## CONCEPTOS ########
+Ambientes de ejecución, clausuras, abstracción de datos, vinculación de variables, alcance léxico
+
 ######## EXPLICACION ########
-Implementa ambientes como procedimientos en Racket.
-Ejemplo de ambiente vacío.
-Ejemplo de extensión de ambiente.
-Ejemplo de búsqueda en ambiente.
-Ejemplo de creación de ambiente anidado.
-Ejemplo de consulta de valor.
+El código modela la gestión de ambientes de ejecución a través de funciones (`empty-env`, `extend-env`, `apply-env`) que actúan como abstracciones de datos.
+Permite a un intérprete de lenguaje de programación registrar y consultar los valores asociados a identificadores, simulando el alcance de variables.
+Determina el valor actual de una variable (`search-var`) dentro de un contexto anidado, esencial para la evaluación de expresiones.
+Aplica el patrón de abstracción de datos mediante clausuras, donde cada ambiente es un procedimiento que encapsula sus vinculaciones.
+`extend-env` demuestra cómo construir ambientes nuevos apilando recursivamente las definiciones, gestionando así la vinculación de variables.
+Este enfoque es fundamental para comprender cómo los lenguajes gestionan el alcance léxico de las variables.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-procedimientos.rkt

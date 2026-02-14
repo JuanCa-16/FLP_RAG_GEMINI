@@ -1,73 +1,19 @@
-Aquí tienes la transcripción limpia y formateada:
+Para extender las capacidades de un lenguaje de programación más allá de las operaciones matemáticas con un conjunto predefinido de variables, se incorporan dos nuevas funcionalidades: las expresiones condicionales y la asignación de ligaduras locales. Estas se implementan a través de la estructura `if-then-else` para los condicionales y el operador `let` para la creación de variables locales.
 
----
+####
+La gramática del lenguaje se modifica para soportar nuevas expresiones. Se introduce el tipo de dato booleano, con los valores literales `true` y `false`, que funcionan como valores expresados (utilizados en el código) y valores anotados (almacenados en variables). La sintaxis para las expresiones condicionales se define como `if <expression> then <expression> else <expression>`. La sintaxis para la ligadura local se define como `let <identificador> = <expression> ... in <expression>`, permitiendo la declaración de cero o más variables. Adicionalmente, se incorpora un conjunto de primitivas booleanas para realizar operaciones de comparación.
 
-### Incorporación de Condicionales y Variables Locales
+####
+La implementación de los valores booleanos en el evaluador del intérprete consiste en añadir casos específicos para manejarlos. Cuando el evaluador encuentra un literal `true` en el código fuente, devuelve el valor booleano verdadero del lenguaje anfitrión (representado como `#t` en Scheme/Racket). De manera análoga, al encontrar un literal `false`, devuelve el valor booleano falso correspondiente (`#f`).
 
-El objetivo es extender el lenguaje actual, que solo soporta operaciones matemáticas con un conjunto fijo de variables, para incorporar condicionales y la creación de nuevas variables.
+####
+La evaluación de una expresión condicional `if` se implementa aprovechando la estructura condicional nativa del lenguaje anfitrión. El proceso sigue tres pasos: primero, se evalúa la expresión de la condición en el entorno actual. Segundo, si el resultado de la condición es verdadero, se procede a evaluar únicamente la expresión correspondiente a la cláusula `then`. Tercero, si el resultado de la condición es falso, se evalúa exclusivamente la expresión de la cláusula `else`. El resultado de la expresión evaluada (`then` o `else`) se convierte en el resultado final de toda la expresión `if`.
 
-**Extensiones del Lenguaje**
+####
+Para dar funcionalidad a las expresiones condicionales, se añade un conjunto de primitivas booleanas que realizan comparaciones. Estas primitivas incluyen operaciones como mayor que (`>`), mayor o igual que (`>=`), menor que (`<`), menor o igual que (`<=`) y igualdad numérica (`==`). En el intérprete, se extiende la función que gestiona las primitivas para reconocer estos nuevos operadores. Cada primitiva booleana requiere dos argumentos y, al ser evaluada, aplica la operación de comparación correspondiente del lenguaje anfitrión a los argumentos proporcionados, devolviendo un valor booleano.
 
-Para ello, el lenguaje se extenderá para incluir:
-*   Asignación de ligadura local (`let`).
-*   Expresiones condicionales (`if/else`).
-
-Se amplía el conjunto de valores expresados y anotados para incluir valores booleanos. Un *valor expresado* es el que se utiliza directamente, mientras que un *valor anotado* es el que se almacena en las variables.
-
-**Modificación de la Gramática**
-
-La gramática se modifica para incorporar:
-*   **Valores Booleanos**: `true` para verdadero y `false` para falso.
-*   **Expresiones Condicionales**: `if expression then expression else expression`.
-*   **Operador de Ligadura Local**: `let identifier = expression ... expression`. (Este operador permite definir variables locales, se abordará en detalle más adelante).
-*   **Primitivas Booleanas**: Funciones para realizar comparaciones, esenciales para la especificación de los condicionales.
-
-**Modificaciones del Interpretador**
-
-Se modificará el interpretador para manejar los nuevos elementos de la gramática.
-
-1.  **Manejo de Valores Booleanos:**
-    *   La expresión `true` se mapea a la representación nativa `#true` del lenguaje anfitrión (Scheme/Racket).
-    *   La expresión `false` se mapea a la representación nativa `#false` del lenguaje anfitrión.
-
-2.  **Implementación de Condicionales (`if expression then expression else expression`):**
-    *   La expresión `if` recibe tres componentes: una condición, una expresión para el caso verdadero y una expresión para el caso falso.
-    *   Para su implementación, se utiliza la estructura `if` del lenguaje nativo (Scheme/Racket).
-    *   **Proceso de Evaluación:**
-        1.  Evaluar la expresión de la `condición` en el ambiente actual.
-        2.  Si la `condición` es verdadera, evaluar la `expresión_verdadera` en el ambiente actual.
-        3.  Si la `condición` es falsa, evaluar la `expresión_falsa` en el ambiente actual.
-
-3.  **Implementación de Primitivas Booleanas:**
-    Se añaden las siguientes primitivas de comparación, las cuales requieren dos argumentos:
-    *   `mayor-prim` (mayor que, `>`)
-    *   `mayor-igual-prim` (mayor o igual que, `>=`)
-    *   `menor-prim` (menor que, `<`)
-    *   `menor-igual-prim` (menor o igual que, `<=`)
-    *   `igual-prim` (igualdad numérica, `==`)
-    Estas primitivas evalúan sus argumentos y realizan la comparación correspondiente, retornando un valor booleano.
-
-**Ejemplos de Uso**
-
-*   **Ejemplo 1: Condicional simple**
-    Considerando que el valor de `x` es `1`:
-    ```
-    if (> x 2) then 4 else (+ 3 2)
-    ```
-    Dado que `x` (1) no es mayor que `2`, se evalúa el caso `else`, resultando en `5`.
-
-*   **Ejemplo 2: Condicional con operaciones anidadas**
-    Considerando que el valor de `x` es `1`:
-    ```
-    if (== x 1) then (* 2 (+ 2 4)) else -3
-    ```
-    Como `x` (1) es igual a `1`, se evalúa el caso `then`. La subexpresión `(+ 2 4)` resulta en `6`, y la multiplicación `(* 2 6)` da `12`.
-
-**Próximos Pasos**
-
-La implementación del operador de ligadura local (`let`) se abordará en una sesión posterior.
-
----
+####
+El uso de las nuevas primitivas y condicionales permite controlar el flujo de ejecución del programa. Por ejemplo, en la expresión `if (> x 2) then 4 else (+ 3 2)`, si la variable `x` tiene el valor 1, la condición `(> x 2)` se evalúa como falsa. En consecuencia, el intérprete ejecuta la cláusula `else`, calculando `(+ 3 2)` y devolviendo 5. De forma similar, en la expresión `if (== x 1) then (* 2 (+ 2 4)) else -3`, si `x` es 1, la condición es verdadera y se evalúa la cláusula `then`, resultando en `(* 2 6)`, que devuelve 12.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=WCkgIVxDA1U

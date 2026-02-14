@@ -1,0 +1,30 @@
+###
+Gramaticas
+Vamos a utilizar gramáticas regulares. Los términales están por la izquierda, por ejemplo
+
+###
+Considera el siguiente ejemplo de terminales, que podrían producir un conflicto porque inician igual:
+var
+x
+=
+10
+var
+y
+
+###
+Las gramáticas también se pueden expresar en forma BNC. Por ejemplo, una lista puede definirse de forma recursiva como:
+<lista> ::= <empty>
+        ::= <int> <lista>
+
+###
+Otras formas de expresar la definición de una lista utilizando notación abreviada son:
+<lista> ::= <int>*
+<lista> ::= <int>+
+
+---
+METADATA
+---
+TEMATICA: Clase 2 Especificación recursiva de datos y programas
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Repso Gramaticas.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

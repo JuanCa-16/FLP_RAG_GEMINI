@@ -1,70 +1,13 @@
-Aquí tienes la transcripción limpia y formateada:
+La regla de creación de procedimientos establece que cada uno de sus argumentos debe tener un tipo asociado explícitamente. El tipo de retorno del procedimiento no se declara, sino que se infiere calculando el tipo de la expresión que constituye su cuerpo. Para automatizar este proceso, se utiliza una función auxiliar, `type_of_proc_expression`. Esta función recibe una expresión de procedimiento, extrae los tipos de los argumentos para formar una lista de tipos (`arg_types`) y luego calcula el tipo del cuerpo (`result_type`) dentro de un ambiente de tipos extendido. Dicho ambiente se enriquece temporalmente con los identificadores de los argumentos y sus respectivos tipos. Finalmente, la función construye y devuelve un tipo de procedimiento (`proc_type`) que encapsula tanto la lista de tipos de los argumentos como el tipo de retorno inferido.
 
----
+####
+Para verificar el tipo de una aplicación de procedimiento (`app_expression`), el sistema primero determina el tipo del operador. Luego, invoca una función auxiliar, `type_application`, que aplica la regla de tipado correspondiente. Esta función realiza una serie de validaciones secuenciales: primero, confirma que el tipo del operador sea efectivamente un `proc_type`; segundo, comprueba que el número de argumentos proporcionados en la llamada coincida con el número de argumentos esperados por el procedimiento; y tercero, itera sobre los argumentos para verificar que el tipo de cada operando coincide con el tipo del parámetro correspondiente en la firma del procedimiento. Si todas las validaciones son exitosas, el tipo de la expresión de aplicación es el tipo de retorno especificado en el `proc_type` del procedimiento. Si alguna comprobación falla, se genera un error de tipado.
 
-A continuación, se detallan las reglas y procedimientos para la creación y tipado de procedimientos y primitivas.
+####
+Las operaciones primitivas, como las aritméticas (`+`, `*`) o las de comparación (`>`), son tratadas como procedimientos para mantener la consistencia en el sistema de tipos. Se implementa una función, `type_of_primitive`, que recibe una primitiva y genera un `proc_type` que describe su signatura de tipos. Por ejemplo, para una primitiva de comparación que opera sobre dos números y devuelve un valor de verdad, esta función construiría un `proc_type` que define dos argumentos de tipo entero (`int_type`) y un tipo de retorno booleano (`bool_type`). Este enfoque permite que la lógica de aplicación de procedimientos (`type_application`) se utilice también para validar el uso de operaciones primitivas.
 
-### Reglas de Creación de Procedimientos
-
-La regla de creación de procedimientos establece que cada argumento tendrá un tipo asociado, y el tipo de salida depende del tipo de la expresión interna.
-
-### Procedimiento `tie-or-proc-expression`
-
-Se creará un procedimiento auxiliar llamado `tie-or-proc-expression`. Este recibe una expresión de tipo `proc t1 x1 t2 x2 ... tn xn` y realiza las siguientes acciones:
-
-1.  Convierte los tipos `t1...tn` en una lista de `art-ties`.
-2.  Revisa el cuerpo en el ambiente especificado y liga el procedimiento a `result-tie`.
-3.  Construye un procedimiento de tipo con las partes apropiadas.
-
-La lógica interna de `tie-or-proc-expression` es:
-*   Los `art-ties` se obtienen aplicando `tie-or-expression`, lo que resulta en una lista de expresiones.
-*   El `result-tie` toma el cuerpo y lo calcula sobre un ambiente extendido de tipos, que incluye los IDs, los `art-ties` y el ambiente actual.
-*   Finalmente, devuelve un `proc-tie` con los `art-ties` y el `result-tie`.
-
-### Implementación de `proc-expression` y `tie-proc-expression`
-
-Para la implementación, se comenzará por la regla en `tie-or-expression`. Luego, en `proc-expression` (que recibe una lista de expresiones, IDs y un cuerpo), se invocará la función `tie-of-expression`.
-Posteriormente, se creará la función `tie-proc-expression`, la cual devolverá un `proc-tie` con los tipos de los argumentos y el tipo del resultado.
-
-### Regla General de Tipado
-
-La regla de tipado para primitivas o procedimientos es `t1, t2, ..., tn -> t_resultante`.
-
-### `tie-expression` y `tie-application`
-
-`tie-expression` identifica el tipo del operador y luego invoca al procedimiento auxiliar `tie-application` para aplicar la regla de tipado.
-
-`tie-application` funciona de la siguiente manera:
-1.  Verifica si el tipo del operador es un procedimiento (`prototype`).
-2.  Comprueba si el número de argumentos esperados por el procedimiento es igual al número de argumentos proporcionados.
-3.  Para cada argumento, revisa si su tipo esperado coincide con el tipo del operando correspondiente.
-4.  Si todas las revisiones tienen éxito, el tipo de la aplicación es el tipo de resultado del procedimiento.
-5.  En caso de no coincidir los tipos, se emite un mensaje de error detallando lo esperado y lo recibido.
-Este proceso implica una verificación de los tipos (`check equal type`).
-
-### Uso en `app-expression`
-
-Para determinar el tipo del operador en `type-of-application`, se debe modificar `type-of-expression` para manejar los casos de `prototype` en `app-expression`. La `app-expression` recibe un operador (`rator`) y una lista de argumentos (`rands`). Se invoca `type-of-application`, pasándole:
-1.  El tipo del operador (calculado con `type-of-expression(rator)`). Este debe ser un `prototype`.
-2.  Los tipos de los argumentos (calculados con `type-of-expression(rands)`).
-3.  El operador (`rator`) y los argumentos (`rands`) originales para su contextualización.
-
-### Tipado de Primitivas
-
-Las primitivas (ej. `+`, `>`) se tratan como procedimientos. Se crea un procedimiento `type-of-primitive` que recibe un valor de tipo primitivo y construye un `prototype` acorde.
-
-A diferencia de las restricciones comunes que limitan las primitivas a un número fijo de argumentos (ej. dos), la implementación actual permite un número variable. Para manejar esto, se utiliza una función recursiva `define-primitive-numeric(rands)` para construir dinámicamente la lista de tipos de argumentos:
-*   Si `rands` es nulo, devuelve una lista vacía.
-*   De lo contrario, hace `cons(IN_TYPE, define-primitive-numeric(cdr rands))`.
-*   Esto asegura que todos los argumentos sean de tipo entero (`IN_TYPE`).
-
-Para primitivas numéricas con `N` argumentos, el tipo resultante será `prototype(primitive-numeric(rands), IN_TYPE)`.
-*   **Ejemplo:** Para el operador `>` (mayor que), que recibe dos enteros y devuelve un booleano: `prototype(list(IN_TYPE, IN_TYPE), BOOLEAN_TYPE)`.
-*   **Ejemplo:** Para operadores unarios como `add` (incremento) o `decrement`, se restringe a un solo argumento: `prototype(list(IN_TYPE), IN_TYPE)`.
-
-### `type-of-expressions`
-
-La función `type-of-expressions` es un `map` que aplica `type-expression` a cada elemento de una lista de expresiones.
+####
+Para gestionar primitivas numéricas que aceptan un número variable de argumentos (aridad variable), se implementa una función recursiva especializada. Esta función construye dinámicamente la lista de tipos de argumentos para el `proc_type` de la primitiva, basándose en la cantidad de operandos proporcionados. Se asume que todos los argumentos de estas primitivas numéricas deben ser de tipo entero (`int_type`). De este modo, una operación con `n` operandos resultará en un `proc_type` que espera una lista de `n` tipos `int_type` y devuelve un resultado también de tipo `int_type`. Por otro lado, las primitivas unarias, como el incremento, se definen con un `proc_type` estático que espera un único argumento de tipo entero y devuelve un resultado del mismo tipo.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=tTJVA-uCnWw

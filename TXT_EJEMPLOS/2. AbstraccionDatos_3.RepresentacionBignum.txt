@@ -1,10 +1,16 @@
+######## RESUMEN ########
+Implementa aritmética de números grandes (bignums) mediante una representación de datos en listas.
+
+######## CONCEPTOS ########
+Bignums, Abstracción de Datos, Recursión, Aritmética Posicional
+
 ######## EXPLICACION ########
-Define operaciones con números grandes.
-Ejemplo de representación numérica como lista.
-Ejemplo de función sucesor para bignums.
-Ejemplo de función predecesor para bignums.
-Ejemplo de suma recursiva.
-Ejemplo de base numérica configurable.
+Este código implementa una representación y operaciones aritméticas básicas para números enteros arbitrariamente grandes (bignums) en Racket.
+Permite manipular y realizar cálculos con números que sobrepasan los límites de los tipos de datos numéricos nativos del lenguaje, como en aplicaciones de criptografía o teoría de números.
+Ilustra cómo construir tipos de datos complejos a partir de estructuras más simples, facilitando el diseño de bibliotecas matemáticas personalizadas.
+Emplea una representación de lista para almacenar dígitos en una `base` específica, utilizando las funciones `succ`, `pred` y `plus` para encapsular la lógica aritmética.
+Demuestra la aplicación de recursión y condiciones (`cond`) para el tratamiento posicional de las cifras y la gestión de acarreos (carry) o préstamos (borrow).
+Este ejemplo es clave para comprender la `Abstracción de Datos` y la creación de Tipos de Datos Abstractos (TDA) que ocultan su implementación subyacente.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/3.RepresentacionBignum.rkt

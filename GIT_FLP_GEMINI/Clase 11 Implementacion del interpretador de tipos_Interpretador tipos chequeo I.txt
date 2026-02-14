@@ -1,0 +1,73 @@
+Interpretador tipos chequeo I
+
+Para la implementación de un interpretador con chequeo de tipos, es necesario incluir expresiones para procedimientos (`proc`) y recursión (`letrec`), con sus respectivas anotaciones de tipo. Esto permite manejar funciones con diversas firmas, como las siguientes:
+
+```
+proc (int x) ...
+proc ((int*int -> int) x) ...
+proc ((int -> (int*int -> int)) x) ...
+letrec int f (int x, int y) = ....
+(int*int -> int) g (int x) = ....
+```
+
+###
+Para soportar estas nuevas expresiones en el interpretador, se requieren modificaciones en la gramática. A continuación se presentan las reglas para las expresiones `proc` y `letrec`:
+
+```
+(expression
+  ("proc" "(" (separated-list type-exp identifier ",") ")" expression)
+  proc-exp)
+
+(expression
+  ("letrec"
+    (arbno type-exp identifier "(" (separated-list type-exp identifier ",") ")" "=" expression)
+    "in" expression)
+  letrec-exp)
+```
+
+###
+Además de las expresiones, también se definen las reglas gramaticales para los diferentes tipos que pueden ser usados en las anotaciones, incluyendo tipos atómicos y tipos de procedimiento:
+
+```
+(type-exp ("int") int-exp)
+
+(type-exp ("bool") bool-exp)
+
+(type-exp
+  ("(" (separated-list type-exp "*") "->" type-exp ")")
+  proc-type-exp)
+```
+
+###
+En la representación interna de tipos, se definen dos categorías principales:
+*   **Tipo atómico**: Un tipo primitivo que no está compuesto por otros tipos, como `int` o `bool`.
+*   **Tipo procedimiento**: Un tipo que especifica tanto los tipos de los argumentos que una función recibe como el tipo del resultado que produce.
+
+###
+Estos tipos se implementan usando `define-datatype` en Racket, donde un `type` puede ser un `atomic-type` (con un `nombre` simbólico) o un `proc-type` (con una lista de `arg-type` y un `result-t`):
+
+```racket
+; Tipos
+(define-datatype type type?
+  (atomic-type (nombre symbol?))
+  (proc-type (arg-type (list-of type?))
+             (result-t type?)))
+```
+
+Finalmente, se definen instancias para los tipos atómicos básicos, como `int` y `bool`, utilizando el constructor `atomic-type`:
+
+```racket
+; int
+(define int-type (atomic-type 'int))
+
+; bool
+(define bool-type (atomic-type 'bool))
+```
+
+---
+METADATA
+---
+TEMATICA: Clase 11 Implementacion del interpretador de tipos
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Interpretador tipos chequeo I.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20I/

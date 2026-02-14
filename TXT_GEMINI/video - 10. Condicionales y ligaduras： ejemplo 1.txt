@@ -1,75 +1,20 @@
-A continuación, se presenta la evaluación de un ejemplo mediante diagramas de ambientes, contrastando con el resultado de un interpretador.
+Para analizar la expresión, se comienza con el ambiente vacío, sobre el cual se construye la jerarquía de ambientes. El primer ambiente, o ambiente inicial (E0), se define con las variables X, Y y Z, con los valores 4, 2 y 5 respectivamente.
 
----
+####
+La variable T se define mediante una expresión `let` anidada que declara P con valor 5 y Q con valor 2. Es crucial entender que el ambiente para evaluar esta expresión interna extiende directamente del ambiente 0 (E0), ya que se encuentra en el área de declaraciones del `let` principal, antes de que el cuerpo de este (`in`) sea procesado. La expresión `P + Q` se evalúa en este nuevo ambiente, resultando en 7 (5 + 2). Este valor 7 es el que finalmente se asigna a la variable T.
 
-**Evaluación por Diagramas de Ambientes**
+####
+Al entrar en el cuerpo del `let` principal (la cláusula `in`), se crea un nuevo ambiente que extiende al anterior. Dentro de este nuevo ambiente, se define la variable X como el resultado de incrementar Z en 1 (`inc(Z)`). Para resolverlo, se busca el valor de Z en la cadena de ambientes. El valor de Z es 5, por lo que `inc(Z)` da como resultado 6, valor que se asigna a X en este nuevo ambiente.
 
-1.  **Ambiente Inicial:**
-    *   Comenzamos con un ambiente vacío.
-    *   Se crea el **Ambiente 0**, el cual extiende del ambiente vacío.
-    *   En el Ambiente 0, se establecen los siguientes enlaces:
-        *   `X = 4`
-        *   `Y = 2`
-        *   `Z = 5`
+####
+La expresión final a evaluar es `* T (* Y X)`. La evaluación se realiza en el contexto del ambiente más interno. La búsqueda de cada variable sigue la cadena de ambientes hacia atrás hasta encontrarla:
+- `X`: Se encuentra en el ambiente actual con el valor 6.
+- `Y`: No se encuentra en el ambiente actual, por lo que se busca en el ambiente padre (E0), donde tiene el valor 2.
+- `T`: No se encuentra en el ambiente actual, se busca en el ambiente padre, donde tiene el valor 7.
+La operación se resuelve como `7 * (2 * 6)`, lo que es igual a `7 * 12`, dando un resultado final de 84.
 
-2.  **Evaluación de `let Z = 5 in ...`**:
-    *   La expresión `5` (valor a asignar a `Z`) se evalúa en el Ambiente 0, resultando en `5`.
-    *   Se crea un nuevo ambiente, **Ambiente 1**, que extiende del Ambiente 0.
-    *   En el Ambiente 1, se enlaza `Z = 5`. Este `Z` *oculta* al `Z` del Ambiente 0 dentro de este alcance.
-    *   El cuerpo de este `let` (`let T = ...`) se evalúa dentro del Ambiente 1.
-
-3.  **Evaluación de `let T = (let P = 5, Q = 2 in P + Q) in ...`**:
-    *   Primero, se evalúa la expresión para el valor de `T`: `(let P = 5, Q = 2 in P + Q)`. Esta evaluación ocurre en el Ambiente 1.
-        *   **Evaluación del `let` interno `(let P = 5, Q = 2 in P + Q)`**:
-            *   Los valores `5` y `2` para `P` y `Q` se evalúan en el Ambiente 1.
-            *   Se crea un ambiente temporal, **Ambiente P_Q**, que extiende del Ambiente 1.
-            *   En el Ambiente P_Q, se enlazan `P = 5` y `Q = 2`.
-            *   La expresión `P + Q` se evalúa en el Ambiente P_Q:
-                *   Se busca `P`: Se encuentra `P = 5` en Ambiente P_Q.
-                *   Se busca `Q`: Se encuentra `Q = 2` en Ambiente P_Q.
-                *   Resultado: `5 + 2 = 7`.
-            *   El valor resultante de este `let` interno es `7`.
-    *   Ahora, el valor `7` se enlaza a `T`.
-    *   Se crea un nuevo ambiente, **Ambiente 2**, que extiende del Ambiente 1.
-    *   En el Ambiente 2, se enlaza `T = 7`.
-    *   El cuerpo de este `let` (`let X = Z + 1 ...`) se evalúa dentro del Ambiente 2.
-
-4.  **Evaluación de `let X = Z + 1 in (T * Y * X)`**:
-    *   Primero, se evalúa la expresión para el valor de `X`: `Z + 1`. Esta evaluación ocurre en el Ambiente 2.
-        *   Se busca `Z` en Ambiente 2: No se encuentra.
-        *   Se busca `Z` en su ambiente padre, Ambiente 1: Se encuentra `Z = 5`.
-        *   Resultado: `5 + 1 = 6`.
-    *   El valor `6` se enlaza a `X`.
-    *   Se crea un nuevo ambiente, **Ambiente 3**, que extiende del Ambiente 2.
-    *   En el Ambiente 3, se enlaza `X = 6`.
-    *   La expresión final `T * Y * X` se evalúa dentro del Ambiente 3.
-
-5.  **Evaluación de la expresión final `T * Y * X` en Ambiente 3**:
-    *   **Buscar `T`**:
-        *   En Ambiente 3: No se encuentra.
-        *   En Ambiente 2 (padre de Ambiente 3): Se encuentra `T = 7`.
-    *   **Buscar `Y`**:
-        *   En Ambiente 3: No se encuentra.
-        *   En Ambiente 2: No se encuentra.
-        *   En Ambiente 1: No se encuentra.
-        *   En Ambiente 0 (padre de Ambiente 1): Se encuentra `Y = 2`.
-    *   **Buscar `X`**:
-        *   En Ambiente 3: Se encuentra `X = 6`.
-
-    *   Cálculo final: `7 * 2 * 6 = 84`.
-
-**Verificación con Interpretador**
-
-El código para verificar es el siguiente:
-```
-let Z = 5 in
-let T = (let P = 5, Q = 2 in P + Q) in
-let X = Z + 1 in
-(T * Y * X)
-```
-Asumiendo un ambiente inicial donde `X=4, Y=2, Z=5`, la evaluación de este código en el interpretador produce el valor `84`. Esto concuerda con el resultado obtenido mediante los diagramas de ambientes.
-
----
+####
+Para verificar el resultado obtenido a través del análisis con diagramas de ambientes, se ejecuta el código equivalente en un interpretador del lenguaje. La expresión `let Z = 5, T = (let P = 5, Q = 2 in P + Q) in (let X = inc(Z) in T * (Y * X))` se evalúa, y el interpretador confirma que el resultado es 84. Esto corrobora la correcta aplicación de las reglas de alcance y evaluación de los diagramas de ambientes.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=3MmHqa7Qm3I

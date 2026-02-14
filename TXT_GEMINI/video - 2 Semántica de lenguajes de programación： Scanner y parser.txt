@@ -1,61 +1,18 @@
-A continuación, se presenta un texto limpio y coherente sobre la semántica de los lenguajes de programación, enfocado en la interpretación y la compilación.
-
----
-
-El front-end de un compilador se compone de los procesos de Scanning y Parsing.
-
-### Scanning
-El Scanning tiene como objetivo crear unidades léxicas (tokens) a partir del código fuente. Estas unidades son significativas para la ejecución del programa y se definen según la especificación léxica.
-
-El Scanning procesa el código fuente (texto, números, espacios) para generar una lista de unidades léxicas, lemas o tokens. Cada token es una unidad significativa.
-
-**Ejemplo de tokens generados:**
-Para el código `INT A; INT B; INT C = B + 1;` el escáner produciría:
-*   `INT`: Tipo de dato, línea 1.
-*   `A`: Identificador, línea 1.
-*   `INT`: Tipo de dato, línea 1.
-*   `B`: Identificador, línea 1.
-*   `INT`: Tipo de dato, línea 2.
-*   `C`: Identificador, línea 2.
-*   `=`: Operador, línea 2.
-*   `B`: Identificador, línea 2.
-*   `+`: Operador, línea 2.
-*   `1`: Número, línea 2.
-
-Esta lista de tokens es la entrada para el Parsing. El escáner extrae los elementos importantes del código.
-
-Durante el Scanning, elementos como comentarios, espacios en blanco y otros símbolos sin importancia sintáctica son ignorados.
-
-La especificación léxica de un lenguaje define cómo se tratan y estructuran las unidades significativas, clasificando cada una (por ejemplo, tipo de dato, cadena, identificador). El escáner recibe el código fuente y genera una lista de estas unidades significativas (tokens).
-
-**Reglas léxicas del lenguaje objetivo:**
-*   Las secuencias de espacios en blanco y nuevas líneas se tratan como un único espacio.
-*   Los comentarios comienzan con el símbolo de porcentaje (`%`) y se extienden hasta el final de la línea. El escáner los ignora.
-*   Un identificador es una secuencia de letras y números que debe comenzar con una letra. Se utiliza para nombrar variables y procedimientos.
-
-**Ejemplo de procesamiento léxico:**
-Si el código contiene `FUBAR % Este es un comentario`, el escáner procesaría:
-*   `FUB`: Identificador, línea 1.
-*   (Espacios en blanco ignorados)
-*   `BAR`: Identificador, línea 1.
-*   (El resto de la línea a partir de `%` es un comentario y se ignora).
-
-Los comentarios son anotaciones para el entendimiento humano y no afectan la ejecución del código. Además de identificadores, el escáner también reconoce palabras clave y símbolos de puntuación.
-
-Cuando el escáner encuentra un token, devuelve una estructura de datos que incluye:
-*   **Clase del token:** Describe el tipo de token (ej., número, cadena, identificador).
-*   **Valor del token:** El token particular en sí (ej., para el identificador "A", el valor es "A"; para el número "1", el valor es "1").
-*   **Ubicación del token:** La posición en la entrada (ej., número de línea).
-
-### Parsing
-El Parsing, por su parte, convierte las unidades léxicas en un Árbol de Sintaxis Abstracta (AST). El AST obedece a la gramática del lenguaje de programación y facilita la ejecución del código.
-
-El Parsing toma la secuencia de tokens y los estructura en un Árbol de Sintaxis Abstracta (AST). El AST depende de la gramática del lenguaje. Si el código no corresponde a la gramática especificada, se generará un error de parseo y el AST no podrá ser construido.
-
-Tradicionalmente, se usa `define datatype` para especificar las gramáticas. Sin embargo, en este curso se utilizará la librería CLG de Dr. Racket, la cual permite generar estas estructuras automáticamente y simplificar la integración con el parser. Las gramáticas deben ser completas y coherentes, incluyendo sus símbolos terminales.
-
-### Próximos pasos
-En la próxima sesión, se profundizará en la librería CLG de Dr. Racket y se explicará por qué se usa este lenguaje de programación en el curso. Esta librería, desarrollada por los autores del libro de texto, automatiza muchas tareas que de otro modo requerirían implementación manual en lenguajes como Java o C++. Una vez comprendido su funcionamiento, se procederá con la implementación.
+El front-end de un compilador se compone de dos procesos principales: Scanning y Parsing. El objetivo del Scanning es analizar el código fuente para crear unidades de caracteres significativos, conocidas como unidades léxicas o tokens, basándose en la especificación léxica de la gramática del lenguaje. Posteriormente, el Parsing toma estas unidades léxicas y las convierte en Árboles de Sintaxis Abstracta (AST). Estos árboles representan la estructura jerárquica del código de acuerdo a la gramática del lenguaje, facilitando su posterior procesamiento y ejecución.
+####
+El proceso de Scanning, también conocido como análisis léxico, toma el código fuente como una secuencia de caracteres y lo transforma en una lista de unidades léxicas, también llamadas lexemas o tokens. Cada token representa un elemento con significado para el lenguaje de programación. Por ejemplo, en el código `INT C = B + 1;`, el scanner identificaría los siguientes tokens: `INT` (un tipo de dato), `C` (un identificador), `=` (un operador de asignación), `B` (otro identificador), `+` (un operador aritmético) y `1` (un literal numérico). Esta secuencia de tokens es la entrada para la siguiente fase, el Parsing.
+####
+Durante el proceso de Scanning, ciertos elementos del código fuente son deliberadamente ignorados por no tener relevancia semántica para la ejecución del programa. Estos elementos incluyen los espacios en blanco, los saltos de línea y los comentarios. La función de estos elementos es mejorar la legibilidad del código para los humanos, pero no afectan la estructura lógica del programa. Por lo tanto, el analizador léxico los descarta para simplificar la secuencia de tokens que se envía al parser.
+####
+La especificación léxica de un lenguaje de programación es el conjunto de reglas formales que define cómo se construyen las unidades significativas o tokens. Estas reglas determinan qué secuencias de caracteres se reconocen como un tipo de dato, un identificador, un operador, una cadena de texto o un número. En esencia, la especificación léxica proporciona al scanner el patrón para identificar y clasificar cada elemento del código fuente en su token correspondiente.
+####
+En un lenguaje de programación específico, la especificación léxica define reglas concretas. Por ejemplo: 1) Cualquier secuencia de espacios en blanco o saltos de línea se trata como un único separador y se ignora. 2) Los comentarios comienzan con el carácter de porcentaje (%) y se extienden hasta el final de la línea; el scanner los ignora por completo. 3) Un identificador es una secuencia de letras y números que debe comenzar con una letra, utilizado para nombrar variables o procedimientos. Además, existen símbolos específicos para palabras clave y signos de puntuación que también son reconocidos como tokens.
+####
+Cuando el scanner identifica una secuencia de caracteres como un token, la representa mediante una estructura de datos que contiene, como mínimo, tres informaciones clave: 1) La clase o tipo del token (por ejemplo, `IDENTIFICADOR`, `NÚMERO`, `TIPO_DE_DATO`). 2) El valor o lexema específico del token (el texto original, como el nombre de la variable "C" o el número "1"). 3) La ubicación del token en el código fuente, comúnmente el número de línea, lo cual es fundamental para reportar errores de sintaxis.
+####
+El proceso de Parsing, o análisis sintáctico, toma como entrada la secuencia de tokens generada por el scanner y la organiza en una estructura jerárquica llamada Árbol de Sintaxis Abstracta (AST). Este árbol representa la estructura gramatical del código. El parser verifica si la secuencia de tokens se ajusta a las reglas definidas en la gramática del lenguaje. Si el código no cumple con la gramática, el parser no puede construir el AST y reporta un error de sintaxis.
+####
+La gramática de un lenguaje, que define su sintaxis, debe estar completamente especificada con sus símbolos terminales y no terminales para ser coherente. Herramientas como la función `define-datatype` se utilizan para especificar estas gramáticas manualmente. Sin embargo, existen librerías especializadas, como la librería SLG, que automatizan la creación de parsers a partir de una especificación gramatical. Estas herramientas simplifican significativamente el desarrollo de compiladores al integrar la definición de la gramática directamente en el proceso de parsing.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=npoh_p9PFlw

@@ -1,61 +1,36 @@
-A continuación, se presenta un texto limpio y coherente sobre la semántica de los lenguajes de programación, enfocado en la interpretación y la compilación.
+La semántica de los lenguajes de programación aborda los conceptos de interpretación y compilación, procesos fundamentales para transformar el código fuente en un formato ejecutable. El primer paso en ambos procesos consiste en convertir el código en una estructura de datos intermedia conocida como árbol de sintaxis abstracta (AST), que representa la estructura gramatical del programa.
 
----
+####
 
-### Semántica de Lenguajes de Programación: Interpretación y Compilación
+El proceso de transformación del código fuente comienza en una etapa denominada *frontend*, la cual se encarga de dos tareas principales. Primero, un *escáner* o analizador léxico revisa el texto para identificar componentes significantes (tokens), como palabras clave, identificadores y operadores, mientras ignora elementos sin valor semántico, como espacios en blanco y comentarios. A continuación, un *parser* o analizador sintáctico utiliza la gramática del lenguaje para construir un árbol de sintaxis abstracta (AST) a partir de los tokens generados por el escáner.
 
-Esta sección aborda los conceptos de interpretación y compilación, fundamentales para comprender el funcionamiento de los compiladores.
+####
 
-#### 1. Interpretación
+El árbol de sintaxis abstracta (AST) cumple dos funciones esenciales. En primer lugar, permite validar que el código fuente está escrito correctamente de acuerdo con las reglas gramaticales del lenguaje de programación, detectando errores de sintaxis. En segundo lugar, una vez validada la estructura, el AST sirve como la representación intermedia del programa que se utilizará para su posterior ejecución o traducción a otro lenguaje.
 
-La interpretación es el proceso de transformar el texto de un programa escrito en código fuente (por ejemplo, C++) en un árbol de sintaxis abstracta (AST).
+####
 
-**Propósito del Árbol de Sintaxis Abstracta (AST):**
-El AST tiene dos funciones principales:
-1.  **Validación gramatical:** Verifica que el código esté escrito correctamente según las reglas del lenguaje.
-2.  **Ejecución:** Prepara el código para su procesamiento y ejecución.
+Un interpretador es un programa que ejecuta las instrucciones definidas en un árbol de sintaxis abstracta directamente. El interpretador está escrito en un lenguaje de implementación (también llamado lenguaje de definición), que es el lenguaje utilizado para construir el propio interpretador. Por ejemplo, el interpretador principal de Python está escrito en C++.
 
-**Proceso del Frontend en la Interpretación:**
-El código fuente pasa por una fase denominada *frontend*, que consta de dos pasos:
-1.  **Escáner (Análisis Léxico):** Identifica los elementos significantes del código (tokens) y omite aquellos sin significado, como espacios en blanco y comentarios.
-2.  **Parser (Análisis Sintáctico):** Construye el árbol de sintaxis abstracta (AST) basándose en los tokens y la gramática del lenguaje.
-Una vez que el AST ha sido construido y validado, se procede a la ejecución de las acciones definidas en el código.
+####
 
-**El Interpretador:**
-Un interpretador es un programa que toma un AST y, o bien lo convierte en una respuesta, o bien ejecuta sus instrucciones directamente. Estos programas se desarrollan utilizando un "lenguaje de implementación" o "lenguaje de definición".
+Ejemplos de lenguajes que utilizan un modelo de interpretación incluyen Python, Java y JavaScript. En Python, el código se transforma en un AST que es procesado por una máquina virtual escrita en C++. En Java, el código se compila a un formato binario intermedio llamado *bytecode* (archivos `.class`), que luego es interpretado por la Máquina Virtual de Java (JVM). En JavaScript, el motor del navegador web (como V8 en Chrome) construye el AST y ejecuta el código para producir una respuesta.
 
-**Ejemplos de Lenguajes Interpretados:**
-*   **Python:** Utiliza una máquina virtual (comúnmente implementada en C++) que interpreta el AST generado a partir del código Python.
-*   **Java:** El código Java se compila primero a *bytecode*, almacenado en archivos `.class`, que es una representación binaria intermedia. La Máquina Virtual de Java (JVM), escrita en C++, toma este bytecode, genera un AST interno y procede a su ejecución.
-*   **JavaScript:** El motor del navegador (como los de Chrome o Firefox) construye el AST del código JavaScript y lo ejecuta, produciendo la respuesta correspondiente.
+####
 
-**Características de los Lenguajes Interpretados:**
-Los programas interpretados suelen ser más lentos que los compilados debido al paso intermedio de traducción y ejecución del AST. Sin embargo, ofrecen una mayor facilidad de escritura y desarrollo, lo que los hace adecuados para la prototipación rápida. Generalmente, no son recomendados para tareas que demandan un alto rendimiento, aunque lenguajes como Python han incorporado optimizaciones significativas.
+Los programas interpretados suelen ser más lentos que los compilados debido al paso de intermediación que supone la traducción y ejecución en tiempo real por parte del interpretador o máquina virtual. Sin embargo, esta desventaja de rendimiento se compensa con una mayor facilidad de programación y una sintaxis a menudo más sencilla. Debido a esta sobrecarga de procesamiento, los lenguajes puramente interpretados no son ideales para tareas de computación intensiva, aunque existen excepciones como Python, que utiliza librerías optimizadas escritas en lenguajes compilados para tareas de alto rendimiento como el *machine learning*.
 
-#### 2. Compilación
+####
 
-Los lenguajes compilados, como C++ o Assembly, generan directamente el árbol de sintaxis abstracta y luego lo transforman en código máquina o ensamblador, que es ejecutado directamente por el sistema operativo o la CPU. Este enfoque resulta en programas más rápidos.
+En los lenguajes compilados, como C++ o Assembly, el proceso transforma directamente el código fuente en código máquina ejecutable por el sistema operativo. Durante la compilación, se genera el árbol de sintaxis abstracta, el cual es analizado y traducido a un lenguaje de bajo nivel, como el lenguaje ensamblador (*assembly*). Por ejemplo, al compilar un archivo C++ con `g++`, se genera un archivo objeto (`.o`) que contiene una representación binaria del AST y otras informaciones, para finalmente producir un archivo ejecutable que el sistema operativo puede correr directamente.
 
-**Proceso de Compilación (Ejemplo C++):**
-En C++, el código fuente se procesa para crear el AST durante la compilación. Posteriormente, se traduce a lenguaje ensamblador para su ejecución. Por ejemplo, al ejecutar `g++ -c archivo.cpp`, se genera un archivo objeto (`.o`), que es un archivo binario que contiene una representación intermedia del código. Después de un proceso de traducción y enlazado final, se crea un archivo ejecutable que el sistema operativo puede entender y ejecutar directamente. Durante todo este proceso, el compilador es capaz de detectar errores sintácticos o gramaticales.
+####
 
-**Estructura del Compilador:**
-Un compilador procesa el código fuente, construye un AST y luego lo pasa por dos componentes principales:
-1.  **Analizador:** Deduce información útil sobre el programa y descarta elementos irrelevantes, como comentarios.
-2.  **Traductor:** Convierte el AST en un lenguaje destino (código máquina, ensamblador o un código intermedio).
-El archivo ejecutable final es directamente comprendido y ejecutado por el sistema operativo.
+El compilador está compuesto por un analizador y un traductor. El analizador procesa el árbol de sintaxis abstracta para deducir información útil sobre el programa y realizar optimizaciones. Posteriormente, el traductor utiliza esta información para convertir el código a un lenguaje destino. Este lenguaje destino es típicamente código máquina o lenguaje ensamblador, que puede ser ejecutado directamente por el hardware.
 
-**Lenguajes Destino y Código Intermedio:**
-El lenguaje destino de un compilador es típicamente código máquina, ensamblador o binario. No obstante, algunas implementaciones utilizan un lenguaje destino de propósito especial o un código intermedio, lo que facilita su interpretación o compilación a múltiples plataformas.
+####
 
-Un ejemplo clásico es Java con sus archivos `.class` (bytecode). Este bytecode es un lenguaje intermedio que, una vez compilado, es interpretado por la Máquina Virtual de Java (JVM). El uso de bytecode permite que un programa se compile una única vez y se ejecute en diversas plataformas, siempre que la JVM esté disponible y sea compatible. Otros lenguajes como Scala, Haskell y Erlang también emplean un enfoque similar.
-
-**Componentes Detallados del Compilador:**
-El compilador se subdivide en dos partes principales:
-*   **Analizador:** Su finalidad es deducir información útil sobre el programa, incluyendo el descarte de elementos como comentarios, que no tienen aplicación en la ejecución.
-*   **Traductor:** Se encarga de convertir el código del lenguaje fuente a un lenguaje que la máquina pueda entender directamente.
-
----
+Algunos lenguajes utilizan un modelo híbrido, compilando el código fuente a un lenguaje intermedio de propósito especial, conocido como *bytecode*. Este *bytecode* es más fácil de interpretar que el código fuente original. Un ejemplo clásico es Java, donde el código se compila a archivos `.class` (bytecode). Este código intermedio es independiente de la plataforma y puede ser ejecutado en cualquier sistema que tenga instalada una Máquina Virtual de Java (JVM). La JVM actúa como el interpretador del *bytecode*. Otros lenguajes que utilizan máquinas virtuales son Scala, Haskell y Erlang.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=zL0zWJgVB2E

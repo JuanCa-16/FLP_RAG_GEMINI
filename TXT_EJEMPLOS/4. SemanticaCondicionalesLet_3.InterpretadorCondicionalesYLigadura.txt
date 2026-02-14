@@ -1,11 +1,15 @@
+######## RESUMEN ########
+Implementa un intérprete para Racket que evalúa expresiones con condicionales y ligaduras locales.
+
+######## CONCEPTOS ########
+Intérprete, ambiente de ejecución, alcance léxico, ligaduras de variables, expresiones condicionales
+
 ######## EXPLICACION ########
-Interpreta expresiones con condicionales y ligaduras locales.
-Ejemplo de define la estructura léxica.
-Ejemplo de define la gramática con IF y LET.
-Ejemplo de evalúa expresiones condicionales (if).
-Ejemplo de evalúa ligaduras de variables locales (let).
-Ejemplo de busca variables en ambientes.
-Ejemplo de inicia un intérprete interactivo.
+Este código implementa un intérprete sencillo para un mini-lenguaje que incluye aritmética, expresiones condicionales (`if`) y ligaduras locales (`let`).
+Permite a los estudiantes explorar cómo se evalúan las condiciones y las ligaduras de variables, demostrando la aplicación de la semántica operacional.
+El sistema gestiona el entorno de ejecución mediante el tipo de dato `ambiente-extendido` y la función `apply-env` para resolver las variables.
+La función principal `evaluar-expresion` procesa las diversas construcciones del lenguaje, incluyendo `if-exp` y `let-exp`.
+Ilustra conceptos fundamentales de diseño de lenguajes como el análisis sintáctico con `sllgen` y la evaluación semántica de programas.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 4. SemanticaCondicionalesLet/3.InterpretadorCondicionalesYLigadura.rkt

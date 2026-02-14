@@ -1,15 +1,19 @@
+######## RESUMEN ########
+Demuestra diversas técnicas para implementar estructuras de datos recursivas y su manipulación en Racket.
+
+######## CONCEPTOS ########
+Abstracción de datos, Estructuras de datos recursivas, Números de Peano, `define-datatype`, Árboles de Sintaxis Abstracta (AST)
+
 ######## EXPLICACION ########
-Demuestra abstracción de datos y manipulación de ASTs.
-Ejemplo de implementación de números naturales.
-Ejemplo de definición de árboles binarios.
-Ejemplo de manejo de listas estructuradas.
-Ejemplo de tipos de datos con define-datatype.
-Ejemplo de procesamiento de expresiones lambda con cases.
+Este código implementa y manipula estructuras de datos abstractas en Racket, desde números de Peano hasta árboles de sintaxis abstracta para expresiones lambda.
+Permite representar números naturales para operaciones aritméticas básicas (`plus`, `prod`), construir y recorrer árboles binarios (`cuantos`, `cuantos-cases`), o procesar listas de símbolos (`subst`).
+Aplica intensivamente la recursión para definir operaciones y emplea `define-datatype` junto con `cases` para gestionar tipos de datos algebraicos de forma elegante y robusta.
+Relaciona la abstracción de datos con la definición de intérpretes y compiladores al mostrar cómo modelar y analizar la sintaxis de un lenguaje (`expression`, `parse-expression`, `occurs-free?`).
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ejemplosAbstraccion.scm
 FUENTE: CODIGO
-lenguaje: Scheme
+lenguaje: Racket
 
 ######## CODIGO ########
 ;*************Interfaz + *********************

@@ -1,86 +1,27 @@
-Aquí tienes la transcripción limpia y formateada:
+Para implementar el paso por referencia, es crucial diferenciarlo del paso por valor. El paso por valor ocurre cuando se invoca un procedimiento con un valor expresado directamente, como un número (`f(4)`), un booleano (`f(false)`) o una clausura. En cambio, el paso por referencia se aplicará cuando se invoque un procedimiento pasando una variable como argumento. Para manejar esta distinción, se introduce un nuevo tipo de dato denominado `target`. Un `direct-target` se utilizará para el paso por valor, encapsulando el valor directamente. Un `indirect-target` gestionará el paso por referencia, estableciendo un enlace con la variable original para permitir su modificación.
 
----
+####
 
-Para implementar el paso por referencia, se realizarán modificaciones en el interpretador, incluyendo la adición de nuevas funcionalidades.
+La implementación de este mecanismo requiere la definición de un nuevo tipo de dato abstracto en el intérprete, llamado `target`, con dos variantes:
+1.  `direct-target`: Representa un valor directo. Su estructura contiene un único campo que almacena un valor expresado (`expval`), como un número, booleano o procedimiento.
+2.  `indirect-target`: Representa una referencia a un valor. Su estructura contiene una referencia que apunta a un `direct-target`.
 
-**Conceptos Fundamentales:**
+La definición formal en el intérprete sería la siguiente:
+`(define-data-type target
+  (direct-target (val expval?))
+  (indirect-target (ref ref-a-target-directo?)))`
 
-*   **Valores Expresados:** Son los valores literales en el lenguaje con los que el programador interactúa directamente (ej., números, booleanos, clausuras/prodvals).
-*   **Valores Denotados:** Son los valores almacenados en las variables.
+####
 
-**Llamado por Valor vs. Llamado por Referencia:**
+Para soportar el nuevo tipo de dato `target`, es necesario definir dos predicados auxiliares. El primero, `expval?`, verifica si un valor es un "valor expresado", es decir, si es un número, un booleano o un valor de procedimiento (clausura). El segundo predicado, `ref-a-target-directo?`, determina si un valor es una referencia que apunta específicamente a un `direct-target`. Este último es clave para el mecanismo de indirección del paso por referencia, asegurando que las referencias apunten a contenedores de valores y no a otras referencias.
 
-*   **Llamado por Valor:** Se produce al enviar un valor expresado directamente como argumento a un procedimiento (ej., `f(4)`, `f(false)`, `f(una clausura)`).
-*   **Llamado por Referencia:** Se aplica al evaluar un procedimiento con una *variable* como argumento. Este es el nuevo comportamiento a implementar.
+####
 
-**Nuevo Tipo de Dato: `target`**
+La implementación del predicado `ref-a-target-directo?` sigue un proceso de validación en dos pasos. Primero, verifica que el dato de entrada sea efectivamente una referencia. Una referencia, por definición, apunta a una ubicación en la memoria (representada por un vector y una posición) que debe contener un `target`. El segundo paso consiste en dereferenciar, es decir, acceder al contenido de esa ubicación. Luego, se analiza el `target` recuperado: si es un `direct-target`, el predicado devuelve verdadero; si es un `indirect-target`, devuelve falso, ya que la lógica del sistema dicta que una referencia siempre debe apuntar al contenedor del valor final, no a otra indirección.
 
-Se introducirá un nuevo tipo de dato llamado `target` para gestionar el paso de argumentos:
+####
 
-1.  **`direct-target` (Blanco Directo):** Se genera cuando se pasa un valor expresado a un procedimiento. Mantiene el comportamiento del paso por valor.
-2.  **`indirect-target` (Blanco Indirecto):** Se genera cuando se pasa una variable (una referencia a un valor expresado). En este caso, no se envía el valor en sí, sino su ubicación o referencia. Esto permite que cualquier modificación a la variable dentro del procedimiento afecte a la variable original pasada como argumento. Este representa el nuevo comportamiento.
-
-**Implementación del Tipo de Dato `target`:**
-
-En el interpretador, se define el tipo de dato `target` con dos variantes:
-
-```
-define-data-type target
-    direct-target   (sval : expressed-value)
-    indirect-target (ref-to-direct-target : reference-to-direct-target)
-```
-
-*   `direct-target`: Contiene un `sval` (valor expresado).
-*   `indirect-target`: Contiene una `ref-to-direct-target` (una referencia a un `direct-target`).
-
-**Predicados Auxiliares:**
-
-Para el manejo de `target` se necesitan los siguientes predicados:
-
-1.  **`sval?`**:
-    *   **Propósito:** Retorna `true` si la entrada es un valor expresado.
-    *   **Implementación:** Verifica si el valor es un `boolean?`, `number?`, o `prodval?` (clausura).
-    ```
-    (define (sval? val)
-      (or (boolean? val)
-          (number? val)
-          (prodval? val)))
-    ```
-
-2.  **`ref-to-direct-target?`**:
-    *   **Propósito:** Retorna `true` si la entrada es una referencia que apunta a un `direct-target`.
-    *   **Lógica:** Una referencia siempre almacena un `direct-target`. No tiene sentido que una referencia guarde un `indirect-target`. Por ejemplo, si `x` apunta a `4`, `4` es un `direct-target`. Cuando se pasa una variable (que es una referencia), se está pasando un `direct-target`. La variable del procedimiento se convertirá en un `indirect-target` que apunte a ese `direct-target`.
-    *   **Implementación:**
-        *   Verifica si la entrada `x` es una referencia.
-        *   Accede al contenido de la referencia usando `cases reference`. Una referencia contiene un `vector` y una `position`.
-        *   Utiliza `vector-ref` para extraer el `target` almacenado en esa posición.
-        *   Evalúa el `target` extraído:
-            *   Si es un `direct-target`, retorna `true`.
-            *   Si es un `indirect-target` (caso no esperado para el contenido de una referencia), retorna `false`.
-    ```
-    (define (ref-to-direct-target? x)
-      (if (reference? x)
-          (cases reference x
-            (a-reference (vector position)
-              (cases target (vector-ref vector position)
-                (a-direct-target (val) #t)
-                (an-indirect-target (ref) #f)))) ; Esto no debería ocurrir
-          #f))
-    ```
-
-**Ejemplo de Flujo de Datos con `target`:**
-
-1.  **Declaración de Variable:** `let a = 5`
-    *   `a` almacena un `direct-target` que contiene el valor `5`. Este `direct-target` se guarda en el vector de almacenamiento.
-
-2.  **Llamada a Procedimiento con Variable:** `p(a)` donde `p` se define como `proc (x) ...`
-    *   El parámetro `x` dentro del procedimiento `p` se convierte en un `indirect-target`.
-    *   Este `indirect-target` contiene una referencia al `direct-target` original de `a` (el que contenía el `5`).
-
-Este diseño permite que las modificaciones realizadas a `x` dentro del procedimiento `p` se reflejen en la variable `a` original, ya que `x` indirectamente apunta a la misma ubicación de memoria que `a`.
-
-El siguiente paso es modificar la implementación de procedimientos existentes para integrar este nuevo tipo de dato `target` en el interpretador.
+El funcionamiento de los `targets` se puede ilustrar con un ejemplo. Cuando se declara una variable, como en `let a = 5`, en el entorno se almacena un `direct-target` que encapsula el valor `5`. Posteriormente, si se invoca un procedimiento pasándole esa variable, como `p(a)`, el parámetro formal del procedimiento (por ejemplo, `x` en `proc (x) ...`) se vinculará a un `indirect-target`. Este `indirect-target` no contiene el valor `5`, sino una referencia que apunta al `direct-target` original asociado a la variable `a`. De esta manera, cualquier operación sobre `x` dentro del procedimiento puede seguir la referencia y afectar el valor contenido en el `direct-target` de `a`, logrando así el efecto del paso por referencia.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=JdPQtJ7O5Z4

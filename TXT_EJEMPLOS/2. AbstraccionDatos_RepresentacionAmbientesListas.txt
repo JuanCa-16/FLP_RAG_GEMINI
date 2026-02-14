@@ -1,10 +1,16 @@
+######## RESUMEN ########
+Implementa un sistema básico de gestión de entornos para ligaduras de variables en Racket.
+
+######## CONCEPTOS ########
+Entornos de ejecución, ligadura de variables, abstracción de datos, alcance léxico, estructuras de datos inmutables
+
 ######## EXPLICACION ########
-Este código implementa un ambiente de variables con listas.
-Ejemplo de creación de un ambiente vacío.
-Ejemplo de extensión de un ambiente con nuevas variables.
-Ejemplo de búsqueda de valores en el ambiente.
-Ejemplo de acceso a componentes del ambiente.
-Ejemplo de manejo de alcance de variables.
+Este código implementa una representación fundamental de entornos de ejecución para gestionar ligaduras de variables de forma inmutable.
+Permite simular cómo un intérprete busca el valor de una variable en diferentes ámbitos o cómo se organiza un stack de activación.
+Facilita la comprensión del mecanismo subyacente de resolución de nombres y la gestión de contextos.
+Utiliza funciones constructoras (`extend-env`), predicados (`empty-env?`) y selectores (`extend-env->id`) para encapsular la estructura del ambiente.
+La función `apply-env` demuestra la búsqueda de valores siguiendo el principio del alcance léxico.
+Es un componente esencial en la construcción de intérpretes y la comprensión de la semántica de evaluación de lenguajes de programación.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionAmbientesListas.rkt

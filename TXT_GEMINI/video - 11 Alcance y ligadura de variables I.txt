@@ -1,51 +1,24 @@
-Aquí tienes la transcripción limpia y formateada para estudio:
+Una variable es un concepto fundamental en los lenguajes de programación. Dependiendo del lenguaje, una variable puede ser una ligadura (binding) o una referencia. Una ligadura asocia directamente un nombre a un valor, como en la expresión `define x 5` de Racket. En este caso, el nombre `x` se convierte en un sinónimo del valor `5`. Por otro lado, una referencia asocia un nombre a una dirección de memoria que contiene un valor, como en la declaración `int x = 8` de C++. Al consultar `x` en un sistema de referencias, se accede a la dirección de memoria para obtener el valor almacenado.
 
----
+####
 
-### Variables en Lenguajes de Programación
+La principal diferencia entre una ligadura y una referencia radica en la capacidad de cambio. Una ligadura, una vez establecida, es inmutable; si se define que `x` es `5`, `x` representará `5` de forma permanente en su alcance. En cambio, una variable basada en referencias puede cambiar su valor. El nombre `x` apunta a una dirección de memoria, y el contenido de esa dirección puede ser modificado posteriormente. Este concepto de reasignación es distinto de la mutabilidad de una estructura de datos. La mutabilidad se refiere a la capacidad de alterar los componentes internos de una estructura, como modificar los elementos de un arreglo. Una estructura es inmutable si sus componentes no pueden cambiarse tras su creación, como ocurre con las tuplas en Python.
 
-Una variable es un concepto fundamental en los lenguajes de programación. Su comportamiento y definición pueden variar según el paradigma del lenguaje.
+####
 
-#### Ligadura vs. Referencia
+Las reglas de alcance de una variable determinan en qué partes del código es visible y accesible. Existen dos modelos principales: el alcance estático (o léxico) y el alcance dinámico. En el alcance estático, la visibilidad de una variable se determina por su ubicación en el código fuente en tiempo de compilación. Una variable declarada dentro de una función solo es visible dentro de esa función. En el alcance dinámico, la visibilidad de una variable depende de la secuencia de llamadas a funciones en tiempo de ejecución. Esto permite que una función acceda a variables de la función que la invocó. Lenguajes como MATLAB y Octave utilizan alcance dinámico.
 
-1.  **Ligadura (Binding):** Es la asociación directa de un valor a un identificador, sin la necesidad de un paso intermedio de memoria.
-    *   **Características:**
-        *   El identificador se "nombra" directamente con un valor.
-        *   Ejemplo: `define x 5` en Racket. Al consultar `x`, se obtiene directamente `5`.
-        *   Generalmente, el valor asociado es inmutable; la ligadura no puede cambiar una vez establecida. Si se intenta cambiar, a menudo se crea una nueva ligadura.
+####
 
-2.  **Referencia (Reference):** Es la asociación de un identificador a una dirección de memoria, donde se almacena el valor.
-    *   **Características:**
-        *   El identificador (`x`) guarda una dirección de memoria.
-        *   Ejemplo: `int x = 8` en C++. Al consultar `x`, se accede al valor guardado en la dirección de memoria apuntada por `x`.
-        *   La dirección de memoria a la que apunta el identificador (`x`) no cambia, pero el *contenido* de esa dirección de memoria sí puede ser modificado. Esto permite la mutabilidad del valor.
+Algunos lenguajes modernos combinan diferentes modelos de alcance. Python, por ejemplo, utiliza alcance estático por defecto, pero permite modificar variables del alcance global desde dentro de una función mediante la palabra clave `global`. De manera similar, Ruby utiliza el prefijo `@` para denotar variables de instancia con un alcance más amplio. Esta flexibilidad permite a los programadores gestionar la visibilidad de las variables de forma explícita según las necesidades del programa, combinando la previsibilidad del alcance estático con la accesibilidad del alcance dinámico cuando es necesario.
 
-**Mutabilidad:** Se refiere a si el contenido de una estructura de datos puede cambiar después de su creación.
-*   **Dato Mutable:** Sus miembros internos pueden modificarse (ej. las listas en Python).
-*   **Dato Inmutable:** Sus miembros internos no pueden modificarse una vez creados (ej. las tuplas en Python).
-La inmutabilidad de una ligadura significa que la asociación entre el nombre y el valor es fija, no que el valor en sí no pueda ser reemplazado por una nueva ligadura.
+####
 
-#### Alcance de Variables (Scope)
+Dentro del modelo de alcance estático, existen dos variantes principales: alcance de función (function scope) y alcance de bloque (block scope). Con el alcance de función, una variable declarada en cualquier lugar dentro de una función es visible en toda la función, incluso si se declara dentro de un bloque condicional (`if`) o un bucle (`for`). Lenguajes como Python y C# implementan este tipo de alcance. Por ejemplo, en Python, una variable asignada dentro de un `if` puede ser accedida después de que el bloque `if` haya terminado, siempre que se esté dentro de la misma función.
 
-Las reglas de alcance definen dónde una variable es visible y accesible en el código. Se clasifican principalmente en estático y dinámico.
+####
 
-1.  **Alcance Estático (Lexical Scope):** La visibilidad de una variable se determina en el momento de la escritura del código, basándose en su ubicación dentro del texto.
-    *   **Características:**
-        *   Una variable declarada dentro de un bloque o función solo es visible dentro de ese ámbito.
-    *   **Tipos de Alcance Estático:**
-        *   **Alcance de Bloque (Block Scope):** La visibilidad de una variable se limita al bloque de código donde es declarada, delimitado usualmente por llaves (`{}`).
-            *   Ejemplos: C++, Java. En estos lenguajes, si se declara `int x = 8` dentro de un `if`, `while` o `for`, `x` solo existe dentro de ese bloque. JavaScript con `let` también usa alcance de bloque. C# también maneja alcance de bloque.
-        *   **Alcance de Función (Function Scope):** La visibilidad de una variable se extiende a toda la función en la que fue declarada, sin importar si está dentro de bloques internos como `if` o `for`.
-            *   Ejemplos: Python (variables locales), JavaScript con `var`. En Python, una variable declarada dentro de un `if` es visible fuera de ese `if` dentro de la misma función.
-
-2.  **Alcance Dinámico (Dynamic Scope):** La visibilidad de una variable se determina en tiempo de ejecución, basándose en la secuencia de llamadas a funciones.
-    *   **Características:**
-        *   Una variable puede ser accesible incluso si no fue declarada explícitamente en el ámbito actual, sino en la cadena de llamadas.
-    *   Ejemplos: Octave, MATLAB.
-
-**Lenguajes Híbridos:** Algunos lenguajes, como Python, permiten manejar variables de alcance global con palabras clave específicas (ej. `global`), haciendo que una variable dentro de una función sea visible en todo el código. JavaScript combina alcance de bloque (`let`) y alcance de función (`var`).
-
----
+El alcance de bloque (block scope) restringe la visibilidad de una variable al bloque de código en el que fue declarada. Un bloque suele estar delimitado por llaves `{}`. Una variable declarada dentro de un bucle `for` o una estructura `if` solo existe y es accesible dentro de esas llaves. Lenguajes como C++, Java y JavaScript (con `let` y `const`) utilizan alcance de bloque. JavaScript es un caso particular, ya que soporta ambos tipos de alcance estático: las variables declaradas con `var` tienen alcance de función, mientras que las declaradas con `let` o `const` (introducidas en ES6) tienen alcance de bloque, lo cual permite un control más granular sobre la vida útil de las variables.
 
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=zj2QEeqNyLo

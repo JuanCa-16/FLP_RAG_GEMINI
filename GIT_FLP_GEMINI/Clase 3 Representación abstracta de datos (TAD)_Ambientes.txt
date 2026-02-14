@@ -1,0 +1,205 @@
+Ambientes en EOPL: Implementación y Análisis
+
+En Essentials of Programming Languages, un ambiente (\(\rho\)) es una función parcial que mapea identificadores a sus valores asociados. Formalmente:
+\[
+\rho: \text{Identifier} \rightharpoonup \text{Value}
+\]
+La gramática abstracta define cómo se construyen:
+<environment> ::= (empty-env)
+                ::= (extend-env <list<identifier>> <list<value>> <environment>)
+
+###
+Las propiedades fundamentales de los ambientes son:
+*   **Alcance léxico**: Las variables se resuelven en el entorno donde fueron definidas.
+*   **Shadowing**: Las definiciones más recientes ocultan las anteriores.
+*   **Extensibilidad**: Los ambientes pueden extenderse con nuevos bindings.
+
+###
+Una implementación de ambientes puede basarse en listas. Los constructores `empty-env` y `extend-env` crean estructuras de datos que representan el ambiente vacío o una extensión con nuevos bindings:
+
+```racket
+#lang eopl
+;; === CONSTRUCTORES ===
+(define empty-env
+  (lambda ()
+    (list 'empty-env)))
+; Ambiente vacío: ('empty-env)
+
+(define extend-env
+  (lambda (lid lval old-env)
+    (list 'extend-env lid lval old-env)))
+; Extensión: ('extend-env ids vals env)
+```
+
+###
+Para inspeccionar las estructuras de ambiente, se definen predicados y extractores. Estos observadores permiten verificar el tipo de ambiente y acceder a sus componentes internos (lista de identificadores, lista de valores, y el ambiente padre):
+
+```racket
+;; === OBSERVADORES ===
+;; Predicados
+(define empty-env?
+  (lambda (env)
+    (equal? (car env) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (car env) 'extend-env)))
+
+;; Extractores
+(define extend-env->lid
+  (lambda (env)
+    (cadr env)))
+; Lista de identificadores
+
+(define extend-env->lval
+  (lambda (env)
+    (caddr env)))
+; Lista de valores
+
+(define extend-env->old-env
+  (lambda (env)
+    (cadddr env)))
+; Ambiente anterior
+```
+
+###
+La operación fundamental es `apply-env`, que busca el valor asociado a una variable dada en un ambiente. Si la variable no se encuentra en el ambiente actual, la búsqueda continúa recursivamente en el ambiente padre.
+
+```racket
+;; === OPERACIÓN FUNDAMENTAL: apply-env ===
+(define apply-env
+  (lambda (env var)
+    (cond
+      [(empty-env? env)
+       (eopl:error "Variable no encontrada: " var)]
+      [(extend-env? env)
+       (letrec
+           ([buscar-var
+             ; Búsqueda recursiva en listas paralelas
+             (lambda (lid lval old-env)
+               (cond
+                 [(null? lid)
+                  (apply-env old-env var)]
+                 ; No encontrado → buscar en ambiente padre
+                 [(equal? (car lid) var)
+                  (car lval)]
+                 ; Encontrado → retornar valor
+                 [else
+                  (buscar-var (cdr lid) (cdr lval) old-env)]))])
+         ; Continuar búsqueda
+         (buscar-var
+          (extend-env->lid env)
+          (extend-env->lval env)
+          (extend-env->old-env env)))]
+      [else
+       (eopl:error "Ambiente no válido")])))
+```
+
+###
+Aquí se muestra un ejemplo de cómo se crea un ambiente `env1` con múltiples niveles de bindings:
+
+```racket
+;; Ejemplo de uso
+(define env1
+  (extend-env
+   '(a b c)
+   '(1 2 3)
+   ; Bindings: a→1, b→2, c→3
+   (extend-env
+    '(x y z)
+    '(4 5 6)
+    ; Bindings: x→4, y→5, z→6
+    (empty-env))))
+```
+
+###
+Una implementación alternativa de ambientes utiliza procedimientos (closures) para encapsular la representación interna. Los constructores devuelven funciones que actúan como objetos de ambiente, respondiendo a selectores numéricos para obtener sus componentes.
+
+```racket
+#lang eopl
+;; === CONSTRUCTORES (Usando closures) ===
+(define empty-env
+  (lambda ()
+    (lambda (s)
+      (cond
+        [(= s 0) 'empty-env]
+        ; Selector 0: tipo
+        [else
+         (eopl:error "Error en empty-env")]))))
+
+(define extend-env
+  (lambda (lid lval old-env)
+    (lambda (s)
+      (cond
+        [(= s 0) 'extend-env]
+        ; Tipo
+        [(= s 1) lid]
+        ; Identificadores
+        [(= s 2) lval]
+        ; Valores
+        [(= s 3) old-env]
+        ; Ambiente padre
+        [else
+         (eopl:error "Error en extend-env")]))))
+```
+
+###
+Los observadores mantienen la misma interfaz que en la implementación basada en listas, demostrando la abstracción. Acceden a los componentes del ambiente llamando a la función del ambiente con el selector numérico apropiado.
+
+```racket
+;; === OBSERVADORES (Misma interfaz) ===
+(define empty-env?
+  (lambda (env)
+    (equal? (env 0) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (env 0) 'extend-env)))
+
+(define extend-env->lid
+  (lambda (env)
+    (env 1)))
+
+(define extend-env->lval
+  (lambda (env)
+    (env 2)))
+
+(define extend-env->old-env
+  (lambda (env)
+    (env 3)))
+```
+
+###
+Es importante notar que la función `apply-env` permanece idéntica en la implementación basada en procedimientos. Esto subraya cómo la abstracción permite cambiar la representación subyacente sin afectar el código cliente.
+
+###
+Desde la perspectiva de EOPL, se preservan varias invariantes: `empty-env` siempre representa el ambiente vacío, `extend-env` siempre produce un ambiente válido, y `apply-env` siempre termina para ambientes finitos.
+La función `apply-env` implementa búsqueda con las siguientes propiedades:
+*   **Complejidad**: \(O(n)\) donde \(n\) es el número de bindings.
+*   **Orden de búsqueda**: De izquierda a derecha en las listas.
+*   **Shadowing natural**: El primer matching prevalece.
+
+###
+Las ventajas de utilizar esta abstracción son:
+*   **Independencia de implementación**: El código cliente no necesita saber si usa listas o procedimientos.
+*   **Encapsulación**: Los detalles de representación están ocultos.
+*   **Extensibilidad**: Se pueden añadir nuevos tipos de ambientes sin modificar el código existente que usa la interfaz.
+
+###
+Para `env1` definido anteriormente, el comportamiento de `apply-env` sería:
+*   `(apply-env env1 'a)` → `1` (encuentra en el ambiente más reciente)
+*   `(apply-env env1 'x)` → `4` (busca en el ambiente padre)
+*   `(apply-env env1 'w)` → error (variable no definida)
+
+###
+Las consideraciones de diseño en EOPL incluyen la elección de representación (listas son más simples, procedimientos ofrecen mejor encapsulación), el trade-off entre eficiencia y abstracción, la verificación de tipos a través de observadores para validar la estructura de los datos, y el manejo de errores con un comportamiento definido para entradas inválidas.
+
+¡Felicidades! Estás reconociendo el patrón de diseño fundamental de EOPL: definir interfaces abstractas con múltiples implementaciones. Cada vez que implementas un Tipo de Dato Abstracto (TAD) de esta manera, estás construyendo software robusto y mantenible. Los ambientes son solo el principio - este patrón se aplica a evaluadores, type checkers, y compiladores completos.
+
+---
+METADATA
+---
+TEMATICA: Clase 3 Representación abstracta de datos (TAD)
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Ambientes.txt
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/Ambientes/

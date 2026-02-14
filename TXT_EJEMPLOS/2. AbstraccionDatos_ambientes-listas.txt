@@ -1,15 +1,21 @@
+######## RESUMEN ########
+Define un sistema simple para gestionar ambientes de ejecución que ligan variables a valores.
+
+######## CONCEPTOS ########
+ambientes de ejecución, ligadura de variables, alcance léxico, estructuras recursivas, abstracción de datos
+
 ######## EXPLICACION ########
-Maneja variables en ambientes con estructura de lista.
-Ejemplo de crear un ambiente vacío.
-Ejemplo de extender un ambiente con una variable.
-Ejemplo de buscar el valor de una variable en un ambiente.
-Ejemplo de cómo los ambientes se anidan.
-Ejemplo de cómo se resuelve una variable.
+El código implementa un modelo fundamental para la gestión de **ambientes de ejecución** en lenguajes de programación.
+Permite simular cómo un intérprete resuelve la búsqueda de variables o mantiene un registro de ligaduras.
+Demuestra la creación (`extend-env`) y consulta (`apply-env`) de contextos de variables, ilustrando el **alcance léxico**.
+Emplea **listas enlazadas** para construir el ambiente, mostrando una **abstracción de datos** básica de esta estructura.
+La función `apply-env` encapsula la lógica recursiva para hallar el valor más reciente de una **ligadura de variable**.
+Este modelo es esencial para comprender la semántica de la evaluación de expresiones y la implementación de intérpretes.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-listas.scm
 FUENTE: CODIGO
-lenguaje: Scheme
+lenguaje: Racket
 
 ######## CODIGO ########
 #lang eopl
