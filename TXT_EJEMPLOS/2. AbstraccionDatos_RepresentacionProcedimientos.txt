@@ -1,15 +1,20 @@
+######## RESUMEN ########
+Implementa un entorno de ejecución asociando identificadores a valores mediante abstracción de datos procedimental.
+
+######## CONCEPTOS ########
+Abstracción de datos, Entorno (Environment), Clausuras, Búsqueda de variables, Procedimientos de acceso
+
 ######## EXPLICACION ########
-Gestiona entornos de variables usando procedimientos.
-Ejemplo de creación de un entorno vacío.
-Ejemplo de extensión de un entorno con variables.
-Ejemplo de procedimientos observadores para entornos.
-Ejemplo de predicados para identificar tipos de entorno.
-Ejemplo de aplicación para obtener valores de variables.
+Este código implementa una estructura de datos para gestionar entornos, vinculando identificadores simbólicos a valores.
+Modela el alcance léxico y la asignación de variables, permitiendo la recuperación de valores como 'x' o 'y' en un contexto de programa.
+Utiliza clausuras (`lambda`) para encapsular el estado de cada entorno, aplicando procedimientos constructores como `empty-env` y `extend-env`.
+La función `apply-env` realiza la búsqueda recursiva de variables, demostrando un acceso controlado a la información interna.
+Ilustra la abstracción de datos esencial para el diseño de intérpretes y la comprensión de modelos de evaluación de lenguajes.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionProcedimientos.rkt
 FUENTE: CODIGO
-lenguaje: Racket (EOPL)
+lenguaje: Racket
 
 ######## CODIGO ########
 #lang eopl

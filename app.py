@@ -130,103 +130,133 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     return resultados
 
 def generar_respuesta(consulta: str, contexto: str, fuente:str):
-    print('ENTRREEE ACA, ', fuente,'ENTRREEE ACA, ', contexto, consulta)
+    print('FUENTE', fuente,'CONTEXTO', contexto, 'CONSULTA:', consulta)
     """Genera una respuesta usando el modelo generativo y el contexto recuperado."""
     if client is None:
         raise HTTPException(status_code=500, detail="El cliente Gemini no se inicializó correctamente.")
     
     if (fuente == 'CÓDIGO' or fuente == 'CODIGO'  or fuente == 'CODE'):
        prompt = f"""
-        Rol: Eres un profesor universitario experto en Interpretadores y Lenguajes de Programación, especialista en Racket y la librería eopl. Tu objetivo es pedagógico y práctico.
+        Eres un profesor universitario experto en Racket y la librería eopl. Tu objetivo es SIEMPRE dar una respuesta técnica útil al estudiante.
 
-        OBJETIVO PRIMARIO: Garantizar que el usuario SIEMPRE reciba una respuesta técnica útil que incluya código en Racket y una explicación, independientemente de si la información existe en el CONTEXTO proporcionado o no.
+        PRIORIDAD DE FUENTES:
+        1. **PRIMERO:** Busca la respuesta en el CONTEXTO proporcionado
+        2. **SEGUNDO:** Si el CONTEXTO no contiene la información exacta pero tiene ejemplos relacionados, ÚSALOS como base y adapta
+        3. **TERCERO:** Si el CONTEXTO está vacío o no es relevante, usa tu conocimiento de Racket/eopl
 
-        Instrucciones de Prioridad y Fuente de Información:
-        1. **Búsqueda en CONTEXTO:** Analiza primero si la respuesta o el código existen en el CONTEXTO proporcionado.
-        2. **Generación por IA (Fallback):** Si el CONTEXTO es insuficiente, incompleto o no existe para la consulta, DEBES usar tu conocimiento experto propio para generar el código y la explicación. NUNCA respondas que "la información no está disponible" sin dar una solución alternativa generada por ti.
+        REGLAS DE ETIQUETADO:
+        - Si usas código/explicación del CONTEXTO: No agregues etiquetas
+        - Si generas código propio porque el CONTEXTO no es útil: Agrega `> **Nota:** Ejemplo generado por IA (no está en el material de clase).`
+        - Si adaptas código del CONTEXTO: Agrega `> **Nota:** Adaptado de ejemplos del material de clase.`
 
-        Reglas de Etiquetado (Obligatorio):
-        - Si la respuesta (código o explicación) proviene del CONTEXTO: No añadas etiquetas de advertencia.
-        - Si tuviste que generar el código/ejemplo porque no estaba en el CONTEXTO: Añade justo antes del código la etiqueta: `> **Nota:** Este ejemplo ha sido generado por IA (no se encuentra explícitamente en el material de clase).`
-        - Si la explicación conceptual es tuya (no del contexto): Añade la etiqueta: `(Explicación complementaria generada por IA)`.
+        ESTRUCTURA DE RESPUESTA OBLIGATORIA:
+        1. **Análisis breve** (1-2 frases): Qué hace el código o qué resuelve
+        2. **Bloque de código** Un bloque markdown con sintaxis ```racket```
+        3. **Salida esperada** en bloque de texto plano
+        4. **Explicación pedagógica** (2-4 frases): Conceptos clave (recursión, listas, car/cdr, ambientes, etc.)
 
-        Estructura de Respuesta Requerida:
-        1. **Corrección/Análisis:** Si el usuario envió código, explicalo, si cuenta con errores corregirlo y explciar el error brevemente.
-        2. **Bloque de Código:** Un bloque markdown con sintaxis ```racket```.
-        - Si es corrección, muestra la versión final funcional.
-        - Si es un ejemplo nuevo, asegúrate de que sea didáctico y funcional.
-        3. **Salida Esperada:** Un bloque de texto simple mostrando qué retorna el código.
-        4. **Explicación Profesoral:** Breve (1-3 frases), clara y usando terminología correcta (términos como: recursión, listas, car/cdr, paso de mensajes, ambientes, etc.).
-
-        Restricciones:
-        - Si el input NO tiene ninguna relación con programación/Racket, responde: "El tema no está relacionado con el curso de Racket/EOPL".
-        - Mantén un tono académico pero cercano.
+        CASOS ESPECIALES:
+        - Si el usuario envía código con errores: explica el error brevemente, muestra la versión corregida
+        - Si pide sintaxis de Racket: usa tu conocimiento (no necesitas CONTEXTO para sintaxis básica)
+        - Si no está relacionado con programación/Racket: responde "Tema fuera del alcance del curso"
 
         CONTEXTO DISPONIBLE:
         {contexto}
 
         PREGUNTA DEL ESTUDIANTE:
         {consulta}
+
+        FUENTE DEL CONTEXTO.
+        {fuente}
+
+        IMPORTANTE: Si el CONTEXTO contiene AL MENOS UN ejemplo relacionado, ÚSALO como base. No digas "no tengo información" si hay código similar en el CONTEXTO.
         """
     elif fuente in ("PDF", "VIDEO"):
-        prompt = f"""
-            Rol: Eres un profesor universitario experto en Fundamentos de Interpretación y Compilación y en Racket (eopl).
+          prompt = f"""
+        Eres un profesor universitario experto en Fundamentos de Interpretación y Compilación (Racket/eopl).
 
-            Instrucción general: Responde la PREGUNTA usando exclusivamente el CONTEXTO. No añadas información externa ni supongas hechos no presentes en el CONTEXTO. Si el CONTEXTO no contiene la información necesaria, responde exactamente: "La información disponible en el material de clase no cubre este punto específico".
+        REGLA DE ORO: Responde ÚNICAMENTE con información del CONTEXTO. NO inventes, NO supongas, NO agregues información externa.
 
-            Formato de salida:
-            - Si la respuesta es teórica: redacta en texto normal, con **puntos clave** y frases cortas. Evita ser extenso.
-            - Si hay fragmentos de código en la explicación o el usuario envía código: muestra todo el código en un bloque Markdown con sintaxis `racket`.
-            - Siempre incluye la **salida esperada** del código mostrado.
-            - Si el usuario envía su propio código: explícalo y compáralo con ejemplos del CONTEXTO si existen similitudes.
-            - No dejes la respuesta a medias. Sé claro y conciso.
+        INSTRUCCIONES:
+        1. Lee TODO el CONTEXTO completo antes de responder
+        2. Si el CONTEXTO contiene la respuesta (completa o parcial): Úsala para redactar una explicación clara
+        3. Si el CONTEXTO NO contiene información relevante: Responde EXACTAMENTE: "El material de clase no cubre este tema específicamente."
 
-            Reglas específicas:
-            1. **Usa solo el CONTEXTO** para fundamentar la respuesta.
-            2. **No inventes** definiciones, propiedades o ejemplos que no estén en el CONTEXTO.
-            3. **Código:** todo código en ```racket```; si no hay código en el CONTEXTO y la pregunta requiere ejemplo, crea un ejemplo breve y explícitalo como tal.
-            4. **Si falta información:** responde exactamente: "La información disponible en el material de clase no cubre este punto específico".
-            5. **Longitud:** respuesta breve (3–8 frases) más bloques de código si aplica. Nunca dejar la idea incompleta por cumplir longitud.
-            6. Si el CONTEXTO contiene código y ese código presenta errores: muestra primero una breve explicación del error y luego presenta la versión corregida del código. No incluyas el código con el error; solo muestra la corrección y la salida esperada.
-            7. Si la PREGUNTA solicita código y el CONTEXTO no contiene ningún ejemplo aplicable, genera un ejemplo breve y funcional en Racket que resuelva la pregunta de la forma más concisa posible. Marca explícitamente el ejemplo como: "Ejemplo generado por IA (no está en el material de clase)". Muestra el código solo en un bloque racket y, debajo, indica la salida esperada. No añadas más explicación que la estrictamente necesaria (1–3 frases) y no inventes conceptos fuera del CONTEXTO.
-            8. Responde siempre la totalidad de la idea; no dejes la pregunta a medias.
-            9. Usa un tono profesoral, claro y accesible; prioriza la comprensión del estudiante.
+        FORMATO DE RESPUESTA (cuando hay información en el CONTEXTO):
+        - Redacta en texto claro y directo
+        - Usa **negritas** para conceptos clave
+        - Frases cortas (3-8 frases en total)
+        - Si el CONTEXTO tiene fragmentos de código pequeños: inclúyelos en un bloque markdown con sintaxis ```racket```
+        - Tono profesoral pero accesible
 
-            CONTEXTO:
-            {contexto}
+        PROHIBIDO:
+        - Inventar definiciones que no están en el CONTEXTO
+        - Agregar ejemplos de código no presentes en el CONTEXTO
+        - Suponer información adicional
+        - Expandir más allá de lo que dice el CONTEXTO
 
-            PREGUNTA:
-            {consulta}
-            """
+        IMPORTANTE: Este material es teórico/conceptual. Si la pregunta requiere ejemplos de código extensos y el CONTEXTO no los tiene, responde: "El material teórico no incluye ejemplos de código para esto."
 
+        CONTEXTO:
+        {contexto}
+
+        PREGUNTA:
+        {consulta}
+
+        FUENTE DEL CONTEXTO.
+        {fuente}
+        """
     else: 
         # ALL
         prompt = f"""
-            Rol: Eres un profesor universitario experto en Fundamentos de Interpretación y Compilación y en Racket (eopl).
+            Eres un profesor universitario experto en Racket, eopl, y Fundamentos de Compilación.
 
-            Instrucción general: Responde la PREGUNTA usando exclusivamente el CONTEXTO. No añadas información externa ni supongas hechos no presentes en el CONTEXTO. Si el CONTEXTO no contiene la información necesaria, responde exactamente: "La información disponible en el material de clase no cubre este punto específico".
+            CONTEXTO MIXTO: Este CONTEXTO puede contener material teórico (PDF/VIDEO) y ejemplos de código.
 
-            Formato de salida:
-            - Si la respuesta es teórica: redacta en texto normal, con **puntos clave** y frases cortas. Evita ser extenso.
-            - Si hay fragmentos de código en la explicación o el usuario envía código: muestra todo el código en un bloque Markdown con sintaxis `racket`.
-            - Siempre incluye la **salida esperada** del código mostrado.
-            - Si el usuario envía su propio código: explícalo y compáralo con ejemplos del CONTEXTO si existen similitudes.
-            - No dejes la respuesta a medias. Sé claro y conciso.
+            ESTRATEGIA DE RESPUESTA:
+            1. **Identifica el tipo de pregunta:**
+            - ¿Es sobre conceptos teóricos? → Usa material PDF/VIDEO del CONTEXTO (NO inventes)
+            - ¿Requiere código/ejemplos? → Usa ejemplos de código del CONTEXTO (puedes generar si no hay)
 
-            Reglas específicas:
-            1. **Usa solo el CONTEXTO** para fundamentar la respuesta.
-            2. **No inventes** definiciones, propiedades o ejemplos que no estén en el CONTEXTO.
-            3. **Código:** todo código en ```racket```; si no hay código en el CONTEXTO y la pregunta requiere ejemplo, crea un ejemplo breve y explícitalo como tal.
-            4. **Si falta información:** responde exactamente: "La información disponible en el material de clase no cubre este punto específico".
-            5. **Longitud:** respuesta breve (3–8 frases) más bloques de código si aplica. Nunca dejar la idea incpmpleta por cumplir longitud.
-            6. Si el CONTEXTO contiene código y ese código presenta errores. No incluyas el código con el error; solo muestra la corrección y la salida esperada.
-            7. Si el usuario solicita en la pregunta código responde con un código.
+            2. **Para CONCEPTOS TEÓRICOS:**
+            - Usa SOLO el CONTEXTO (material PDF/VIDEO)
+            - Si el CONTEXTO no tiene la información: "El material de clase no cubre este tema específicamente."
+            - Redacta explicaciones claras con **conceptos clave** en negritas
+            - NO inventes teoría
 
-            CONTEXTO:
+            3. **Para EJEMPLOS DE CÓDIGO:**
+            - PRIORIDAD 1: Usa ejemplos del CONTEXTO si existen
+            - PRIORIDAD 2: Si no hay ejemplos relevantes, genera uno usando tu conocimiento de Racket
+            - Siempre marca código generado: `> **Nota:** Ejemplo generado por IA (no está en el material de clase).`
+            - Incluye siempre la salida esperada
+
+            4. **Para PREGUNTAS MIXTAS (teoría + código):**
+            - Teoría: SOLO del CONTEXTO
+            - Código: Del CONTEXTO o generado si es necesario
+
+            FORMATO DE RESPUESTA:
+            - **Explicación teórica:** Texto claro, frases cortas, conceptos en **negritas**
+            - **Código:** Bloque ```racket + salida esperada
+            - Longitud: 3-8 frases + código si aplica
+
+            REGLAS ESPECÍFICAS:
+            - Si el usuario envía código: explícalo usando conceptos del CONTEXTO
+            - Si hay código con errores en el CONTEXTO: muestra la versión corregida
+            - Sintaxis básica de Racket: puedes usar tu conocimiento
+            - Siempre completa la respuesta, no dejes ideas a medias
+
+            CONTEXTO DISPONIBLE:
             {contexto}
 
             PREGUNTA:
             {consulta}
+
+             FUENTE DEL CONTEXTO.
+            {fuente}
+
+            RECUERDA: 
+            - Material teórico → SOLO CONTEXTO, no inventes
+            - Ejemplos de código → Prioriza CONTEXTO, genera si es necesario marcándolo
             """
         
     respuesta_final = None
@@ -239,7 +269,7 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
                 model=GENERATIVE_MODEL,
                 contents=prompt,
                 config={
-                    'temperature': 0,
+                    'temperature': 0.1,
                 } 
             )
             respuesta_final = respuesta.text
@@ -374,3 +404,5 @@ async def responder_pregunta_codigo(data: Consulta):
         raise HTTPException(status_code=404, detail="El corpus de CÓDIGO no está cargado.")
 
     return await _ejecutar_rag(data, docs_df_codigos, 'CÓDIGO')
+
+# uvicorn app:app --reload

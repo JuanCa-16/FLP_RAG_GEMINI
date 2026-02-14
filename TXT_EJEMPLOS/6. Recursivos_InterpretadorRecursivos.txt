@@ -1,10 +1,16 @@
+######## RESUMEN ########
+Implementa un interpretador de Racket para evaluar expresiones con ligaduras recursivas y primitivas.
+
+######## CONCEPTOS ########
+Especificación léxica, AST, ambiente léxico, clausura, `letrec`
+
 ######## EXPLICACION ########
-Implementa un interpretador para un lenguaje con procedimientos recursivos.
-Ejemplo de especificación léxica para tokens.
-Ejemplo de gramática incluyendo ligaduras recursivas (`letrec`).
-Ejemplo de manejo de ambientes recursivos para procedimientos.
-Ejemplo de evaluación de expresiones con recursión.
-Ejemplo de un bucle de lectura-evaluación-impresión (REPL).
+Este código implementa un interpretador semántico para un lenguaje tipo Racket, destacando el manejo de estructuras recursivas.
+Permite evaluar expresiones aritméticas, lógicas y condicionales, y demuestra la evaluación de variables y la aplicación de funciones.
+Fundamentalmente, resuelve la definición de procedimientos recursivos o mutuamente recursivos mediante la sintaxis `letrec`.
+Utiliza `especificacion-lexica` y `especificacion-gramatical` para definir la sintaxis, construyendo un AST para el análisis y la posterior evaluación de expresiones con `evaluar-expresion`.
+La función `apply-env` gestiona la resolución de identificadores en un `ambiente-extendido-recursivo` que soporta clausuras para procedimientos.
+Este modelo es crucial para entender la implementación de lenguajes de programación y la gestión de alcance léxico con recursividad.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 6. Recursivos/InterpretadorRecursivos.rkt

@@ -1,10 +1,14 @@
+######## RESUMEN ########
+Implementa operaciones aritméticas básicas (suma, multiplicación) usando funciones recursivas sobre números naturales.
+
+######## CONCEPTOS ########
+Abstracción de datos, Recursividad, Programación funcional, Funciones auxiliares, Casos base
+
 ######## EXPLICACION ########
-Implementa operaciones aritméticas básicas usando recursión.
-Ejemplo de definición de `zero`.
-Ejemplo de `is-zero?`, `successor`, `predecessor`.
-Ejemplo de función suma recursiva (`plus`).
-Ejemplo de función multiplicación recursiva (`mult`).
-Ejemplo de invocación final de `mult`.
+Este código implementa operaciones aritméticas fundamentales como suma (`plus`) y multiplicación (`mult`) mediante recursividad.
+Demuestra cómo construir lógica compleja desde funciones primitivas como `successor` y `predecessor`, permitiendo simular operaciones matemáticas sin usar las funciones internas.
+Aplica la recursividad para procesar números, utilizando abstracción de datos para encapsular la definición de números naturales y sus operaciones básicas.
+Ilustra la construcción inductiva de operaciones, fundamental para comprender la definición de tipos de datos complejos.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/Abstraccion.rkt

@@ -1,10 +1,15 @@
+######## RESUMEN ########
+Implementa aritmética básica sobre números grandes representados como listas de dígitos en base hexadecimal.
+
+######## CONCEPTOS ########
+Abstracción de datos, Recursión, Aritmética de números grandes, Representación posicional, Operaciones sobre listas
+
 ######## EXPLICACION ########
-Define operaciones básicas para números grandes en base 16.
-Ejemplo de representación de números como listas.
-Ejemplo de función sucesor para números grandes.
-Ejemplo de función predecesor para números grandes.
-Ejemplo de suma recursiva de números grandes.
-Ejemplo de multiplicación recursiva de números grandes.
+Este código define un sistema para manipular números enteros arbitrariamente grandes (BigNum) usando una representación personalizada.
+Permite a los programadores realizar operaciones fundamentales como la suma (`plus`) y la multiplicación (`mult`) con números que exceden los límites de un tipo de dato entero estándar.
+Demuestra cómo construir funciones de incremento (`successor`) y decremento (`predecessor`) que manejan el acarreo y el préstamo entre dígitos.
+Aplica una fuerte abstracción de datos al representar números como listas y utiliza recursión mutua para implementar las operaciones aritméticas, basándose en el principio de dígitos de menor peso primero.
+Utiliza la base 16 para ilustrar el funcionamiento de sistemas numéricos posicionales, fundamentando la comprensión de cómo se implementan tipos de datos numéricos complejos.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepBigNum.rkt

@@ -64,25 +64,33 @@ def manejar_reintentos(prompt, modelo, intentos=3, espera=10):
 # ----------------------------
 def generar_documentacion(carpeta_tema, nombre_archivo, codigo):
     prompt = f"""
-Genera documentación para RECUPERACIÓN POR EJEMPLOS (RAG).
+Genera documentación estructurada para un sistema RAG que debe recuperar ejemplos de código.
 
-PROHIBIDO:
-- Párrafos largos
-- Explicaciones detalladas
-- Teoría
-- Narrativa
+CONTEXTO: Este código pertenece al tema "{carpeta_tema}" y será buscado por estudiantes universitarios de la clase de Fundamentos de Lenguaje de Programación. Los ejemplos son en lenguaje Racket.
 
-OBLIGATORIO:
-- Frases MUY CORTAS
-- Uso de la palabra "Ejemplo" al inicio
-- Texto mínimo y directo
+INSTRUCCIONES:
+1. Identifica el PROPÓSITO principal del código
+2. Extrae CONCEPTOS CLAVE (palabras técnicas importantes)
+3. Describe CASOS DE USO concretos
+4. Mantén un balance entre brevedad y riqueza semántica
 
-FORMATO ESTRICTO (NO CAMBIAR):
+FORMATO OBLIGATORIO:
+
+######## RESUMEN ########
+[Una frase de 10-15 palabras describiendo qué problema resuelve el código]
+
+######## CONCEPTOS ########
+[Lista de 3-5 conceptos técnicos separados por comas: ej. "variables libres, scope léxico, lambda calculus, análisis sintáctico"]
 
 ######## EXPLICACION ########
-Línea 1: UNA sola frase breve que diga qué hace el código como ejemplo.
-Líneas siguientes: frases cortas que empiecen con "Ejemplo de ...".
-Máximo 6 líneas en total.
+[4-6 líneas breves, cada una describiendo:
+- Línea 1: Funcionalidad principal
+- Línea 2-3: Casos de uso específicos con vocabulario variado
+- Línea 4-5: Conceptos o técnicas aplicadas
+- Línea 6: Relación con otros temas (si aplica)]
+
+Usa sinónimos y variaciones: "verifica", "determina", "analiza", "evalúa", etc.
+Incluye el nombre de funciones clave del código.
 
 ######## METADATA ########
 NOMBRE_DOCUMENTO: {carpeta_tema}/{nombre_archivo}
@@ -91,11 +99,14 @@ lenguaje: identifica correctamente el lenguaje
 
 ######## CODIGO ########
 Copia el código EXACTO sin modificar nada.
-
-Código:
----
 {codigo}
+
 ---
+IMPORTANTE: 
+- NO uses frases repetitivas como "Ejemplo de..."
+- SÍ usa verbos variados: implementa, demuestra, ilustra, aplica, resuelve
+- Incluye términos técnicos exactos que un estudiante buscaría
+
 """
     return manejar_reintentos(prompt, MODELO)
 

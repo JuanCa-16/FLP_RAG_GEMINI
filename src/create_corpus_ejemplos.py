@@ -250,7 +250,7 @@ def procesar_ejemplos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
                     k, v = linea.split(":", 1)
                     metadata[k.strip()] = v.strip()
 
-         # ===== CODIGO =====
+        # ===== CODIGO =====
         codigo_match = re.search(
             r'######## CODIGO ########([\s\S]*)$',
             contenido
@@ -259,33 +259,62 @@ def procesar_ejemplos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
         if codigo_match:
             codigo = codigo_match.group(1).strip()
 
+        # ===== RESUMEN =====
+        resumen_match = re.search(
+            r'######## RESUMEN ########([\s\S]*?)########',
+            contenido
+        )
+        resumen = ""
+        if resumen_match:
+            resumen = limpiar_texto(resumen_match.group(1))
+
+        # ===== CONCEPTOS =====
+        conceptos_match = re.search(
+            r'######## CONCEPTOS ########([\s\S]*?)########',
+            contenido
+        )
+        conceptos = ""
+        if conceptos_match:
+            conceptos = limpiar_texto(conceptos_match.group(1))
 
         # ===== EXPLICACION =====
-        expl_match = re.search(
+        explicacion_match = re.search(
             r'######## EXPLICACION ########([\s\S]*?)########',
             contenido
         )
+        explicacion = ""
+        if explicacion_match:
+            explicacion = limpiar_texto(explicacion_match.group(1))
 
-        if not expl_match:
-            continue  # ejemplo mal formado
+        # ===== CONCATENAR PARA EMBEDDING =====
+        # Construye el texto completo que irá al embedding
+        texto_completo = ""
+        if resumen:
+            texto_completo += resumen
+        if conceptos:
+            texto_completo += ". " + conceptos if texto_completo else conceptos
+        if explicacion:
+            texto_completo += ". " + explicacion if texto_completo else explicacion
 
-        explicacion = limpiar_texto(expl_match.group(1))
-        if not explicacion:
+        # Validar que hay contenido
+        if not texto_completo.strip():
+            print(f"⚠️ Advertencia: {archivo} no tiene contenido válido")
             continue
 
         fragmentos_global.append({
             "tipo": "CODIGO",
-            "contenido": explicacion,
+            "contenido": texto_completo,  # AHORA ES LA CONCATENACIÓN COMPLETA
             "metadata": {
                 **metadata,
-                "codigo": codigo
+                "codigo": codigo,
+                "resumen": resumen,  # Opcional: guardar por separado
+                "conceptos": conceptos,  # Opcional: para filtrado posterior
             },
-            "palabras_clave": extraer_palabras_clave(explicacion, vectorizador),
+            "palabras_clave": extraer_palabras_clave(texto_completo, vectorizador),
             "titulo": os.path.splitext(archivo)[0]
         })
 
     return fragmentos_global
-
 # EJECUCIÓN
 
 print("🧠 Cargando vectorizador global...")
