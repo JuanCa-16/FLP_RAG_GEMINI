@@ -11,7 +11,8 @@ from google.genai import types
 import time
 from google.genai.errors import ServerError
 from pydantic import Field
-
+from src.routers.usuarios import router as usuarios_router
+from src.routers.material_estudio import router as material_router
 # CONFIGURACIÓN y CARGA GLOBAL
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -85,6 +86,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
+app.include_router(material_router, prefix="/material", tags=["Material Estudio"])
 
 # Modelo Pydantic para la entrada de la API
 class Mensaje(BaseModel):

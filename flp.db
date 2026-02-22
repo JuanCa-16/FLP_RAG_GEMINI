@@ -1,0 +1,61 @@
+CREATE EXTENSION IF NOT EXISTS VECTOR;
+
+CREATE TABLE usuario (
+    usuario VARCHAR(15) PRIMARY KEY,
+    contrasena VARCHAR(255) NOT NULL,
+    nombre VARCHAR(20) NOT NULL,
+    fecha_creacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE chat (
+    id SERIAL PRIMARY KEY,
+    usuario VARCHAR(15) REFERENCES usuario(usuario) ON DELETE CASCADE,
+    titulo VARCHAR(20),
+    fecha_creacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE mensaje (
+    id SERIAL PRIMARY KEY,
+    chat_id INT REFERENCES chat(id) ON DELETE CASCADE,
+    rol VARCHAR(15) CHECK (rol IN ('assistant', 'user')),
+    tipo VARCHAR(10) CHECK (tipo IN ('CODIGO', 'PDF', 'VIDEO', 'GIT')),
+    fecha_mensaje TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE mensaje_pregunta (
+    mensaje_id INT PRIMARY KEY REFERENCES mensaje(id) ON DELETE CASCADE,
+    pregunta TEXT NOT NULL,
+    pregunta_embedding VECTOR(768)
+);
+
+
+/*ALTER SEQUENCE material_estudio_id_seq RESTART WITH 1; PARA REINICIARLSO*/
+/*TRUNCATE TABLE material_estudio RESTART IDENTITY CASCADE; Borra todos los registros*/
+CREATE TABLE material_estudio (
+    id SERIAL PRIMARY KEY,
+    fuente VARCHAR(10) CHECK (fuente IN ('CODIGO', 'PDF', 'VIDEO', 'GIT')),
+    nombre_documento VARCHAR(255),
+    url TEXT,
+    tematica VARCHAR(200),
+    competencia VARCHAR(500),
+    resultado_aprendizaje TEXT,
+    nivel_dificultad VARCHAR(20) 
+        CHECK (nivel_dificultad IN ('Baja','Alta','Media')),
+    material_embedding VECTOR(768),
+    fecha_creacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE mensaje_respuesta (
+    mensaje_id INT PRIMARY KEY REFERENCES mensaje(id) ON DELETE CASCADE,
+    respuesta TEXT NOT NULL,
+    material_id INT REFERENCES material_estudio(id) ON DELETE SET NULL
+);
+
+CREATE TABLE biblioteca (
+    id SERIAL PRIMARY KEY,
+    usuario VARCHAR(15) REFERENCES usuario(usuario) ON DELETE CASCADE,
+    material_id INT REFERENCES material_estudio(id) ON DELETE CASCADE,
+    fecha_consulta TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
