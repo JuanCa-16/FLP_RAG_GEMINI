@@ -30,9 +30,6 @@ CREATE TABLE mensaje_pregunta (
     pregunta_embedding VECTOR(768)
 );
 
-
-/*ALTER SEQUENCE material_estudio_id_seq RESTART WITH 1; PARA REINICIARLSO*/
-/*TRUNCATE TABLE material_estudio RESTART IDENTITY CASCADE; Borra todos los registros*/
 CREATE TABLE material_estudio (
     id SERIAL PRIMARY KEY,
     fuente VARCHAR(10) CHECK (fuente IN ('CODIGO', 'PDF', 'VIDEO', 'GIT')),
