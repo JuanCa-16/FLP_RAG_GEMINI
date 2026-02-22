@@ -77,7 +77,11 @@ La inferencia de tipos utiliza un sistema de ecuaciones de tipos y unificación 
 ---
 METADATA
 ---
-TEMATICA: Clase 10 Introducción de tipos
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Interpretador.txt
+NOMBRE_DOCUMENTO: Clase 10 Introducción de tipos_Interpretador
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/

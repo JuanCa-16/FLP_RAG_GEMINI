@@ -33,7 +33,11 @@ Este es el fragmento de código que implementa esta lógica (dentro de un `cond`
 ---
 METADATA
 ---
-TEMATICA: Clase 6 Ligadura, condicionales y procedimientos
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Condicionales.txt
+NOMBRE_DOCUMENTO: Clase 6 Ligadura, condicionales y procedimientos_Condicionales
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Condicionales/

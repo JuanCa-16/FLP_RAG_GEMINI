@@ -152,7 +152,11 @@ Aquí se muestran algunos ejemplos de cómo probar la función `occurs-free?` co
 ---
 METADATA
 ---
-TEMATICA: Clase 4 AST
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Definicion de TAD define-datatype.txt
+NOMBRE_DOCUMENTO: Clase 4 AST_Definicion de TAD define-datatype
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Definicion%20de%20TAD/

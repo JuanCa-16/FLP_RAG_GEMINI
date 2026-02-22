@@ -27,7 +27,11 @@ Para una lista que contiene uno o más enteros, se utiliza el signo de más (+):
 ---
 METADATA
 ---
-TEMATICA: Clase 1 Clase de repaso
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Repso Gramaticas.txt
+NOMBRE_DOCUMENTO: Clase 1 Clase de repaso_Repso Gramaticas
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

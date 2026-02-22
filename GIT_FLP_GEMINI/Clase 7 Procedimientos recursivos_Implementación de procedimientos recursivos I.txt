@@ -65,7 +65,11 @@ Este mecanismo garantiza consistencia porque:
 ---
 METADATA
 ---
-TEMATICA: Clase 7 Procedimientos recursivos
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Implementación de procedimientos recursivos I.txt
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Implementación de procedimientos recursivos I
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20I/

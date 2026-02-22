@@ -126,7 +126,11 @@ La sobreescritura de métodos debe mantener la semántica esperada por la clase 
 ---
 METADATA
 ---
-TEMATICA: Clase 13 Objetos
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Sintaxis de la programación orientada a objeto II.txt
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Sintaxis de la programación orientada a objeto II
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objeto%20II/

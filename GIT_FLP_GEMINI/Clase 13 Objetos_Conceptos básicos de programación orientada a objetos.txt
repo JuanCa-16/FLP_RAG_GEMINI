@@ -131,7 +131,11 @@ La cohesión mide cómo se relacionan las responsabilidades dentro de una clase
 ---
 METADATA
 ---
-TEMATICA: Clase 13 Objetos
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Conceptos básicos de programación orientada a objetos.txt
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Conceptos básicos de programación orientada a objetos
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Conceptos%20b%C3%A1sicos%20de%20programaci%C3%B3n%20orientada%20a%20objetos/

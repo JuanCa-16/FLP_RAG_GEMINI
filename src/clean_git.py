@@ -1,5 +1,6 @@
 import os
 import glob
+import json
 import time
 from dotenv import load_dotenv
 from google import genai
@@ -20,10 +21,70 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # root
 
 CARPETA_ENTRADA = os.path.join(BASE_DIR, "GIT_FLP")  # Carpeta padre con las clases
 CARPETA_SALIDA = os.path.join(BASE_DIR, "GIT_FLP_GEMINI")
+ARCHIVO_METADATA_JSON = os.path.join(BASE_DIR, "tematicas.json")  # Ruta al JSON
+
 
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 MODELO = "gemini-2.5-flash"
+# ----------------------------
+# CARGAR METADATA DESDE JSON
+# ----------------------------
+def cargar_metadata_json(ruta_json):
+    """
+    Carga el archivo JSON con la metadata de las clases.
+    Retorna el diccionario o None si hay error.
+    """
+    try:
+        with open(ruta_json, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"⚠️  ADVERTENCIA: No se encontró el archivo {ruta_json}")
+        return None
+    except json.JSONDecodeError:
+        print(f"⚠️  ADVERTENCIA: Error al leer el JSON {ruta_json}")
+        return None
+    except Exception as e:
+        print(f"⚠️  ADVERTENCIA: Error inesperado al cargar JSON: {e}")
+        return None
+
+# Cargar metadata al inicio
+METADATA_CLASES = cargar_metadata_json(ARCHIVO_METADATA_JSON)
+
+def obtener_indice_json(carpeta_clase):
+    """
+    Extrae el número de clase de la carpeta y lo mapea al índice del JSON.
+    
+    Mapeo:
+    - Clase 1 → índice 0
+    - Clase 2-8 → índice (número - 1)
+    - Clase 9 → índice 7
+    - Clase 10, 11 → índice 8
+    - Clase 12 → índice 9
+    - Clase 13 → índice 10
+    """
+    import re
+    match = re.search(r'[Cc]lase\s*(\d+)', carpeta_clase)
+    
+    if not match:
+        return None
+    
+    numero_clase = int(match.group(1))
+    
+    # Mapeo especial
+    if numero_clase <= 8:
+        return str(numero_clase - 1)
+    elif numero_clase == 9:
+        return "7"
+    elif numero_clase in [10, 11]:
+        return "8"
+    elif numero_clase == 12:
+        return "9"
+    elif numero_clase == 13:
+        return "10"
+    
+    return None
+
 
 # ----------------------------
 # LECTURA SEGURA
@@ -56,14 +117,54 @@ def construir_metadata(carpeta_clase, nombre_archivo, url):
     Construye el bloque de metadata en formato estándar.
     Esta función es la ÚNICA responsable de generar metadata.
     """
-    return f"""---
+    # Construir NOMBRE_DOCUMENTO (sin extensión)
+    nombre_sin_ext = os.path.splitext(nombre_archivo)[0]
+    nombre_documento = f"{carpeta_clase}_{nombre_sin_ext}"
+    
+    # Verificar que METADATA_CLASES esté cargado
+    if METADATA_CLASES is None:
+        return f"""---
 METADATA
 ---
+CORTE: No especificado (JSON no cargado)
 TEMATICA: {carpeta_clase}
+COMPETENCIA: No especificada
+RESULTADO_APRENDIZAJE: No especificado
+NIVEL_DIFICULTAD: No especificada
 FUENTE: GIT
-NOMBRE_DOCUMENTO: {nombre_archivo}
+NOMBRE_DOCUMENTO: {nombre_documento}
 URL: {url}"""
-
+    
+    # Obtener índice del JSON
+    indice = obtener_indice_json(carpeta_clase)
+    
+    # Obtener metadata del JSON si existe
+    if indice and indice in METADATA_CLASES:
+        meta = METADATA_CLASES[indice]
+        return f"""---
+METADATA
+---
+CORTE: {meta['CORTE']}
+TEMATICA: {meta['TEMATICA']}
+COMPETENCIA: {meta['COMPETENCIA']}
+RESULTADO_APRENDIZAJE: {meta['RESULTADO_APRENDIZAJE']}
+NIVEL_DIFICULTAD: {meta['NIVEL_DIFICULTAD']}
+FUENTE: GIT
+NOMBRE_DOCUMENTO: {nombre_documento}
+URL: {url}"""
+    else:
+        # Fallback si no se encuentra en el JSON
+        return f"""---
+METADATA
+---
+CORTE: No especificado
+TEMATICA: {carpeta_clase}
+COMPETENCIA: No especificada
+RESULTADO_APRENDIZAJE: No especificado
+NIVEL_DIFICULTAD: No especificada
+FUENTE: GIT
+NOMBRE_DOCUMENTO: {nombre_documento}
+URL: {url}"""
 # ----------------------------
 # REINTENTOS
 # ----------------------------

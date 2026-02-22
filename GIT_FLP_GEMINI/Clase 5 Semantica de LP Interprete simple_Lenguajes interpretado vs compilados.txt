@@ -79,7 +79,11 @@ La elección entre compilado e interpretado depende del equilibrio entre rendimi
 ---
 METADATA
 ---
-TEMATICA: Clase 5 Semantica de LP Interprete simple
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Lenguajes interpretado vs compilados.txt
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Lenguajes interpretado vs compilados
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Lenguajes%20interpretado%20vs%20compilados/

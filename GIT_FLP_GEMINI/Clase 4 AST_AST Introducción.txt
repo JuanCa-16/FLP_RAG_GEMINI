@@ -156,7 +156,11 @@ graph TD
 ---
 METADATA
 ---
-TEMATICA: Clase 4 AST
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: AST Introducción.txt
+NOMBRE_DOCUMENTO: Clase 4 AST_AST Introducción
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/AST%20Introducci%C3%B3n/

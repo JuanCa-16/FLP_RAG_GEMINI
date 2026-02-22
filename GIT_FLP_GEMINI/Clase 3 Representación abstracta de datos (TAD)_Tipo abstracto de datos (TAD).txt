@@ -159,7 +159,11 @@ Sé que esto puede parecer abstracto ahora, pero dominar estos conceptos es lo q
 ---
 METADATA
 ---
-TEMATICA: Clase 3 Representación abstracta de datos (TAD)
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Tipo abstracto de datos (TAD).txt
+NOMBRE_DOCUMENTO: Clase 3 Representación abstracta de datos (TAD)_Tipo abstracto de datos (TAD)
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/TAD/

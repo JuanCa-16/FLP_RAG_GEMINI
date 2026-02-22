@@ -71,7 +71,11 @@ Existen dos estrategias principales para solucionar esta limitación:
 ---
 METADATA
 ---
-TEMATICA: Clase 5 Semantica de LP Interprete simple
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Interpretador I.txt
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Interpretador I
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/
