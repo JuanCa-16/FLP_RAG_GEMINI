@@ -27,5 +27,10 @@ class MaterialEstudio(Base):
     )
     
     # Relaciones
-    respuestas = relationship("MensajeRespuesta", back_populates="material")
     biblioteca = relationship("Biblioteca", back_populates="material", cascade="all, delete-orphan")
+
+    respuestas_asociadas = relationship(
+        "RespuestaMaterial",
+        back_populates="material",
+        cascade="all, delete-orphan"
+    )

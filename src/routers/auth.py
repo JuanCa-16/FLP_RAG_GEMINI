@@ -1,6 +1,7 @@
-# src/routes/auth.py
+# src/routes/auth.py (ACTUALIZADO PARA SWAGGER UI)
 
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials  # ⭐ IMPORTANTE
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from typing import Optional
@@ -24,6 +25,12 @@ from src.core.security import (
 
 router = APIRouter()
 
+# ⭐ ESQUEMA DE SEGURIDAD PARA SWAGGER UI
+security = HTTPBearer(
+    scheme_name="Bearer Authentication",
+    description="Ingresa tu token JWT (obtenido del login)"
+)
+
 
 def get_db():
     """Dependencia para obtener sesión de base de datos"""
@@ -35,21 +42,17 @@ def get_db():
 
 
 def get_current_user(
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Depends(security),  # ⭐ CAMBIO AQUÍ
     db: Session = Depends(get_db)
 ) -> Usuario:
     """
     Dependencia para obtener el usuario actual desde el token JWT.
     
-    Args:
-        authorization: Header Authorization con formato "Bearer <token>"
-        db: Sesión de base de datos
-        
-    Returns:
-        Usuario autenticado
-        
-    Raises:
-        HTTPException: Si el token es inválido o el usuario no existe
+    **Uso en Swagger UI:**
+    1. Haz login y copia el access_token
+    2. Click en "Authorize" 🔓
+    3. Pega el token
+    4. Click "Authorize"
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -57,16 +60,8 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    if not authorization:
-        raise credentials_exception
-    
-    # Extraer el token del header "Bearer <token>"
-    try:
-        scheme, token = authorization.split()
-        if scheme.lower() != "bearer":
-            raise credentials_exception
-    except ValueError:
-        raise credentials_exception
+    # Extraer el token de las credenciales
+    token = credentials.credentials
     
     # Decodificar el token
     usuario_nombre = decode_access_token(token)
@@ -86,20 +81,34 @@ def get_current_user(
 # ============================================
 # 1. REGISTRO (CREAR CUENTA)
 # ============================================
-@router.post("/registro", response_model=Token, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/registro",
+    response_model=Token,
+    status_code=status.HTTP_201_CREATED,
+    summary="Registrar nuevo usuario",
+    description="""
+    Crea una nueva cuenta de usuario y retorna un token JWT.
+    
+    **Ejemplo:**
+    ```json
+    {
+      "usuario": "juan123",
+      "nombre": "Juan Pérez",
+      "contrasena": "password123"
+    }
+    ```
+    
+    **Respuesta:**
+    - access_token: Token JWT para autenticación
+    - token_type: Siempre "bearer"
+    - usuario: Nombre de usuario
+    - nombre: Nombre completo
+    """
+)
 def registrar_usuario(
     datos: UsuarioRegistro,
     db: Session = Depends(get_db)
 ):
-    """
-    Registra un nuevo usuario en el sistema.
-    
-    - **usuario**: Nombre de usuario único (3-15 caracteres, sin espacios)
-    - **nombre**: Nombre completo (2-20 caracteres)
-    - **contrasena**: Contraseña (mínimo 6 caracteres)
-    
-    Retorna un token JWT para inicio de sesión automático.
-    """
     # Verificar si el usuario ya existe
     usuario_existente = db.query(Usuario).filter(
         Usuario.usuario == datos.usuario.lower()
@@ -143,19 +152,34 @@ def registrar_usuario(
 # ============================================
 # 2. INICIAR SESIÓN (LOGIN)
 # ============================================
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login",
+    response_model=Token,
+    summary="Iniciar sesión",
+    description="""
+    Inicia sesión y obtén un token JWT válido por 24 horas.
+    
+    **Pasos para usar en Swagger:**
+    1. Ejecuta este endpoint con tu usuario y contraseña
+    2. Copia el `access_token` de la respuesta
+    3. Click en el botón "Authorize" 🔓 (arriba a la derecha)
+    4. Pega el token (sin "Bearer")
+    5. Click "Authorize"
+    6. ¡Ahora puedes usar todos los endpoints protegidos!
+    
+    **Ejemplo:**
+    ```json
+    {
+      "usuario": "juan123",
+      "contrasena": "password123"
+    }
+    ```
+    """
+)
 def iniciar_sesion(
     credenciales: UsuarioLogin,
     db: Session = Depends(get_db)
 ):
-    """
-    Inicia sesión con usuario y contraseña.
-    
-    - **usuario**: Nombre de usuario
-    - **contrasena**: Contraseña
-    
-    Retorna un token JWT válido por 24 horas.
-    """
     # Buscar el usuario
     usuario = db.query(Usuario).filter(
         Usuario.usuario == credenciales.usuario.lower()
@@ -194,18 +218,19 @@ def iniciar_sesion(
 # ============================================
 # 3. CERRAR SESIÓN (LOGOUT)
 # ============================================
-@router.post("/logout", response_model=MensajeResponse)
+@router.post(
+    "/logout",
+    response_model=MensajeResponse,
+    summary="Cerrar sesión",
+    description="Cierra la sesión del usuario actual. Requiere token JWT."
+)
 def cerrar_sesion(
     current_user: Usuario = Depends(get_current_user)
 ):
     """
     Cierra la sesión del usuario actual.
     
-    Nota: En JWT, el logout se maneja principalmente del lado del cliente
-    eliminando el token. Este endpoint sirve para confirmar el cierre de sesión
-    y podría usarse para invalidar tokens en una lista negra (blacklist) si se implementa.
-    
-    Requiere token JWT válido en el header Authorization.
+    Nota: En JWT, el logout se maneja del lado del cliente eliminando el token.
     """
     return {
         "mensaje": "Sesión cerrada correctamente",
@@ -216,14 +241,17 @@ def cerrar_sesion(
 # ============================================
 # 4. OBTENER USUARIO ACTUAL (ME)
 # ============================================
-@router.get("/me", response_model=UsuarioResponse)
+@router.get(
+    "/me",
+    response_model=UsuarioResponse,
+    summary="Obtener usuario actual",
+    description="Retorna la información del usuario autenticado. Requiere token JWT."
+)
 def obtener_usuario_actual(
     current_user: Usuario = Depends(get_current_user)
 ):
     """
     Obtiene la información del usuario actualmente autenticado.
-    
-    Requiere token JWT válido en el header Authorization.
     """
     return {
         "usuario": current_user.usuario,
@@ -234,15 +262,16 @@ def obtener_usuario_actual(
 # ============================================
 # 5. VERIFICAR TOKEN
 # ============================================
-@router.post("/verificar-token")
+@router.post(
+    "/verificar-token",
+    summary="Verificar validez del token",
+    description="Verifica si un token JWT es válido. Requiere token JWT."
+)
 def verificar_token(
     current_user: Usuario = Depends(get_current_user)
 ):
     """
     Verifica si un token JWT es válido.
-    
-    Útil para validar tokens antes de hacer requests importantes.
-    Requiere token JWT en el header Authorization.
     """
     return {
         "valido": True,
@@ -255,7 +284,12 @@ def verificar_token(
 # ============================================
 # 6. CAMBIAR CONTRASEÑA
 # ============================================
-@router.put("/cambiar-contrasena", response_model=MensajeResponse)
+@router.put(
+    "/cambiar-contrasena",
+    response_model=MensajeResponse,
+    summary="Cambiar contraseña",
+    description="Cambia la contraseña del usuario actual. Requiere token JWT."
+)
 def cambiar_contrasena(
     contrasena_actual: str,
     contrasena_nueva: str,
@@ -264,11 +298,6 @@ def cambiar_contrasena(
 ):
     """
     Cambia la contraseña del usuario actual.
-    
-    - **contrasena_actual**: Contraseña actual del usuario
-    - **contrasena_nueva**: Nueva contraseña (mínimo 6 caracteres)
-    
-    Requiere token JWT válido.
     """
     # Verificar contraseña actual
     if not verify_password(contrasena_actual, current_user.contrasena):

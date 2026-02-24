@@ -20,7 +20,7 @@ CREATE TABLE mensaje (
     id SERIAL PRIMARY KEY,
     chat_id INT REFERENCES chat(id) ON DELETE CASCADE,
     rol VARCHAR(15) CHECK (rol IN ('assistant', 'user')),
-    tipo VARCHAR(10) CHECK (tipo IN ('CODIGO', 'PDF', 'VIDEO', 'GIT')),
+    tipo VARCHAR(10) CHECK (tipo IN ('CODIGO', 'PDF', 'VIDEO', 'GIT', 'ALL')),
     fecha_mensaje TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -47,8 +47,24 @@ CREATE TABLE material_estudio (
 CREATE TABLE mensaje_respuesta (
     mensaje_id INT PRIMARY KEY REFERENCES mensaje(id) ON DELETE CASCADE,
     respuesta TEXT NOT NULL,
-    material_id INT REFERENCES material_estudio(id) ON DELETE SET NULL
 );
+
+CREATE TABLE respuesta_material (
+    id SERIAL PRIMARY KEY,
+    mensaje_respuesta_id INT NOT NULL REFERENCES mensaje_respuesta(mensaje_id) ON DELETE CASCADE,
+    material_id INT NOT NULL REFERENCES material_estudio(id) ON DELETE CASCADE,
+    similitud FLOAT CHECK (similitud >= 0 AND similitud <= 1),
+    orden INT,  -- Para mantener el orden de recomendación
+    fecha_asociacion TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Evitar duplicados: una respuesta no puede tener el mismo material dos veces
+    UNIQUE(mensaje_respuesta_id, material_id)
+);
+
+CREATE INDEX idx_respuesta_material_mensaje ON respuesta_material(mensaje_respuesta_id);
+CREATE INDEX idx_respuesta_material_material ON respuesta_material(material_id);
+CREATE INDEX idx_respuesta_material_similitud ON respuesta_material(similitud DESC);
+
 
 CREATE TABLE biblioteca (
     id SERIAL PRIMARY KEY,

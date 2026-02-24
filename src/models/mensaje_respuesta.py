@@ -1,4 +1,4 @@
-# src/models/mensaje_respuesta.py
+# src/models/mensaje_respuesta.py (ACTUALIZADO)
 
 from sqlalchemy import Column, Integer, Text, ForeignKey
 from sqlalchemy.orm import relationship
@@ -10,8 +10,26 @@ class MensajeRespuesta(Base):
 
     mensaje_id = Column(Integer, ForeignKey("mensaje.id", ondelete="CASCADE"), primary_key=True)
     respuesta = Column(Text, nullable=False)
-    material_id = Column(Integer, ForeignKey("material_estudio.id", ondelete="SET NULL"))
     
     # Relaciones
     mensaje = relationship("Mensaje", back_populates="respuesta")
-    material = relationship("MaterialEstudio", back_populates="respuestas")
+    
+    # ⭐ NUEVA RELACIÓN: Muchos a muchos con MaterialEstudio a través de RespuestaMaterial
+    materiales_asociados = relationship(
+        "RespuestaMaterial", 
+        back_populates="respuesta",
+        cascade="all, delete-orphan"
+    )
+    
+    # Helper property para acceder a los materiales directamente
+    @property
+    def materiales(self):
+        """Retorna lista de materiales con su similitud"""
+        return [
+            {
+                "material": am.material,
+                "similitud": am.similitud,
+                "orden": am.orden
+            }
+            for am in sorted(self.materiales_asociados, key=lambda x: x.orden or 0)
+        ]

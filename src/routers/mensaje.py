@@ -1,4 +1,4 @@
-# src/routes/mensaje.py
+# src/routes/mensaje.py (ACTUALIZADO CON MÚLTIPLES MATERIALES)
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -8,10 +8,9 @@ from src.database.database import SessionLocal
 from src.models.mensaje import Mensaje
 from src.models.mensaje_pregunta import MensajePregunta
 from src.models.mensaje_respuesta import MensajeRespuesta
+from src.models.respuesta_material import RespuestaMaterial
+from src.models.material_estudio import MaterialEstudio
 from src.models.chat import Chat
-from src.schemas.mensaje import MensajeCreate, MensajeResponse
-from src.schemas.mensaje_pregunta import MensajePreguntaCreate
-from src.schemas.mensaje_respuesta import MensajeRespuestaCreate
 
 router = APIRouter()
 
@@ -24,59 +23,38 @@ def get_db():
         db.close()
 
 
-# 🔹 Crear mensaje con pregunta (completo)
-@router.post("/pregunta")
-def crear_mensaje_pregunta(
-    chat_id: int,
-    rol: str,
-    tipo: str,
-    pregunta: str,
-    pregunta_embedding: Optional[List[float]] = None,
-    db: Session = Depends(get_db)
-):
-    # Verificar que el chat existe
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(status_code=404, detail="Chat no encontrado")
-    
-    # 1. Crear mensaje
-    nuevo_mensaje = Mensaje(
-        chat_id=chat_id,
-        rol=rol,
-        tipo=tipo
-    )
-    db.add(nuevo_mensaje)
-    db.flush()  # Para obtener el ID
-    
-    # 2. Crear pregunta asociada
-    nueva_pregunta = MensajePregunta(
-        mensaje_id=nuevo_mensaje.id,
-        pregunta=pregunta,
-        pregunta_embedding=pregunta_embedding
-    )
-    db.add(nueva_pregunta)
-    
-    db.commit()
-    db.refresh(nuevo_mensaje)
-    
-    return {
-        "mensaje_id": nuevo_mensaje.id,
-        "chat_id": chat_id,
-        "pregunta": pregunta,
-        "fecha_mensaje": nuevo_mensaje.fecha_mensaje
-    }
-
-
-# 🔹 Crear mensaje con respuesta (completo)
-@router.post("/respuesta")
-def crear_mensaje_respuesta(
+# ============================================
+# CREAR MENSAJE CON RESPUESTA Y MÚLTIPLES MATERIALES
+# ============================================
+@router.post("/respuesta-con-materiales")
+def crear_respuesta_con_materiales(
     chat_id: int,
     rol: str,
     tipo: str,
     respuesta: str,
-    material_id: Optional[int] = None,
+    materiales: List[dict],  # [{"material_id": 1, "similitud": 0.95, "orden": 1}, ...]
     db: Session = Depends(get_db)
 ):
+    """
+    Crea un mensaje de respuesta con múltiples materiales de estudio asociados.
+    
+    Args:
+        chat_id: ID del chat
+        rol: 'assistant' o 'user'
+        tipo: 'CODIGO', 'PDF', 'VIDEO', 'GIT'
+        respuesta: Texto de la respuesta
+        materiales: Lista de diccionarios con:
+            - material_id: ID del material
+            - similitud: Float entre 0 y 1 (opcional)
+            - orden: Int para ordenar (opcional, 1 = más relevante)
+    
+    Ejemplo de materiales:
+    [
+        {"material_id": 5, "similitud": 0.95, "orden": 1},
+        {"material_id": 12, "similitud": 0.87, "orden": 2},
+        {"material_id": 3, "similitud": 0.82, "orden": 3}
+    ]
+    """
     # Verificar que el chat existe
     chat = db.query(Chat).filter(Chat.id == chat_id).first()
     if not chat:
@@ -94,10 +72,39 @@ def crear_mensaje_respuesta(
     # 2. Crear respuesta asociada
     nueva_respuesta = MensajeRespuesta(
         mensaje_id=nuevo_mensaje.id,
-        respuesta=respuesta,
-        material_id=material_id
+        respuesta=respuesta
     )
     db.add(nueva_respuesta)
+    db.flush()
+    
+    # 3. Asociar múltiples materiales con sus similitudes
+    materiales_asociados = []
+    for idx, mat in enumerate(materiales, 1):
+        # Verificar que el material existe
+        material = db.query(MaterialEstudio).filter(
+            MaterialEstudio.id == mat["material_id"]
+        ).first()
+        
+        if not material:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Material con ID {mat['material_id']} no encontrado"
+            )
+        
+        # Crear asociación
+        asociacion = RespuestaMaterial(
+            mensaje_respuesta_id=nuevo_mensaje.id,
+            material_id=mat["material_id"],
+            similitud=mat.get("similitud"),
+            orden=mat.get("orden", idx)  # Si no se proporciona, usar índice
+        )
+        db.add(asociacion)
+        materiales_asociados.append({
+            "material_id": mat["material_id"],
+            "nombre": material.nombre_documento,
+            "similitud": mat.get("similitud"),
+            "orden": mat.get("orden", idx)
+        })
     
     db.commit()
     db.refresh(nuevo_mensaje)
@@ -106,20 +113,218 @@ def crear_mensaje_respuesta(
         "mensaje_id": nuevo_mensaje.id,
         "chat_id": chat_id,
         "respuesta": respuesta,
-        "material_id": material_id,
+        "total_materiales": len(materiales_asociados),
+        "materiales": materiales_asociados,
         "fecha_mensaje": nuevo_mensaje.fecha_mensaje
     }
 
 
-# 🔹 Obtener historial completo de un chat
+# ============================================
+# AGREGAR MATERIALES A RESPUESTA EXISTENTE
+# ============================================
+@router.post("/respuesta/{mensaje_id}/agregar-materiales")
+def agregar_materiales_a_respuesta(
+    mensaje_id: int,
+    materiales: List[dict],
+    db: Session = Depends(get_db)
+):
+    """
+    Agrega materiales adicionales a una respuesta existente.
+    
+    Args:
+        mensaje_id: ID del mensaje respuesta
+        materiales: Lista con material_id, similitud, orden
+    """
+    # Verificar que la respuesta existe
+    respuesta = db.query(MensajeRespuesta).filter(
+        MensajeRespuesta.mensaje_id == mensaje_id
+    ).first()
+    
+    if not respuesta:
+        raise HTTPException(status_code=404, detail="Respuesta no encontrada")
+    
+    materiales_agregados = []
+    for mat in materiales:
+        # Verificar que el material existe
+        material = db.query(MaterialEstudio).filter(
+            MaterialEstudio.id == mat["material_id"]
+        ).first()
+        
+        if not material:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Material {mat['material_id']} no encontrado"
+            )
+        
+        # Verificar que no esté ya asociado
+        existe = db.query(RespuestaMaterial).filter(
+            RespuestaMaterial.mensaje_respuesta_id == mensaje_id,
+            RespuestaMaterial.material_id == mat["material_id"]
+        ).first()
+        
+        if existe:
+            continue  # Skip duplicados
+        
+        # Crear asociación
+        asociacion = RespuestaMaterial(
+            mensaje_respuesta_id=mensaje_id,
+            material_id=mat["material_id"],
+            similitud=mat.get("similitud"),
+            orden=mat.get("orden")
+        )
+        db.add(asociacion)
+        materiales_agregados.append(material.nombre_documento)
+    
+    db.commit()
+    
+    return {
+        "mensaje_id": mensaje_id,
+        "materiales_agregados": len(materiales_agregados),
+        "nombres": materiales_agregados
+    }
+
+
+# ============================================
+# OBTENER MATERIALES DE UNA RESPUESTA
+# ============================================
+@router.get("/respuesta/{mensaje_id}/materiales")
+def obtener_materiales_respuesta(
+    mensaje_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene todos los materiales asociados a una respuesta con sus similitudes.
+    """
+    # Verificar que la respuesta existe
+    respuesta = db.query(MensajeRespuesta).filter(
+        MensajeRespuesta.mensaje_id == mensaje_id
+    ).first()
+    
+    if not respuesta:
+        raise HTTPException(status_code=404, detail="Respuesta no encontrada")
+    
+    # Obtener materiales con sus similitudes
+    materiales = (
+        db.query(RespuestaMaterial, MaterialEstudio)
+        .join(MaterialEstudio, RespuestaMaterial.material_id == MaterialEstudio.id)
+        .filter(RespuestaMaterial.mensaje_respuesta_id == mensaje_id)
+        .order_by(RespuestaMaterial.orden, RespuestaMaterial.similitud.desc())
+        .all()
+    )
+    
+    resultado = []
+    for asociacion, material in materiales:
+        resultado.append({
+            "material_id": material.id,
+            "nombre_documento": material.nombre_documento,
+            "fuente": material.fuente,
+            "url": material.url,
+            "tematica": material.tematica,
+            "nivel_dificultad": material.nivel_dificultad,
+            "similitud": asociacion.similitud,
+            "orden": asociacion.orden,
+            "fecha_asociacion": asociacion.fecha_asociacion
+        })
+    
+    return {
+        "mensaje_id": mensaje_id,
+        "respuesta": respuesta.respuesta,
+        "total_materiales": len(resultado),
+        "materiales": resultado
+    }
+
+
+# ============================================
+# ACTUALIZAR SIMILITUD DE UN MATERIAL
+# ============================================
+@router.put("/respuesta/{mensaje_id}/material/{material_id}")
+def actualizar_similitud_material(
+    mensaje_id: int,
+    material_id: int,
+    similitud: Optional[float] = None,
+    orden: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Actualiza la similitud u orden de un material específico en una respuesta.
+    """
+    asociacion = db.query(RespuestaMaterial).filter(
+        RespuestaMaterial.mensaje_respuesta_id == mensaje_id,
+        RespuestaMaterial.material_id == material_id
+    ).first()
+    
+    if not asociacion:
+        raise HTTPException(
+            status_code=404,
+            detail="Asociación no encontrada"
+        )
+    
+    if similitud is not None:
+        if not (0 <= similitud <= 1):
+            raise HTTPException(
+                status_code=400,
+                detail="La similitud debe estar entre 0 y 1"
+            )
+        asociacion.similitud = similitud
+    
+    if orden is not None:
+        asociacion.orden = orden
+    
+    db.commit()
+    
+    return {
+        "mensaje_id": mensaje_id,
+        "material_id": material_id,
+        "similitud": asociacion.similitud,
+        "orden": asociacion.orden
+    }
+
+
+# ============================================
+# ELIMINAR MATERIAL DE UNA RESPUESTA
+# ============================================
+@router.delete("/respuesta/{mensaje_id}/material/{material_id}")
+def eliminar_material_de_respuesta(
+    mensaje_id: int,
+    material_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Elimina un material específico de una respuesta.
+    """
+    asociacion = db.query(RespuestaMaterial).filter(
+        RespuestaMaterial.mensaje_respuesta_id == mensaje_id,
+        RespuestaMaterial.material_id == material_id
+    ).first()
+    
+    if not asociacion:
+        raise HTTPException(
+            status_code=404,
+            detail="Asociación no encontrada"
+        )
+    
+    db.delete(asociacion)
+    db.commit()
+    
+    return {
+        "mensaje": "Material eliminado de la respuesta",
+        "mensaje_id": mensaje_id,
+        "material_id": material_id
+    }
+
+
+# ============================================
+# HISTORIAL COMPLETO (ACTUALIZADO)
+# ============================================
 @router.get("/chat/{chat_id}/historial")
 def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
-    # Verificar que el chat existe
+    """
+    Obtiene el historial completo de un chat con materiales asociados.
+    """
     chat = db.query(Chat).filter(Chat.id == chat_id).first()
     if not chat:
         raise HTTPException(status_code=404, detail="Chat no encontrado")
     
-    # Obtener todos los mensajes del chat
     mensajes = (
         db.query(Mensaje)
         .filter(Mensaje.chat_id == chat_id)
@@ -135,7 +340,7 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
             "tipo": mensaje.tipo,
             "fecha_mensaje": mensaje.fecha_mensaje,
             "contenido": None,
-            "material_id": None
+            "materiales": []
         }
         
         # Buscar si es pregunta
@@ -153,7 +358,27 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
             
             if respuesta:
                 item["contenido"] = respuesta.respuesta
-                item["material_id"] = respuesta.material_id
+                
+                # ⭐ OBTENER MATERIALES ASOCIADOS
+                materiales = (
+                    db.query(RespuestaMaterial, MaterialEstudio)
+                    .join(MaterialEstudio, RespuestaMaterial.material_id == MaterialEstudio.id)
+                    .filter(RespuestaMaterial.mensaje_respuesta_id == mensaje.id)
+                    .order_by(RespuestaMaterial.orden, RespuestaMaterial.similitud.desc())
+                    .all()
+                )
+                
+                item["materiales"] = [
+                    {
+                        "material_id": mat.id,
+                        "nombre": mat.nombre_documento,
+                        "fuente": mat.fuente,
+                        "url": mat.url,
+                        "similitud": asoc.similitud,
+                        "orden": asoc.orden
+                    }
+                    for asoc, mat in materiales
+                ]
         
         historial.append(item)
     
@@ -163,80 +388,3 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
         "total_mensajes": len(historial),
         "historial": historial
     }
-
-
-# 🔹 Obtener un mensaje específico
-@router.get("/{mensaje_id}")
-def obtener_mensaje(mensaje_id: int, db: Session = Depends(get_db)):
-    mensaje = db.query(Mensaje).filter(Mensaje.id == mensaje_id).first()
-    
-    if not mensaje:
-        raise HTTPException(status_code=404, detail="Mensaje no encontrado")
-    
-    resultado = {
-        "mensaje_id": mensaje.id,
-        "chat_id": mensaje.chat_id,
-        "rol": mensaje.rol,
-        "tipo": mensaje.tipo,
-        "fecha_mensaje": mensaje.fecha_mensaje,
-        "contenido": None,
-        "material_id": None
-    }
-    
-    # Buscar contenido
-    pregunta = db.query(MensajePregunta).filter(
-        MensajePregunta.mensaje_id == mensaje.id
-    ).first()
-    
-    if pregunta:
-        resultado["contenido"] = pregunta.pregunta
-    else:
-        respuesta = db.query(MensajeRespuesta).filter(
-            MensajeRespuesta.mensaje_id == mensaje.id
-        ).first()
-        
-        if respuesta:
-            resultado["contenido"] = respuesta.respuesta
-            resultado["material_id"] = respuesta.material_id
-    
-    return resultado
-
-
-# 🔹 Eliminar mensaje
-@router.delete("/{mensaje_id}")
-def eliminar_mensaje(mensaje_id: int, db: Session = Depends(get_db)):
-    mensaje = db.query(Mensaje).filter(Mensaje.id == mensaje_id).first()
-    
-    if not mensaje:
-        raise HTTPException(status_code=404, detail="Mensaje no encontrado")
-    
-    db.delete(mensaje)
-    db.commit()
-    
-    return {"message": "Mensaje eliminado correctamente"}
-
-
-# 🔹 Actualizar embedding de una pregunta
-@router.put("/pregunta/{mensaje_id}/embedding")
-def actualizar_embedding_pregunta(
-    mensaje_id: int,
-    embedding: List[float],
-    db: Session = Depends(get_db)
-):
-    pregunta = db.query(MensajePregunta).filter(
-        MensajePregunta.mensaje_id == mensaje_id
-    ).first()
-    
-    if not pregunta:
-        raise HTTPException(status_code=404, detail="Pregunta no encontrada")
-    
-    if len(embedding) != 768:
-        raise HTTPException(
-            status_code=400,
-            detail="El embedding debe tener 768 dimensiones"
-        )
-    
-    pregunta.pregunta_embedding = embedding
-    db.commit()
-    
-    return {"message": "Embedding actualizado correctamente"}

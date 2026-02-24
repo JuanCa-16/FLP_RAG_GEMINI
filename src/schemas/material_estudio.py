@@ -13,7 +13,7 @@ class MaterialBase(BaseModel):
     tematica: Optional[str] = None
     competencia: Optional[str] = None
     resultado_aprendizaje: Optional[str] = None
-    nivel_dificultad: Literal['Baja', 'Media', 'Alta']
+    nivel_dificultad: Optional[Literal['Baja', 'Media', 'Alta']] = None
 
 
 class MaterialCreate(MaterialBase):

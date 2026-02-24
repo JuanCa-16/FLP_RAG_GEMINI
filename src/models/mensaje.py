@@ -17,7 +17,7 @@ class Mensaje(Base):
     
     __table_args__ = (
         CheckConstraint("rol IN ('assistant', 'user')", name="check_mensaje_rol"),
-        CheckConstraint("tipo IN ('CODIGO', 'PDF', 'VIDEO', 'GIT')", name="check_mensaje_tipo"),
+        CheckConstraint("tipo IN ('CODIGO', 'PDF', 'VIDEO', 'GIT', 'ALL')", name="check_mensaje_tipo"),
     )
     
     # Relaciones
