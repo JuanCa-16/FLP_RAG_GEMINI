@@ -1,6 +1,4 @@
-# src/models/mensaje_respuesta.py (ACTUALIZADO)
-
-from sqlalchemy import Column, Integer, Text, ForeignKey
+from sqlalchemy import Column, Integer, Text, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 from src.database.database import Base
 
@@ -8,23 +6,31 @@ from src.database.database import Base
 class MensajeRespuesta(Base):
     __tablename__ = "mensaje_respuesta"
 
-    mensaje_id = Column(Integer, ForeignKey("mensaje.id", ondelete="CASCADE"), primary_key=True)
+    mensaje_id = Column(
+        Integer,
+        ForeignKey("mensaje.id", ondelete="CASCADE"),
+        primary_key=True
+    )
+
     respuesta = Column(Text, nullable=False)
-    
+
+    calificacion = Column(Integer, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("calificacion BETWEEN 1 AND 5", name="check_calificacion_rango"),
+    )
+
     # Relaciones
     mensaje = relationship("Mensaje", back_populates="respuesta")
-    
-    # ⭐ NUEVA RELACIÓN: Muchos a muchos con MaterialEstudio a través de RespuestaMaterial
+
     materiales_asociados = relationship(
-        "RespuestaMaterial", 
+        "RespuestaMaterial",
         back_populates="respuesta",
         cascade="all, delete-orphan"
     )
-    
-    # Helper property para acceder a los materiales directamente
+
     @property
     def materiales(self):
-        """Retorna lista de materiales con su similitud"""
         return [
             {
                 "material": am.material,

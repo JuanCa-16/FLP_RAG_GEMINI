@@ -9,6 +9,7 @@ from src.database.database import SessionLocal
 from src.models.chat import Chat
 from src.models.mensaje import Mensaje
 from src.schemas.chat import ChatCreate, ChatResponse, ChatUpdate, ChatConMensajes
+from src.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -23,9 +24,12 @@ def get_db():
 
 # 🔹 Crear chat
 @router.post("/", response_model=ChatResponse)
-def crear_chat(chat: ChatCreate, db: Session = Depends(get_db)):
+def crear_chat(chat: ChatCreate,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db)):
+
     nuevo_chat = Chat(
-        usuario=chat.usuario,
+        usuario=current_user.usuario,
         titulo=chat.titulo
     )
     

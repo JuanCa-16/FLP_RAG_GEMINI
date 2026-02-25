@@ -10,7 +10,7 @@ class ChatBase(BaseModel):
 
 
 class ChatCreate(ChatBase):
-    usuario: str
+    pass
 
 
 class ChatUpdate(BaseModel):

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 import os
 import numpy as np
 import pandas as pd
@@ -19,16 +20,19 @@ from src.routers.biblioteca import router as biblioteca_router
 from src.routers.chat import router as chat_router
 from src.routers.mensaje import router as mensaje_router
 from src.routers.auth import router as auth_router
+from src.routers.documento import router as doc_router
 from src.routers.auth import get_current_user
 
-from src.database.database import SessionLocal
 from src.models.usuario import Usuario
 from src.models.chat import Chat
 from src.models.mensaje import Mensaje
 from src.models.mensaje_pregunta import MensajePregunta
 from src.models.mensaje_respuesta import MensajeRespuesta
-from src.models.respuesta_material import RespuestaMaterial
 from src.models.material_estudio import MaterialEstudio
+from src.models.documento import Documento
+from src.models.respuesta_material import RespuestaMaterial
+from src.models.biblioteca import Biblioteca
+from src.database.database import SessionLocal
 
 security = HTTPBearer()
 # CONFIGURACIÓN y CARGA GLOBAL
@@ -127,6 +131,7 @@ app.add_middleware(
 
 app.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
 app.include_router(material_router, prefix="/material", tags=["Material Estudio"], dependencies=[Depends(get_current_user)])
+app.include_router(doc_router, prefix="/documentos", tags=["Documentos"], dependencies=[Depends(get_current_user)])
 app.include_router(biblioteca_router, prefix="/biblioteca", tags=["Bilbioteca de Contenidos"], dependencies=[Depends(get_current_user)])
 app.include_router(chat_router, prefix="/chat", tags=["Chats"], dependencies=[Depends(get_current_user)])
 app.include_router(mensaje_router, prefix="/mensaje", tags=["Mensajes"], dependencies=[Depends(get_current_user)])
@@ -688,11 +693,17 @@ async def _ejecutar_rag_con_bd(
             orden=idx
         )
         db.add(asociacion)
+
+        nueva_entrada_biblioteca = Biblioteca(usuario=usuario_actual.usuario,material_id=material_id_int, documento_id=material.documento_id, origen='CHAT')
+        db.add(nueva_entrada_biblioteca)
+        print(f"✅ Material {material_id_int} agregado a biblioteca de {usuario_actual.usuario}")
     
     # 8. Commit de todo
+    chat.fecha_actualizacion = func.now()
     db.commit()
     db.refresh(nuevo_mensaje_pregunta)
     db.refresh(nuevo_mensaje_respuesta)
+    db.refresh(chat) 
     
     return {
         "pregunta": pregunta_optimizada,

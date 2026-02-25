@@ -11,6 +11,7 @@ from src.models.mensaje_respuesta import MensajeRespuesta
 from src.models.respuesta_material import RespuestaMaterial
 from src.models.material_estudio import MaterialEstudio
 from src.models.chat import Chat
+from src.models.documento import Documento
 
 router = APIRouter()
 
@@ -91,17 +92,29 @@ def crear_respuesta_con_materiales(
                 detail=f"Material con ID {mat['material_id']} no encontrado"
             )
         
+        documento = db.query(Documento).filter(
+            Documento.id == material.documento_id
+        ).first()
+
+        if not documento:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Documento asociado no encontrado para material {material.id}"
+            )
+        
         # Crear asociación
         asociacion = RespuestaMaterial(
-            mensaje_respuesta_id=nuevo_mensaje.id,
+            mensaje_respuesta_id=nueva_respuesta.id,
             material_id=mat["material_id"],
             similitud=mat.get("similitud"),
             orden=mat.get("orden", idx)  # Si no se proporciona, usar índice
         )
+
         db.add(asociacion)
         materiales_asociados.append({
             "material_id": mat["material_id"],
-            "nombre": material.nombre_documento,
+            "documento_id": documento.id,
+            "nombre": documento.nombre_documento,
             "similitud": mat.get("similitud"),
             "orden": mat.get("orden", idx)
         })
@@ -156,9 +169,19 @@ def agregar_materiales_a_respuesta(
                 detail=f"Material {mat['material_id']} no encontrado"
             )
         
+        documento = db.query(Documento).filter(
+            Documento.id == material.documento_id
+        ).first()
+
+        if not documento:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Documento asociado no encontrado para material {material.id}"
+            )
+        
         # Verificar que no esté ya asociado
         existe = db.query(RespuestaMaterial).filter(
-            RespuestaMaterial.mensaje_respuesta_id == mensaje_id,
+            RespuestaMaterial.mensaje_respuesta_id == respuesta.id,
             RespuestaMaterial.material_id == mat["material_id"]
         ).first()
         
@@ -167,13 +190,13 @@ def agregar_materiales_a_respuesta(
         
         # Crear asociación
         asociacion = RespuestaMaterial(
-            mensaje_respuesta_id=mensaje_id,
-            material_id=mat["material_id"],
+            mensaje_respuesta_id=respuesta.id,
+            material_id=material.id,
             similitud=mat.get("similitud"),
             orden=mat.get("orden")
         )
         db.add(asociacion)
-        materiales_agregados.append(material.nombre_documento)
+        materiales_agregados.append(documento.nombre_documento)
     
     db.commit()
     
@@ -205,22 +228,24 @@ def obtener_materiales_respuesta(
     
     # Obtener materiales con sus similitudes
     materiales = (
-        db.query(RespuestaMaterial, MaterialEstudio)
+        db.query(RespuestaMaterial, MaterialEstudio,Documento)
         .join(MaterialEstudio, RespuestaMaterial.material_id == MaterialEstudio.id)
-        .filter(RespuestaMaterial.mensaje_respuesta_id == mensaje_id)
+        .join(Documento, MaterialEstudio.documento_id == Documento.id)
+        .filter(RespuestaMaterial.mensaje_respuesta_id == respuesta.id)
         .order_by(RespuestaMaterial.orden, RespuestaMaterial.similitud.desc())
         .all()
     )
     
     resultado = []
-    for asociacion, material in materiales:
+    for asociacion, material,documento  in materiales:
         resultado.append({
             "material_id": material.id,
-            "nombre_documento": material.nombre_documento,
-            "fuente": material.fuente,
-            "url": material.url,
-            "tematica": material.tematica,
-            "nivel_dificultad": material.nivel_dificultad,
+            "documento_id": documento.id,
+            "nombre_documento": documento.nombre_documento,
+            "fuente": documento.fuente,
+            "url": documento.url,
+            "tematica": documento.tematica,
+            "nivel_dificultad": documento.nivel_dificultad,
             "similitud": asociacion.similitud,
             "orden": asociacion.orden,
             "fecha_asociacion": asociacion.fecha_asociacion
@@ -361,24 +386,24 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
                 
                 # ⭐ OBTENER MATERIALES ASOCIADOS
                 materiales = (
-                    db.query(RespuestaMaterial, MaterialEstudio)
+                    db.query(RespuestaMaterial, MaterialEstudio,Documento)
                     .join(MaterialEstudio, RespuestaMaterial.material_id == MaterialEstudio.id)
-                    .filter(RespuestaMaterial.mensaje_respuesta_id == mensaje.id)
+                    .join(Documento, MaterialEstudio.documento_id == Documento.id)
+                    .filter(RespuestaMaterial.mensaje_respuesta_id == respuesta.id)
                     .order_by(RespuestaMaterial.orden, RespuestaMaterial.similitud.desc())
                     .all()
                 )
                 
-                item["materiales"] = [
-                    {
+                for asoc, mat, doc in materiales:
+                    item["materiales"].append({
                         "material_id": mat.id,
-                        "nombre": mat.nombre_documento,
-                        "fuente": mat.fuente,
-                        "url": mat.url,
+                        "documento_id": doc.id,
+                        "nombre_documento": doc.nombre_documento,
+                        "fuente": doc.fuente,
+                        "url": doc.url,
                         "similitud": asoc.similitud,
                         "orden": asoc.orden
-                    }
-                    for asoc, mat in materiales
-                ]
+                    })
         
         historial.append(item)
     
