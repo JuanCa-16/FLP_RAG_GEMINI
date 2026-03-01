@@ -28,7 +28,8 @@ def hash_password(password: str) -> str:
     Returns:
         Hash de la contraseña
     """
-    return pwd_context.hash(password)
+    clean_password = str(password)[:72]
+    return pwd_context.hash(clean_password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
@@ -41,7 +42,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True si coinciden, False si no
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        # Truncamos igual que en el hash para que la comparación sea válida
+        clean_password = str(plain_password)[:72]
+        return pwd_context.verify(clean_password, hashed_password)
+    except Exception:
+        # Si el hash en la DB está corrupto o hay error de versión, devolvemos False
+        return False
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
