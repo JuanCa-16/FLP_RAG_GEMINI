@@ -111,7 +111,7 @@ def registrar_usuario(
 ):
     # Verificar si el usuario ya existe
     usuario_existente = db.query(Usuario).filter(
-        Usuario.usuario == datos.usuario.lower()
+        Usuario.usuario == datos.usuario
     ).first()
     
     if usuario_existente:
@@ -125,7 +125,7 @@ def registrar_usuario(
     
     # Crear nuevo usuario
     nuevo_usuario = Usuario(
-        usuario=datos.usuario.lower(),
+        usuario=datos.usuario,
         nombre=datos.nombre,
         contrasena=password_hash
     )
@@ -182,7 +182,7 @@ def iniciar_sesion(
 ):
     # Buscar el usuario
     usuario = db.query(Usuario).filter(
-        Usuario.usuario == credenciales.usuario.lower()
+        Usuario.usuario == credenciales.usuario
     ).first()
     
     if not usuario:

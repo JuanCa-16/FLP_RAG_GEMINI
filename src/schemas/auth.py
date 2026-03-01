@@ -15,7 +15,7 @@ class UsuarioRegistro(BaseModel):
         """Valida que el usuario no tenga espacios"""
         if ' ' in v:
             raise ValueError('El usuario no puede contener espacios')
-        return v.lower()  # Convertir a minúsculas
+        return v  # Convertir a minúsculas
     
     @validator('contrasena')
     def validar_contrasena(cls, v):

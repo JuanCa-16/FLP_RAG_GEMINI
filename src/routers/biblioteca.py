@@ -8,6 +8,7 @@ from src.models.biblioteca import Biblioteca
 from src.models.documento import Documento
 from src.models.material_estudio import MaterialEstudio
 from src.schemas.biblioteca import BibliotecaCreate, BibliotecaResponse
+from src.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ def get_db():
 
 # 🔹 Agregar documento (y opcionalmente fragmento) a la biblioteca
 @router.post("/", response_model=BibliotecaResponse)
-def agregar_a_biblioteca(biblioteca: BibliotecaCreate, db: Session = Depends(get_db)):
+def agregar_a_biblioteca(biblioteca: BibliotecaCreate,current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
 
     # Verificar documento
     documento = db.query(Documento).filter(
@@ -42,21 +43,8 @@ def agregar_a_biblioteca(biblioteca: BibliotecaCreate, db: Session = Depends(get
         if not material:
             raise HTTPException(status_code=404, detail="Material no válido para este documento")
 
-    # Evitar duplicado exacto
-    existente = db.query(Biblioteca).filter(
-        Biblioteca.usuario == biblioteca.usuario,
-        Biblioteca.documento_id == biblioteca.documento_id,
-        Biblioteca.material_id == biblioteca.material_id
-    ).first()
-
-    if existente:
-        raise HTTPException(
-            status_code=400,
-            detail="Ya está guardado en la biblioteca"
-        )
-
     nueva_entrada = Biblioteca(
-        usuario=biblioteca.usuario,
+        usuario=current_user.usuario,
         origen=biblioteca.origen,
         documento_id=biblioteca.documento_id,
         material_id=biblioteca.material_id

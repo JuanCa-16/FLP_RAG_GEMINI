@@ -28,9 +28,14 @@ def crear_chat(chat: ChatCreate,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db)):
 
+    titulo = chat.titulo.strip() if chat.titulo else ""
+
+    if not titulo:
+        titulo = "Nuevo Chat"
+
     nuevo_chat = Chat(
         usuario=current_user.usuario,
-        titulo=chat.titulo
+        titulo=titulo
     )
     
     db.add(nuevo_chat)
@@ -41,15 +46,15 @@ def crear_chat(chat: ChatCreate,
 
 
 # 🔹 Listar todos los chats de un usuario
-@router.get("/usuario/{username}", response_model=List[ChatConMensajes])
-def listar_chats_usuario(username: str, db: Session = Depends(get_db)):
+@router.get("/mis-chats", response_model=List[ChatConMensajes])
+def listar_chats_usuario( current_user = Depends(get_current_user), db: Session = Depends(get_db)):
     chats = (
         db.query(
             Chat,
             func.count(Mensaje.id).label("total_mensajes")
         )
         .outerjoin(Mensaje, Chat.id == Mensaje.chat_id)
-        .filter(Chat.usuario == username)
+        .filter(Chat.usuario == current_user.usuario)
         .group_by(Chat.id)
         .order_by(Chat.fecha_actualizacion.desc())
         .all()
@@ -72,8 +77,8 @@ def listar_chats_usuario(username: str, db: Session = Depends(get_db)):
 
 # 🔹 Obtener chat por ID
 @router.get("/{chat_id}", response_model=ChatResponse)
-def obtener_chat(chat_id: int, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+def obtener_chat(chat_id: int,current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id,Chat.usuario == current_user.usuario).first()
     
     if not chat:
         raise HTTPException(status_code=404, detail="Chat no encontrado")
@@ -83,8 +88,8 @@ def obtener_chat(chat_id: int, db: Session = Depends(get_db)):
 
 # 🔹 Actualizar título del chat
 @router.put("/{chat_id}", response_model=ChatResponse)
-def actualizar_chat(chat_id: int, chat_update: ChatUpdate, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+def actualizar_chat(chat_id: int, chat_update: ChatUpdate, current_user = Depends(get_current_user),db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id,Chat.usuario == current_user.usuario).first()
     
     if not chat:
         raise HTTPException(status_code=404, detail="Chat no encontrado")
@@ -100,8 +105,8 @@ def actualizar_chat(chat_id: int, chat_update: ChatUpdate, db: Session = Depends
 
 # 🔹 Eliminar chat
 @router.delete("/{chat_id}")
-def eliminar_chat(chat_id: int, db: Session = Depends(get_db)):
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+def eliminar_chat(chat_id: int, current_user = Depends(get_current_user), db: Session = Depends(get_db)):
+    chat = db.query(Chat).filter(Chat.id == chat_id,Chat.usuario == current_user.usuario).first()
     
     if not chat:
         raise HTTPException(status_code=404, detail="Chat no encontrado")
@@ -113,11 +118,11 @@ def eliminar_chat(chat_id: int, db: Session = Depends(get_db)):
 
 
 # 🔹 Obtener el chat más reciente de un usuario
-@router.get("/usuario/{username}/reciente", response_model=ChatResponse)
-def obtener_chat_reciente(username: str, db: Session = Depends(get_db)):
+@router.get("/usuario/mis-chats/reciente", response_model=ChatResponse)
+def obtener_chat_reciente( current_user = Depends(get_current_user), db: Session = Depends(get_db)):
     chat = (
         db.query(Chat)
-        .filter(Chat.usuario == username)
+        .filter(Chat.usuario == current_user.usuario)
         .order_by(Chat.fecha_actualizacion.desc())
         .first()
     )

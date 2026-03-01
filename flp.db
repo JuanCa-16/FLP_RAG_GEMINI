@@ -75,7 +75,7 @@ CREATE INDEX idx_respuesta_material_similitud ON respuesta_material(similitud DE
 CREATE TABLE biblioteca (
     id SERIAL PRIMARY KEY,
     usuario VARCHAR(15) REFERENCES usuario(usuario) ON DELETE CASCADE,
-    origen VARCHAR(10) NOT NULL CHECK (origen IN ('CHAT','PDF','VIDEO')),
+    origen VARCHAR(10) NOT NULL CHECK (origen IN ('CHAT','PDF','VIDEO, GIT')),
     documento_id INT NOT NULL REFERENCES documento(id) ON DELETE CASCADE,
     material_id INT REFERENCES material_estudio(id) ON DELETE CASCADE,
     fecha_consulta TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

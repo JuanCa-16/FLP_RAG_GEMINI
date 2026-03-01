@@ -360,12 +360,12 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
     historial = []
     for mensaje in mensajes:
         item = {
-            "mensaje_id": mensaje.id,
-            "rol": mensaje.rol,
+            "id": mensaje.id,
+            "role": mensaje.rol,
             "tipo": mensaje.tipo,
             "fecha_mensaje": mensaje.fecha_mensaje,
-            "contenido": None,
-            "materiales": []
+            "content": None,
+            "documents": []
         }
         
         # Buscar si es pregunta
@@ -374,7 +374,7 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
         ).first()
         
         if pregunta:
-            item["contenido"] = pregunta.pregunta
+            item["content"] = pregunta.pregunta
         else:
             # Buscar si es respuesta
             respuesta = db.query(MensajeRespuesta).filter(
@@ -382,28 +382,33 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
             ).first()
             
             if respuesta:
-                item["contenido"] = respuesta.respuesta
+                item["content"] = respuesta.respuesta
                 
                 # ⭐ OBTENER MATERIALES ASOCIADOS
                 materiales = (
                     db.query(RespuestaMaterial, MaterialEstudio,Documento)
                     .join(MaterialEstudio, RespuestaMaterial.material_id == MaterialEstudio.id)
                     .join(Documento, MaterialEstudio.documento_id == Documento.id)
-                    .filter(RespuestaMaterial.mensaje_respuesta_id == respuesta.id)
+                    .filter(RespuestaMaterial.mensaje_respuesta_id == respuesta.mensaje_id)
                     .order_by(RespuestaMaterial.orden, RespuestaMaterial.similitud.desc())
                     .all()
                 )
                 
                 for asoc, mat, doc in materiales:
-                    item["materiales"].append({
-                        "material_id": mat.id,
-                        "documento_id": doc.id,
-                        "nombre_documento": doc.nombre_documento,
-                        "fuente": doc.fuente,
-                        "url": doc.url,
-                        "similitud": asoc.similitud,
-                        "orden": asoc.orden
-                    })
+                    item["documents"].append({
+                    "id": mat.id,
+                    "similitud": f"{asoc.similitud:.4f}",
+                    "metadata": {
+                        "CORTE": doc.tematica.split(" ")[0] if doc.tematica else "",
+                        "TEMATICA": doc.tematica,
+                        "COMPETENCIA": doc.competencia,
+                        "RESULTADO_APRENDIZAJE": doc.resultado_aprendizaje,
+                        "NIVEL_DIFICULTAD": doc.nivel_dificultad,
+                        "FUENTE": doc.fuente,
+                        "NOMBRE_DOCUMENTO": doc.nombre_documento,
+                        "URL": doc.url
+                    }
+                })
         
         historial.append(item)
     

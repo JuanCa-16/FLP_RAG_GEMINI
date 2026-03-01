@@ -32,7 +32,7 @@ class Biblioteca(Base):
     fecha_consulta = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     __table_args__ = (
-        CheckConstraint("origen IN ('CHAT', 'PDF', 'VIDEO')", name="check_biblioteca_origen"),
+        CheckConstraint("origen IN ('CHAT', 'PDF', 'VIDEO', 'GIT')", name="check_biblioteca_origen"),
     )
 
     # Relaciones

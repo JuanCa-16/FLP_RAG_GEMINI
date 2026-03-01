@@ -3,8 +3,7 @@ from datetime import datetime
 from typing import Optional, Literal
 
 class BibliotecaBase(BaseModel):
-    usuario: str
-    origen: Literal['CHAT', 'PDF', 'VIDEO']
+    origen: Literal['CHAT', 'PDF', 'VIDEO', 'GIT']
     documento_id: int
     material_id: Optional[int] = None
 

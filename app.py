@@ -604,6 +604,7 @@ async def _ejecutar_rag_con_bd(
         tipo=fuente
     )
     db.add(nuevo_mensaje_pregunta)
+    print('❗PREGUNTA REGISTRADA')
     db.flush()
     
     nueva_pregunta = MensajePregunta(
@@ -643,6 +644,7 @@ async def _ejecutar_rag_con_bd(
         rol='assistant',
         tipo=fuente
     )
+    print('❗❗RESPUESTA REGISTRADA')
     db.add(nuevo_mensaje_respuesta)
     db.flush()
     
@@ -711,7 +713,7 @@ async def _ejecutar_rag_con_bd(
         "mensaje_pregunta_id": nuevo_mensaje_pregunta.id,
         "mensaje_respuesta_id": nuevo_mensaje_respuesta.id,
         "documentos_usados": [
-            {
+            {   "id": int(d['id']), 
                 "similitud": f"{d['similitud']:.4f}",
                 "metadata": d['metadata']
             } for d in documentos
