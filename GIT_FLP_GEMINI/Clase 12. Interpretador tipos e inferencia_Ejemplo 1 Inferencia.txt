@@ -101,7 +101,11 @@ Esto indica que `func` es una función que acepta dos argumentos: el primero es 
 ---
 METADATA
 ---
-TEMATICA: Clase 12. Interpretador tipos e inferencia
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Ejemplo 1 Inferencia.txt
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Ejemplo 1 Inferencia
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%201%20Inferencia/

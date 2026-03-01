@@ -95,7 +95,11 @@ El entorno inicial predefinido se modifica para que sus valores iniciales (para 
 ---
 METADATA
 ---
-TEMATICA: Clase 9. Asignación y paso por referencia
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Implementacion referencia.txt
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Implementacion referencia
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Implementacion%20referencia/

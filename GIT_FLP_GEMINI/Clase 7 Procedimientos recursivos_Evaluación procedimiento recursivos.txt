@@ -165,7 +165,11 @@ Evaluación total acumulada:
 ---
 METADATA
 ---
-TEMATICA: Clase 7 Procedimientos recursivos
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Evaluación procedimiento recursivos.txt
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Evaluación procedimiento recursivos
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Evaluaci%C3%B3n%20procedimiento%20recursivos/

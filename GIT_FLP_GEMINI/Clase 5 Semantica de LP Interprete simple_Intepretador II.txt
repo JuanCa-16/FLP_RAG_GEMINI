@@ -377,7 +377,11 @@ Para probar el intérprete, es necesario comentar la línea `(interpreter)` para
 ---
 METADATA
 ---
-TEMATICA: Clase 5 Semantica de LP Interprete simple
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Intepretador II.txt
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Intepretador II
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Intepretador%20II/

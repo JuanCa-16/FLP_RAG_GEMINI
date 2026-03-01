@@ -100,7 +100,11 @@ La función `inorder` realiza un recorrido in-orden del árbol (`tree -> lista`)
 ---
 METADATA
 ---
-TEMATICA: Clase 4 AST
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Ejemplo 1.txt
+NOMBRE_DOCUMENTO: Clase 4 AST_Ejemplo 1
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Ejemplo%201/

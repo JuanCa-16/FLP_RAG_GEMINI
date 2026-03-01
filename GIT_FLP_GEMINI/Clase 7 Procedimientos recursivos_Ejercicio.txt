@@ -105,7 +105,11 @@ Finalmente, se mide el rendimiento de la ejecución paralela. Se utiliza una fun
 ---
 METADATA
 ---
-TEMATICA: Clase 7 Procedimientos recursivos
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Ejercicio.txt
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Ejercicio
 URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%2012/Ejercicio/

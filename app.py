@@ -1,17 +1,40 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.security import HTTPBearer
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 import os
 import numpy as np
-from numpy.linalg import norm
 import pandas as pd
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import time
 from google.genai.errors import ServerError
-from pydantic import Field
 
+# Importar routers y modelos
+from src.routers.usuarios import router as usuarios_router
+from src.routers.material_estudio import router as material_router
+from src.routers.biblioteca import router as biblioteca_router
+from src.routers.chat import router as chat_router
+from src.routers.mensaje import router as mensaje_router
+from src.routers.auth import router as auth_router
+from src.routers.documento import router as doc_router
+from src.routers.auth import get_current_user
+
+from src.models.usuario import Usuario
+from src.models.chat import Chat
+from src.models.mensaje import Mensaje
+from src.models.mensaje_pregunta import MensajePregunta
+from src.models.mensaje_respuesta import MensajeRespuesta
+from src.models.material_estudio import MaterialEstudio
+from src.models.documento import Documento
+from src.models.respuesta_material import RespuestaMaterial
+from src.models.biblioteca import Biblioteca
+from src.database.database import SessionLocal
+
+security = HTTPBearer()
 # CONFIGURACIÓN y CARGA GLOBAL
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -75,7 +98,27 @@ except Exception as e:
 # Inicialización de FastAPI
 app = FastAPI(
     title="API de RAG para Fundamentos de Compilación",
-    description="Servicio de preguntas y respuestas basado en Retrieval Augmented Generation (RAG) con Gemini."
+    description="""
+    ## 🤖 Sistema RAG con autenticación opcional
+    
+    ### 📖 Rutas públicas (sin autenticación):
+    - `/rag/responder/*` - Cualquiera puede hacer preguntas
+    
+    ### 🔐 Rutas protegidas (requieren autenticación):
+    - `/rag/chat/*` - Guardan preguntas y respuestas en tu historial
+    
+    Para usar rutas protegidas:
+    1. Registra/inicia sesión en `/auth/login`
+    2. Copia el token
+    3. Click en "Authorize" 🔓
+    4. Pega el token
+    """,
+    swagger_ui_parameters={
+        "persistAuthorization": True,  # Mantiene el token al recargar
+        "displayRequestDuration": True,
+        "filter": True,
+        "tryItOutEnabled": True
+    }
 )
 
 app.add_middleware(
@@ -86,15 +129,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
+app.include_router(material_router, prefix="/material", tags=["Material Estudio"], dependencies=[Depends(get_current_user)])
+app.include_router(doc_router, prefix="/documentos", tags=["Documentos"], dependencies=[Depends(get_current_user)])
+app.include_router(biblioteca_router, prefix="/biblioteca", tags=["Bilbioteca de Contenidos"], dependencies=[Depends(get_current_user)])
+app.include_router(chat_router, prefix="/chat", tags=["Chats"], dependencies=[Depends(get_current_user)])
+app.include_router(mensaje_router, prefix="/mensaje", tags=["Mensajes"], dependencies=[Depends(get_current_user)])
+app.include_router(auth_router, prefix="/auth", tags=["Autenticación"])
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 # Modelo Pydantic para la entrada de la API
-class Mensaje(BaseModel):
+class MensajeChat(BaseModel):
     role: str  # "user" o "model"
     content: str
 
 class Consulta(BaseModel):
     pregunta: str
     top_n: int = 1
-    historial: list[Mensaje] = Field(default_factory=list)
+    historial: list[MensajeChat] = Field(default_factory=list)
+
+
+class ConsultaConChat(Consulta):
+    """Modelo extendido para rutas protegidas que guardan en BD"""
+    chat_id: int  # ⭐ ID del chat donde guardar
 
 # FUNCIONES DE RAG
 
@@ -134,11 +198,12 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
             "documento": dataframe.iloc[indice]["contenido"],
             "titulo": dataframe.iloc[indice]["titulo"],
             "metadata": dataframe.iloc[indice]["metadata"],
+            "id": dataframe.iloc[indice]["id"],
             "similitud": similitudes_np[indice]
         })
 
     # Retornamos la lista de resultados
-    return resultados
+    return resultados, embedding_values_np.tolist()
 
 def generar_respuesta(consulta: str, contexto: str, fuente:str):
     print('FUENTE', fuente,'CONTEXTO', contexto, 'CONSULTA:', consulta)
@@ -416,7 +481,7 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
     return respuesta_final
 
 # 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
-def contextualizar_pregunta(pregunta_usuario: str, historial: list[Mensaje]):
+def contextualizar_pregunta(pregunta_usuario: str, historial: list[MensajeChat]):
     if not historial:
         return pregunta_usuario
 
@@ -459,7 +524,7 @@ async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
     try:
         top_n_usar = TOP_N_CONFIG.get(fuente, 2) 
         #antes:  top_n=data.top_n
-        documentos = encontrar_documento_relevante(pregunta_optimizada, dataframe, MODEL_ID, top_n= top_n_usar)
+        documentos, _  = encontrar_documento_relevante(pregunta_optimizada, dataframe, MODEL_ID, top_n= top_n_usar)
     except Exception as e:
         detail = e.detail if isinstance(e, HTTPException) else str(e)
         raise HTTPException(status_code=500, detail=f"Error en la fase de Recuperación de Documentos (Embeddings): {detail}")
@@ -498,6 +563,162 @@ async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
         ]
     }
 
+async def _ejecutar_rag_con_bd(
+    data: ConsultaConChat,
+    dataframe: pd.DataFrame,
+    fuente: str,
+    usuario_actual: Usuario,
+    db: Session
+):
+    """RAG que guarda pregunta y respuesta en BD"""
+    
+    # Verificar que el chat existe y pertenece al usuario
+    chat = db.query(Chat).filter(
+        Chat.id == data.chat_id,
+        Chat.usuario == usuario_actual.usuario
+    ).first()
+    
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat no encontrado o no tienes permiso")
+    
+    # 1. Contextualizar pregunta
+    pregunta_optimizada = contextualizar_pregunta(data.pregunta, data.historial)
+    
+    # 2. Recuperar documentos Y obtener embedding de la pregunta
+    try:
+        top_n_usar = TOP_N_CONFIG.get(fuente, 2)
+        documentos, embedding_pregunta = encontrar_documento_relevante(
+            pregunta_optimizada,
+            dataframe,
+            MODEL_ID,
+            top_n=top_n_usar
+        )
+    except Exception as e:
+        detail = e.detail if isinstance(e, HTTPException) else str(e)
+        raise HTTPException(status_code=500, detail=f"Error en Recuperación: {detail}")
+    
+    # 3. ⭐ GUARDAR PREGUNTA EN BD
+    nuevo_mensaje_pregunta = Mensaje(
+        chat_id=data.chat_id,
+        rol='user',
+        tipo=fuente
+    )
+    db.add(nuevo_mensaje_pregunta)
+    print('❗PREGUNTA REGISTRADA')
+    db.flush()
+    
+    nueva_pregunta = MensajePregunta(
+        mensaje_id=nuevo_mensaje_pregunta.id,
+        pregunta=pregunta_optimizada,
+        pregunta_embedding=embedding_pregunta  # ⭐ Guardar embedding
+    )
+    db.add(nueva_pregunta)
+    db.flush()
+    
+    # 4. Construir contexto
+    contexto_lista = []
+    for doc in documentos:
+        fuente_doc = doc['metadata'].get('FUENTE', 'DESCONOCIDA')
+        contenido = doc['documento']
+        
+        if (fuente_doc == 'CÓDIGO' or fuente_doc == 'CODIGO' or fuente_doc == 'CODE') and 'codigo' in doc['metadata']:
+            snippet = doc['metadata']['codigo']
+            item = f"--- FUENTE: CÓDIGO ({doc['titulo']}) ---\nEXPLICACIÓN TÉCNICA: {contenido}\nCÓDIGO FUENTE RACKET:\n{snippet}\n"
+        else:
+            item = f"--- FUENTE: {fuente_doc} ({doc['titulo']}) ---\nCONTENIDO: {contenido}"
+        
+        contexto_lista.append(item)
+
+    contexto_final = "\n\n".join(contexto_lista)
+    
+    # 5. Generar respuesta
+    try:
+        respuesta = generar_respuesta(pregunta_optimizada, contexto_final, fuente)
+    except Exception as e:
+        db.rollback()
+        raise e
+    
+    # 6. ⭐ GUARDAR RESPUESTA EN BD
+    nuevo_mensaje_respuesta = Mensaje(
+        chat_id=data.chat_id,
+        rol='assistant',
+        tipo=fuente
+    )
+    print('❗❗RESPUESTA REGISTRADA')
+    db.add(nuevo_mensaje_respuesta)
+    db.flush()
+    
+    nueva_respuesta = MensajeRespuesta(
+        mensaje_id=nuevo_mensaje_respuesta.id,
+        respuesta=respuesta
+    )
+    db.add(nueva_respuesta)
+    db.flush()
+    
+    # 7. ⭐ GUARDAR MATERIALES CON SIMILITUD
+    for idx, doc in enumerate(documentos, 1):
+        # Buscar material en BD por metadata
+        material_id = doc.get('id')
+
+        if material_id is None: # Cambiado de 'if not material_id' por seguridad con ID 0
+            print(f"⚠️ Material sin ID: {doc.get('titulo', 'Sin título')} - Omitiendo...")
+            continue
+        
+        # Convertimos explícitamente a int nativo de Python
+        material_id_int = int(material_id)
+        
+        # Buscar por ID (primary key)
+        material = db.query(MaterialEstudio).filter(
+            MaterialEstudio.id == material_id_int
+        ).first()
+        
+        # ⭐ Si el material NO existe, NO crearlo - simplemente skip
+        if not material:
+            print(f"⚠️ Material con ID {material_id_int} no encontrado en BD - Omitiendo...")
+            continue
+        
+        # ⭐ Verificar que no esté duplicado (prevenir errores de UNIQUE constraint)
+        existe = db.query(RespuestaMaterial).filter(
+            RespuestaMaterial.mensaje_respuesta_id == nuevo_mensaje_respuesta.id,
+            RespuestaMaterial.material_id == material_id_int
+        ).first()
+        
+        if existe:
+            print(f"⚠️ Material {material_id_int} ya asociado - Omitiendo...")
+            continue
+        
+        # Crear asociación respuesta-material con similitud
+        asociacion = RespuestaMaterial(
+            mensaje_respuesta_id=nuevo_mensaje_respuesta.id,
+            material_id=material_id_int,
+            similitud=float(doc['similitud']),
+            orden=idx
+        )
+        db.add(asociacion)
+
+        nueva_entrada_biblioteca = Biblioteca(usuario=usuario_actual.usuario,material_id=material_id_int, documento_id=material.documento_id, origen='CHAT')
+        db.add(nueva_entrada_biblioteca)
+        print(f"✅ Material {material_id_int} agregado a biblioteca de {usuario_actual.usuario}")
+    
+    # 8. Commit de todo
+    chat.fecha_actualizacion = func.now()
+    db.commit()
+    db.refresh(nuevo_mensaje_pregunta)
+    db.refresh(nuevo_mensaje_respuesta)
+    db.refresh(chat) 
+    
+    return {
+        "pregunta": pregunta_optimizada,
+        "respuesta": respuesta,
+        "mensaje_pregunta_id": nuevo_mensaje_pregunta.id,
+        "mensaje_respuesta_id": nuevo_mensaje_respuesta.id,
+        "documentos_usados": [
+            {   "id": int(d['id']), 
+                "similitud": f"{d['similitud']:.4f}",
+                "metadata": d['metadata']
+            } for d in documentos
+        ]
+    }
 # 4. ENDPOINTS DE LA API 
 
 @app.post("/rag/responder/todo")
@@ -539,5 +760,76 @@ async def responder_pregunta_git(data: Consulta):
         raise HTTPException(status_code=404, detail="El corpus de GIT no está cargado.")
 
     return await _ejecutar_rag(data, docs_df_git, 'GIT')
+
+# ============================================
+# ENDPOINTS RAG PROTEGIDOS (CON AUTENTICACIÓN Y BD)
+# ============================================
+@app.post("/rag/chat/todo", tags=["🔐 RAG con Historial"], dependencies=[Depends(get_current_user)])
+async def rag_chat_todo(
+    data: ConsultaConChat,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    RAG protegido - Requiere autenticación.
+    Guarda pregunta, respuesta y materiales en el historial del chat.
+    """
+    if docs_df_todo is None or docs_df_todo.empty:
+        raise HTTPException(status_code=500, detail="Corpus no cargado.")
+    return await _ejecutar_rag_con_bd(data, docs_df_todo, 'ALL', current_user, db)
+
+@app.post("/rag/chat/pdf", tags=["🔐 RAG con Historial"], dependencies=[Depends(get_current_user)])
+async def rag_chat_pdf(
+    data: ConsultaConChat,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """RAG protegido - Solo fuentes PDF, guarda en BD"""
+    if docs_df_pdf is None or docs_df_pdf.empty:
+        raise HTTPException(status_code=404, detail="Corpus PDF no disponible.")
+    return await _ejecutar_rag_con_bd(data, docs_df_pdf, 'PDF', current_user, db)
+
+@app.post("/rag/chat/video", tags=["🔐 RAG con Historial"], dependencies=[Depends(get_current_user)])
+async def rag_chat_video(
+    data: ConsultaConChat,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """RAG protegido - Solo fuentes VIDEO, guarda en BD"""
+    if docs_df_video is None or docs_df_video.empty:
+        raise HTTPException(status_code=404, detail="Corpus VIDEO no disponible.")
+    return await _ejecutar_rag_con_bd(data, docs_df_video, 'VIDEO', current_user, db)
+
+@app.post("/rag/chat/codigo", tags=["🔐 RAG con Historial"], dependencies=[Depends(get_current_user)])
+async def rag_chat_codigo(
+    data: ConsultaConChat,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """RAG protegido - Solo fuentes CODIGO, guarda en BD"""
+    if docs_df_codigos is None or docs_df_codigos.empty:
+        raise HTTPException(status_code=404, detail="Corpus CODIGO no disponible.")
+    return await _ejecutar_rag_con_bd(data, docs_df_codigos, 'CODIGO', current_user, db)
+
+@app.post("/rag/chat/git", tags=["🔐 RAG con Historial"], dependencies=[Depends(get_current_user)])
+async def rag_chat_git(
+    data: ConsultaConChat,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """RAG protegido - Solo fuentes GIT, guarda en BD"""
+    if docs_df_git is None or docs_df_git.empty:
+        raise HTTPException(status_code=404, detail="Corpus GIT no disponible.")
+    return await _ejecutar_rag_con_bd(data, docs_df_git, 'GIT', current_user, db)
+
+@app.get("/", tags=["ℹ️ Info"])
+def root():
+    return {
+        "mensaje": "🚀 API RAG Fundamentos de Compilación",
+        "docs": "/docs",
+        "rutas_publicas": ["/rag/responder/*"],
+        "rutas_protegidas": ["/rag/chat/*"]
+    }
+
 
 # uvicorn app:app --reload

@@ -442,7 +442,11 @@ Finalmente, `+(4, 34)` resulta en `38`.
 ---
 METADATA
 ---
-TEMATICA: Clase 13 Objetos
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Objetos simples.txt
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Objetos simples
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Objetos%20simples/

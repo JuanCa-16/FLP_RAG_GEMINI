@@ -218,7 +218,11 @@ Algunos conceptos teóricos importantes en el contexto de los intérpretes de ti
 ---
 METADATA
 ---
-TEMATICA: Clase 12. Interpretador tipos e inferencia
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Interprete de chequeo V.txt
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Interprete de chequeo V
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo%20V/

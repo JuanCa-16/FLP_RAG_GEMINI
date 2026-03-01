@@ -5,7 +5,9 @@ from typing import List, Dict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.corpus import stopwords
 import nltk
+from itertools import count
 
+ID_GENERATOR = count(1)
 
 # CONFIGURACIÓN
 
@@ -38,6 +40,7 @@ STOP_WORDS_ES.update({
 })
 
 STOP_WORDS_ES = list(STOP_WORDS_ES)
+
 
 
 def limpiar_texto(texto: str) -> str:
@@ -210,6 +213,7 @@ def procesar_archivos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
         if es_archivo_video:
             fragmentos = dividir_por_hashtag(contenido)
             logica_usada = "Hashtag (#)"
+            metadata["NOMBRE_DOCUMENTO"] = archivo
         else:
             fragmentos = dividir_bloques_por_hash(contenido) # ⬅️ CAMBIO AQUÍ
             logica_usada = "Delimitador (#####)"
@@ -222,11 +226,14 @@ def procesar_archivos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
             if not frag["texto"].strip():
                  continue
                  
+            frag["id"] = int(next(ID_GENERATOR))
             frag["contenido"] = frag.pop("texto")
             frag["metadata"] = metadata
             frag["palabras_clave"] = extraer_palabras_clave(frag["contenido"], vectorizador)
             frag["titulo"] = os.path.splitext(archivo)[0]
             fragmentos_global.append(frag)
+
+
 
     return fragmentos_global
 
@@ -302,6 +309,7 @@ def procesar_ejemplos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
             continue
 
         fragmentos_global.append({
+            "id": int(next(ID_GENERATOR)),
             "tipo": "CODIGO",
             "contenido": texto_completo,  # AHORA ES LA CONCATENACIÓN COMPLETA
             "metadata": {
@@ -312,6 +320,7 @@ def procesar_ejemplos(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]
             },
             "palabras_clave": extraer_palabras_clave(texto_completo, vectorizador),
             "titulo": os.path.splitext(archivo)[0]
+            
         })
 
     return fragmentos_global
@@ -399,12 +408,14 @@ def procesar_github(carpeta: str, vectorizador: TfidfVectorizer) -> List[Dict]:
             palabras_clave = extraer_palabras_clave(texto_limpio, vectorizador)
             
             fragmentos_global.append({
+                "id": int(next(ID_GENERATOR)),
                 "tipo": "github",
                 "contenido": chunk_texto,
                 "metadata": metadata,
                 "palabras_clave": palabras_clave,
                 "titulo": os.path.splitext(archivo)[0]
             })
+
 
     return fragmentos_global
 # EJECUCIÓN

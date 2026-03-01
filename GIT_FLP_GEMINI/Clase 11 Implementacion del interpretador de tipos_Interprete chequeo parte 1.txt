@@ -606,7 +606,11 @@ El intérprete interactivo se inicia utilizando `sllgen:make-rep-loop`, proporci
 ---
 METADATA
 ---
-TEMATICA: Clase 11 Implementacion del interpretador de tipos
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
 FUENTE: GIT
-NOMBRE_DOCUMENTO: Interprete chequeo parte 1.txt
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interprete chequeo parte 1
 URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interprete%20chequeo%20parte%201/
