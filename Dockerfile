@@ -11,6 +11,8 @@ RUN apt-get update && \
         gcc \
         g++ \
         python3-dev \
+        libffi-dev \
+        libssl-dev \
         libopenblas-dev \
         libpq-dev \
         curl \
@@ -19,7 +21,8 @@ RUN apt-get update && \
 # Copiar requirements e instalarlos
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --force-reinstall -r requirements.txt
 
 # Copiar todo el código
 COPY . .
