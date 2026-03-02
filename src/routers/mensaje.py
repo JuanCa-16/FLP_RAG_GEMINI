@@ -8,11 +8,12 @@ from src.database.database import SessionLocal
 from src.models.mensaje import Mensaje
 from src.models.mensaje_pregunta import MensajePregunta
 from src.models.mensaje_respuesta import MensajeRespuesta
+from src.schemas.mensaje_respuesta import MensajeRespuestaUpdate
 from src.models.respuesta_material import RespuestaMaterial
 from src.models.material_estudio import MaterialEstudio
 from src.models.chat import Chat
 from src.models.documento import Documento
-
+from src.routers.auth import get_current_user
 router = APIRouter()
 
 
@@ -342,13 +343,13 @@ def eliminar_material_de_respuesta(
 # HISTORIAL COMPLETO (ACTUALIZADO)
 # ============================================
 @router.get("/chat/{chat_id}/historial")
-def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
+def obtener_historial_chat(chat_id: int, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Obtiene el historial completo de un chat con materiales asociados.
     """
-    chat = db.query(Chat).filter(Chat.id == chat_id).first()
+    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.usuario == current_user.usuario).first()
     if not chat:
-        raise HTTPException(status_code=404, detail="Chat no encontrado")
+        raise HTTPException(status_code=404, detail="Chat no encontrado o sin permiso")
     
     mensajes = (
         db.query(Mensaje)
@@ -365,6 +366,7 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
             "tipo": mensaje.tipo,
             "fecha_mensaje": mensaje.fecha_mensaje,
             "content": None,
+            "calificacion": None,
             "documents": []
         }
         
@@ -383,6 +385,7 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
             
             if respuesta:
                 item["content"] = respuesta.respuesta
+                item["calificacion"] = respuesta.calificacion 
                 
                 # ⭐ OBTENER MATERIALES ASOCIADOS
                 materiales = (
@@ -417,4 +420,59 @@ def obtener_historial_chat(chat_id: int, db: Session = Depends(get_db)):
         "titulo": chat.titulo,
         "total_mensajes": len(historial),
         "historial": historial
+    }
+
+# ============================================
+# CALIFICAR RESPUESTA
+# ============================================
+@router.put("/respuesta/{mensaje_id}/calificar")
+def calificar_respuesta(
+    mensaje_id: int,
+    data: MensajeRespuestaUpdate,
+    db: Session = Depends(get_db),
+    current_user: str = Depends(get_current_user)  # usuario autenticado
+):
+    # 1️⃣ Buscar respuesta
+    respuesta = db.query(MensajeRespuesta).filter(
+        MensajeRespuesta.mensaje_id == mensaje_id
+    ).first()
+
+    if not respuesta:
+        raise HTTPException(status_code=404, detail="Respuesta no encontrada")
+
+    # 2️⃣ Obtener mensaje
+    mensaje = db.query(Mensaje).filter(
+        Mensaje.id == mensaje_id
+    ).first()
+
+    if mensaje.rol != "assistant":
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se pueden calificar respuestas del assistant"
+        )
+
+    # 3️⃣ Verificar que el chat pertenece al usuario
+    chat = db.query(Chat).filter(
+        Chat.id == mensaje.chat_id,
+        Chat.usuario == current_user.usuario
+    ).first()
+
+    if not chat:
+        raise HTTPException(
+            status_code=403,
+            detail="No tienes permiso para calificar esta respuesta"
+        )
+
+   # 4️⃣ Toggle de calificación
+    if respuesta.calificacion == data.calificacion:
+        respuesta.calificacion = None
+    else:
+        respuesta.calificacion = data.calificacion
+
+    db.commit()
+    db.refresh(respuesta)
+
+    return {
+        "mensaje_id": mensaje_id,
+        "calificacion": respuesta.calificacion
     }
