@@ -5,94 +5,104 @@ controlado por un estado.
 <CODIGO_BLOCK_START>
 Por ejemplo, los gatos pueden comer, hacer ruido, saltar, y
 dormirse, y dichas actividades son controladas por el estado
-actual en el que se encuentren, incluyendo qu´e tan
-hambrientos o cansados est´en.
-La programaci´on orientada a objetos es una tecnolog´ia ´util
+actual en el que se encuentren, incluyendo qué tan
+hambrientos o cansados estén.
+La programación orientada a objetos es una tecnología útil
 para resolver el problema de mantener la consistencia de los
 estados y asegurar que las variables que constituyen dichos
-estados sean actualizadas de una manera coordinada, a trav´es
+estados sean actualizadas de una manera coordinada, a través
 de una interfaz.
 <CODIGO_BLOCK_END>
 
-En la programaci´on orientada a objetos, un objeto consiste de
-campos (para almacenar estados) y m´etodos (para representar
+En la programación orientada a objetos, un objeto consiste de
+campos (para almacenar estados) y métodos (para representar
 comportamientos) asociados que tienen acceso a los campos.
-La operaci´on de llamado a un m´etodo es vista como el env´io
-del nombre del m´etodo y sus argumentos al objeto a manera
+La operación de llamado a un método es vista como el envío
+del nombre del método y sus argumentos al objeto a manera
 de mensaje .
 
 Muchas veces es necesario trabajar con objetos con
 comportamientos similares.
-Para facilitar el compartimiento (del ingl´es sharing ) de
-m´etodos, la programaci´on orientada a objetos provee clases ,
-las cuales son estructuras que especifican los campos y
-m´etodos de cada objeto.
+Para facilitar el compartimiento (del inglés sharing ) de
+métodos, la programación orientada a objetos provee clases ,
+las cuales son estructuras que especiﬁcan los campos y
+métodos de cada objeto.
 Los objetos son instancias de alguna clase.
 
-A veces, se necesita definir una nueva clase, que tiene s´olo
-unas peque˜nas modificaciones con respecto a una clase
-existente (la adici´on o cambio de un m´etodo ´o la adici´on o
+A veces, se necesita deﬁnir una nueva clase, que tiene sólo
+unas pequeñas modiﬁcaciones con respecto a una clase
+existente (la adición o cambio de un método ó la adición o
 cambio de un campo).
 En este caso, se dice que la nueva clase hereda de o extiende
 la clase existente.
 
-Otra caracter´istica importante de los lenguajes orientados a
-objetos es el polimorfismo . Este concepto tiene varias
+Otra característica importante de los lenguajes orientados a
+objetos es el polimorﬁsmo . Este concepto tiene varias
 acepciones.
-En este contexto (herencia o subclases) polimorfismo significa
+En este contexto (herencia o subclases) polimorﬁsmo signiﬁca
 que una instacia de una subclase pueda hacer el rol de un
 objeto de su superclase (clase de la cual hereda) de modo que
 pueda ser usada en los mismos lugares que una instancia de su
 superclase.
-Polimorfismo tambi´en puede significar que un valor puede
-tener m´as de un tipo.
+Polimorﬁsmo también puede signiﬁcar que un valor puede
+tener más de un tipo.
 
-En general, las caracter´isticas de un lenguaje orientado a objeto
-Los objetos encapsulan el comportamiento (m´etodos) y el
+En general, las características de un lenguaje orientado a objeto
+son:
+Los objetos encapsulan el comportamiento (métodos) y el
 estado (almacenado en los campos).
-Las clases agrupan los objetos que difieren s´olo en su estado.
+Las clases agrupan los objetos que diﬁeren sólo en su estado.
 La herencia permite a nuevas clases ser derivadas de algunas
 clases existente.
-El polimorfismo permite que un mismo tipo de mensaje pueda
+El polimorﬁsmo permite que un mismo tipo de mensaje pueda
 ser enviado a objetos de diferentes clases.
 
 El lenguaje del curso debe ser extendido mediante reglas de
-producci´on que permitan la programaci´on orientada o objetos.
-Un programa ser´a ahora, una secuencia de declaraciones de
-clases seguida de una expresi´on:
+producción que permitan la programación orientada o objetos.
+Un programa será ahora, una secuencia de declaraciones de
+clases seguida de una expresión:
 ⟨ programa ⟩
-{⟨ class-decl ⟩} ^∗⟨ expresi´on ⟩
+::=
+{⟨ class-decl ⟩} ∗ ⟨ expresión ⟩
 a-program (class-decls body)
 ⟨ class-decl ⟩
-class ⟨ identificador ⟩ extends ⟨ identificador ⟩
-{ field ⟨ identificador ⟩} ^∗{⟨ method-decl ⟩} ^∗
+::=
+class ⟨ identiﬁcador ⟩ extends ⟨ identiﬁcador ⟩
+{ field ⟨ identiﬁcador ⟩} ∗ {⟨ method-decl ⟩} ∗
 a-class-decl(class-name super-name
 fields-ids method-decls)
 ⟨ method-decl ⟩
-method ⟨ identificador ⟩ ( {⟨ identificador ⟩} ^∗^(^,^))
-⟨ expresi´on ⟩
+::=
+method ⟨ identiﬁcador ⟩ ( {⟨ identiﬁcador ⟩} ∗ ( , ) )
+⟨ expresión ⟩
 a-method-decl (method-name ids body).
 
-Se deben agregar reglas de producci´on para las expresiones, de
-modo que se puedan crear objetos, invocar m´etodos y hacer super
+Se deben agregar reglas de producción para las expresiones, de
+modo que se puedan crear objetos, invocar métodos y hacer super
 llamados:
-⟨ expresi´on ⟩
-new ⟨ identificador ⟩ ( {⟨ expresi´on ⟩} ^∗^(^,^))
+⟨ expresión ⟩
+::=
+new ⟨ identiﬁcador ⟩ ( {⟨ expresión ⟩} ∗ ( , ) )
 new-object-exp (class-name rands)
-⟨ expresi´on ⟩
-send ⟨ expresi´on ⟩⟨ identificador ⟩ ( {⟨ expresi´on ⟩} ^∗^(^,^))
+⟨ expresión ⟩
+::=
+send ⟨ expresión ⟩⟨ identiﬁcador ⟩ ( {⟨ expresión ⟩} ∗ ( , ) )
 method-app-exp (obj-exp method-name rands)
-⟨ expresi´on ⟩
-super ⟨ identificador ⟩ ( {⟨ expresi´on ⟩} ^∗^(^,^))
+⟨ expresión ⟩
+::=
+super ⟨ identiﬁcador ⟩ ( {⟨ expresión ⟩} ∗ ( , ) )
 super-call-exp (method-name rands).
 
 Se extiende el conjunto de valores expresados y denotados del
 lenguaje de la siguiente manera:
 Valor Denotado
+=
 Ref(Valor Expresado)
 Valor Expresado
-N´umero + ProcVal + Obj +
+=
+Número + ProcVal + Obj +
 Lista(Valores Expresados).
+
 
 <CODIGO_BLOCK_START>
 Ejemplos:
@@ -103,21 +113,23 @@ method initialize (x)
 begin
 set i = x;
 set j = -(0,x)
+end
 method countup (d)
 begin
 set i = +(i,d);
 set j = -(j,d)
+end
 method getstate () list(i,j).
 <CODIGO_BLOCK_END>
 
-El c´odigo anterior declara una clase c1 que hereda de object .
-Cada objeto de la clase c1 contendr´a dos campos llamados i
-y j , y tres m´etodos llamados initialize , countup y
+El código anterior declara una clase c1 que hereda de object .
+Cada objeto de la clase c1 contendrá dos campos llamados i
+y j , y tres métodos llamados initialize , countup y
 getstate .
-Los nombres de los m´etodos corresponden a los tipos de
+Los nombres de los métodos corresponden a los tipos de
 mensajes a los que las instancias de c1 pueden responder.
 
-Las clases definidas en el c´odigo anterior se pueden usar de la
+Las clases deﬁnidas en el código anterior se pueden usar de la
 siguiente manera:
 let t1 = 0
 t2 = 0
@@ -126,22 +138,24 @@ in begin
 set t1 = send o1 getstate();
 send o1 countup(2);
 set t2 = send o1 getstate();
-list(t1,t2).
+list(t1,t2)
+end.
 
-En la expresi´on anterior se crean dos variables t1 y t2 y un
-objeto de la clase ya definida, o1 .
+En la expresión anterior se crean dos variables t1 y t2 y un
+objeto de la clase ya deﬁnida, o1 .
 Cuando un objeto es creado (por medio de un new ), su
-m´etodo initialize es invocado.
+método initialize es invocado.
 En este caso initialize iguala i a 3 y j a -3.
-Luego, en el cuerpo del let , el m´etodo getstate de o1 es
+Luego, en el cuerpo del let , el método getstate de o1 es
 invocado, retornando la lista (3,-3) .
 
-Despu´es el m´etodo countup de o1 es invocado, cambiando el
+Después el método countup de o1 es invocado, cambiando el
 valor de los dos campos a 5 y -5.
-En la siguiente l´inea el m´etodo getstate es invocado,
+En la siguiente línea el método getstate es invocado,
 retornando la lista (5,-5) .
-Por ´ultimo, el valor de list(t1,t2) (que es ((3 -3) (5
+Por último, el valor de list(t1,t2) (que es ((3 -3) (5
 -5)) ) es retornado como el valor de todo el programa.
+
 
 <CODIGO_BLOCK_START>
 Ejemplos:
@@ -152,38 +166,42 @@ method initialize (l, r)
 begin
 set left = l;
 set right = r
+end
 method sum () +(send left sum(),send right sum())
 class leaf_node extends object
 field value
 method initialize (v) set value v
 method sum () value.
 
+let
 o1 = new interior_node(
 new interior_node(new leaf_node(3),
 new leaf_node(4)),
 new leaf_node(5))
+in
 send o1 sum()
-En el c´odigo anterior, se tienen dos clases de nodos de un
-´arbol: interior_node y leaf_node .
+En el código anterior, se tienen dos clases de nodos de un
+árbol: interior_node y leaf_node .
 Para encontrar la suma de las hojas de un nodo, se invoca el
-m´etodo sum .
+método sum .
 <CODIGO_BLOCK_END>
 
-Sin embargo, no se sabe a cu´al clase de nodo se env´ia dicho
+Sin embargo, no se sabe a cuál clase de nodo se envía dicho
 mensaje; simplemente cada nodo acepta el mensaje sum y usa
-su m´etodo sum propio.
-Lo anterior es llamado despacho din´amico y es usado para
-implementar el polimorfismo de subclases.
-La expresi´on let construye un ´arbol con dos nodos interiores
+su método sum propio.
+Lo anterior es llamado despacho dinámico y es usado para
+implementar el polimorﬁsmo de subclases.
+La expresión let construye un árbol con dos nodos interiores
 y tres hojas.
-Se env´ia un mensaje sum al nodo o1 ; o1 env´ia mensajes sum a
-sus sub´arboles, y as´i sucesivamente, retornando 12.
+Se envía un mensaje sum al nodo o1 ; o1 envía mensajes sum a
+sus subárboles, y así sucesivamente, retornando 12.
+
 
 <CODIGO_BLOCK_START>
 Ejemplos:
-Un m´etodo puede invocar otros m´etodos del mismo objeto usando
-el identificador self , el cual est´a ligado al objeto en el cual el
-m´etodo es invocado.
+Un método puede invocar otros métodos del mismo objeto usando
+el identiﬁcador self , el cual está ligado al objeto en el cual el
+método es invocado.
 class oddeven extends object
 method initialize () 1
 method even (n)
@@ -194,19 +212,19 @@ let o1 = new oddeven()
 in send o1 odd(13).
 <CODIGO_BLOCK_END>
 
-La herencia permite al programador definir nuevas clases con
-la modificaci´on incremental de las clases existentes.
+La herencia permite al programador deﬁnir nuevas clases con
+la modiﬁcación incremental de las clases existentes.
 Si una clase c 2 extiende una clase c 1, se dice que c 1 es el
 padre de c 2, o que c 2 es el hijo de c 1.
-Como la herencia define a c 2 como una extensi´on de c 1, ´esta
-´ultima debe estar definida antes que c 2.
-Es por esto que se introduce una clase object sin m´etodos o
+Como la herencia deﬁne a c 2 como una extensión de c 1, ésta
+última debe estar deﬁnida antes que c 2.
+Es por esto que se introduce una clase object sin métodos o
 campos, de la cual heredan todas las clases que se vayan a
 crear.
-Adem´as, como object no tiene m´etodo initialize , es
+Además, como object no tiene método initialize , es
 imposible crear un objeto de dicha clase.
 
-Se tiene el siguiente c´odigo:
+Se tiene el siguiente código:
 class c1 extends object
 field x
 field y
@@ -221,7 +239,9 @@ method sety2 (v) set y = v
 method getx2 () x
 method gety2 () y.
 
+let
 o2 = new c2()
+in
 begin
 send o2 setx1(101);
 send o2 sety1(102);
@@ -233,20 +253,22 @@ send o2 gety1(),
 send o2 getx2(),
 % retorna 101
 send o2 gety2())
-% retorna 999.
+% retorna 999
+end.
 
-En el c´odigo anterior, un objeto de clase c2 tiene dos campos
+En el código anterior, un objeto de clase c2 tiene dos campos
 llamados y : uno declarado en c1 y el otro declarado en c2 .
-Los m´etodos declarados en c1 ven los campos x y y de c1 .
-En c2 , la referencia a x en el m´etodo getx2 se refiere al
-campo x de c1 , mientras que la referencia a y en el m´etodo
-gety2 se refiere al campo y de c2 .
+Los métodos declarados en c1 ven los campos x y y de c1 .
+En c2 , la referencia a x en el método getx2 se reﬁere al
+campo x de c1 , mientras que la referencia a y en el método
+gety2 se reﬁere al campo y de c2 .
 
-Si un m´etodo m de una clase c 1 es redeclarado en una de sus
-subclases c 2, se dice que el nuevo m´etodo anula el m´etodo
+Si un método m de una clase c 1 es redeclarado en una de sus
+subclases c 2, se dice que el nuevo método anula el método
 viejo.
 Si un mensaje m es enviado a un objeto de clase c 2, el nuevo
-m´etodo es usado.
+método es usado.
+
 
 <CODIGO_BLOCK_START>
 Ejemplo:
@@ -259,8 +281,10 @@ class c2 extends c1
 method initialize () 1
 method m2 () 2.
 
+let
 o1 = new c1()
 o2 = new c2()
+in
 list(send o1 m1(),
 % retorna 1
 send o1 m2(),
@@ -275,17 +299,18 @@ send o2 m3())
 % retorna 2 (m3 de c1 llama a m2 de c2).
 <CODIGO_BLOCK_END>
 
-Cuando o2 env´ia el mensaje m3 , el cuerpo del m´etodo en c1
+Cuando o2 envía el mensaje m3 , el cuerpo del método en c1
 es evaluado, con self ligado a o2 .
-Sin embargo, el m´etodo para el mensaje m2 , es m2 de c2 .
-Cuando el m´etodo a ser ejecutado, no se determina sin
-conocer la clase actual del objeto en el cual el m´etodo es
-invocado (solo se conocer´a en tiempo de ejecuci´on), se dice
-que hay despacho din´amico de m´etodos .
-Si el m´etodo a ser ejecutado se determina desde la declaraci´on
-de la superclase, se dice que hay despacho est´atico de
-m´etodos .
-En nuestro lenguaje usaremos despacho din´amico de m´etodos.
+Sin embargo, el método para el mensaje m2 , es m2 de c2 .
+Cuando el método a ser ejecutado, no se determina sin
+conocer la clase actual del objeto en el cual el método es
+invocado (solo se conocerá en tiempo de ejecución), se dice
+que hay despacho dinámico de métodos .
+Si el método a ser ejecutado se determina desde la declaración
+de la superclase, se dice que hay despacho estático de
+métodos .
+En nuestro lenguaje usaremos despacho dinámico de métodos.
+
 
 <CODIGO_BLOCK_START>
 Ejemplos:
@@ -297,25 +322,27 @@ method initialize (initx, inity)
 begin
 set x = initx;
 set y = inity
+end
 class colorpoint extends point
 field color
 method initialize (initx, inity, initcolor)
 begin
 super initialize (initx, inity);
-set color = initcolor.
+set color = initcolor
+end.
 <CODIGO_BLOCK_END>
 
-Cuando se incorporan los conceptos de programaci´on
+Cuando se incorporan los conceptos de programación
 orientada a objetos, un programa consta de un conjunto de
-declaraciones de clase y de una expresi´on.
+declaraciones de clase y de una expresión.
 Cuando un programa es evaluado, las declaraciones de clases
 son procesadas por elaborate-class-decls! , y luego la
-expresi´on es evaluada.
+expresión es evaluada.
 El trabajo de elaborate-class-decls! es almacenar las
 declaraciones de clases de forma que ellas se hagan accesibles
 para cuando se necesiten.
 
-El procedimiento eval-program estar´a definido de la siguiente
+El procedimiento eval-program estará deﬁnido de la siguiente
 manera:
 (define eval-program
 (lambda (pgm)
@@ -324,19 +351,19 @@ manera:
 (elaborate-class-decls! c-decls)
 (eval-expression exp (init-env)))))).
 
-Cuando se incorporan objetos al lenguaje se definen tres
-nuevos tipos de expresiones (creaci´on, invocaci´on de m´etodos
+Cuando se incorporan objetos al lenguaje se deﬁnen tres
+nuevos tipos de expresiones (creación, invocación de métodos
 y super llamados).
 Se deben agregar tres nuevos casos a eval-expression para
-estas tres nuevas reglas de producci´on.
-Cuando una expresi´on send es evaluada, los operandos y la
-expresi´on de objeto son evaluados.
-Luego, find-method-and-apply encuentra el m´etodo
-asociado con el nombre del m´etodo en la declaraci´on del
-objeto, y dicho m´etodo es aplicado a sus argumentos.
+estas tres nuevas reglas de producción.
+Cuando una expresión send es evaluada, los operandos y la
+expresión de objeto son evaluados.
+Luego, find-method-and-apply encuentra el método
+asociado con el nombre del método en la declaración del
+objeto, y dicho método es aplicado a sus argumentos.
 
 Se debe incorporar el siguiente caso al procedimiento
-eval-expression para las expresiones de invocaci´on de m´etodos
+eval-expression para las expresiones de invocación de métodos
 ( send ):
 (method-app-exp (obj-exp method-name rands)
 (let ((args (eval-rands rands env))
@@ -345,32 +372,32 @@ eval-expression para las expresiones de invocaci´on de m´etodos
 method-name (object->class-name obj) obj args))).
 
 find-method-and-apply toma cuatro argumentos:
-1 un nombre de m´etodo,
-2 el nombre de la clase en la cual se comenzar´a a buscar el
-m´etodo,
+1 un nombre de método,
+2 el nombre de la clase en la cual se comenzará a buscar el
+método,
 3 el valor de self y
 4 la lista de argumentos.
 
-Un super llamado es similar a la invocaci´on de m´etodos normal,
-excepto que el m´etodo es buscado en la superclase de la clase
-hu´esped de la expresi´on.
+Un super llamado es similar a la invocación de métodos normal,
+excepto que el método es buscado en la superclase de la clase
+huésped de la expresión.
 (super-call-exp (method-name rands)
 (let ((args (eval-rands rands env))
 (obj (apply-env env ’self)))
 (find-method-and-apply
 method-name (apply-env env ’%super) obj args)))
-El nombre de la superclase ser´a ligada a una variable especial
+El nombre de la superclase será ligada a una variable especial
 llamada %super .
 
-El ´ultimo caso que debe considerarse en el procedimiento
-eval-expression es el de creaci´on de objetos.
-Cuando una expresi´on new es evaluada, los operandos son
+El último caso que debe considerarse en el procedimiento
+eval-expression es el de creación de objetos.
+Cuando una expresión new es evaluada, los operandos son
 evaluados y un nuevo objeto del nombre de la clase es creado.
-Luego, su m´etodo initialize es llamado, pero su valor es
+Luego, su método initialize es llamado, pero su valor es
 ignorado.
-Por ´ultimo, el objeto es retornado.
+Por último, el objeto es retornado.
 
-Se debe a˜nadir la siguiente clausula al procedimiento
+Se debe añadir la siguiente clausula al procedimiento
 eval-expression :
 (new-object-exp (class-name rands)
 (let ((args (eval-rands rands env))
@@ -379,19 +406,19 @@ eval-expression :
 ’initialize class-name obj args)
 obj)).
 
-Cualquier implementaci´on debe proveer los procedimientos
+Cualquier implementación debe proveer los procedimientos
 elaborate-class-decls! , find-method-and-apply ,
 object->class-name , y new-object .
-Adem´as, cada implementaci´on de proveer las estructuras de
+Además, cada implementación de proveer las estructuras de
 datos y otros procedimientos que se requieran.
 
-Una declaraci´on de clase contiene toda la informaci´on que se
+Una declaración de clase contiene toda la información que se
 necesita, incluyendo el nombre de la clase, el de superclase,
-sus campos y sus declaraciones de m´etodos.
-Por lo tanto, se representar´an las clases y m´etodos por sus
+sus campos y sus declaraciones de métodos.
+Por lo tanto, se representarán las clases y métodos por sus
 declaraciones.
 
-Una declaraci´on de clase es un tipo de dato definido de la siguiente
+Una declaración de clase es un tipo de dato deﬁnido de la siguiente
 manera:
 (define-datatype class-decl class-decl?
 (a-class-decl
@@ -400,25 +427,25 @@ manera:
 (field-ids (list-of symbol?))
 (methods-decls (list-of method-decl?)))).
 
-Una declaraci´on de m´etodo est´a definida de la siguiente manera:
+Una declaración de método está deﬁnida de la siguiente manera:
 (define-datatype method-decl method-decl?
 (a-method-decl
 (method-name symbol?)
 (methods-args (list-of symbol?))
 (body expression?))).
 
-El repositorio de declaraciones de clases se construir´a usando
+El repositorio de declaraciones de clases se construirá usando
 la variable global the-class-env .
-El procedimiento elaborate-class-decls! modificar´a el
+El procedimiento elaborate-class-decls! modiﬁcará el
 contenido de la variable the-class-env con las declaraciones
-de clase que se est´an definiendo.
+de clase que se están deﬁniendo.
 (define the-class-env ’())
 (define elaborate-class-decls!
 (lambda (c-decls)
 (set! the-class-env c-decls))).
 
 El procedimiento lookup-class busca un nombre de clase en
-the-class-env y retorna su correspondiente declaraci´on.
+the-class-env y retorna su correspondiente declaración.
 (define lookup-class
 (lambda (name)
 (let loop ((env the-class-env))
@@ -435,6 +462,7 @@ cada parte corresponde a cada clase en la cadena de herencia.
 Cada parte consiste del nombre de la clase y un vector que
 mantiene el estado de la clase.
 
+
 <CODIGO_BLOCK_START>
 Ejemplo:
 class c1 extends object
@@ -444,6 +472,7 @@ method initialize ()
 begin
 set x = 11;
 set y = 12
+end
 method m1 () ... x ... y ...
 method m2 () ... send self m3() ...
 <CODIGO_BLOCK_END>
@@ -454,6 +483,7 @@ method initialize ()
 begin
 super initialize();
 set y = 22
+end
 method m1 (u, v) ... x ... y ...
 method m3 () ...
 
@@ -465,22 +495,32 @@ begin
 super initialize();
 set x = 31;
 set z = 32
+end
 method m3 () ... x ... y ... z ...
 let o3 = new c3()
 in send o3 m1(7,8).
 
-La representaci´on de o3 se muestra en la siguiente figura:
+La representación de o3 se muestra en la siguiente ﬁgura:
 a−part c3
 31 32
 a−part
 a−part
+c2
+22
+c1
 11 12
-La declaraci´on de la primera parte de la lista representa el
-punto m´as bajo de la cadena de clases.
-Mientras m´as se avance en la lista, m´as cerca se estar´a del
-tope de la jerarqu´ia.
+x
+x
+y
+y
+z
+o3
+La declaración de la primera parte de la lista representa el
+punto más bajo de la cadena de clases.
+Mientras más se avance en la lista, más cerca se estará del
+tope de la jerarquía.
 
-Cada una de las partes mostradas anteriormente, se definen con el
+Cada una de las partes mostradas anteriormente, se deﬁnen con el
 tipo de dato part :
 (define-datatype part part?
 (a-part
@@ -490,17 +530,18 @@ tipo de dato part :
 Para construir un objeto, se construye una lista de partes,
 dado un nombre de clase.
 Si el nombre es object , entonces se sabe que se ha llegado al
-tope de la cadena de herencia y no hay m´as partes a construir.
-De lo contrario, se encuentra la declaraci´on de clase
+tope de la cadena de herencia y no hay más partes a construir.
+De lo contrario, se encuentra la declaración de clase
 correspondiente al nombre de clase dado y se retorna una lista
 cuyo primer elemento es la primera parte y cuya cola es
 obtenida haciendo un llamado recursivo con su superclase.
 
-El procedimiento new-object estar´a definido de la siguiente
+El procedimiento new-object estará deﬁnido de la siguiente
 manera:
 (define new-object
 (lambda (class-name)
 (if (eqv? class-name ’object)
+’()
 (let ((c-decl (lookup-class class-name)))
 (cons
 (make-first-part c-decl)
@@ -513,14 +554,14 @@ manera:
 (make-vector (length (class-decl->field-ids c-decl)))))).
 
 En el procedimiento find-method-and-apply , se buscan las
-clases a trav´es de la cadena de herencia hasta que se
-encuentre una clase que declare un m´etodo que sea igual al
-nombre de m´etodo dado.
+clases a través de la cadena de herencia hasta que se
+encuentre una clase que declare un método que sea igual al
+nombre de método dado.
 Cuando esto sucede, se hace un llamado a apply-method con
-la declaraci´on de m´etodo encontrada, el nombre de la clase
-hu´esped, self y los argumentos.
+la declaración de método encontrada, el nombre de la clase
+huésped, self y los argumentos.
 
-El procedimiento find-method-and-apply estar´a definido de la
+El procedimiento find-method-and-apply estará deﬁnido de la
 siguiente manera:
 (define find-method-and-apply
 (lambda (m-name host-name self args)
@@ -535,16 +576,16 @@ siguiente manera:
 (class-name->super-name host-name)
 self args)))))).
 
-Para aplicar un m´etodo, se debe ejecutar el cuerpo del m´etodo
-en un ambiente en el cual cada variable est´e ligada al valor
+Para aplicar un método, se debe ejecutar el cuerpo del método
+en un ambiente en el cual cada variable esté ligada al valor
 apropiado, es decir, un ambiente en el cual el primer elemento
-contenga la ligadura para %super , para self y los par´ametros
-formales del m´etodo.
+contenga la ligadura para %super , para self y los parámetros
+formales del método.
 El resto del ambiente provee una ligadura para cada campo
-que es visible desde el m´etodo (aquellos campos que empiezan
-con la clase hu´esped).
+que es visible desde el método (aquellos campos que empiezan
+con la clase huésped).
 
-La siguiente figura muestra el ambiente para la aplicaci´on del
+La siguiente ﬁgura muestra el ambiente para la aplicación del
 
 <CODIGO_BLOCK_START>
 ejemplo mostrado anteriormente:
@@ -552,15 +593,29 @@ a−part c3
 31 32
 a−part
 a−part
+22
+y
 11 12
+x
+y
+c2
+c1
+x
+z
+o3
+c1
+7
+8
+env
 (x y)
+(y)
 (%super self u v).
 <CODIGO_BLOCK_END>
 
 Si se ejecuta send o3 m1(7,8) , entonces los campos visibles
-desde el m´etodo m1 son aquellos que comienzan en la parte de
-o3 , que corresponden al m´etodo m1 de la clase c2 .
-De all´i que los nombres de clase dan una vista del objeto; se
+desde el método m1 son aquellos que comienzan en la parte de
+o3 , que corresponden al método m1 de la clase c2 .
+De allí que los nombres de clase dan una vista del objeto; se
 puede encontrar la vista con el procedimiento:
 (define view-object-as
 (lambda (parts class-name)
@@ -574,7 +629,7 @@ Cada elemento liga los campos de una parte usando el vector
 ya construido.
 Para esto se utiliza el procedimiento build-field-env .
 
-El procedimiento build-field-env estar´a definido de la siguiente
+El procedimiento build-field-env estará deﬁnido de la siguiente
 manera:
 (define build-field-env
 (lambda (parts)
@@ -582,6 +637,7 @@ manera:
 (empty-env)
 (extend-env-refs
 (part->field-ids (car parts))
+%
 (part->fields
 (car parts))
 (build-field-env (cdr parts))))))
@@ -589,7 +645,7 @@ manera:
 (lambda (syms vec env)
 (extended-env-record syms vec env))).
 
-Finalmente, el procedimiento apply-method estar´a definido de la
+Finalmente, el procedimiento apply-method estará deﬁnido de la
 siguiente manera:
 (define apply-method
 (lambda (m-decl host-name self args)
@@ -604,15 +660,16 @@ siguiente manera:
 (view-object-as self host-name))))))).
 
 Es deseable que no se construyan todos esos elementos cada
-vez que se hace un llamado a un m´etodo.
-Ser´ia mejor representar todo el almacenamiento de un objeto
+vez que se hace un llamado a un método.
+Sería mejor representar todo el almacenamiento de un objeto
 como un vector, en vez de una lista de partes. Es decir,
 (define-datatype object object?
 (an-object
 (class-name symbol?)
 (fields vector?)))
-Los campos se almacenar´an tomando los de la clase mas
+Los campos se almacenarán tomando los de la clase mas
 “vieja”primero.
+
 
 <CODIGO_BLOCK_START>
 Retomando el ejemplo mostrado anteriormente:
@@ -623,6 +680,7 @@ method initialize ()
 begin
 set x = 11;
 set y = 12
+end
 method m1 () ... x ... y ...
 method m2 () ... send self m3() ...
 <CODIGO_BLOCK_END>
@@ -633,6 +691,7 @@ method initialize ()
 begin
 super initialize();
 set y = 22
+end
 method m1 (u, v) ... x ... y ...
 method m3 () ...
 
@@ -644,27 +703,36 @@ begin
 super initialize();
 set x = 31;
 set z = 32
+end
 method m3 () ... x ... y ... z ...
 let o3 = new c3()
 in send o3 m1(7,8).
 
+
 <CODIGO_BLOCK_START>
-En este ejemplo, un objeto de clase c1 tendr´a sus campos
-organizados como (x y) ; un objeto de clase c2 tendr´a sus
+En este ejemplo, un objeto de clase c1 tendrá sus campos
+organizados como (x y) ; un objeto de clase c2 tendrá sus
 campos como (x y y) , siendo el segundo y el que pertenece
-a c2 ; y un objeto de clase c3 ser´a organizado como (x y y x
-La siguiente figura muestra la representaci´on del objeto o3 :
+a c2 ; y un objeto de clase c3 será organizado como (x y y x
+z) .
+La siguiente ﬁgura muestra la representación del objeto o3 :
 an−object
-11 12 22 31 32.
+c3
+11 12 22 31 32
+x
+y
+y
+x
+z.
 <CODIGO_BLOCK_END>
 
-Como se espera que los m´etodos de la clase c3 se refieran al
+Como se espera que los métodos de la clase c3 se reﬁeran al
 campo x declarado en c3 , y no al declarado en c1 , se debe
-cambiar la implementaci´on de los ambientes, para que se use
-la ocurrencia de la variable que est´a m´as a la derecha del
+cambiar la implementación de los ambientes, para que se use
+la ocurrencia de la variable que está más a la derecha del
 vector.
 
-Para soportar esto, se redefine rib-find-position :
+Para soportar esto, se redeﬁne rib-find-position :
 (define rib-find-position
 (lambda (name symbols)
 (list-find-last-position name symbols)))
@@ -678,22 +746,22 @@ Para soportar esto, se redefine rib-find-position :
 (loop (cdr los) (+ curpos 1) curpos))
 (else (loop (cdr los) (+ curpos 1) lastpos)))))).
 
-Como no se ha cambiado la representaci´on de las clases ni de
-los m´etodos, s´olo se deben considerar dos procedimientos:
+Como no se ha cambiado la representación de las clases ni de
+los métodos, sólo se deben considerar dos procedimientos:
 new-object y find-method-and-apply .
 El procedimiento new-object crea el vector haciendo un
 llamado a rool-up-field-length .
 
 rool-up-field-length es un procedimiento recursivo que
-empieza con un nombre de clase y encuentra el n´umero total
+empieza con un nombre de clase y encuentra el número total
 de campos que deben ser almacenados para un objeto de
 dicha clase.
 Si la clase es object , no hay campos; de lo contrario, el
-n´umero de campos es la suma del n´umero de campos
-necesitados para la clase padre y el n´umero de campos de la
+número de campos es la suma del número de campos
+necesitados para la clase padre y el número de campos de la
 clase actual.
 
-El procedimiento new-object estar´a definido de la siguiente
+El procedimiento new-object estará deﬁnido de la siguiente
 manera:
 (define new-object
 (lambda (class-name)
@@ -703,17 +771,18 @@ class-name
 (define roll-up-field-length
 (lambda (class-name)
 (if (eqv? class-name ’object)
+0
 (+ (roll-up-field-length
 (class-name->super-name class-name))
 (length (class-name->field-ids class-name)))))).
 
 El procedimiento find-method-and-apply no cambia, ya
-que no se trabaja con la representaci´on del objeto.
-Sin embargo, apply-method si se redefine: como hay s´olo un
+que no se trabaja con la representación del objeto.
+Sin embargo, apply-method si se redeﬁne: como hay sólo un
 vector de campos, se construye un solo elemento para los
 campos.
 
-El procedimiento apply-method estar´a definido de la siguiente
+El procedimiento apply-method estará deﬁnido de la siguiente
 manera:
 (define apply-method
 (lambda (m-decl host-name self args)
@@ -730,58 +799,69 @@ manera:
 
 El procedimiento apply-method llama a
 rool-up-fields-ids para construir una lista igual de
-identificadores.
-La lista de identificadores generalmente es del mismo tama˜no
-que el vector de campos cuando la clase hu´esped y la clase de
+identiﬁcadores.
+La lista de identiﬁcadores generalmente es del mismo tamaño
+que el vector de campos cuando la clase huésped y la clase de
 self son la misma.
-Si la clase hu´esped est´a m´as arriba, en la cadena de clases,
-entonces habr´a m´as elementos en el vector que en la lista.
+Si la clase huésped está más arriba, en la cadena de clases,
+entonces habrá más elementos en el vector que en la lista.
 
-El procedimiento rool-up-fields-ids estar´a definido de la
+El procedimiento rool-up-fields-ids estará deﬁnido de la
 siguiente manera:
 (define roll-up-field-ids
 (lambda (class-name)
 (if (eqv? class-name ’object)
+’()
 (append
 (roll-up-field-ids
 (class-name->super-name class-name))
 (class-name->field-ids class-name))))).
 
-La siguiente figura muestra el ambiente para la aplicaci´on en send
-o3 m1(7,8) , en la representaci´on de objetos planos:
+La siguiente ﬁgura muestra el ambiente para la aplicación en send
+o3 m1(7,8) , en la representación de objetos planos:
 11 12 22 31 32
+x
+y
+y
+x
+z
+c1
+7
+8
+env
 (%super self u v)
 an−object
+c3
 (x y y)
 binding for y.
 
-Aqu´i se ve que el vector puede ser m´as largo que la lista de
-identificadores.
-La lista de identificadores es s´olo (x y y) ya es que s´olo
+Aquí se ve que el vector puede ser más largo que la lista de
+identiﬁcadores.
+La lista de identiﬁcadores es sólo (x y y) ya es que sólo
 dichas variables son visibles desde m1 de c2 .
 
 Para evitar el llamado a roll-up-field-ids en cada
-llamado a un m´etodo, se necesita calcular esta informaci´on y
-almacenarla con el m´etodo.
-Adem´as, se almacenar´a el nombre del m´etodo de la
+llamado a un método, se necesita calcular esta información y
+almacenarla con el método.
+Además, se almacenará el nombre del método de la
 superclase, para usarlo en super llamados.
 
 De esta manera, se crea un nuevo tipo de dato para mantener toda
-esta informaci´on:
+esta información:
 (define-datatype method method?
 (a-method
 (method-decl method-decl?)
 (super-name symbol?)
 (field-ids (list-of symbol?)))).
 
-La informaci´on almacenada es est´atica , es decir, no depende
+La información almacenada es estática , es decir, no depende
 de valores denotados o expresados que puedan aparecer
 cuando el programa es ejecutado.
-De esta manera, es mucho mejor calcularla ex´actamente una
+De esta manera, es mucho mejor calcularla exáctamente una
 vez por clase. Para hacerlo, se necesita un tipo de dato para
 las clases.
 
-El tipo de dato class estar´a definido as´i:
+El tipo de dato class estará deﬁnido así:
 (define-datatype class class?
 (a-class
 (class-name symbol?)
@@ -791,20 +871,39 @@ El tipo de dato class estar´a definido as´i:
 (methods method-environment?)))
 (define method-environment? (list-of method?)).
 
-La siguiente figura muestra las estructuras de clases y m´etodos
+La siguiente ﬁgura muestra las estructuras de clases y métodos
 
 <CODIGO_BLOCK_START>
 para el ejemplo mostrado anteriormente:
+c1
 object
+2
 (x y)
 object
 (x y)
+m2
+( )
+m1
 object
 (x y)
+( )
+m1
+c2
+c1
+3
 (x y y)
+c1
 (x y y)
+c1
 (x y y)
+m3
+c3
+c2
+5
 (x y y x z)
+m3
+( )
+c2
 (x y y x z)
 nombre
 superclase
@@ -819,7 +918,7 @@ identificadores
 cuerpo del metodo.
 <CODIGO_BLOCK_END>
 
-Las clases se contruyen redefiniendo el procedimiento
+Las clases se contruyen redeﬁniendo el procedimiento
 elaborate-class-decls! :
 (define elaborate-class-decls!
 (lambda (c-decls)
@@ -842,25 +941,26 @@ field-ids
 c-decl super-name field-ids))))))).
 
 El procedimiento rool-up-method-decls cambia cada
-declaraci´on de m´etodo a un m´etodo, y retorna la lista de m´etodos:
+declaración de método a un método, y retorna la lista de métodos:
 (define roll-up-method-decls
 (lambda (c-decl super-name field-ids)
+(map
 (lambda (m-decl)
 (a-method m-decl super-name field-ids))
 (class-decl->method-decls c-decl)))).
 
 Se deben ajustar los procedimientos
 find-method-and-apply y apply-method para esta
-representaci´on.
+representación.
 find-method-and-apply no cambia excepto que cada
-referencia a una declaraci´on de m´etodo es ahora una
-referencia a un m´etodo.
-El procedimiento apply-method ahora toma un m´etodo (en
-vez de una declaraci´on de m´etodo) como primer argumento, y
-obtiene la lista de identificadores del m´etodo (en vez de llamar
+referencia a una declaración de método es ahora una
+referencia a un método.
+El procedimiento apply-method ahora toma un método (en
+vez de una declaración de método) como primer argumento, y
+obtiene la lista de identiﬁcadores del método (en vez de llamar
 a rool-up-fields-ids ).
 
-El procedimiento apply-method se redefine de la siguiente manera:
+El procedimiento apply-method se redeﬁne de la siguiente manera:
 (define apply-method
 (lambda (method host-name self args)
 (let ((ids (method->ids method))
@@ -874,7 +974,7 @@ El procedimiento apply-method se redefine de la siguiente manera:
 (cons super-name (cons self args))
 (extend-env-refs field-ids fields (empty-env))))))).
 
-Por ´ultimo, se cambia new-object para obtener la informaci´on
+Por último, se cambia new-object para obtener la información
 requerida de la clase:
 (define new-object
 (lambda (class-name)

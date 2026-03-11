@@ -155,3 +155,40 @@ def estadisticas_biblioteca(username: str, db: Session = Depends(get_db)):
         "por_fuente": [{"fuente": f, "cantidad": c} for f, c in por_fuente],
         "por_nivel": [{"nivel": n, "cantidad": c} for n, c in por_nivel]
     }
+
+# ============================================
+# HISTORIAL IMPLÍCITO PARA RECOMENDADOR
+# ============================================
+
+@router.get("/usuario/{username}/historial-implicito")
+def obtener_historial_implicito(username: str, limit: int = 1, db: Session = Depends(get_db)):
+    """
+    Obtiene el historial implícito del usuario basado en su biblioteca.
+    Distingue entre fragmentos específicos y documentos completos.
+    """
+    
+    # Obtener TODAS las entradas (con y sin material_id)
+    resultados = (
+        db.query(
+            Biblioteca.material_id,
+            Biblioteca.documento_id,
+            Biblioteca.fecha_consulta,
+            MaterialEstudio.material_embedding
+        )
+        .outerjoin(MaterialEstudio, MaterialEstudio.id == Biblioteca.material_id)
+        .filter(Biblioteca.usuario == username)
+        .order_by(Biblioteca.fecha_consulta.desc())
+        .limit(limit)
+        .all()
+    )
+    
+    return [
+        {
+            "tipo": "fragmento" if material_id else "documento_completo",
+            "material_id": material_id,
+            "documento_id": documento_id,
+            "fecha_consulta": fecha_consulta,
+            "material_embedding": [float(x) for x in material_embedding] if material_embedding is not None else None
+        }
+        for material_id, documento_id, fecha_consulta, material_embedding in resultados
+    ]

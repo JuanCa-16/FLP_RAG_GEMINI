@@ -3,8 +3,8 @@ Entonces, ya a partir de aquí vamos nosotros a comenzar a hablar de la implemen
 --- METADATA ---
 LINK_VIDEO: https://www.youtube.com/watch?v=ZqTptDxsXCs
 CORTE: Corte 2
-TEMATICA: Inferencia de tipos
-COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
-RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
-NIVEL_DIFICULTAD: Media
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
 FUENTE: VIDEO

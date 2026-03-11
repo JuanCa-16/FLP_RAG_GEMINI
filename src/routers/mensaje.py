@@ -14,6 +14,8 @@ from src.models.material_estudio import MaterialEstudio
 from src.models.chat import Chat
 from src.models.documento import Documento
 from src.routers.auth import get_current_user
+
+from sqlalchemy import func
 router = APIRouter()
 
 
@@ -476,3 +478,121 @@ def calificar_respuesta(
         "mensaje_id": mensaje_id,
         "calificacion": respuesta.calificacion
     }
+
+
+# ============================================
+# HISTORIAL IMPLÍCITO PARA RECOMENDADOR
+# ============================================
+# 🔹 ETAPA 2 — Extraer datos mínimos por usuario
+# 2.2 Feedback explícito (ratings)
+@router.get("/usuario/{username}/feedback-explicito")
+def obtener_feedback_explicito(username: str, db: Session = Depends(get_db)):
+    """
+    Obtiene el feedback explícito del usuario basado en las calificaciones de respuestas.
+    Retorna estadísticas de calificaciones y material_id, calificación y material_embedding para materiales con rating.
+    """
+    
+    # Obtener todas las respuestas del usuario (para estadísticas)
+    total_respuestas = (
+        db.query(func.count(MensajeRespuesta.mensaje_id))
+        .join(Mensaje, Mensaje.id == MensajeRespuesta.mensaje_id)
+        .join(Chat, Chat.id == Mensaje.chat_id)
+        .filter(Chat.usuario == username)
+        .scalar()
+    )
+    
+    # Contar calificaciones en 5
+    calificadas_5 = (
+        db.query(func.count(MensajeRespuesta.mensaje_id))
+        .join(Mensaje, Mensaje.id == MensajeRespuesta.mensaje_id)
+        .join(Chat, Chat.id == Mensaje.chat_id)
+        .filter(
+            Chat.usuario == username,
+            MensajeRespuesta.calificacion == 5
+        )
+        .scalar()
+    )
+    
+    # Contar calificaciones en 1
+    calificadas_1 = (
+        db.query(func.count(MensajeRespuesta.mensaje_id))
+        .join(Mensaje, Mensaje.id == MensajeRespuesta.mensaje_id)
+        .join(Chat, Chat.id == Mensaje.chat_id)
+        .filter(
+            Chat.usuario == username,
+            MensajeRespuesta.calificacion == 1
+        )
+        .scalar()
+    )
+    
+    # Contar calificaciones NULL
+    calificadas_null = (
+        db.query(func.count(MensajeRespuesta.mensaje_id))
+        .join(Mensaje, Mensaje.id == MensajeRespuesta.mensaje_id)
+        .join(Chat, Chat.id == Mensaje.chat_id)
+        .filter(
+            Chat.usuario == username,
+            MensajeRespuesta.calificacion.is_(None)
+        )
+        .scalar()
+    )
+    
+    # Obtener materiales con calificación
+    resultados = (
+        db.query(
+            RespuestaMaterial.material_id,
+            MensajeRespuesta.calificacion,
+            MaterialEstudio.material_embedding
+        )
+        .join(MensajeRespuesta, RespuestaMaterial.mensaje_respuesta_id == MensajeRespuesta.mensaje_id)
+        .join(MaterialEstudio, MaterialEstudio.id == RespuestaMaterial.material_id)
+        .join(Mensaje, Mensaje.id == MensajeRespuesta.mensaje_id)
+        .join(Chat, Chat.id == Mensaje.chat_id)
+        .filter(
+            Chat.usuario == username,
+            MensajeRespuesta.calificacion.isnot(None)
+        )
+        .all()
+    )
+    
+    materiales = [
+        {
+            "material_id": material_id,
+            "calificacion": calificacion,
+            "material_embedding": [float(x) for x in material_embedding] if material_embedding is not None else None
+        }
+        for material_id, calificacion, material_embedding in resultados
+    ]
+    
+    return {
+        "total_respuestas": total_respuestas,
+        "calificadas_5": calificadas_5,
+        "calificadas_1": calificadas_1,
+        "calificadas_null": calificadas_null,
+        "materiales": materiales
+    }
+
+# 2.3 Preguntas recientes
+@router.get("/usuario/{username}/preguntas-recientes")
+def obtener_preguntas_recientes(username: str, limit: int = 10, db: Session = Depends(get_db)):
+    """
+    Obtiene las preguntas más recientes del usuario.
+    Retorna pregunta_embedding de las últimas N preguntas (por defecto 10).
+    """
+    
+    resultados = (
+        db.query(MensajePregunta.pregunta_embedding)
+        .join(Mensaje, Mensaje.id == MensajePregunta.mensaje_id)
+        .join(Chat, Chat.id == Mensaje.chat_id)
+        .filter(Chat.usuario == username)
+        .order_by(Mensaje.fecha_mensaje.desc())
+        .limit(limit)
+        .all()
+    )
+    
+    return [
+        {
+            "pregunta_embedding": [float(x) for x in pregunta_embedding[0]] if pregunta_embedding[0] is not None else None
+        }
+        for pregunta_embedding in resultados
+    ]

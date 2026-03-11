@@ -666,6 +666,49 @@
   },
   "9": {
     "tematica": "Inferencia de tipos",
+    "videos": [],
+    "pdfs": [
+      {
+        "id": "14",
+        "nombre": "9. Inferencia de tipos",
+        "url": ""
+      },
+      {
+        "id": "15",
+        "nombre": "9.1. Ejemplos inferencia de tipos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "123",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Ejemplo 1 Inferencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%201%20Inferencia/"
+      },
+      {
+        "id": "124",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Ejemplo 2 Inferencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%202%20Inferencia/"
+      },
+      {
+        "id": "125",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Interpretador inferencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interpretador%20inferencia/"
+      },
+      {
+        "id": "126",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Interprete de chequeo (terminado)",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo/"
+      },
+      {
+        "id": "127",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Interprete de chequeo V",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo%20V/"
+      }
+    ]
+  },
+  "10": {
+    "tematica": "Objetos",
     "videos": [
       {
         "id": "76",
@@ -723,49 +766,6 @@
         "url": "https://www.youtube.com/watch?v=nL5i_K0OV_4"
       }
     ],
-    "pdfs": [
-      {
-        "id": "14",
-        "nombre": "9. Inferencia de tipos",
-        "url": ""
-      },
-      {
-        "id": "15",
-        "nombre": "9.1. Ejemplos inferencia de tipos",
-        "url": ""
-      }
-    ],
-    "git": [
-      {
-        "id": "123",
-        "nombre": "Clase 12. Interpretador tipos e inferencia_Ejemplo 1 Inferencia",
-        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%201%20Inferencia/"
-      },
-      {
-        "id": "124",
-        "nombre": "Clase 12. Interpretador tipos e inferencia_Ejemplo 2 Inferencia",
-        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%202%20Inferencia/"
-      },
-      {
-        "id": "125",
-        "nombre": "Clase 12. Interpretador tipos e inferencia_Interpretador inferencia",
-        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interpretador%20inferencia/"
-      },
-      {
-        "id": "126",
-        "nombre": "Clase 12. Interpretador tipos e inferencia_Interprete de chequeo (terminado)",
-        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo/"
-      },
-      {
-        "id": "127",
-        "nombre": "Clase 12. Interpretador tipos e inferencia_Interprete de chequeo V",
-        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo%20V/"
-      }
-    ]
-  },
-  "10": {
-    "tematica": "Objetos",
-    "videos": [],
     "pdfs": [
       {
         "id": "7",

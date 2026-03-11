@@ -21,6 +21,7 @@ from src.routers.chat import router as chat_router
 from src.routers.mensaje import router as mensaje_router
 from src.routers.auth import router as auth_router
 from src.routers.documento import router as doc_router
+from src.routers.recomendaciones import router as recom_router
 from src.routers.auth import get_current_user
 
 from src.models.usuario import Usuario
@@ -130,6 +131,7 @@ app.add_middleware(
 )
 
 app.include_router(usuarios_router, prefix="/usuarios", tags=["Usuarios"])
+app.include_router(recom_router, prefix="/recomendar", tags=["Recomendacion"])
 app.include_router(material_router, prefix="/material", tags=["Material Estudio"], dependencies=[Depends(get_current_user)])
 app.include_router(doc_router, prefix="/documentos", tags=["Documentos"], dependencies=[Depends(get_current_user)])
 app.include_router(biblioteca_router, prefix="/biblioteca", tags=["Bilbioteca de Contenidos"], dependencies=[Depends(get_current_user)])
