@@ -23,6 +23,7 @@ from src.routers.auth import router as auth_router
 from src.routers.documento import router as doc_router
 from src.routers.recomendaciones import router as recom_router
 from src.routers.auth import get_current_user
+from google.genai.errors import ClientError, ServerError # Añade ClientError para capturar el 429
 
 from src.models.usuario import Usuario
 from src.models.chat import Chat
@@ -50,6 +51,7 @@ except Exception as e:
 
 MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
+MODELS_PRIORITY = ["gemini-2.5-flash", "gemini-3-flash-preview"]
 RUTA_EMBEDDINGS = "src/embeddings/corpus_con_ejemplos_embeddings.jsonl"
 
 docs_df_todo = None
@@ -451,36 +453,45 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
         - Ejemplos de código → Prioriza CONTEXTO, genera si es necesario marcándolo
         """
         
-    respuesta_final = None
-    max_retries = 5
-    retry_count = 0
+    for model_name in MODELS_PRIORITY:
+        retry_count = 0
+        max_retries = 3
+        
+        while retry_count < max_retries:
+            try:
+                print(f"🤖 Intentando generar respuesta con: {model_name}")
+                respuesta = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config={'temperature': 0.1}
+                )
+                return respuesta.text # Éxito: retornamos la respuesta inmediatamente
 
-    while respuesta_final is None and retry_count < max_retries:
-        try:
-            respuesta = client.models.generate_content(
-                model=GENERATIVE_MODEL,
-                contents=prompt,
-                config={
-                    'temperature': 0.1,
-                } 
-            )
-            respuesta_final = respuesta.text
-            
-        except ServerError as e:
-            if '503 UNAVAILABLE' in str(e):
-                retry_count += 1
-                if retry_count < max_retries:
-                    wait_time = 2**retry_count 
-                    time.sleep(wait_time) 
+            except ClientError as e:
+                # Error 429: Cuota agotada (Requests Per Day / Tokens Per Minute)
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    print(f"⚠️ Cuota agotada para {model_name}. Saltando al siguiente modelo...")
+                    break # Sale del 'while' de reintentos para ir al siguiente 'model_name'
                 else:
-                    raise HTTPException(status_code=503, detail="Se agotó el número máximo de reintentos. No se pudo obtener una respuesta del modelo (Error 503).") from e
-            else:
-                raise HTTPException(status_code=500, detail=f"Error inesperado del servidor: {e}") from e
-                
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error inesperado al generar contenido: {e}") from e
+                    raise HTTPException(status_code=400, detail=f"Error de cliente: {e}")
 
-    return respuesta_final
+            except ServerError as e:
+                # Error 503: Servidor sobrecargado (reintento exponencial)
+                if '503' in str(e):
+                    retry_count += 1
+                    wait_time = 2 ** retry_count
+                    print(f"⏳ Error 503 en {model_name}. Reintentando en {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
+
+    print("❌ CUOTA TOTAL AGOTADA. Enviando fallback con contexto.")
+    
+    mensaje_estudiante = f"""**Nota:** MODO DE RESPALDO (CUOTA API EXCEDIDA).
+        {contexto if contexto.strip() else "No se encontraron fragmentos específicos para esta consulta."}
+        **Nota:** Puedes intentar preguntar de nuevo en unos minutos.
+    """
+    return mensaje_estudiante
 
 # 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
 def contextualizar_pregunta(pregunta_usuario: str, historial: list[MensajeChat]):
@@ -505,15 +516,39 @@ def contextualizar_pregunta(pregunta_usuario: str, historial: list[MensajeChat])
 
     PREGUNTA PARA EL BUSCADOR:"""
 
-    try:
-        res = client.models.generate_content(
-            model=GENERATIVE_MODEL, 
-            contents=prompt,
-            config={'temperature': 0} # Mantener 0 es vital para consistencia
-        )
-        return res.text.strip()
-    except:
-        return pregunta_usuario
+    # Bucle de rotación de modelos
+    for model_name in MODELS_PRIORITY:
+        retry_count = 0
+        max_retries = 2 # Menos reintentos aquí para no ralentizar el inicio del RAG
+        
+        while retry_count < max_retries:
+            try:
+                print(f"🔍 Contextualizando con: {model_name}")
+                res = client.models.generate_content(
+                    model=model_name, 
+                    contents=prompt,
+                    config={'temperature': 0} 
+                )
+                return res.text.strip()
+
+            except ClientError as e:
+                # Si se agota la cuota (429), saltamos al siguiente modelo (Lite)
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    print(f"⚠️ Cuota agotada en {model_name} para contextualización.")
+                    break 
+                else:
+                    return pregunta_usuario # Ante otros errores, mejor devolver la original
+
+            except ServerError:
+                # Si el servidor falla (503), reintentamos brevemente
+                retry_count += 1
+                time.sleep(1)
+            
+            except Exception:
+                return pregunta_usuario
+
+    # Si todo falla, devolvemos la pregunta original para que el sistema intente seguir
+    return pregunta_usuario
     
 async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
     """
