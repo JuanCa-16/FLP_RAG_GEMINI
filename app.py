@@ -89,7 +89,20 @@ try:
     print(f"  - Total de documentos cargados: {len(docs_df_todo)}")
     print(f"  - Documentos PDF disponibles: {len(docs_df_pdf)}")
     print(f"  - Documentos VIDEO disponibles: {len(docs_df_video)}")
+    print(f"  - Documentos CODIGO disponibles: {len(docs_df_codigos)}")
     print(f"  - Documentos GIT disponibles: {len(docs_df_git)}")
+
+    # ⭐ OPTIMIZACIÓN: Pre-computar arrays NumPy de embeddings
+    print("✅ Pre-computando arrays NumPy de embeddings...")
+    try:
+        docs_df_todo['embeddings_np'] = docs_df_todo['embeddings'].apply(np.array)
+        docs_df_pdf['embeddings_np'] = docs_df_pdf['embeddings'].apply(np.array)
+        docs_df_video['embeddings_np'] = docs_df_video['embeddings'].apply(np.array)
+        docs_df_codigos['embeddings_np'] = docs_df_codigos['embeddings'].apply(np.array)
+        docs_df_git['embeddings_np'] = docs_df_git['embeddings'].apply(np.array)
+        print(f"  - Arrays NumPy pre-computados: ✅")
+    except Exception as e:
+        print(f"⚠️ Error al pre-computar arrays: {e}")
 
 except FileNotFoundError:
     print(f"Error: No se encontró el archivo {RUTA_EMBEDDINGS}.")
@@ -166,7 +179,7 @@ class ConsultaConChat(Consulta):
 
 # FUNCIONES DE RAG
 
-def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo: str, top_n: int = 3):
+async def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo: str, top_n: int = 3):
     """Encuentra los top N documentos más relevantes para la consulta dada."""
     if client is None:
         raise HTTPException(status_code=500, detail="El cliente Gemini no se inicializó correctamente.")
@@ -175,7 +188,7 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
         raise HTTPException(status_code=404, detail="El corpus de documentos seleccionado está vacío.")
 
     # Generamos el embedding para la consulta con RETRIEVAL_QUERY
-    embedding_consulta = client.models.embed_content(
+    embedding_consulta = await client.aio.models.embed_content(
         model=modelo,
         contents=consulta,
         config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY",output_dimensionality=768)
@@ -187,7 +200,7 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     normed_embedding = embedding_values_np / np.linalg.norm(embedding_values_np)
 
     # Los embeddings en el dataframe deben ser convertidos a np.array si están guardados como listas
-    doc_embeddings_np = np.array(dataframe['embeddings'].tolist())
+    doc_embeddings_np = np.vstack(dataframe['embeddings_np'].values)
     
     # Multiplicación matricial para cálculo eficiente de similitud
     similitudes_np = np.dot(doc_embeddings_np, normed_embedding)
@@ -209,7 +222,7 @@ def encontrar_documento_relevante(consulta: str, dataframe: pd.DataFrame, modelo
     # Retornamos la lista de resultados
     return resultados, embedding_values_np.tolist()
 
-def generar_respuesta(consulta: str, contexto: str, fuente:str):
+async def generar_respuesta(consulta: str, contexto: str, fuente:str):
     print('FUENTE', fuente,'CONTEXTO', contexto, 'CONSULTA:', consulta)
     """Genera una respuesta usando el modelo generativo y el contexto recuperado."""
     if client is None:
@@ -460,7 +473,7 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
         while retry_count < max_retries:
             try:
                 print(f"🤖 Intentando generar respuesta con: {model_name}")
-                respuesta = client.models.generate_content(
+                respuesta = await client.aio.models.generate_content(
                     model=model_name,
                     contents=prompt,
                     config={'temperature': 0.1}
@@ -494,7 +507,7 @@ def generar_respuesta(consulta: str, contexto: str, fuente:str):
     return mensaje_estudiante
 
 # 3. FUNCIÓN AUXILIAR PARA LA EJECUCIÓN DE RAG
-def contextualizar_pregunta(pregunta_usuario: str, historial: list[MensajeChat]):
+async def contextualizar_pregunta(pregunta_usuario: str, historial: list[MensajeChat]):
     if not historial:
         return pregunta_usuario
 
@@ -524,7 +537,7 @@ def contextualizar_pregunta(pregunta_usuario: str, historial: list[MensajeChat])
         while retry_count < max_retries:
             try:
                 print(f"🔍 Contextualizando con: {model_name}")
-                res = client.models.generate_content(
+                res = await client.aio.models.generate_content(
                     model=model_name, 
                     contents=prompt,
                     config={'temperature': 0} 
@@ -555,13 +568,13 @@ async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
     Función interna que encapsula la lógica de RAG para un DataFrame específico.
     """
     # 1. Optimizar pregunta.
-    pregunta_optimizada = contextualizar_pregunta(data.pregunta, data.historial)
+    pregunta_optimizada = await contextualizar_pregunta(data.pregunta, data.historial)
     
     # 2. Recuperación de documentos
     try:
         top_n_usar = TOP_N_CONFIG.get(fuente, 2) 
         #antes:  top_n=data.top_n
-        documentos, _  = encontrar_documento_relevante(pregunta_optimizada, dataframe, MODEL_ID, top_n= top_n_usar)
+        documentos, _  = await encontrar_documento_relevante(pregunta_optimizada, dataframe, MODEL_ID, top_n= top_n_usar)
     except Exception as e:
         detail = e.detail if isinstance(e, HTTPException) else str(e)
         raise HTTPException(status_code=500, detail=f"Error en la fase de Recuperación de Documentos (Embeddings): {detail}")
@@ -585,7 +598,7 @@ async def _ejecutar_rag(data: Consulta, dataframe: pd.DataFrame,fuente: str):
 
     # 4. Generar respuesta
     try:
-        respuesta = generar_respuesta(pregunta_optimizada, contexto_final, fuente)
+        respuesta = await generar_respuesta(pregunta_optimizada, contexto_final, fuente)
     except Exception as e:
         raise e
     
@@ -619,12 +632,12 @@ async def _ejecutar_rag_con_bd(
         raise HTTPException(status_code=404, detail="Chat no encontrado o no tienes permiso")
     
     # 1. Contextualizar pregunta
-    pregunta_optimizada = contextualizar_pregunta(data.pregunta, data.historial)
+    pregunta_optimizada = await contextualizar_pregunta(data.pregunta, data.historial)
     
     # 2. Recuperar documentos Y obtener embedding de la pregunta
     try:
         top_n_usar = TOP_N_CONFIG.get(fuente, 2)
-        documentos, embedding_pregunta = encontrar_documento_relevante(
+        documentos, embedding_pregunta = await encontrar_documento_relevante(
             pregunta_optimizada,
             dataframe,
             MODEL_ID,
@@ -670,7 +683,7 @@ async def _ejecutar_rag_con_bd(
     
     # 5. Generar respuesta
     try:
-        respuesta = generar_respuesta(pregunta_optimizada, contexto_final, fuente)
+        respuesta = await generar_respuesta(pregunta_optimizada, contexto_final, fuente)
     except Exception as e:
         db.rollback()
         raise e
