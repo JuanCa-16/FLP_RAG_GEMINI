@@ -1,0 +1,81 @@
+####
+
+**Introducción a la asignación y el paradigma imperativo**
+
+Hasta el momento, hemos trabajado con lenguajes funcionales donde las variables actúan como "ligaduras" que no pueden ser modificadas una vez establecidas. En este paradigma, cada computación es una expresión que devuelve un valor (número, booleano, etc.) y una función siempre retorna el mismo resultado independientemente de dónde sea invocada. 
+
+Para transitar hacia un paradigma imperativo, introduciremos el concepto de **asignación**, el cual nos permite alterar el estado del sistema, como modificar valores en la memoria, imprimir datos o leer/escribir archivos. Estas operaciones se denominan "operaciones de efecto" o efectos globales, a diferencia de la computación funcional pura que produce efectos locales.
+
+####
+
+**Diferencias entre ligadura y asignación**
+
+Es fundamental distinguir entre los conceptos de ligadura y asignación:
+
+- **Ligadura**: Es la asociación de nombres con valores. Se realiza mediante estructuras como `let` y es de alcance local.
+- **Asignación**: Incluye el concepto de referencia y es potencialmente global, ya que al cambiar el valor de una variable, se puede afectar el estado de otras partes del programa.
+
+En términos de implementación, esto requiere que los valores denotados (lo que se guarda en las variables) ya no sean necesariamente iguales a los valores expresados (lo que el programador manipula), introduciendo el concepto de referencias.
+
+####
+
+**Ejecución secuencial y sintaxis de asignación**
+
+Para permitir la asignación, el lenguaje debe soportar la ejecución secuencial de expresiones. Introduciremos dos construcciones clave:
+
+- `begin`: Permite la ejecución de una o más expresiones de forma secuencial (de arriba hacia abajo).
+- `set`: Comando para realizar la asignación de variables.
+
+La gramática propuesta para integrar estas funcionalidades en el interpretador es la siguiente:
+
+```racket
+begin expression {; expression}* end
+set identifier = expression
+```
+
+El uso de la palabra reservada `end` al final de un bloque `begin` es necesario para evitar conflictos de ambigüedad sintáctica ("conflicto por la izquierda") al parsear la lista de expresiones.
+
+####
+
+**Evaluación de bloques y asignaciones**
+
+Para el funcionamiento de estas estructuras, definimos las siguientes reglas de evaluación:
+
+1. **Evaluación de `begin`**: Se evalúa cada una de las expresiones dentro del bloque. Si la lista de expresiones está vacía, se retorna el valor de la expresión principal; en caso contrario, se retorna el valor de la última expresión de la lista.
+2. **Evaluación de `set`**: Primero se evalúa la expresión situada a la derecha del operador de asignación. Una vez obtenido el valor expresado, este se almacena en la ubicación de memoria correspondiente a la variable.
+3. **Valor de retorno**: Dado que las operaciones de efecto no producen un valor de computación tradicional, para mantener la compatibilidad con el interpretador, el comando `set` retornará `0` como indicador de que la operación de asignación se ejecutó correctamente.
+
+####
+
+**Ejemplos de asignación**
+
+Consideremos los siguientes ejemplos de uso:
+
+- **Ejemplo 1**: Modificación de ligadura existente.
+```racket
+let m = 0
+in begin
+    set m = m + 1;
+    m * 2
+end
+```
+En este caso, la variable `m` comienza en `0`, se le asigna `1` y finalmente se multiplica por `2`, retornando `2`.
+
+- **Ejemplo 2**: Uso de `set` en procedimientos.
+```racket
+let x = 100
+in begin
+    set x = x + 1;
+    x
+end
+```
+Aquí, la variable `x` se incrementa, resultando en `101`. Es importante notar que, al evaluar estas expresiones, el ambiente buscará la ligadura correspondiente. En casos de procedimientos, la asignación afectará a la variable en el ambiente donde esta fue declarada o definida según el alcance léxico.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=glGvOtFAldY
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

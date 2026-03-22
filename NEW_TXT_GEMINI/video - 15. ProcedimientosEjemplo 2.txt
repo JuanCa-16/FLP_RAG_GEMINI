@@ -1,0 +1,48 @@
+####
+**Representación de ambientes**
+
+Para resolver problemas de vinculación de variables, utilizamos la `representación de ambientes`. Cuando el enunciado no especifica un ambiente inicial, se asume el `ambiente vacío`. Consideremos el siguiente escenario:
+
+1. El ambiente inicial es el `ambiente vacío`.
+2. Se define un ambiente con `x = 5`, que denominaremos `ambiente 0`.
+3. Se define una clausura `f` con parámetros `y` y `z`. Esta clausura debe almacenar el ambiente donde fue creada, que en este caso es el `ambiente 0`.
+4. Posteriormente, se define un `ambiente 1` donde `x = 28`.
+
+####
+**Invocación de procedimientos**
+
+Al evaluar `(f 2 x)` en el `ambiente 1`, primero buscamos el valor de `x`, el cual es `28`. Por lo tanto, invocamos `(f 2 28)`. La invocación de un procedimiento implica siempre la creación de un nuevo `ambiente` (llamado `ambiente f`).
+
+Este nuevo ambiente `f`:
+- Tiene como variables `y` y `z` con valores `2` y `28` respectivamente.
+- Se extiende desde el ambiente almacenado en la clausura, es decir, desde el `ambiente 0`.
+
+El cuerpo de la función es `(+ y (- z x))`. Para resolverlo:
+- Buscamos `y`, cuyo valor es `2`.
+- Buscamos `z`, cuyo valor es `28`.
+- Buscamos `x`. Como `x` no se encuentra en el `ambiente f`, lo buscamos en el ambiente anterior (`ambiente 0`), donde `x` vale `5`.
+
+El cálculo resultante es `2 + (28 - 5) = 25`.
+
+####
+**Validación en el intérprete**
+
+El comportamiento descrito corresponde exactamente a la ejecución en el intérprete. El siguiente código `let` ilustra el proceso:
+
+```racket
+(let ((x 5))
+  (let ((f (lambda (y z) (+ y (- z x)))))
+    (let ((x 28))
+      (f 2 x))))
+```
+
+Al ejecutar esta expresión, el resultado obtenido es `25`, validando la lógica de `scope léxico` y la gestión de ambientes mediante `clausuras`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=2Dnxwstls1c
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

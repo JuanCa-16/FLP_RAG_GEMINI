@@ -1,0 +1,193 @@
+####
+
+**Definición de Tipos de Datos y Abstracción**
+
+Cada vez que se define un conjunto de valores, se está definiendo un nuevo tipo de dato. Un tipo de dato define los valores, representaciones y operaciones sobre el mismo. La representación de los datos suele ser compleja, por lo que para modificarla se utiliza la `abstracción de datos`.
+
+La `abstracción de datos` divide a los tipos de datos en dos componentes:
+- **Interfaz**: Define qué representa el tipo de dato, sus operaciones y las propiedades de dichas operaciones.
+- **Implementación**: Proporciona una representación específica y el código para las operaciones que utilizan dicha representación.
+
+Un tipo de dato abstracto se denomina `Tipo Abstracto de Dato (TAD)`. El resto del programa que utiliza el TAD, conocido como el `cliente del tipo de dato`, manipula los datos únicamente mediante las operaciones especificadas en la interfaz. El código del cliente es independiente de la representación si se limita a usar los procedimientos definidos en la interfaz. Todo lo relacionado con la representación del dato debe residir exclusivamente en el código de la implementación. Se utiliza la notación `⌈ v ⌉` para denotar la representación del dato `v`.
+
+####
+
+**Representación de Números Naturales**
+
+Las reglas para definir la representación de números naturales pueden expresarse mediante las siguientes fórmulas:
+
+- `(zero) = [0]`
+- `(is-zero? [n])` es verdadero si `n=0`
+- `(successor [n]) = [n+1]` (donde `n >= 0`)
+- `(predecessor [n+1]) = [n]` (donde `n > 0`)
+
+A partir de esta especificación, es posible escribir programas que manipulen estos datos sin depender de su representación interna. Por ejemplo, el siguiente procedimiento `plus` satisface la relación `(plus ⌈ x ⌉ ⌈ y ⌉) = ⌈ x + y ⌉`:
+
+```racket
+(define plus
+  (lambda (x y)
+    (if (is-zero? x)
+        y
+        (successor (plus (predecessor x) y)))))
+```
+
+####
+
+**Estrategias de Representación para Enteros No Negativos**
+
+Existen tres formas comunes de representar enteros no negativos:
+
+1. **Representación Unaria**: Un entero `n` se representa mediante una lista de `n` símbolos `#t`.
+   - `⌈ 0 ⌉ = ()`
+   - `⌈ n + 1 ⌉ = (cons #t ⌈ n ⌉)`
+
+```racket
+(define zero '())
+(define is-zero? null?)
+(define succ (lambda (n) (cons #t n)))
+(define pred cdr)
+```
+
+2. **Representación de Números de Scheme**: Se utiliza la representación interna del lenguaje.
+   - `⌈ n ⌉ = n`
+
+```racket
+(define zero 0)
+(define is-zero? zero?)
+(define succ (lambda (n) (+ n 1)))
+(define pred (lambda (n) (- n 1)))
+```
+
+3. **Representación Bignum**: Los números se representan en base `N` mediante una lista de dígitos entre `0` y `N-1`. Un número `n` se descompone como `n = qN + r`.
+   - `⌈ n ⌉ = ()` si `n = 0`
+   - `⌈ n ⌉ = (cons r ⌈ q ⌉)` donde `0 ≤ r < N`
+
+####
+
+**Tipo de Dato Ambiente (Environment)**
+
+La `abstracción de datos` permite la independencia de representación. Un `ambiente` es un ejemplo de tipo de dato que asocia valores con un conjunto finito de variables. Se define como una función cuyo dominio son variables y cuyo rango son valores de Scheme, representando conjuntos de pares `{(s1, v1), ..., (sn, vn)}`.
+
+La interfaz del `ambiente` incluye:
+- `(empty-env)`: Produce una representación del ambiente vacío `⌈∅⌉`.
+- `(apply-env ⌈ f ⌉ s)`: Aplica el ambiente a una variable `s`, retornando `f(s)`.
+- `(extend-env var v ⌈ f ⌉)`: Produce un nuevo ambiente `⌈ g ⌉` tal que `g(s')` es `v` si `s' = var`, y `f(s')` en otro caso.
+
+```racket
+(define e
+  (extend-env 'd 6
+    (extend-env 'y 8
+      (extend-env 'x 7
+        (extend-env 'y 14
+          (empty-env))))))
+```
+
+####
+
+**Representación de Ambientes como Estructuras de Datos**
+
+Los ambientes pueden representarse como listas en Scheme siguiendo esta gramática:
+`<env-exp> ::= (empty-env) | (extend-env <identificador> <scheme-value> <env-exp>)`
+
+```racket
+;; Constructor del ambiente vacío
+(define empty-env
+  (lambda ()
+    (list 'empty-env)))
+
+;; Constructor para extender un ambiente
+(define extend-env
+  (lambda (var val env)
+    (list 'extend-env var val env)))
+
+;; Observador para aplicar el ambiente
+(define apply-env
+  (lambda (env search-var)
+    (cond
+      ((eqv? (car env) 'empty-env)
+       (report-no-binding-found search-var))
+      ((eqv? (car env) 'extend-env)
+       (let ((saved-var (cadr env))
+             (saved-val (caddr env))
+             (saved-env (cadddr env)))
+         (if (eqv? search-var saved-var)
+             saved-val
+             (apply-env saved-env search-var))))
+      (else (report-invalid-env env)))))
+```
+
+####
+
+**Representación Procedimental de Ambientes**
+
+Dado que el ambiente tiene un único observador, `apply-env`, es posible representarlo directamente mediante procedimientos. En esta estrategia, `empty-env` y `extend-env` retornan funciones que encapsulan la lógica de búsqueda.
+
+```racket
+;; Representación procedimental del ambiente vacío
+(define empty-env
+  (lambda ()
+    (lambda (search-var)
+      (report-no-binding-found search-var))))
+
+;; Representación procedimental de la extensión
+(define extend-env
+  (lambda (saved-var saved-val saved-env)
+    (lambda (search-var)
+      (if (eqv? search-var saved-var)
+          saved-val
+          (apply-env saved-env search-var)))))
+
+;; Aplicación del ambiente procedimental
+(define apply-env
+  (lambda (env search-var)
+    (env search-var)))
+```
+
+####
+
+**Interfaces para Tipos de Datos Recursivos**
+
+Los tipos de datos recursivos, como las expresiones del cálculo `λ` (lambda), pueden definirse gramaticalmente:
+`<Lc-exp> ::= <var-exp> (<identifier>) | <lambda-exp> (lambda (<identifier>) <Lc-exp>) | <app-exp> (<Lc-exp> <Lc-exp>)`
+
+Representar estos datos mediante listas simples (ej. `(list 'lambda 'x 'body)`) genera dependencias con la implementación. Para evitarlo, se definen interfaces compuestas por constructores, predicados y extractores:
+
+- **Constructores**: `var-exp`, `lambda-exp`, `app-exp`.
+- **Predicados**: `var-exp?`, `lambda-exp?`, `app-exp?`.
+- **Extractores**: `var-exp->var`, `lambda-exp->bound-var`, `lambda-exp->body`, `app-exp->rator`, `app-exp->rand`.
+
+Al usar esta interfaz, la función `occurs-free?` se vuelve independiente de la estructura interna (como el uso de `car` o `cadr`):
+
+```racket
+(define occurs-free?
+  (lambda (search-var exp)
+    (cond
+      ((var-exp? exp)
+       (eqv? search-var (var-exp->var exp)))
+      ((lambda-exp? exp)
+       (and (not (eqv? search-var (lambda-exp->bound-var exp)))
+            (occurs-free? search-var (lambda-exp->body exp))))
+      (else (or (occurs-free? search-var (app-exp->rator exp))
+                (occurs-free? search-var (app-exp->rand exp)))))))
+```
+
+####
+
+**Receta para el Diseño de Interfaces**
+
+Para diseñar interfaces de datos recursivos de manera consistente, se recomienda seguir estos pasos:
+
+1. Incluir un constructor por cada clase de dato (regla de producción) en el tipo de dato.
+2. Incluir un predicado por cada clase de dato.
+3. Incluir un extractor para cada pieza de dato pasada a un constructor del tipo.
+
+Este enfoque asegura la modularidad y permite cambiar la representación interna sin necesidad de modificar el código cliente que utiliza las operaciones definidas en la interfaz.
+
+--- METADATA ---
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 2. Estrategias para representar datos

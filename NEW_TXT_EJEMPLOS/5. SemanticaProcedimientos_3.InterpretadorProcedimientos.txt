@@ -1,0 +1,165 @@
+####
+Definición de la especificación léxica para el lenguaje:
+
+```racket
+(define especificacion-lexica
+  '(
+    (espacio-blanco (whitespace) skip)
+    (comentario ("%" (arbno (not #\newline))) skip)
+    (identificador (letter (arbno (or letter digit "?" "$"))) symbol)
+    (numero (digit (arbno digit)) number)
+    (numero ("-" digit (arbno digit)) number)
+    (numero (digit (arbno digit)"." digit (arbno digit)) number)
+    (numero ("-" digit (arbno digit)"." digit (arbno digit)) number)
+    )
+  )
+```
+
+**Conceptos clave**
+`especificación léxica`, `tokens`, `whitespace`, `regex`
+
+**Aplicación**
+Define las reglas para reconocer los componentes básicos del lenguaje (tokens), permitiendo ignorar espacios y comentarios, y clasificar identificadores y constantes numéricas (enteros y flotantes).
+
+####
+Definición de la especificación gramatical del lenguaje:
+
+```racket
+(define especificacion-gramatical
+  '(
+    (programa (expresion) a-program)
+    (expresion (numero) lit-exp)
+    (expresion (identificador) var-exp)
+    (expresion ("true") true-exp)
+    (expresion ("false") false-exp)
+    (expresion ("if" expresion "then" expresion "else" expresion) if-exp)
+    (expresion ("let" (arbno identificador "=" expresion) "in" expresion) let-exp)
+    (expresion ("proc" "(" (separated-list identificador ",") ")" expresion) proc-exp)
+    (expresion ("(" expresion (arbno expresion) ")") app-exp)
+    (expresion (primitiva "(" (separated-list expresion ",") ")") prim-exp)
+    (primitiva ("+") sum-prim)
+    (primitiva ("-") minus-prim)
+    (primitiva ("*") mult-prim)
+    (primitiva ("/") div-prim)
+    (primitiva ("add1") add-prim)
+    (primitiva ("sub1") sub-prim)
+    (primitiva (">") mayor-prim)
+    (primitiva (">=") mayorigual-prim)
+    (primitiva ("<") menor-prim)
+    (primitiva ("<=") menorigual-prim)
+    (primitiva ("==") igual-prim)
+    )
+  )
+
+(sllgen:make-define-datatypes especificacion-lexica especificacion-gramatical)
+```
+
+**Conceptos clave**
+`gramática formal`, `datatype`, `sllgen`, `AST`
+
+**Aplicación**
+Establece la estructura sintáctica del lenguaje, incluyendo expresiones, condicionales, ligaduras, procedimientos y primitivas aritmético-lógicas. La función `make-define-datatypes` genera automáticamente las estructuras de datos necesarias para representar el árbol de sintaxis abstracta.
+
+####
+Estructura de ambientes para el manejo de alcance:
+
+```racket
+(define-datatype ambiente ambiente?
+  (ambiente-vacio)
+  (ambiente-extendido
+   (lids (list-of symbol?))
+   (lvalue (list-of value?))
+   (old-env ambiente?)))
+
+(define apply-env
+  (lambda (env var)
+    (cases ambiente env
+      (ambiente-vacio () (eopl:error "No se encuentra la variable " var))
+      (ambiente-extendido (lid lval old-env)
+                          (letrec
+                              ((buscar-variable (lambda (lid lval old-env)
+                                                  (cond
+                                                    [(null? lid) (apply-env old-env var)]
+                                                    [(equal? (car lid) var) (car lval)]
+                                                    [else (buscar-variable (cdr lid) (cdr lval) old-env)]))))
+                            (buscar-variable lid lval old-env))))))
+```
+
+**Conceptos clave**
+`ambiente`, `scope`, `ligadura`, `recursión`
+
+**Aplicación**
+Implementa el entorno de ejecución donde se almacenan las asociaciones entre identificadores y valores. `apply-env` permite buscar recursivamente un valor dentro de la cadena de ambientes extendidos.
+
+####
+Función principal para evaluar expresiones:
+
+```racket
+(define evaluar-expresion
+  (lambda (exp amb)
+    (cases expresion exp
+      (lit-exp (dato) dato)
+      (var-exp (id) (apply-env amb id))
+      (true-exp () #true)
+      (false-exp () #false)
+      (prim-exp (prim args)
+                (let ((lista-numeros (map (lambda (x) (evaluar-expresion x amb)) args)))
+                  (evaluar-primitiva prim lista-numeros)))
+      (if-exp (condicion hace-verdadero hace-falso)
+              (if (evaluar-expresion condicion amb)
+                  (evaluar-expresion hace-verdadero amb)
+                  (evaluar-expresion hace-falso amb)))
+      (let-exp (ids rands body)
+               (let ((lvalues (map (lambda (x) (evaluar-expresion x amb)) rands)))
+                 (evaluar-expresion body (ambiente-extendido ids lvalues amb))))
+      (proc-exp (ids body)
+                (closure ids body amb))
+      (app-exp (rator rands)
+               (let ((lrands (map (lambda (x) (evaluar-expresion x amb)) rands))
+                     (procV (evaluar-expresion rator amb)))
+                 (if (procval? procV)
+                     (cases procval procV
+                       (closure (lid body old-env)
+                                (if (= (length lid) (length lrands))
+                                    (evaluar-expresion body (ambiente-extendido lid lrands old-env))
+                                    (eopl:error "Número de argumentos incorrecto"))))
+                     (eopl:error "No es un procedimiento")))))))
+```
+
+**Conceptos clave**
+`evaluador`, `intérprete`, `closure`, `aplicación de funciones`
+
+**Aplicación**
+Núcleo del intérprete que recorre el árbol de sintaxis, aplicando las reglas semánticas para literales, variables, condicionales, ligaduras locales y llamadas a procedimientos.
+
+####
+Gestión de primitivas y ejecución del intérprete:
+
+```racket
+(define evaluar-primitiva
+  (lambda (prim lval)
+    (cases primitiva prim
+      (sum-prim () (operacion-prim lval + 0))
+      (minus-prim () (- (car lval) (operacion-prim (cdr lval) + 0)))
+      ;; Primitivas restantes omitidas por brevedad lógica
+      )))
+
+(define interpretador
+  (sllgen:make-rep-loop "-->" evaluar-programa
+                        (sllgen:make-stream-parser
+                         especificacion-lexica especificacion-gramatical)))
+
+(interpretador)
+```
+
+**Conceptos clave**
+`REPL`, `primitivas`, `parser`, `stream`
+
+**Aplicación**
+Implementa el ciclo de lectura-evaluación-impresión (REPL). `evaluar-primitiva` ejecuta operaciones básicas sobre los valores evaluados, mientras que `make-rep-loop` crea la interfaz de usuario interactiva para el lenguaje.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 5. SemanticaProcedimientos/3.InterpretadorProcedimientos.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

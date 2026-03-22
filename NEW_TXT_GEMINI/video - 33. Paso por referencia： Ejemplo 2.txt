@@ -1,0 +1,61 @@
+####
+**Análisis de ejecución con paso por referencia**
+
+Para analizar el comportamiento de las variables en un sistema de ejecución, trabajaremos con un ambiente que inicializa las variables `a`, `b`, `c`, `p` y `q` como `direct targets`. En este contexto, un `direct target` es un vector que apunta directamente a un valor, mientras que un `indirect target` es aquel que apunta a la referencia de otra variable.
+
+Consideremos el siguiente bloque de código que será ejecutado:
+
+```racket
+(begin
+  (set a = p)
+  (set b = q)
+  (p c d f))
+```
+
+Al invocar el procedimiento `p`, este recibe los parámetros `x`, `y`, `z` y `f`. Dado que se pasan variables, todos los argumentos actúan como `indirect targets`:
+- `x` es un `indirect target` hacia `c`.
+- `y` es un `indirect target` hacia `b`.
+- `z` es un `indirect target` hacia `a`.
+- `f` es un `indirect target` hacia `q`.
+
+####
+**Ejecución del procedimiento p y efectos secundarios**
+
+Dentro del procedimiento `p`, se ejecuta la instrucción `(set x = (- y x))`. Identificamos los valores actuales: `y` se refiere a `b` (valor 2) y `x` se refiere a `c` (valor 3).
+La operación realiza `2 - 3 = -1`. Por tanto, `x` toma el valor -1, lo cual actualiza directamente la variable `c` debido a que `x` es un `indirect target` hacia `c`. Tras esta operación, `c` vale -1.
+
+Posteriormente, se invoca `(f z x)`, donde `z` es `a` y `x` es `c`. Esto genera un nuevo ambiente para el procedimiento `f` (que apunta a `q`). El procedimiento `q` recibe dos parámetros `m` y `n`, ambos como `indirect targets` hacia `a` y `c` respectivamente.
+
+####
+**Modificaciones en el ambiente de q**
+
+Dentro de `q`, se ejecutan las siguientes operaciones:
+
+1. `(set n = (* m 5))`: Como `m` apunta a `a` (valor 1) y `n` apunta a `c` (valor -1), calculamos `1 * 5 = 5`. Ahora `n` (es decir, `c`) tiene el valor 5.
+2. `(set m = (+ m 6))`: Se suma 6 al valor actual de `m` (`a`). Como `a` valía 1, ahora `a` vale 7.
+3. El retorno de `q` es `(+ m n)`, que corresponde a `7 + 5 = 12`.
+
+Al finalizar la ejecución de `q`, el valor retornado (12) se asigna a `y`, el cual era un `indirect target` hacia `b`. Por consiguiente, `b` queda con un valor de 12.
+
+####
+**Conclusión de la ejecución y verificación**
+
+Finalmente, el procedimiento `p` retorna el valor de `x`. Dado que `x` es un `indirect target` hacia `c`, y `c` fue actualizado a 5 durante la ejecución de `q`, `p` retorna 5.
+
+El resultado final del sistema es la suma de los valores resultantes de las operaciones de `a` y el retorno de `p`. Si `a` ha sido modificado y `p` retorna 5, la operación final es `5 + 5 = 10`.
+
+En resumen:
+- El valor final de `a` es 5.
+- El valor final de `b` es 12.
+- El valor final de `c` es 5.
+
+Este ejercicio ilustra la diferencia entre `direct targets` (paso por valor) e `indirect targets` (paso por referencia), donde las modificaciones dentro de los procedimientos afectan directamente a las variables originales en el ambiente global.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=ShlhAy8owxI
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

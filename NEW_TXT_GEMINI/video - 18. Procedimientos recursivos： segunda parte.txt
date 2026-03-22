@@ -1,0 +1,53 @@
+####
+**Implementación de ambientes recursivos**
+
+Los ambientes recursivos están diseñados para manejar procedimientos que se invocan a sí mismos. La estructura de datos del `ambiente extendido recursivo` requiere almacenar la información necesaria para que el procedimiento pueda conocerse a sí mismo durante la ejecución.
+
+Los componentes necesarios son:
+- `proc-names`: Una lista de símbolos con los nombres de los procedimientos.
+- `ids`: Una lista de listas de símbolos, representando los argumentos de cada procedimiento.
+- `bodies`: Una lista de expresiones que conforman el cuerpo de los procedimientos.
+- `env`: El ambiente anterior sobre el cual se extiende el actual.
+
+####
+**Modificación de la función `apply-env`**
+
+Al trabajar con el `ambiente extendido recursivo`, la función `apply-env` debe incluir una nueva variante para realizar la búsqueda de variables. Si el símbolo buscado coincide con uno de los `proc-names`, la función debe devolver una clausura que permita la recursión.
+
+```racket
+(define (apply-env env var)
+  (cases environment env
+    (empty-env () (report-no-binding-found-error var))
+    (extend-env (saved-var saved-val saved-env) ...)
+    (extend-env-recursively (proc-names idss bodies saved-env)
+      (cond
+        [(member var proc-names)
+         (closure (get-corresponding-ids var proc-names idss)
+                  (get-corresponding-body var proc-names bodies)
+                  env)]
+        [else (apply-env saved-env var)]))))
+```
+En esta implementación, la clausura se crea en el momento de la ejecución. Esto permite que el procedimiento capture el ambiente actual (`env`), facilitando que el valor de entrada cambie en cada llamada recursiva (por ejemplo, al calcular un factorial, se generan nuevos ambientes para cada valor de `x`).
+
+####
+**Evaluación de `letrec`**
+
+Para soportar `letrec` en el lenguaje, debemos modificar la función `eval-expression`. La expresión `letrec` recibe los nombres de los procedimientos, los argumentos, los cuerpos y el cuerpo principal del `letrec` (`body-letrec`).
+
+La evaluación se realiza extendiendo el ambiente actual con la variante `extend-env-recursively` y evaluando el cuerpo del `letrec` en ese nuevo contexto:
+
+```racket
+(letrec-expression (proc-names idss bodies body-letrec)
+  (eval-expression body-letrec
+                   (extend-env-recursively proc-names idss bodies env)))
+```
+Este enfoque asegura que, al invocar una función definida mediante `letrec`, el sistema sea capaz de generar las clausuras correspondientes dinámicamente, permitiendo la recursión mutua o simple según sea necesario.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=i9J-ekNcLOQ
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

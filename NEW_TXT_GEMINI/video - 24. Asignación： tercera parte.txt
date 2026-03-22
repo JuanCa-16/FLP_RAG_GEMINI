@@ -1,0 +1,39 @@
+####
+Para implementar la asignación mediante referencias, es necesario modificar la estructura del ambiente. En lugar de utilizar una lista de valores, se empleará un `vector` de valores, lo cual permite la modificación directa de los datos sin necesidad de reconstruir la estructura. El `data type` de ambiente se simplifica, eliminando la distinción del caso `ambiente-extendido-recursivo` original para integrar una nueva estrategia basada en `ambiente-extendido-ref`.
+
+####
+Al realizar la modificación del ambiente, se introduce una función intermediaria denominada `ambiente-extendido`. Esta función actúa como una capa de compatibilidad para transformar las listas de valores provenientes de otras partes del intérprete (como `app-expression` o el ambiente inicial) en el formato de `vector` requerido.
+
+```racket
+(define (ambiente-extendido ids vals env)
+  (ambiente-extendido-ref ids (list->vector vals) env))
+```
+
+####
+La implementación del `ambiente-extendido-recursivo` se rediseña para permitir que los procedimientos puedan ser modificados mediante asignación, superando la limitación donde solo se permitían procedimientos. Bajo este nuevo esquema, el ambiente recursivo se construye como un `ambiente-extendido-ref` donde los valores son `clausuras` que almacenan una referencia al propio ambiente, permitiendo la autorreferencia necesaria para la recursión.
+
+```racket
+(define (ambiente-extendido-recursivo proc-names ids-list bodies env)
+  (let* ([vec-clausuras (make-vector (length proc-names))]
+         [nuevo-env (ambiente-extendido-ref proc-names vec-clausuras env)]
+         [obtener-clausuras 
+          (lambda (ids bodies pos)
+            (if (null? ids)
+                nuevo-env
+                (begin
+                  (vector-set! vec-clausuras pos 
+                               (closure (car ids) (car bodies) nuevo-env))
+                  (obtener-clausuras (cdr ids) (cdr bodies) (+ pos 1)))))])
+    (obtener-clausuras ids-list bodies 0)))
+```
+
+En esta implementación, `make-vector` crea el espacio de almacenamiento inicial, y la función auxiliar `obtener-clausuras` utiliza `vector-set!` para poblar el vector con las clausuras correspondientes, asegurando que cada una capture el `nuevo-env`, facilitando así la recursión.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=dVERIOle5zA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,118 @@
+####
+**Introducción a los procedimientos**
+
+Los procedimientos son un elemento fundamental en los lenguajes de programación, ya que permiten la ejecución de bloques de código reutilizables. Para implementar procedimientos en la gramática, definimos la siguiente estructura:
+
+```racket
+<expression> ::= "proc" "(" (<identifier>* (,)) <expression> (proc-exp)
+<expression> ::= "(" <expression> <expression>* ")" (app-exp)
+```
+
+Mediante esta estructura, es posible ejecutar código como el siguiente:
+
+```racket
+let f = proc(x, y) +(x, y)
+in +((f 1 2), (f 1 3))
+```
+
+####
+**El problema del ambiente y la clausura**
+
+Al ejecutar procedimientos, surge una limitación relacionada con el acceso a variables fuera del alcance local. Consideremos el siguiente caso:
+
+```racket
+let f = proc(a, b) +(a, b, x)
+in let y = (f 1 2) 
+   x = 12
+   in (f 1 2)
+```
+
+En este ejemplo, la resolución de `x` depende del momento en que se evalúa el procedimiento. Para resolver esta inconsistencia, se introduce el concepto de `clausura` o `procVal`. Una `clausura` representa un procedimiento como un valor y contiene:
+
+- Los identificadores del procedimiento.
+- El cuerpo del procedimiento.
+- El ambiente donde fue creado, garantizando así la consistencia del `scope léxico`.
+
+####
+**Representación de procVal**
+
+Para implementar la clausura en el lenguaje, definimos el tipo de datos `procVal`. Con esta adición, el lenguaje extiende sus valores:
+
+- **Valores denotados:** Números, Booleanos y `Procval`.
+- **Valores expresados:** Números, Booleanos y `Procval`.
+
+La representación técnica es la siguiente:
+
+```racket
+(define-datatype procVal procVal?
+  (closure
+    (lid (list-of symbol?))
+    (exp expression?)
+    (old-env environment?)))
+```
+
+####
+**Modificaciones a la gramática y evaluación**
+
+Para integrar las clausuras, se ajustan las reglas de la gramática y la función `eval-expression`:
+
+**Modificaciones a la gramática:**
+
+```racket
+(expression ("proc" "(" (separated-list identifier ",") ")" expression) proc-exp)
+(expression ("(" expression (arbno expression) ")") app-exp)
+```
+
+**Modificaciones a `eval-expression`:**
+
+```racket
+(proc-exp (lid exp) (closure lid exp env))
+(app-exp (rator rands)
+  (let ((procv (eval-expression rator env))
+        (vrands (map (lambda (x) (eval-expression x env)) rands)))
+    (if (and (procVal? procv) (= (length (procVal->lid procv)) (length vrands)))
+        (cases procVal procv
+          (closure (lid exp old-env)
+            (eval-expression exp (extend-env lid vrands old-env))))
+        (eopl:error "Not a procedure or incorrect of number of args"))))
+```
+
+####
+**Ejemplo de ejecución con ambientes**
+
+Consideremos el siguiente programa donde se captura el ambiente al definir la función `f`:
+
+```racket
+let x = 10
+    y = +(x, y)
+    z = +(z, y)
+    f = proc(a, b, c) +(a, *(b, c))
+in (f x y z)
+```
+
+La ejecución de este bloque resulta en `25`. A continuación, se ilustra la relación entre los ambientes creados durante el proceso:
+
+```mermaid
+flowchart LR
+    E["Empty-env"]
+    B["env1: x,y,z; 1,2,3"]
+    A["env0: a,b,c; 4,5,6"]
+    C["env2: x,y,z,f; 10,3,5, closure(...,env1)"]
+    D["envf: a,b,c; 10,3,5"]
+    E --> A
+    A --> B
+    B --> C
+    B --> D
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 6 Ligadura, condicionales y procedimientos_Procedimientos
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Procedimientos/

@@ -1,0 +1,200 @@
+####
+**Implementación de objetos simples mediante listas de partes**
+
+Los objetos simples pueden representarse como una lista de partes, donde cada parte corresponde a una clase en la cadena de herencia. Cada parte almacena el nombre de la clase y los valores actuales de sus campos. La estructura `object` se representa mediante una lista vacía.
+
+Por ejemplo, para una jerarquía de clases `c1`, `c2` y `c3`:
+
+```text
+class c1 extends object field x field y
+class c2 extends c1 field z field w
+class c3 extends c2 field a field b
+```
+
+Un objeto `o3` de la clase `c3` se estructura como una lista de tres partes, donde el primer elemento representa la clase de menor jerarquía:
+
+```text
+(#(struct:a-part c3 #(0 0))
+ #(struct:a-part c2 #(0 0))
+ #(struct:a-part c1 #(0 0)))
+```
+
+Esta implementación de jerarquía de objetos, donde la lista vacía representa a `object`, es utilizada en lenguajes como `C++` para representar los objetos.
+
+####
+**Diagrama de jerarquía de clases y campos**
+
+El siguiente diagrama ilustra la estructura de herencia y los valores de los campos para los objetos de tipo `c1`, `c2` y `c3`, donde la jerarquía culmina en `object`.
+
+```mermaid
+graph LR
+    A["C3
+    a = 0, b = 0
+    "]
+    B["C2
+    z = 0, w = 0
+    "]
+    C["C1
+    x = 0, y = 0
+    "]
+    D["object
+    '()
+    "]
+    A --> B
+    B --> C
+    C --> D
+```
+
+####
+**Ejemplo de jerarquía con clases y métodos**
+
+Se definen tres clases con herencia, campos y métodos para demostrar la interacción de estados y llamadas a métodos.
+
+```racket
+class p1 extends object
+  field a field b
+  method initialize (x,y) begin set a = x; set b = y end
+  method sum (x) begin set a = +(a,1); +(a,b,x, send self m1()) end
+  method m1 () 1
+
+class p2 extends p1
+  field c field d field e
+  method initialize (x,y,z) begin
+    super initialize (x,y);
+    set c = +(x,1); set d = +(y,2); set e = z
+  end
+  method sum (s) +(c,d,e, send self m1())
+
+class p3 extends p2
+  field f field g
+  method initialize (u) begin
+    set f = u; set g = +(u,1);
+    super initialize (u, +(u,1), +(u,2))
+  end
+  method sum (a) +(a, super sum(+(a,2)))
+  method m1 () 10
+```
+
+Al ejecutar la creación de objetos:
+```racket
+let o1 = new p1(2,3)
+    o2 = new p2(3,4,5)
+    o3 = new p3(6)
+in list(send o1 sum(2), send o2 sum(3), send o3 sum(4))
+```
+El resultado obtenido es `(9 16 39)`.
+
+####
+**Representación de estados de objetos en memoria**
+
+Los estados de los objetos `o1`, `o2` y `o3` tras su inicialización se representan mediante la cadena de partes:
+
+**Objeto o1:**
+```mermaid
+graph LR
+    A["c1
+    a = 2, b = 3
+    "]
+    B["object"]
+    A --> B
+```
+
+**Objeto o2:**
+```mermaid
+graph LR
+    A["c2
+    c = 4, d = 6, e = 5
+    "]
+    B["c1
+    a = 3, b = 4
+    "]
+    C["object"]
+    B --> C
+    A --> B
+```
+
+**Objeto o3:**
+```mermaid
+graph LR
+    A["c3
+    f = 6, g = 7
+    "]
+    B["c2
+    c = 7, d = 9, e = 8
+    "]
+    C["c1
+    a = 6, b = 7
+    "]
+    D["object"]
+    B --> C
+    A --> B
+    C --> D
+```
+
+####
+**Ejecución de métodos y encapsulación**
+
+La invocación de métodos es independiente para cada objeto, a menos que se modifiquen los campos internos. Al llamar a `send o1 sum(2)`, el ambiente de ejecución incluye el entorno del objeto (`env1`) y el entorno del método (`envsum`).
+
+```mermaid
+graph LR
+    A["empty-env"]
+    B["env1
+    a,b
+    2,3
+    "]
+    C["envsum
+    x,super,self
+    2,object,o1
+    "]
+    A --> B
+    B --> C
+```
+
+Al ejecutar `set a = +(a,1)` dentro de `sum`, el estado del objeto cambia, actualizando `env1` a `a=3, b=3`. Finalmente, al llamar a `send self m1()`, se crea un nuevo ambiente `envm1` sobre la jerarquía del objeto.
+
+####
+**Llamado a métodos con super y self**
+
+Cuando un método utiliza `super`, la búsqueda del método se delega a la clase padre. En el caso de `o3` ejecutando `sum(4)`, se evalúa `super sum(+(4,2))`. 
+
+El diagrama de ambientes durante la ejecución de `send o3 sum(4)` muestra la delegación a través de la jerarquía de clases:
+
+```mermaid
+graph LR
+    A["empty-env"]
+    B["env1
+    a,b
+    6,7
+    "]
+    C["env2
+    c,d,e
+    7,9,8
+    "]
+    D["env3
+    f,g
+    6,7
+    "]
+    E["envsum
+    a,super,self
+    4,p2,o3
+    "]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+```
+
+Este proceso asegura que los campos correctos sean accesibles según el contexto de `self` y `super`.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Objetos simples
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Objetos%20simples/

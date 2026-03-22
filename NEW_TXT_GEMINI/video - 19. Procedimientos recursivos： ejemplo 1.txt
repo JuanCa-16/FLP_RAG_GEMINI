@@ -1,0 +1,48 @@
+####
+
+Para resolver el ejemplo de evaluación de una función recursiva implementada mediante un `letrec`, analizamos primero cómo se estructura el ambiente. Al entrar en un `letrec`, no se utiliza un ambiente estándar, sino un ambiente recursivo, al cual llamaremos `mr`. Este ambiente contiene la lista de identificadores, la lista con sus respectivos cuerpos y un ambiente que extiende el cuerpo del procedimiento. Cada vez que realizamos una llamada a la función, se crea un nuevo ambiente que extiende al ambiente `mr`.
+
+####
+
+Al evaluar `fat(6)`, se genera una `closure`. Al ejecutar esta `closure`, que contiene el parámetro `x`, se crea un ambiente `f1` que extiende al ambiente recursivo `mr`, donde `x` toma el valor de 6. La evaluación verifica la condición `x > 0`. Como se cumple, se ejecuta la expresión `*(x, fat(sub1(x)))`, lo cual equivale a `*(6, fat(5))`.
+
+####
+
+Cada llamada recursiva dentro de un `letrec` genera una nueva `closure` basada en el mismo ambiente `mr`. Este proceso se repite sucesivamente:
+- Se crea un ambiente con `x = 5` para `fat(5)`, el cual llama a `fat(4)`.
+- Se crea un ambiente con `x = 4` para `fat(4)`, el cual llama a `fat(3)`.
+- Se crea un ambiente con `x = 3` para `fat(3)`, el cual llama a `fat(2)`.
+- Se crea un ambiente con `x = 2` para `fat(2)`, el cual llama a `fat(1)`.
+- Se crea un ambiente con `x = 1` para `fat(1)`, el cual llama a `fat(0)`.
+- Finalmente, se alcanza `x = 0`, que actúa como la condición de parada necesaria en toda función recursiva para evitar el consumo indefinido de memoria.
+
+####
+
+Una vez alcanzada la condición de parada, se procede a resolver las operaciones pendientes de retorno:
+- `fat(0)` retorna 1.
+- `fat(1)` calcula `*(1, fat(0))`, resultando en `1 * 1 = 1`.
+- `fat(2)` calcula `*(2, fat(1))`, resultando en `2 * 1 = 2`.
+- `fat(3)` calcula `*(3, fat(2))`, resultando en `3 * 2 = 6`.
+- `fat(4)` calcula `*(4, fat(3))`, resultando en `4 * 6 = 24`.
+- `fat(5)` calcula `*(5, fat(4))`, resultando en `5 * 24 = 120`.
+- `fat(6)` calcula `*(6, fat(5))`, resultando en `6 * 120 = 720`.
+
+####
+
+El código implementado en el intérprete permite verificar estos resultados de forma directa. Por ejemplo, al ejecutar las llamadas recursivas:
+
+```racket
+(fat 4) ; Retorna 24
+(fat 6) ; Retorna 720
+```
+
+La lógica del `letrec` asegura que el ambiente donde residen los procedimientos sea persistente durante las llamadas, permitiendo que la `recursión` se resuelva correctamente siguiendo la cadena de ambientes generada.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=T-h2Q-EtcNc
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

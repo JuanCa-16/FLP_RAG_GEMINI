@@ -1,0 +1,96 @@
+####
+**Tuplas en programación**
+Las `tuplas` son estructuras de datos que permiten agrupar valores heterogéneos. Sus características principales son su inmutabilidad, el hecho de no ser recursivas y su compatibilidad con `pattern matching`.
+
+Ejemplo: `(1, "hola", 3.14)` con tipos `(Int, String, Double)`.
+
+####
+**Pattern Matching con tuplas**
+El uso de `pattern matching` con tuplas permite simplificar código que, de otra forma, requeriría estructuras anidadas (`nested matches`), mejorando la legibilidad.
+
+```scala
+(u, v) match {
+  case (x::xs, y::ys) => // Lógica procesando las cabezas y colas de las listas
+}
+```
+
+####
+**Funciones de orden superior: `map` y `filter`**
+- `map`: Se utiliza para transformar elementos de una lista. Mantiene la estructura de la lista pero puede cambiar el tipo de sus elementos.
+- `filter`: Selecciona elementos basados en un predicado booleano, manteniendo el tipo original de la lista.
+
+Ejemplos:
+- `List(1, 2, 3).map(_ * 2)` resulta en `List(2, 4, 6)`.
+- `List(1, 2, 3, 4).filter(_ % 2 == 0)` resulta en `List(2, 4)`.
+
+####
+**Reducción de listas: `reduce` y `fold`**
+- `reduce`: Reduce una lista a un único valor. Requiere que el tipo de retorno sea el mismo que el de los elementos y genera un error si la lista está vacía.
+- `fold`: Similar a `reduce`, pero permite definir un valor inicial para el acumulador, lo que permite cambiar el tipo de retorno y manejar listas vacías de forma segura.
+
+Ejemplos:
+- `List(1, 2, 3).reduce(_ + _)` resulta en `6`.
+- `List(1, 2, 3).fold(0)(_ + _)` resulta en `6`.
+
+####
+**Diferencias entre `reduce` y `fold`**
+| Aspecto | `reduce` | `fold` |
+| :--- | :--- | :--- |
+| Tipo de retorno | Igual al de los elementos | Puede ser diferente |
+| Listas vacías | Lanza excepción | Retorna acumulador |
+| Acumulador inicial | Primer/último elemento | Se especifica explícitamente |
+| Asociatividad | Importante (Left/Right) | Importante (Left/Right) |
+
+####
+**Asociatividad en operaciones**
+La asociatividad es crítica dependiendo de la operación matemática. En operaciones como la suma, la asociatividad por izquierda o derecha produce el mismo resultado, mientras que en la resta, el resultado varía.
+
+- Suma: `(((1+2)+3)+4) = 10` y `(1+(2+(3+4))) = 10`.
+- Resta: `(((1-2)-3)-4) = -8` y `(1-(2-(3-4))) = -2`.
+
+####
+**Optimización de código mediante `pattern matching` de tuplas**
+El uso de tuplas permite limpiar código complejo. A continuación, se muestra cómo consolidar un `match` anidado en una sola estructura:
+
+```scala
+// Antes: código anidado complejo
+case x :: xs => v match {
+  case y :: ys => prodI(xs)(ys)(x * y + acc)
+}
+
+// Después: código limpio con tuplas
+case (x :: xs, y :: ys) => prodI(xs)(ys)(x * y + acc)
+```
+
+####
+**Funciones genéricas**
+La parametrización de tipos permite que las funciones acepten cualquier tipo de dato, siempre que sea posible operar sobre ellos, favoreciendo la reutilización del código.
+
+```scala
+def funcion[T](l: List[T]): ...
+
+// Uso con diferentes tipos
+funcion[Int](List(1, 2, 3))
+funcion[String](List("a", "b"))
+```
+
+####
+**Ventajas del enfoque funcional**
+El uso de estas técnicas ofrece beneficios clave en el desarrollo de software:
+- `Type safety`: Detección de errores en tiempo de compilación.
+- `Reutilización`: Las funciones genéricas trabajan con múltiples tipos.
+- `Expresividad`: El `pattern matching` simplifica lógica compleja.
+- `Eficiencia`: La recursión de cola (`tail recursion`) optimiza el uso de memoria.
+- `Flexibilidad`: El `fold` supera las limitaciones del `reduce` tradicional.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Resumen
+URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%207/Resumen/

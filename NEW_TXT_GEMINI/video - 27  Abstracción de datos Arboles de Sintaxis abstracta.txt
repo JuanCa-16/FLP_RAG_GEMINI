@@ -1,0 +1,37 @@
+####
+**Sintaxis abstracta y `datatypes`**
+
+Los `datatypes` definidos previamente mediante `define-datatype` permiten representar estructuras conocidas como árboles de sintaxis abstracta. Este es un concepto fundamental en los lenguajes de programación. Dada una gramática específica, como la de las expresiones de `cálculo lambda`, es posible representar cada elemento mediante un tipo de dato.
+
+La representación que el programador escribe en un archivo de texto se denomina `sintaxis concreta` o representación externa. Sin embargo, para que el código pueda ser ejecutado en el proceso de compilación o interpretación, se utiliza una representación interna conocida como `sintaxis abstracta`. Esta sintaxis especial se genera a partir de la gramática y permite verificar rápidamente si el programa está correctamente escrito.
+
+####
+**Construcción de la sintaxis abstracta**
+
+Para crear una `sintaxis abstracta` a partir de una `sintaxis concreta`, se debe asignar un nombre a cada regla de producción de la gramática y a cada ocurrencia de un símbolo no terminal. A continuación se presentan las producciones para las expresiones de `cálculo lambda`:
+
+- `var-expression`: tiene un identificador (`id`).
+- `lambda-expression`: tiene un identificador (`id`) y un cuerpo (`expression`).
+- `app-expression`: tiene un operador (`rator`) y un operando (`rand`), ambos de tipo `expression`.
+
+Estas reglas permiten estructurar el código para su administración interna.
+
+####
+**Ejemplo de representación en AST**
+
+Consideremos la expresión `lambda (x) (f (f x))`. Al aplicar la estructura de la `sintaxis abstracta`, esta se descompone jerárquicamente. La `lambda-expression` contiene un identificador `x` y un cuerpo que es una `app-expression`. 
+
+En esta `app-expression`:
+- El `rator` es un `var-expression` con el identificador `f`.
+- El `rand` es otra `app-expression` (la aplicación de `f` sobre `x`), compuesta a su vez por un `rator` (`var-expression` con `f`) y un `rand` (`var-expression` con `x`).
+
+La construcción de este `Abstract Syntax Tree` (`AST`) es el mecanismo que utilizan los lenguajes de programación para validar que una expresión sea correcta y pueda ejecutarse. La mayoría de las pruebas de validez del código se realizan sobre el `AST`, ya que este representa la sintaxis de un programa correctamente estructurado, eliminando las ambigüedades propias del código fuente original escrito por el programador.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=E_IR22Uw7_o
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

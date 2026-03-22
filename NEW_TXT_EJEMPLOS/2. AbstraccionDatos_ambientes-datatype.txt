@@ -1,0 +1,121 @@
+####
+Definición de la estructura de datos para el manejo de ambientes:
+
+```racket
+(define-datatype environment environment?
+  (empty-env-record)
+  (extended-env-record (syms (list-of symbol?))
+                       (vals (list-of scheme-value?))
+                       (env environment?)))
+
+(define scheme-value? (lambda (v) #t))
+```
+
+**Conceptos clave**
+`define-datatype`, `environment`, `variant constructors`, `list-of`, `scheme-value?`
+
+**Aplicación**
+Esta estructura define formalmente el tipo de dato `environment` mediante dos variantes: `empty-env-record` para representar un ambiente vacío y `extended-env-record` para almacenar una lista de símbolos, una lista de valores asociados y una referencia al ambiente anterior.
+
+####
+Creación de un ambiente vacío:
+
+```racket
+(define empty-env
+  (lambda () (empty-env-record)))
+```
+
+**Conceptos clave**
+`empty-env`, `constructor`, `ambiente vacío`
+
+**Aplicación**
+Proporciona la interfaz base para inicializar un nuevo ambiente sin ninguna asociación de variables.
+
+####
+Extensión de un ambiente con una nueva asociación:
+
+```racket
+(define extend-env
+  (lambda (var val env)
+    (extended-env-record (list var) (list val) env)))
+```
+
+**Conceptos clave**
+`extend-env`, `bindings`, `encapsulamiento`, `constructores`
+
+**Aplicación**
+Permite añadir una variable y su valor correspondiente a un ambiente existente, creando una nueva instancia de `extended-env-record`.
+
+####
+Búsqueda y resolución de variables en un ambiente:
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+                        (eopl:error 'apply-env "No binding for ~s" sym))
+      (extended-env-record (syms vals env)
+                           (let ((pos (list-find-position sym syms)))
+                             (if (number? pos)
+                                 (list-ref vals pos)
+                                 (apply-env env sym)))))))
+```
+
+**Conceptos clave**
+`apply-env`, `cases`, `búsqueda recursiva`, `manejo de errores`
+
+**Aplicación**
+Implementa el mecanismo de resolución de nombres. Si el símbolo `sym` se encuentra en el ambiente actual, retorna el valor asociado; de lo contrario, realiza una búsqueda recursiva en el ambiente padre. Lanza un error si el símbolo no existe en ninguna capa del ambiente.
+
+####
+Funciones auxiliares para la búsqueda de índices en listas:
+
+```racket
+(define list-find-position
+  (lambda (sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
+
+(define list-index
+  (lambda (pred ls)
+    (cond
+      ((null? ls) #f)
+      ((pred (car ls)) 0)
+      (else (let ((list-index-r (list-index pred (cdr ls))))
+              (if (number? list-index-r)
+                  (+ list-index-r 1)
+                  #f))))))
+```
+
+**Conceptos clave**
+`list-find-position`, `list-index`, `predicados`, `recursión`, `búsqueda lineal`
+
+**Aplicación**
+Utilizadas para localizar la posición de un símbolo dentro de la lista de variables (`syms`) contenida en un registro de ambiente, facilitando la extracción del valor correspondiente en la lista de valores (`vals`).
+
+####
+Instanciación y consulta de ambientes:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+(apply-env e 'd)
+(apply-env e 'y)
+```
+
+**Conceptos clave**
+`instanciación`, `ambiente anidado`, `shadowing`
+
+**Aplicación**
+Demuestra la creación de una jerarquía de ambientes donde se realizan múltiples extensiones. Ilustra cómo `apply-env` resuelve correctamente el valor más reciente de una variable (shadowing), como en el caso de la variable `y`.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-datatype.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

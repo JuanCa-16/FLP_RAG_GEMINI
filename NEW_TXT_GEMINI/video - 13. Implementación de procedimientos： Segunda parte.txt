@@ -1,0 +1,55 @@
+####
+
+**Implementación de aplicación de procedimientos**
+
+Para la implementación de la aplicación de procedimientos, cuando se evalúa una expresión como `F(2, 28)`, debe crearse un ambiente que contenga las variables `E` y `Z` con sus respectivos valores. Este nuevo ambiente debe extenderse desde el ambiente donde fue creado el procedimiento, no desde donde fue llamado. Esta distinción es fundamental para el manejo del `scope léxico`.
+
+En la función `evaluar-expresion`, el proceso de aplicación de procedimientos consiste en:
+
+1. Evaluar los `rands` (argumentos) utilizando `map` sobre una función `lambda` que aplica `evaluar-expresion` en el ambiente actual.
+2. Evaluar el `rator` para obtener el procedimiento (`proc`). Es necesario verificar que el resultado sea efectivamente un procedimiento; en caso contrario, se debe disparar un error.
+
+####
+
+**Estructura de evaluación de procedimientos**
+
+Al evaluar el cuerpo del procedimiento, se utiliza un `cases` para acceder a la `clausura`, la cual contiene los identificadores (`lids`), el cuerpo y el ambiente original de creación. La evaluación del cuerpo ocurre sobre un ambiente extendido que vincula los `lids` con los valores de los `rands` evaluados, extendiendo el ambiente donde se creó el procedimiento.
+
+```racket
+(let ((rands (map (lambda (x) (evaluar-expresion x env)) rands))
+      (proc-b (evaluar-expresion rator env)))
+  (if (proc? proc-b)
+      (cases proc proc-b
+        (closure (lids cuerpo env-creacion)
+          (evaluar-expresion cuerpo 
+                             (extend-env lids rands env-creacion))))
+      (eopl:error "No es un procedimiento")))
+```
+
+####
+
+**Validación de argumentos**
+
+Para garantizar la integridad de la ejecución, es necesario verificar que la cantidad de identificadores definidos en el procedimiento coincida con la cantidad de argumentos proporcionados. Se utiliza la función `length` para comparar ambas listas y lanzar un error informativo en caso de discrepancia.
+
+```racket
+(let ((num-lids (length lids))
+      (num-rands (length rands)))
+  (if (= num-lids num-rands)
+      (evaluar-expresion cuerpo (extend-env lids rands env-creacion))
+      (eopl:error "El número de argumentos no es correcto. Debe enviar " 
+                  num-lids 
+                  " y usted ha enviado " 
+                  num-rands)))
+```
+
+Al incluir mensajes de error detallados, se facilita la depuración del código, permitiendo al usuario identificar exactamente cuántos argumentos esperaba la función y cuántos fueron suministrados realmente.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=VeDViGXrwrQ
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

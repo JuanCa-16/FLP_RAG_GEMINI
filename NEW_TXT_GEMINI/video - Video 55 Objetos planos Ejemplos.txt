@@ -1,0 +1,65 @@
+####
+
+**Representación de objetos simples e instanciación**
+
+Para comprender la instanciación de objetos, analizamos una clase que contiene campos `X` y `Y` y métodos `M1` y `M2`. Al instanciar un objeto `O1` a partir de esta clase, el sistema crea un `datatype` de tipo `object` asociado a la clase. La representación de `O1` incluye un vector con los valores inicializados de sus campos.
+
+Si instanciamos `O1` con los valores `1` y `2` para `X` y `Y`, la representación en memoria es:
+
+```racket
+(object (class S1) (vector 1 2))
+```
+
+Al invocar un método como `Send O1 M1`, se genera un nuevo entorno de ejecución donde:
+- `self` apunta al objeto `O1`.
+- `super` apunta a la clase donde se define el método `M1`.
+- Los campos del objeto se mantienen accesibles dentro de este entorno.
+
+####
+
+**Alcance y jerarquía de clases**
+
+En escenarios con múltiples clases (por ejemplo, `C1` y `C2`), la instanciación requiere gestionar los campos de todas las clases en la jerarquía. Consideremos `O2` de clase `C2`, la cual hereda de `C1`. El objeto debe almacenar los campos de ambos niveles.
+
+Si `C1` define `X` y `Y` con valores `1` y `2`, y `C2` define `X` y `Y` con `9` y `10`, la estructura del objeto refleja esta secuencia:
+
+```racket
+(object (class C2) (vector 1 2 9 10))
+```
+
+Es fundamental respetar el orden de inicialización de los campos según la jerarquía, ya que esto determina qué valores serán accesibles durante la ejecución de los métodos.
+
+####
+
+**Ejecución de métodos y búsqueda en el entorno**
+
+Al ejecutar `Send O2 M2`, el sistema busca el método `M2`. Si `M2` no existe en `C2`, se busca en la clase padre `C1`. Durante la ejecución de un método en `C1`, el mecanismo de `Find-Read-Position` limita el acceso a los campos relevantes de esa clase específica.
+
+En una llamada anidada como `Send self M1` dentro de `M2`, el sistema construye un nuevo entorno donde el `self` sigue siendo `O2`. Para evitar conflictos de nombres entre campos de distintas clases, se recomienda organizar los campos en el vector manteniendo la jerarquía (`C2` y `C1`), permitiendo que la búsqueda encuentre el valor correcto (por ejemplo, `9` para `X` de `C2` frente a `1` para `X` de `C1`) según el contexto de la clase donde se ejecuta el método.
+
+####
+
+**Mutación de estado en objetos**
+
+El manejo del estado en objetos permite modificar los valores de los campos mediante métodos. Consideremos un objeto `O1` con campos `I` y `J` inicializados en `3` y `-3`.
+
+1. **Estado inicial:** Se obtiene llamando a un método `get-state`, que retorna `(3, -3)`.
+2. **Modificación:** Al invocar `count-up` con un parámetro `2`, el método accede a los campos del objeto y realiza la operación aritmética sobre los valores actuales.
+
+```racket
+(define (count-up d)
+  (begin
+    (set! I (+ I d))
+    (set! J (- J d))))
+```
+
+Tras la ejecución, los valores en el vector del objeto se actualizan a `5` y `-5`. Al llamar nuevamente a `get-state`, el sistema accede al entorno actual del objeto, el cual refleja los cambios realizados, devolviendo los valores actualizados `(5, -5)` en lugar de los iniciales. La persistencia de estos cambios se debe a que el `vector` del objeto actúa como una estructura de datos mutable compartida por los métodos del objeto.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=nL5i_K0OV_4
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,114 @@
+####
+Definición de la base numérica y el predicado para identificar el valor cero en una representación de números grandes:
+
+```racket
+#lang eopl
+(define base 16)
+
+(define zero '())
+(define is-zero? null?)
+```
+
+**Conceptos clave**
+`lenguaje EOPL`, `abstracción de datos`, `predicados`, `listas vacías`
+
+**Aplicación**
+Esta configuración establece la `base` numérica (en este caso 16) y define la estructura de datos que representa el número cero mediante una lista vacía, facilitando la aritmética de enteros arbitrarios.
+
+####
+Implementación de la función `successor` para incrementar un número representado como lista:
+
+```racket
+(define successor
+  (lambda (n)
+    (cond
+      [(is-zero? n) (cons 1 empty)]
+      [(= (car n) (- base 1))
+       (cons 0 (successor (cdr n)))]
+      [else
+       (cons (+ (car n) 1) (cdr n))])))
+```
+
+**Conceptos clave**
+`recursión`, `condicionales`, `manejo de listas`, `transporte de acarreo`
+
+**Aplicación**
+La función incrementa el valor representado. Si el dígito actual alcanza el valor de `base - 1`, realiza un acarreo recursivo sobre el resto de la lista (`cdr`), similar a la suma manual en sistemas posicionales.
+
+####
+Implementación de la función `predecessor` para decrementar un número representado como lista:
+
+```racket
+(define predecessor
+  (lambda (n)
+    (cond
+      [(is-zero? n) (eopl:error "No puede manejar predecesor de cero")]
+      [(equal? n (cons 1 empty)) '()]
+      [(= (car n) 0)
+       (cons (- base 1) (predecessor (cdr n)))]
+      [else (cons (- (car n) 1) (cdr n))]
+       )))
+```
+
+**Conceptos clave**
+`gestión de errores`, `recursión`, `decremento`, `números posicionales`
+
+**Aplicación**
+Esta función reduce el valor representado. Maneja el caso de préstamo cuando el dígito actual es cero, invocando recursivamente a `predecessor` sobre el resto de los dígitos. Si el número es 1, retorna la lista vacía (`zero`).
+
+####
+Implementación de la operación suma basada en sucesores y predecesores:
+
+```racket
+(define plus
+  (lambda (a b)
+    (cond
+      [(is-zero? b) a]
+      [else
+       (plus (successor a) (predecessor b))]
+      )))
+```
+
+**Conceptos clave**
+`recursión mutua`, `aritmética`, `abstracción procedimental`
+
+**Aplicación**
+La función `plus` realiza la suma de dos números de forma inductiva: incrementa el primer operando mientras decrementa el segundo hasta que este último llega a cero.
+
+####
+Implementación de la operación multiplicación mediante sumas sucesivas:
+
+```racket
+(define mult
+  (lambda (a b)
+    (if
+     (is-zero? b)
+     zero
+     (plus a (mult a (predecessor b)))
+     )))
+```
+
+**Conceptos clave**
+`recursión`, `producto`, `casos base`, `operadores aritméticos`
+
+**Aplicación**
+Esta función calcula el producto de dos números mediante la suma repetida. Utiliza `plus` como operación auxiliar para acumular el valor de `a` tantas veces como indique `b`.
+
+####
+Ejecución de una operación de multiplicación con números en representación de lista:
+
+```racket
+(display (mult '(0 2 1) '(1 2 3)))
+```
+
+**Conceptos clave**
+`evaluación`, `entrada de datos`, `formato posicional`
+
+**Aplicación**
+Ilustra el uso práctico de las funciones definidas para operar sobre números representados como listas de dígitos. En este caso, multiplica dos números arbitrarios representados en base 16 y muestra el resultado en la salida estándar.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepBigNum.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

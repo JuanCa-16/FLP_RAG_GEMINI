@@ -1,0 +1,113 @@
+####
+**Evaluación de procedimiento recursivo simple con `letrec`**
+
+```racket
+(letrec
+  ((f (lambda (x y)
+        (if (> x 0)
+            (+ y (f (- x 1) y))
+            y))))
+  (f 2 3))
+```
+
+Este procedimiento define una función recursiva `f` que toma dos argumentos, `x` e `y`. Si `x` es mayor que 0, suma `y` al resultado de llamar recursivamente a `f` con `x-1` e `y`. En caso contrario, retorna `y`.
+
+**Diagrama de entornos para la ejecución**
+
+```mermaid
+graph LR
+    E["Empty-env"]
+    A["envr0: (f), (x,y)"]
+    F1["envf1: (x=2, y=3)"]
+    F2["envf2: (x=1, y=3)"]
+    F3["envf3: (x=0, y=3)"]
+    E --> A
+    A --> F1
+    A --> F2
+    A --> F3
+```
+
+**Análisis de la recursión**
+- `envf1`: `if (> 2 0)` entonces `(+ 3 (f 1 3))`
+- `envf2`: `if (> 1 0)` entonces `(+ 3 (f 0 3))`
+- `envf3`: `if (> 0 0)` es falso, ejecuta el `else` y retorna `3`.
+
+**Suma acumulada**
+1. `(+ 3 (f 1 3))`
+2. `(+ 3 (+ 3 (f 0 3)))`
+3. `(+ 3 (+ 3 3)) = 9`
+
+####
+**Evaluación de `letrec` anidado con múltiples funciones**
+
+```racket
+(let ((x (let ((x 3)) (+ x 3)))
+      (y 8)
+      (z (proc (a b) (if (> a b) a b))))
+  (letrec ((f (lambda (x y)
+                (if (> x 0)
+                    (+ y (g (- x 2) (+ y 1)))
+                    (let ((t (z (z x y) (z y x))))
+                      (+ t 1)))))
+           (g (lambda (m n)
+                (if (> m 0)
+                    (* n (f (- m 1) (- n 1)))
+                    n))))
+    (f x y)))
+```
+
+El código define variables iniciales y dos funciones recursivas mutuas, `f` y `g`. El resultado de la ejecución `(f 6 8)` es 809.
+
+**Diagrama de entornos**
+
+```mermaid
+graph LR
+    E["Empty-env"]
+    ENV0["env0: (x,y,z)"]
+    ENVX["envx0: x=3"]
+    ENVR0["envr0: (f, g)"]
+    ENVF1["envf1: (x=6, y=8)"]
+    ENVG1["envg1: (m=4, y=9)"]
+    ENVF2["envf2: (x=3, y=8)"]
+    ENVG2["envg2: (m=1, y=9)"]
+    ENVF3["envf3: (x=0, y=8)"]
+    ENVT["envt: t=8"]
+    E --> ENV0
+    E --> ENVX
+    ENV0 --> ENVR0
+    ENVR0 --> ENVF1
+    ENVR0 --> ENVG1
+    ENVR0 --> ENVF2
+    ENVR0 --> ENVG2
+    ENVR0 --> ENVF3
+    ENVF3 --> ENVT
+```
+
+**Desglose de la evaluación**
+- `envf1` (6, 8): `if (> 6 0)` -> `(+ 8 (g 4 9))`
+- `envg1` (4, 9): `if (> 4 0)` -> `(* 9 (f 3 8))`
+- `envf2` (3, 8): `if (> 3 0)` -> `(+ 8 (g 1 9))`
+- `envg2` (1, 9): `if (> 1 0)` -> `(* 9 (f 0 8))`
+- `envf3` (0, 8): `else` -> `t = (z (z 0 8) (z 8 0))`
+  - `(z 0 8)` retorna 8.
+  - `(z 8 0)` retorna 8.
+  - `(z 8 8)` retorna 8.
+  - `(+ 8 1)` resulta en `t = 9`.
+
+**Cálculo final**
+`(+ 8 (* 9 (+ 8 (* 9 9))))`
+`(+ 8 (* 9 (+ 8 81)))`
+`(+ 8 (* 9 89))`
+`(+ 8 801) = 809`
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Evaluación procedimiento recursivos
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Evaluaci%C3%B3n%20procedimiento%20recursivos/

@@ -1,0 +1,96 @@
+####
+**Definición de Árboles Binarios en Racket**
+Se define una estructura de datos `tree` utilizando `define-datatype` bajo el lenguaje `eopl`. Un árbol puede ser una hoja (`leaf`) que contiene un dato numérico, o un nodo (`node`) que contiene una llave simbólica y dos subárboles (`left` y `right`).
+
+```racket
+(define-datatype tree tree?
+  (leaf
+   (datum number?))
+  (node
+   (key symbol?)
+   (left tree?)
+   (right tree?)))
+```
+
+####
+**Instanciación de un árbol binario**
+A continuación se define `treeA`, una instancia del tipo de dato `tree` construida mediante nodos y hojas para representar una estructura jerárquica.
+
+```racket
+(define treeA
+  (node 'a
+        (node 'b
+              (node 'd
+                    (node 'h (leaf 7) (leaf 8))
+                    (node 'i (leaf 9) (leaf 10)))
+              (node 'e (leaf 1) (leaf 2)))
+        (node 'c
+              (node 'f (leaf 3) (leaf 4))
+              (node 'g (leaf 5) (leaf 6)))))
+```
+
+####
+**Recorrido en preorden**
+El recorrido en `preorden` visita primero la raíz del árbol, seguido del subárbol izquierdo y finalmente el subárbol derecho. La función utiliza `cases` para manejar los distintos constructores del tipo `tree`.
+
+```racket
+(define preorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum) (list datum))
+      (node (key left right)
+            (append (list key)
+                    (preorder left)
+                    (preorder right))))))
+
+(display (preorder treeA))
+(display "\n")
+```
+
+####
+**Recorrido en posorden**
+El recorrido en `posorden` procesa recursivamente el subárbol izquierdo, luego el subárbol derecho y, por último, visita la raíz del nodo actual.
+
+```racket
+(define posorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum) (list datum))
+      (node (key left right)
+            (append (posorder left)
+                    (posorder right)
+                    (list key))))))
+
+(display (posorder treeA))
+(display "\n")
+```
+
+####
+**Recorrido en inorden**
+El recorrido en `inorden` visita primero el subárbol izquierdo, luego la raíz del nodo actual y finalmente el subárbol derecho.
+
+```racket
+(define inorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum) (list datum))
+      (node (key left right)
+            (append (inorder left)
+                    (list key)
+                    (inorder right))))))
+
+(display (inorder treeA))
+(display "\n")
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_Ejemplo 1
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Ejemplo%201/

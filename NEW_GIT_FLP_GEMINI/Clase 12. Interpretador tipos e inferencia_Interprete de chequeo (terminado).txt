@@ -1,0 +1,213 @@
+####
+**Especificación léxica**
+La especificación léxica define los `tokens` y los patrones `regex` que el escáner utilizará para procesar el código fuente.
+
+```racket
+(define lexical
+  '(
+    (comment ("%" (arbno (not #\newline))) skip)
+    (whitespace (whitespace) skip)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (identifier (letter (arbno (or letter digit))) symbol)
+    ))
+```
+- `%`: Define comentarios que se ignoran hasta el final de la línea.
+- `whitespace`: Los espacios en blanco son ignorados.
+- `number`: Acepta números positivos y negativos formados por dígitos.
+- `identifier`: Define identificadores como una letra seguida de letras o dígitos.
+
+####
+**Gramática del lenguaje**
+La gramática define las producciones y los constructores del Árbol de Sintaxis Abstracta (`AST`).
+
+```racket
+(define grammar
+  '(
+    (program (expression) a-program)
+    (expression (identifier) var-exp)
+    (expression (number) lit-exp)
+    (expression ("true") true-exp)
+    (expression ("false") false-exp)
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    (expression ("if" expression "then" expression "else" expression) if-exp)
+    (expression ("let" (arbno identifier "=" expression) "in" expression) let-exp)
+    (expression ("proc" "(" (separated-list type-exp identifier ",") ")" expression) proc-exp)
+    (expression ("letrec" (arbno type-exp identifier "(" (separated-list type-exp identifier ",") ")" "=" expression) "in" expression) letrec-exp)
+    (expression ("set" identifier "=" expression) set-exp)
+    (expression ("begin" expression (arbno ";" expression) "end") begin-exp)
+    (expression ("(" expression (arbno expression) ")") app-exp)
+    ))
+```
+
+####
+**Primitivas y Tipos de Datos**
+Se definen las operaciones primitivas soportadas y los tipos de datos básicos para el sistema de tipos.
+
+```racket
+(define grammar
+  '(
+    (primitive ("+") add-prim)
+    (primitive ("-") sub-prim)
+    (primitive ("*") prod-prim)
+    (primitive ("/") div-prim)
+    (primitive ("and") and-prim)
+    (primitive ("or") or-prim)
+    (primitive ("<") less-prim)
+    (primitive ("<=") lesseq-prim)
+    (primitive (">") more-prim)
+    (primitive (">=") moreeq-prim)
+    (primitive ("==") eq-prim)
+    (primitive ("!=") neq-prim)
+    (type-exp ("int") int-exp)
+    (type-exp ("bool") bool-exp)
+    (type-exp ("(" (separated-list type-exp "*") "->" type-exp ")") proc-type-exp)
+    ))
+```
+
+####
+**Scanner y Parser**
+El `scanner` y el `parser` se generan automáticamente a partir de la especificación léxica y gramatical para convertir el código fuente en un `AST`.
+
+```racket
+(define scanner
+  (lambda (program)
+    ((sllgen:make-string-scanner lexical grammar) program)))
+
+(define parser
+  (lambda (program)
+    ((sllgen:make-string-parser lexical grammar) program)))
+```
+
+####
+**Definición del entorno**
+El entorno (`environment`) es la estructura de datos que gestiona los `bindings` (asociaciones entre identificadores y valores).
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+    (lid (list-of symbol?))
+    (lval vector?)
+    (old-env environment?))
+  (extend-recursively-env
+    (procname (list-of symbol?))
+    (argss (list-of (list-of symbol?)))
+    (bodies (list-of expression?))
+    (old-env environment?)))
+```
+
+####
+**Búsqueda en el entorno**
+La función `apply-env-ref` busca un símbolo en el entorno y retorna su referencia.
+
+```racket
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env () (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec ((search-var
+                  (lambda (lid lval [pos 0])
+                    (cond [(null? lid) (apply-env-ref old-env var)]
+                          [(equal? (car lid) var) (a-ref pos vec)]
+                          [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec))))
+      (extend-recursively-env (procnames llargs bodies old-env)
+        ;; Lógica de búsqueda de procedimientos recursivos omitida por brevedad
+        ))))
+```
+
+####
+**Evaluación del programa**
+El punto de entrada para la ejecución evalúa la expresión principal validando primero sus tipos.
+
+```racket
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp)
+        (if (type? (type-of-expression exp init-tenv))
+            (eval-expression exp init-env)
+            (eopl:error "The evaluation of types is incorrect!"))))))
+```
+
+####
+**Evaluación de expresiones**
+La función `eval-expression` procesa recursivamente cada expresión según su tipo en el `AST`.
+
+```racket
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id) (apply-env env id))
+      (lit-exp (datum) datum)
+      (true-exp () #t)
+      (false-exp () #f)
+      (prim-exp (prim lrands)
+        (let ((values (map (lambda (x) (eval-expression x env)) lrands)))
+          (apply-primitive prim values))))))
+```
+
+####
+**Aplicación de primitivas**
+La función `apply-primitive` ejecuta operaciones matemáticas o lógicas sobre los valores evaluados.
+
+```racket
+(define apply-primitive
+  (lambda (prim values)
+    (cases primitive prim
+      (add-prim () (operation + values 0))
+      (sub-prim () (- (car values) (operation + (cdr values) 0)))
+      (less-prim () (< (car values) (cadr values)))
+      (eq-prim () (= (car values) (cadr values))))))
+```
+
+####
+**Verificación de tipos**
+`type-of-expression` determina el tipo de una expresión dada en un entorno de tipos (`tenv`).
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (lit-exp (d) int-type)
+      (true-exp () bool-type)
+      (false-exp () bool-type)
+      (var-exp (id) (deref (apply-tenv tenv id)))
+      (if-exp (test-exp true-exp false-exp)
+        (let ((test-type (type-of-expression test-exp tenv))
+              (true-type (type-of-expression true-exp tenv))
+              (false-type (type-of-expression false-exp tenv)))
+          (begin (check-equal-type! test-type bool-type test-exp)
+                 (check-equal-type! true-type false-type exp)
+                 true-type))))))
+```
+
+####
+**Verificación de igualdad de tipos**
+`check-equal-type!` compara dos tipos y lanza un error si no coinciden.
+
+```racket
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'type-check
+                    "Types didn't match ~s != ~s in ~%~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2)
+                    exp)
+        t1)))
+```
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Interprete de chequeo (terminado)
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo/

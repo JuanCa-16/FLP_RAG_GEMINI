@@ -1,0 +1,88 @@
+####
+**Sistema de tipos y expresiones de tipo**
+
+En el contexto de la construcción de un intérprete, las `expresiones de tipo` permiten indicar el tipo de una variable, diferenciándose de su representación en memoria. Por ejemplo, al escribir `int a = 3`, `int` representa el tipo de la variable.
+
+La gramática de tipos se define de la siguiente manera:
+
+- `<tipo-exp> ::= int` (`int-type-exp()`)
+- `<tipo-exp> ::= bool` (`bool-type-exp()`)
+- `<tipo-exp> ::= (<tipo-exp>*(,) -> <tipo-exp>)` (`proc-type-exp(targs result-type)`)
+
+####
+**Ejemplos de expresiones y tipos de procedimientos**
+
+Las expresiones tipadas asocian una construcción del lenguaje con su respectivo tipo:
+
+- `proc (int a, int b) + (a, b)` tiene tipo `(int * int) -> int`
+- `5` tiene tipo `int`
+- `true` tiene tipo `bool`
+
+Los tipos de procedimientos describen la firma de entrada y salida:
+
+- `even? (x)` es `int -> bool`
+- `+` es `int * int -> int`
+- `(lambda (x) (lambda (y) (+ x y)))` es `int -> (int -> int)`
+- `(lambda (f x) (zero? (f (+ x 1))))` es `((int -> int) * int) -> bool`
+
+####
+**Ejercicios de inferencia de tipos**
+
+A continuación se presentan ejemplos de inferencia para diversas construcciones:
+
+- `-(32, 26)` es `int`
+- `proc (x) (x 26)` es `(int -> t) -> t`
+- `proc (x) if x then 1 else 2` es `bool -> int`
+- `proc (f, x) if (f x) then 1 else 2` es `(tx -> bool) * tx -> int`
+- `proc (x) proc (y) if y then x else 3` es `int -> (bool -> int)`
+
+Cuando un tipo no puede ser determinado unívocamente, se denomina `tipo polimórfico`.
+
+####
+**Especificación del lenguaje: tipado fuerte y estático**
+
+El lenguaje diseñado es `fuertemente y estáticamente tipado`. Se dispararán errores de tipo en las siguientes situaciones:
+
+- Intento de aplicar algo distinto a un `procVal` (evaluación de no-procedimiento).
+- Envío de un número incorrecto de argumentos a un procedimiento.
+- Aplicación de un argumento de tipo incorrecto a una primitiva (por ejemplo, intentar usar un booleano en una operación aritmética).
+- Uso de algo distinto a un booleano en la condición de un `if`.
+
+Es importante notar que las divisiones por cero no se consideran errores de tipo, sino errores semánticos.
+
+####
+**Implementación del verificador de tipos**
+
+La verificación se realiza mediante el procedimiento `type-of-expression`, el cual recibe una expresión y un `ambiente de tipos` para asignar un tipo a dicha expresión. El `ambiente inicial de tipos` contiene las definiciones de tipos para los valores primitivos del lenguaje.
+
+El comportamiento de `type-of-expression` es el siguiente:
+
+- `Número`: retorna `int`.
+- `Booleano`: retorna `bool`.
+- `Variable`: busca la ligadura en el `ambiente de tipos`.
+- `Condicional (if)`: 
+    - La condición debe ser de tipo `bool`.
+    - Las expresiones `then` y `else` deben tener el mismo tipo.
+    - Retorna el tipo común de `then` y `else`.
+- `Procedimiento (proc)`: retorna `(t1 * t2 * ... * tn) -> t`, donde `ti` son los tipos de los parámetros y `t` el tipo del cuerpo.
+- `Aplicación`: Para `(rator rand1 ... randn)`, el `rator` debe tener tipo `(t1 * t2 * ... * tn) -> t` y cada `randi` debe coincidir con `ti`. Retorna `t`.
+
+####
+**Limitación del sistema y estrategias de solución**
+
+Al evaluar una aplicación de procedimiento, surge una limitación cuando no es posible determinar directamente los tipos de los parámetros del `rator` (por ejemplo: `let f = proc (x, y) ... in (f 1 2)`). Para resolver esto existen dos estrategias:
+
+- **Chequeo de tipos explícito**: Se obliga al usuario a colocar anotaciones de tipo en los procedimientos, por ejemplo: `let f = proc (int x, int y) ... in (f 1 2)`.
+- **Inferencia de tipos**: Se utiliza un sistema de ecuaciones de tipos y un mecanismo de unificación para determinar los tipos de manera automática basándose en el contexto, utilizando marcadores como `?` en: `let f = proc (?x, ?y) ... in (f 1 2)`.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Interpretador I
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/

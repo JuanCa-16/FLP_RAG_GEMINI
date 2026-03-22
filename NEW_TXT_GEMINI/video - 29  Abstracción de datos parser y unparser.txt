@@ -1,0 +1,64 @@
+####
+
+La `sintaxis abstracta` representa la estructura lógica de un lenguaje, pero su manejo directo resulta complejo debido a que las estructuras de datos que la componen no son intuitivas para el programador. Por ello, es necesario establecer funciones que permitan la transformación entre el código que escribe el programador (sintaxis concreta) y el `árbol de sintaxis abstracta` (AST) que entiende el intérprete o compilador.
+
+Existen dos procesos fundamentales para esta gestión:
+- `unparse`: Es la función que toma un `árbol de sintaxis abstracta` y lo convierte nuevamente a una `sintaxis concreta` (basada en procedimientos, listas o código fuente).
+- `parsing`: Es el proceso de convertir el código escrito por el programador en un `árbol de sintaxis abstracta`. Si el AST se puede construir exitosamente, significa que el código fuente cumple con las reglas gramaticales establecidas.
+
+####
+
+Para implementar un `parser`, se utilizan las funciones constructoras provistas por el `data type` definido para las expresiones. Por ejemplo, si tenemos expresiones como `lambda expression`, `app expression` y `bar expression`, el `parser` se encarga de verificar la entrada y construir los tipos correspondientes.
+
+Consideremos un ejemplo de construcción de árboles mediante listas, donde definimos dos árboles en `sintaxis concreta`:
+
+```racket
+(define arbol-1-c '(leaf 5))
+(define arbol-2-c '(node 'p (leaf 5) (leaf 7)))
+```
+
+Aquí, `arbol-1-c` y `arbol-2-c` son representaciones basadas en listas. El objetivo del `parser` es transformar estas estructuras en tipos de datos de `sintaxis abstracta`.
+
+####
+
+La función `parser-expression` toma una expresión representada como lista y la convierte en una estructura de `sintaxis abstracta`. Para ello, se evalúan los casos de la estructura mediante predicados:
+
+```racket
+(define (parser-expression exp)
+  (cond
+    [(eq? (car exp) 'leaf) 
+     (leaf-exp (cadr exp))]
+    [else 
+     (node-exp (cadr exp) 
+               (parser-expression (caddr exp)) 
+               (parser-expression (cadddr exp)))]))
+```
+
+En este caso, si el primer elemento es `leaf`, se construye la hoja. En otro caso (`node`), se extrae el valor y se realizan llamadas recursivas sobre el hijo izquierdo (`caddr`) y el hijo derecho (`cadddr`) para asegurar que todo el árbol sea procesado correctamente dentro de la estructura de `sintaxis abstracta`.
+
+####
+
+Para completar el ciclo de transformación, necesitamos la función `unparse-expression`, que realiza el camino inverso: recibe un `árbol de sintaxis abstracta` y lo convierte a `sintaxis concreta` (en este caso, a una lista):
+
+```racket
+(define (unparse-expression exp)
+  (cond
+    [(leaf-exp? exp) 
+     (list 'leaf (leaf-exp-value exp))]
+    [(node-exp? exp) 
+     (list 'node 
+           (node-exp-key exp) 
+           (unparse-expression (node-exp-left exp)) 
+           (unparse-expression (node-exp-right exp)))]))
+```
+
+Mediante `unparse-expression`, logramos representar el `árbol de sintaxis abstracta` como una lista legible para el programador. Este ciclo de `parsing` y `unparsing` es el proceso fundamental que realizaremos de forma constante al construir lenguajes de programación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=CWw4bitbiNE
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,65 @@
+####
+
+**Análisis de tipos del procedimiento `g`**
+
+Para verificar el `tipo` del procedimiento `g`, observamos su estructura. Este procedimiento recibe como argumentos dos enteros (`int`, `int`) y tres booleanos (`bool`, `bool`, `bool`), y retorna un booleano (`bool`). La firma de tipos se puede representar de la siguiente manera:
+
+```racket
+(proc (int int bool bool bool) bool)
+```
+
+Al evaluar `g`, debemos asegurar que los argumentos proporcionados coincidan con esta declaración y que el valor de retorno sea consistente con el tipo esperado en el contexto donde `g` es invocado.
+
+####
+
+**Análisis del procedimiento `f` y sus argumentos**
+
+El procedimiento `f` posee una estructura más compleja. Su firma de tipos indica que recibe como parámetros:
+1. Un procedimiento `h` que acepta (int, int, bool, bool, bool) y retorna un `bool`.
+2. Un procedimiento `p` que acepta un `int` y retorna un `bool`.
+3. Dos enteros (`int`, `int`).
+4. Un booleano (`bool`).
+
+El resultado de `f` es un `bool`. Al analizar la expresión `f(g, q, 5, 1)`, verificamos la correspondencia de tipos:
+- `g` coincide con la firma del procedimiento `h`.
+- `q` es un procedimiento que recibe un `int` y retorna un `bool`, cumpliendo con la expectativa para `p`.
+- `5` e `1` son enteros, satisfaciendo los argumentos de tipo `int`.
+
+####
+
+**Verificación de la evaluación de `h`**
+
+Dentro del cuerpo de `f`, la evaluación de `h` requiere que los argumentos pasados a esta función sean consistentes con su declaración. Dado que `h` recibe (n, m, pdn, p2n, ti), se verifica lo siguiente:
+- `n` y `m` son enteros.
+- `pdn` es el resultado de `p(n)`, que retorna un `bool`.
+- `p2n` es el resultado de `p(2 * n)`, que también retorna un `bool`.
+- `ti` es un booleano.
+
+La lógica interna de `h` utiliza una primitiva de comparación (mayor que) y una estructura condicional `if`, donde la condición debe ser un `bool` y las ramas `then` y `else` deben ser del mismo tipo. En este caso, la evaluación de `h` retorna correctamente un `bool`.
+
+####
+
+**Errores comunes en el chequeo de tipos**
+
+Al realizar el `chequeo de tipos`, es fundamental diferenciar entre la declaración del procedimiento y su evaluación. Un error de tipos ocurre si los argumentos proporcionados no coinciden con la firma esperada o si hay inconsistencia en las operaciones. Ejemplos de errores:
+
+- **Incompatibilidad de tipos**: Intentar pasar un `bool` donde se espera un `int` dentro de una expresión.
+- **Error en número de argumentos**: Proporcionar una cantidad de parámetros distinta a la definida en la firma (`wrong number of arguments`).
+- **Inconsistencia en el `if`**: Que el resultado de la rama `then` no sea del mismo tipo que el resultado de la rama `else`.
+
+El proceso consiste en verificar que, para cada variable y cada aplicación de procedimiento, los tipos coincidan exactamente con la especificación original.
+
+####
+
+**Introducción a la inferencia de tipos**
+
+Una vez comprendido el proceso de verificación de tipos, el siguiente paso es la `inferencia de tipos`. A diferencia del chequeo estático donde los tipos deben ser explícitos, la `inferencia de tipos` permite que el interpretador determine o estime los tipos de las expresiones basándose en las reglas de formación del lenguaje. Esto requiere modificar el interpretador para que tenga la capacidad de deducir los tipos cuando estos no han sido declarados explícitamente por el programador.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=yKNOAasafJI
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

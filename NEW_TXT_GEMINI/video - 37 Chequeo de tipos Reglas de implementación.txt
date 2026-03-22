@@ -1,0 +1,82 @@
+####
+
+Para implementar un lenguaje de programación, tomaremos como punto de partida el interpretador de asignación. El lenguaje será `fuerte` y `estáticamente tipado`. 
+
+- `Fuertemente tipado`: No se permiten errores de tipos; si el código presenta inconsistencias, el interpretador no las tolerará y emitirá un mensaje de error para el programador.
+- `Estáticamente tipado`: El programador debe especificar los tipos de las variables desde el inicio.
+
+Los errores de tipos incluyen:
+- Intentar aplicar una primitiva o procedimiento con un número incorrecto de argumentos.
+- Intentar aplicar una primitiva que espera un entero a un valor que no es entero.
+- Usar un valor que no sea `booleano` como prueba de una expresión condicional.
+
+Cabe destacar que errores como la división por cero no se consideran errores de tipo, sino errores de uso de tipos.
+
+####
+
+Para realizar el análisis, definiremos un procedimiento llamado `type-of-expression` que toma una expresión `s` y un `ambiente de tipos` (`tm`) que asocia cada variable con su tipo. Este procedimiento asigna a una expresión un tipo `t` con la siguiente propiedad: siempre que la expresión sea ejecutada en un ambiente donde cada variable tiene el tipo especificado por `tm`, el resultado tendrá tipo `t`.
+
+El análisis se basa en el principio de que, si se conocen los tipos de los valores de cada variable en una expresión, se puede deducir el tipo del valor de la expresión resultante.
+
+####
+
+El procedimiento `type-of-expression` se comporta de la siguiente manera según la forma de la expresión:
+
+- **Números:** Si la expresión es un número, el resultado es siempre `entero`.
+- **Booleanos:** Si la expresión es `true` o `false`, el resultado es `booleano`.
+- **Variables:** Si es una `id`, el resultado es el tipo especificado en el `ambiente de tipos` (`tm`), consultando `apply-env` sobre `tm` para dicha variable.
+
+En resumen:
+```racket
+(type-of-expression (const-exp n) tm) ; Resultado: int
+(type-of-expression (true-exp) tm)    ; Resultado: bool
+(type-of-expression (false-exp) tm)   ; Resultado: bool
+(type-of-expression (var-exp id) tm)  ; Resultado: (apply-env tm id)
+```
+
+####
+
+Para evaluar expresiones más complejas, utilizaremos `reglas de tipamiento`, que consisten en verificar una serie de condiciones y, de cumplirse, determinar el tipo resultante (la consecuencia). La estructura general de una regla es:
+
+`Si condición 1 y condición 2 ... y condición n, entonces consecuencia.`
+
+**Regla de tipamiento para aplicaciones (`app-exp`)**
+Si una expresión tiene la forma `(operator operand1 operand2 ... operandn)`, el tipo se infiere así:
+- El operador debe ser obligatoriamente de tipo `procedimiento`.
+- Si el tipo del operador es `t1 * t2 * ... * tn`, debe haber exactamente `n` operandos.
+- Los tipos de los operandos `rand1` a `randn` deben coincidir exactamente con los tipos esperados `t1` a `tn`.
+- Si se cumplen estas condiciones, el resultado de la expresión es el tipo de salida del procedimiento.
+
+####
+
+**Regla de tipamiento para condicionales (`if-exp`)**
+En las expresiones condicionales, las reglas son:
+- La `test-expression` debe ser de tipo `booleano`.
+- La `true-expression` y la `false-expression` deben tener el mismo tipo `t`. 
+- El resultado de la expresión condicional será entonces de tipo `t`.
+
+####
+
+**Regla de tipamiento para procedimientos (`proc-exp`)**
+Si se define un procedimiento de la forma `proc (x1, x2, ..., xn) body`, donde cada entrada `xi` tiene un tipo asociado `ti`, el procedimiento resultante tiene el tipo:
+`t1 * t2 * ... * tn -> t`
+
+Donde `t` es el tipo del cuerpo (`body`) del procedimiento, el cual debe ser consistente con la ejecución de la expresión.
+
+####
+
+Existe un problema fundamental con la regla de los procedimientos: ¿cómo determinamos los tipos de las entradas `x1...xn` y el tipo de retorno si no están definidos explícitamente? Actualmente, no hay forma de inferirlos directamente. Para solucionar esto, existen dos estrategias:
+
+- **Chequeo estático:** Se requiere que el programador proporcione la información de los tipos al declarar el procedimiento (por ejemplo: `proc int x, int y`).
+- **Tipamiento dinámico (Inferencia):** El analizador infiere los tipos analizando la expresión interna del procedimiento.
+
+Esta última estrategia implica nuevas reglas y un análisis adicional por parte del interpretador. Aunque nuestro interpretador tendrá limitaciones académicas, podremos implementar una forma de inferencia de tipos en el lenguaje.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=KS3IishsjUM
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

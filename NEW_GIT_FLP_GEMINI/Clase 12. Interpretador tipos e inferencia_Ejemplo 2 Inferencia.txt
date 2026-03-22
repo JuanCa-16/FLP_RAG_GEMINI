@@ -1,0 +1,89 @@
+####
+**Definición de expresiones y variables de tipo**
+El siguiente código define un `scope` con funciones y variables para realizar una inferencia de tipos:
+
+```racket
+let f = proc(? x, ? y, ? z)
+  if (x y) then *(z, 2)
+  else z
+in let g = proc(? m)
+  if m then true else false
+  k = 5
+in (f g true k)
+```
+
+**Tabla de variables de tipos asociadas:**
+
+| Variable | Expresión | Tipo |
+| :--- | :--- | :--- |
+| `t0` | `let ... in` | `int` |
+| `tf` | `proc(? x, ? y, ? z)` | `bool -> bool * bool * int -> int` |
+| `tx` | `x` | `bool -> bool` |
+| `ty` | `y` | `bool` |
+| `tz` | `z` | `int` |
+| `t1` | `(x y)` | `bool` |
+| `t2` | `*(z, 2)` | `int` |
+| `tg` | `proc(? m)` | `bool -> bool` |
+| `tk` | `5` | `int` |
+| `t3` | `(f g true k)` | `int` |
+| `tm` | `m` | `bool` |
+
+####
+**Resolución del sistema de tipos**
+Para resolver la `inferencia de tipos`, igualamos las variables según las reglas del lenguaje:
+
+1. `t0 = t3`
+2. **Declaraciones:**
+   - `tf = tx * ty * tz -> tz`
+   - `tg = tm -> bool`
+3. **Evaluaciones:**
+   - `tx * ty -> t1`, donde `t1 = bool` (regla del `if`)
+   - `t2 = tz` (regla del `if`)
+   - `tz * int -> t2`, donde `tz = int` y `t2 = int` (regla del `prim`)
+   - `tm = bool` (regla del `if`)
+   - `tg = bool -> bool`
+4. **Unificación:**
+   - `tf = tg * bool * int -> t3`
+   - `tg = tx`
+   - `ty = bool`
+   - `tz = int`
+   - `t2 = tz = t3`
+
+####
+**Comprobación de tipos mediante el intérprete**
+Se utiliza la función `type-of-expression` para verificar los resultados obtenidos en el análisis estático.
+
+**Resultado de la expresión `res = (f g true k) in res`:**
+```racket
+(type-to-external-form (type-of-expression (cases program ...)))
+;; Resultado: int
+```
+La salida final de la ejecución de `(f g true k)` es de tipo `int`.
+
+####
+**Verificación de tipos para `f` y `g`**
+Es posible extraer el tipo específico de los identificadores declarados:
+
+**Tipo de `f`:**
+```racket
+(type-to-external-form (type-of-expression (cases program ... in f)))
+;; Resultado: ((bool -> bool) * bool * int -> int)
+```
+
+**Tipo de `g`:**
+```racket
+(type-to-external-form (type-of-expression (cases program ... in g)))
+;; Resultado: (bool -> bool)
+```
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Ejemplo 2 Inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%202%20Inferencia/

@@ -1,0 +1,143 @@
+####
+**Especificación léxica del lenguaje**
+
+El lenguaje define sus tokens mediante una especificación léxica que permite al `scanner` procesar el texto de entrada. Se ignoran los comentarios (iniciados con `%`) y los espacios en blanco. Los números pueden ser positivos o negativos, y los identificadores se componen de una letra seguida opcionalmente por más letras o dígitos.
+
+```racket
+(define lexical
+  '((comment ("%" (arbno (not #\newline))) skip)
+    (whitespace (whitespace) skip)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (identifier (letter (arbno (or letter digit))) symbol)))
+```
+
+####
+**Gramática del lenguaje y AST**
+
+La gramática define la estructura del `programa` y las `expresiones` permitidas, junto con sus respectivos constructores para el `AST` (Árbol de Sintaxis Abstracta). Incluye expresiones para variables, literales, booleanos, primitivas, condicionales `if`, bloques `let`, `proc`, `letrec`, asignaciones `set` y secuencias `begin`.
+
+```racket
+(define grammar
+  '((program (expression) a-program)
+    (expression (identifier) var-exp)
+    (expression (number) lit-exp)
+    (expression ("true") true-exp)
+    (expression ("false") false-exp)
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    (expression ("if" expression "then" expression "else" expression) if-exp)
+    (expression ("let" (arbno identifier "=" expression) "in" expression) let-exp)
+    (expression ("proc" "(" (separated-list identifier ",") ")" expression) proc-exp)
+    (expression ("letrec" (arbno identifier "(" (separated-list identifier ",") ")" "=" expression) "in" expression) letrec-exp)
+    (expression ("set" identifier "=" expression) set-exp)
+    (expression ("begin" expression (arbno ";" expression) "end") begin-exp)
+    (expression ("(" expression (arbno expression) ")") app-exp)
+    (primitive ("+") add-prim)
+    (primitive ("-") sub-prim)
+    (primitive ("*") prod-prim)
+    (primitive ("/") div-prim)
+    (primitive ("and") and-prim)
+    (primitive ("or") or-prim)
+    (primitive ("<") less-prim)
+    (primitive ("<=") lesseq-prim)
+    (primitive (">") more-prim)
+    (primitive (">=") moreeq-prim)
+    (primitive ("==") eq-prim)
+    (primitive ("!=") neq-prim)))
+```
+
+####
+**Definición del entorno (`environment`)**
+
+El entorno gestiona los enlaces entre identificadores y valores. Se define mediante `define-datatype` para manejar entornos vacíos, extensiones de entorno mediante vectores (que permiten mutabilidad), y la capacidad de definir procedimientos recursivos mediante `extend-recursively-env`.
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+    (lid (list-of symbol?))
+    (lval vector?)
+    (old-env environment?))
+  (extend-recursively-env
+    (procname (list-of symbol?))
+    (argss (list-of (list-of symbol?)))
+    (bodies (list-of expression?))
+    (old-env environment?)))
+```
+
+####
+**Búsqueda en el entorno (`apply-env-ref`)**
+
+La función `apply-env-ref` busca un símbolo en el entorno y retorna una `referencia` en lugar del valor directo, lo cual permite realizar operaciones de asignación (`set`). Si la variable no se encuentra en el entorno actual, realiza una búsqueda recursiva en el `old-env`.
+
+```racket
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env () (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec ((search-var (lambda (lid lval [pos 0])
+                               (cond [(null? lid) (apply-env-ref old-env var)]
+                                     [(equal? (car lid) var) (a-ref pos vec)]
+                                     [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec)))
+      (extend-recursively-env (procnames llargs bodies old-env)
+        (letrec ((search-proc (lambda (procs args bodies)
+                                (cond [(null? procs) (apply-env-ref old-env var)]
+                                      [(eqv? (car procs) var) (a-ref 0 (list->vector (list (closure (car args) (car bodies) env))))]
+                                      [else (search-proc (cdr procs) (cdr args) (cdr bodies))]))))
+          (search-proc procnames llargs bodies))))))
+```
+
+####
+**Evaluación de expresiones (`eval-expression`)**
+
+La función `eval-expression` realiza la evaluación recursiva de las expresiones según su tipo. Para las asignaciones (`set-exp`), utiliza `setref!` para modificar el valor almacenado en la referencia obtenida del entorno.
+
+```racket
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id) (apply-env env id))
+      (lit-exp (datum) datum)
+      (true-exp () #t)
+      (false-exp () #f)
+      (prim-exp (prim lrands)
+        (let ((values (map (lambda (x) (eval-expression x env)) lrands)))
+          (apply-primitive prim values)))
+      (set-exp (id exp)
+        (begin (setref! (apply-env-ref env id) (eval-expression exp env)) (void)))
+      ;; ... otros casos (if, let, proc, etc.)
+      (else "Not implemented yet"))))
+```
+
+####
+**Gestión de referencias y mutabilidad**
+
+Para soportar la asignación (`set`), se definen `referencias` que apuntan a una posición específica dentro de un `vector`. Esto permite que el intérprete modifique el estado de las variables existentes en el entorno.
+
+```racket
+(define-datatype reference reference?
+  (a-ref (position integer?) (vec vector?)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec) (vector-set! vec pos val)))))
+
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+```
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Interprete asignación
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Interprete%20asignaci%C3%B3n/

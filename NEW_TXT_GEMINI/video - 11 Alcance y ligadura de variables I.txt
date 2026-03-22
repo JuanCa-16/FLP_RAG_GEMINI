@@ -1,0 +1,50 @@
+####
+Una `variable` es un concepto fundamental en los lenguajes de programación. Puede ser declarada sin necesidad de instanciar o asignar un valor inicialmente y, posteriormente, puede ser `ligada`. La `ligadura` ocurre cuando se le asigna un valor directamente, como en el siguiente ejemplo en `Racket`:
+
+```racket
+(define x 5)
+```
+
+En este caso, la `ligadura` actúa como un renombrado, donde `x` contiene el valor `5`. Por otro lado, en lenguajes como `C++`, una declaración como:
+
+```cpp
+int x = 8;
+```
+
+representa una `referencia`. Aquí, `x` no es simplemente el valor, sino que hace referencia a una `dirección de memoria` donde está almacenado el valor. La diferencia radica en que, en la `ligadura` directa, el valor es inmutable dentro de su contexto de nombramiento, mientras que en la `referenciación`, la variable apunta a una posición de memoria cuyo contenido puede ser modificado posteriormente.
+
+####
+Es necesario distinguir entre la capacidad de cambiar un valor y la `mutabilidad` de una estructura. La `mutabilidad` se refiere a si una estructura de datos puede cambiar sus miembros internos, como ocurre con las listas frente a las tuplas en `Python`. 
+
+En la `ligadura` funcional, como en `(define x 5)`, `x` se mantiene como `5` permanentemente, actuando más como un nombre que como una variable en el sentido tradicional. En los lenguajes procedimentales, se introdujo el concepto de `variable` ligada a una posición de memoria, permitiendo que el contenido de dicha posición sea alterado a través de la `asignación`, aunque la dirección de memoria en sí misma permanezca constante.
+
+####
+Las reglas de `alcance` (*scope*) determinan dónde es visible una variable y dependen del lenguaje de programación. Se clasifican principalmente en:
+
+- **Alcance estático**: La variable es visible solo en el bloque o función donde fue declarada.
+- **Alcance dinámico**: La variable puede ser accedida fuera de su contexto de declaración si el lenguaje busca en el stack de llamadas hasta encontrarla, como ocurre en lenguajes como `MATLAB`.
+
+Existen lenguajes que combinan ambos, como `Python`, donde el uso de la palabra reservada `global` permite que una variable declarada dentro de una función sea visible en todo el programa.
+
+####
+Dentro del `alcance estático`, existen dos variantes principales para definir la visibilidad:
+
+- **Block scope (alcance de bloque)**: Las variables solo viven dentro de los delimitadores del bloque, usualmente definidos por llaves `{}`. Es el comportamiento estándar en lenguajes como `C++` o `Java`. Si una variable se declara dentro de un `if` o un `for`, no será visible fuera de ese bloque.
+- **Function scope (alcance de función)**: La variable declarada dentro de un bloque es visible en toda la función que la contiene. Un ejemplo es `Python`, donde variables declaradas dentro de un bloque condicional persisten fuera de él, siempre que estén dentro del mismo ámbito funcional.
+
+####
+`JavaScript` es un caso particular al manejar ambos tipos de alcance, dependiendo de la palabra clave utilizada para la declaración:
+
+- `var`: Utiliza `function scope`, lo cual puede generar comportamientos inesperados al permitir acceso a variables fuera de los bloques donde fueron declaradas.
+- `let`: Introducido en `ES6` (2016), implementa `block scope`, limitando la visibilidad de la variable exclusivamente al bloque delimitado por llaves `{}`.
+
+La adopción de `let` y `const` en la actualización de 2016 estandarizó el manejo de variables en `JavaScript`, resolviendo ambigüedades presentes en versiones anteriores y mejorando la predictibilidad en el desarrollo web.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=zj2QEeqNyLo
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO
