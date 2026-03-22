@@ -1,0 +1,37 @@
+####
+Un `árbol binario` se define como una estructura que puede ser un número entero o un símbolo seguido de dos `árboles binarios`. Esta estructura se representa mediante una lista simbólica donde el primer elemento es un símbolo (el nodo), el segundo elemento (`CADR`) es el `árbol binario` izquierdo y el tercer elemento (`CADDR`) es el `árbol binario` derecho.
+
+**Diseño de funciones sobre árboles**
+Para diseñar una función que procese un árbol, como por ejemplo una que sume sus elementos, se debe seguir la gramática de la estructura:
+- Identificar la `condición de parada`: Si el elemento recibido es un número, la función debe devolver ese mismo número, ya que no hay elementos adicionales que sumar.
+- Implementar la `recursión`: Si el elemento no es un número, se trata de un nodo. En este caso, se deben realizar dos llamadas recursivas: una para el hijo izquierdo y otra para el hijo derecho, sumando los resultados obtenidos de ambos.
+
+####
+El proceso de `recursión` en árboles binarios implica que la función debe explorar tanto la rama izquierda como la rama derecha. Dado que se realizan dos llamadas recursivas por cada nodo, la estructura de la pila de llamadas puede crecer considerablemente.
+
+**Ejemplo de implementación lógica**
+```racket
+(define (sumar-arbol arbol)
+  (cond
+    [(number? arbol) arbol]
+    [else (+ (sumar-arbol (cadr arbol))
+             (sumar-arbol (caddr arbol)))]))
+```
+En este procedimiento, si el árbol es un número, se devuelve dicho número. Si es una lista (nodo), se suma el resultado de llamar a la función sobre el hijo izquierdo (`cadr`) con el resultado de llamar a la función sobre el hijo derecho (`caddr`). Es fundamental que el árbol respete estrictamente la gramática definida; si la estructura de entrada es incorrecta, el algoritmo no producirá un resultado válido.
+
+####
+La ejecución de una función recursiva sobre un árbol sigue un orden específico: primero resuelve todos los llamados recursivos del lado izquierdo y, posteriormente, comienza a resolver los del lado derecho. 
+
+**Consideraciones sobre la recursión**
+- Los árboles permiten una `recursión doble` que, aunque costosa en términos de memoria y tiempo de ejecución debido a la cantidad de llamados generados, es una consecuencia directa de la estructura jerárquica.
+- Es vital basarse exclusivamente en la gramática para definir los casos base y los casos recursivos, evitando complicaciones innecesarias al intentar visualizar la profundidad total de la recursión.
+- Un nodo siempre está compuesto por un símbolo; por tanto, si la función recibe un valor que no cumple con la estructura de la gramática (como un número donde se espera un símbolo), se producirá un error lógico en la ejecución.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=OyhD6yR9vmY
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

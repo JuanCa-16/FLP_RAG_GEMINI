@@ -20,13 +20,45 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # root
 
 CARPETA_ENTRADA = os.path.join(BASE_DIR, "GIT_FLP")  # Carpeta padre con las clases
-CARPETA_SALIDA = os.path.join(BASE_DIR, "GIT_FLP_GEMINI")
+CARPETA_SALIDA = os.path.join(BASE_DIR, "NEW_GIT_FLP_GEMINI")
 ARCHIVO_METADATA_JSON = os.path.join(BASE_DIR, "tematicas.json")  # Ruta al JSON
 
 
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
-MODELO = "gemini-2.5-flash"
+# ----------------------------
+# CONTROL DE RATE LIMITING
+# ----------------------------
+# Gemini 1.5 Flash: 15 peticiones por minuto
+MAX_REQUESTS_PER_MINUTE = 15
+REQUEST_INTERVAL = 60.0 / MAX_REQUESTS_PER_MINUTE  # ~4 segundos entre peticiones
+last_request_time = 0
+
+def esperar_rate_limit():
+    """
+    Controla el rate limiting esperando el tiempo necesario entre peticiones.
+    """
+    global last_request_time
+    tiempo_actual = time.time()
+    tiempo_transcurrido = tiempo_actual - last_request_time
+    
+    if tiempo_transcurrido < REQUEST_INTERVAL:
+        tiempo_espera = REQUEST_INTERVAL - tiempo_transcurrido
+        print(f"      ⏱️  Esperando {tiempo_espera:.1f}s para respetar límite de rate...")
+        time.sleep(tiempo_espera)
+    
+    last_request_time = time.time()
+
+
+MODELO = "gemini-3.1-flash-lite-preview"
+
+print(f"🌟 Script de procesamiento de archivos web iniciado.")
+print(f"   Modelo: Gemini 1.5 Flash")
+print(f"   Rate Limit: {MAX_REQUESTS_PER_MINUTE} peticiones/minuto (~{REQUEST_INTERVAL:.1f}s entre peticiones)")
+print(f"   Carpeta de Entrada: {CARPETA_ENTRADA}")
+print(f"   Carpeta de Salida: {CARPETA_SALIDA}")
+print("-" * 50)
+
 # ----------------------------
 # CARGAR METADATA DESDE JSON
 # ----------------------------
@@ -166,25 +198,46 @@ FUENTE: GIT
 NOMBRE_DOCUMENTO: {nombre_documento}
 URL: {url}"""
 # ----------------------------
-# REINTENTOS
+# REINTENTOS CON RATE LIMITING
 # ----------------------------
 def manejar_reintentos(prompt, modelo, intentos=3, espera=10):
+    """Función genérica para manejar la llamada a la API con reintentos y rate limiting."""
     for i in range(intentos):
         try:
+            # Esperar antes de hacer la petición para respetar rate limit
+            esperar_rate_limit()
+            
             resp = client.models.generate_content(
                 model=modelo,
                 contents=prompt
             )
-            return resp.text
+            
+            # Extraer solo las partes de texto para evitar warnings
+            texto_completo = ""
+            for parte in resp.candidates[0].content.parts:
+                if hasattr(parte, 'text'):
+                    texto_completo += parte.text
+            
+            return texto_completo if texto_completo else resp.text
+            
         except APIError as e:
             msg = str(e)
             if any(x in msg for x in ["RESOURCE_EXHAUSTED", "UNAVAILABLE", "503", "429"]):
-                print(f"   ⚠️  Reintento {i+1}/{intentos} tras error API...")
-                time.sleep(espera)
-            else:
+                # Si es error de rate limit (429), esperar más tiempo
+                tiempo_espera = espera * (2 if "429" in msg else 1)
+                print(f"      ⚠️  Reintento {i+1}/{intentos} tras error API. Esperando {tiempo_espera}s...")
+                time.sleep(tiempo_espera)
+            elif "NOT_FOUND" in msg or "400" in msg:
+                print(f"      ❌ Error fatal de configuración de modelo: {e}")
                 return ""
-        except Exception:
+            else:
+                print(f"      ❌ Error API no controlado: {e}")
+                return ""
+        except Exception as e:
+            print(f"      ❌ Error no controlado de la librería: {e}")
             return ""
+    
+    print("      ❌ Falló después de varios intentos.")
     return ""
 
 # ----------------------------
@@ -196,48 +249,162 @@ def organizar_contenido_web(contenido_original):
     NO genera metadata, NO genera delimitadores adicionales.
     """
     prompt = f"""
-Tu ÚNICA tarea es organizar el siguiente contenido educativo en chunks para un sistema RAG.
+    [CONTEXTO]
+    Eres un editor técnico especializado en preparar contenido educativo de "Fundamentos de Lenguajes de Programación" para un sistema RAG (Retrieval-Augmented Generation).
 
-INSTRUCCIONES:
-1. El código puede aparecer con UN CARÁCTER POR LÍNEA - reconstruye el formato correcto
-2. Divide el contenido en chunks lógicos usando SOLO el separador ###
-3. NO agregues títulos decorativos (como "Definición:", "Características:", etc.)
-4. NO agregues ningún tipo de metadata, delimitadores, o información adicional
-5. SOLO devuelve el contenido organizado
+    El contenido proviene de: transcripciones de clases, código fuente documentado o material educativo web.
 
-REGLA CRÍTICA PARA CÓDIGO:
-- NUNCA dejes un chunk con SOLO código
-- Siempre incluye explicación + código juntos
-- Ejemplo correcto:
+    Tu rol es ser un editor académico que preserva fidelidad absoluta al contenido original mientras lo prepara para recuperación semántica.
 
-###
-Las funciones en Racket se declaran con lambda. Esta función suma dos números:
+    [ACCIÓN]
+    Procesa el siguiente texto ejecutando estas tareas en orden:
 
-(define suma
-  (lambda (x y)
-    (+ x y)))
+    1. LIMPIAR: Eliminar ruido del discurso oral (muletillas, saludos, repeticiones sin valor académico)
+    2. CORREGIR: Ortografía, gramática, puntuación y sintaxis de código
+    3. DIVIDIR: Fragmentar en bloques semánticamente completos usando ####
+    4. FORMATEAR: Aplicar sintaxis Markdown correcta a cada fragmento
 
-FORMATO DE SALIDA (sin nada más):
+    Entrega fragmentos separados por #### donde cada uno sea comprensible por sí mismo, esté correctamente formateado en Markdown y preserve el contenido académico original.
 
-###
-[Chunk 1: texto explicativo y/o código con contexto]
+    [REGLAS]
 
-###
-[Chunk 2: texto explicativo y/o código con contexto]
+    FIDELIDAD ABSOLUTA:
+    - NO resumir conceptos
+    - NO parafrasear explicaciones técnicas
+    - NO cambiar el orden del contenido original
+    - NO agregar ejemplos, definiciones o código nuevo
+    - SÍ eliminar muletillas sin valor académico ("bueno", "eh", "este")
+    - SÍ eliminar saludos, despedidas y referencias logísticas
 
-###
-[Chunk 3: ...]
+    CORRECCIÓN TÉCNICA:
+    - Corregir ortografía, tildes y puntuación
+    - Corregir sintaxis de código, diagramas y figuras si están incorrectos
+    - NO cambiar la lógica o funcionalidad del código original
+    - Si el código aparece con UN CARÁCTER POR LÍNEA, reconstruir el formato correcto
 
----
-CONTENIDO A ORGANIZAR:
----
-{contenido_original}
+    CÓDIGO Y DIAGRAMAS:
+    - Identificar correctamente el lenguaje o tipo de diagrama
+    - Todo código debe estar en sintaxis válida del lenguaje correspondiente
+    - Código SIEMPRE debe ir acompañado de explicación en el mismo fragmento
+    - NUNCA crear un fragmento que contenga SOLO código sin contexto
+    - Usar bloques de código Markdown con especificador correcto (racket, python, mermaid, etc.)
 
-RECUERDA: 
-- Solo organiza y divide por ###
-- No agregues metadata ni información extra
-- Código siempre con explicación
-- Texto limpio y conciso
+    FRAGMENTACIÓN SEMÁNTICA:
+    - Usar EXCLUSIVAMENTE #### como separador entre fragmentos
+    - Cada fragmento debe ser autosuficiente y comprensible sin depender de fragmentos anteriores o posteriores
+    - No romper definiciones completas, ejemplos o razonamientos
+    - No mezclar conceptos distintos en un mismo fragmento
+    - Priorizar coherencia temática sobre longitud uniforme
+
+    RECONSTRUCCIÓN DE CÓDIGO Y DIAGRAMAS:
+    - Si el código aparece con formato UN CARÁCTER POR LÍNEA, reconstruir completamente
+    - Si encuentras diagramas Mermaid malformados, corregir la sintaxis
+    - Si encuentras diagramas GraphViz malformados, corregir la sintaxis
+    - Verificar que la sintaxis sea válida después de reconstruir
+    - Mantener la indentación estándar del lenguaje correspondiente
+
+    IDENTIFICACIÓN DE LENGUAJES:
+    - Racket: (define ...), lambda, sintaxis con paréntesis S-expressions
+    - Python: def, class, import, indentación significativa
+    - JavaScript: function, const, let, var, =>
+    - Mermaid: graph TD, flowchart, sequenceDiagram, etc.
+    - GraphViz: digraph, graph, node, edge
+    - Otros: identificar por sintaxis característica
+
+    CORRECCIÓN DE DIAGRAMAS MERMAID:
+    - Formato correcto: graph TD o graph LR
+    - Nodos con corchetes: A["Texto del nodo"]
+    - Flechas: A --> B o A --> |etiqueta| B
+    - Eliminar caracteres extraños como (0 0 0 0 0 0) que no son válidos
+
+    CORRECCIÓN DE DIAGRAMAS GRAPHVIZ:
+    - Formato correcto: digraph nombre { ... }
+    - Nodos: A [label="texto"]
+    - Aristas: A -> B [label="etiqueta"]
+
+    FORMATO MARKDOWN:
+    - Bloques de código con sintaxis correcta:
+    ```lenguaje
+    (código aquí)
+    ```
+
+    - Usar negrita EXCLUSIVAMENTE para subtítulos de secciones dentro de fragmentos:
+    **Subtítulo de sección**
+
+    - Palabras técnicas importantes, conceptos clave y términos resaltados usar comillas invertidas:
+    `lambda`, `recursión`, `closure`, `scope léxico`
+
+    - Listas con viñetas para enumeraciones:
+    - Punto 1
+    - Punto 2
+
+    - NO usar HTML, solo Markdown puro
+    - NO agregar títulos decorativos inventados (como "Definición:", "Características:")
+    - NO incluir metaexplicaciones del editor
+
+    SALIDA DIRECTA:
+    - INICIAR INMEDIATAMENTE con #### y el primer fragmento
+    - NO incluir texto previo como "Aquí está tu respuesta:", "He procesado el texto:", "Resultado:"
+    - NO incluir encabezados introductorios
+    - NO incluir comentarios del editor
+    - Solo devolver los fragmentos separados por ####
+
+    [EJEMPLOS]
+
+    Ejemplo 1 - Diagrama Mermaid malformado:
+
+    ENTRADA:
+    "graph TD     A["C3 (0 0 0 0 0 0)"] B[C2] A-->B"
+
+    SALIDA:
+    ####
+    **Diagrama de dependencias entre componentes**
+    ```mermaid
+    graph TD
+        A["C3"]
+        B["C2"]
+        A --> B
+    ```
+
+    Este diagrama muestra la relación de dependencia donde el componente `C3` apunta hacia `C2`.
+
+    ---
+
+    Ejemplo 2 - Código web con múltiples lenguajes:
+
+    ENTRADA:
+    "Aqui ejemplo python:
+    d
+    e
+    f
+    suma(a,b): return a+b
+
+    Y diagram:
+    graph TD A-->B"
+
+    SALIDA:
+    ####
+    **Función básica de suma en Python**
+    ```python
+    def suma(a, b):
+        return a + b
+    ```
+
+    Esta función toma dos parámetros y retorna su suma aritmética.
+
+    ####
+    **Diagrama de flujo simple**
+    ```mermaid
+    graph TD
+        A --> B
+    ```
+
+    Representa una relación directa entre los nodos `A` y `B`.
+
+
+    CONTENIDO A PROCESAR:
+    {contenido_original}
+
 """
     return manejar_reintentos(prompt, MODELO)
 
@@ -251,7 +418,7 @@ def ensamblar_documento_final(contenido_organizado, carpeta_clase, nombre_archiv
     """
     # Limpiar cualquier metadata que Gemini haya intentado agregar
     import re
-    contenido_limpio = re.sub(r'---\s*METADATA\s*---[\s\S]*$', '', contenido_organizado).strip()
+    contenido_limpio = re.sub(r'--- METADATA ---[\s\S]*$', '', contenido_organizado).strip()
     
     # Construir metadata usando la función dedicada
     metadata = construir_metadata(carpeta_clase, nombre_archivo, url)
@@ -262,12 +429,34 @@ def ensamblar_documento_final(contenido_organizado, carpeta_clase, nombre_archiv
     return documento_final
 
 # ----------------------------
+# CONTAR ARCHIVOS TOTALES
+# ----------------------------
+def contar_archivos_totales():
+    """Cuenta el total de archivos .txt a procesar"""
+    total = 0
+    for carpeta_clase in os.listdir(CARPETA_ENTRADA):
+        ruta_clase = os.path.join(CARPETA_ENTRADA, carpeta_clase)
+        if os.path.isdir(ruta_clase):
+            archivos_txt = glob.glob(os.path.join(ruta_clase, "*.txt"))
+            total += len(archivos_txt)
+    return total
+
+# ----------------------------
 # PROCESAMIENTO
 # ----------------------------
-print("Iniciando procesamiento de archivos web...\n")
+print("\nIniciando procesamiento de archivos web...\n")
+
+# Calcular tiempo estimado
+total_archivos = contar_archivos_totales()
+if total_archivos > 0:
+    tiempo_estimado = total_archivos * REQUEST_INTERVAL
+    print(f"⏱️  Total de archivos a procesar: {total_archivos}")
+    print(f"⏱️  Tiempo estimado mínimo: {tiempo_estimado/60:.1f} minutos ({REQUEST_INTERVAL:.1f}s por archivo)\n")
+    print("=" * 50)
 
 archivos_procesados = 0
 archivos_con_error = 0
+contador_global = 0
 
 for carpeta_clase in os.listdir(CARPETA_ENTRADA):
     ruta_clase = os.path.join(CARPETA_ENTRADA, carpeta_clase)
@@ -275,7 +464,7 @@ for carpeta_clase in os.listdir(CARPETA_ENTRADA):
     if not os.path.isdir(ruta_clase):
         continue
 
-    print(f"📁 Procesando clase: {carpeta_clase}")
+    print(f"\n📁 Procesando clase: {carpeta_clase}")
 
     archivos_txt = glob.glob(os.path.join(ruta_clase, "*.txt"))
 
@@ -284,12 +473,13 @@ for carpeta_clase in os.listdir(CARPETA_ENTRADA):
         continue
 
     for ruta_archivo in archivos_txt:
+        contador_global += 1
         nombre_archivo = os.path.basename(ruta_archivo)
-        print(f"   📄 Procesando: {nombre_archivo}")
+        print(f"\n   📄 [{contador_global}/{total_archivos}] Procesando: {nombre_archivo}")
 
         contenido = leer_archivo_normalizado(ruta_archivo)
         if not contenido or not contenido.strip():
-            print(f"   ❌ Archivo vacío o no legible\n")
+            print(f"      ❌ Archivo vacío o no legible")
             archivos_con_error += 1
             continue
 
@@ -309,7 +499,7 @@ for carpeta_clase in os.listdir(CARPETA_ENTRADA):
             )
         else:
             # Si Gemini falló, crear documento de error con metadata
-            print(f"   ⚠️  Gemini no pudo procesar el contenido")
+            print(f"      ⚠️  Gemini no pudo procesar el contenido")
             contenido_error = f"""###
 ERROR: No se pudo procesar el archivo con Gemini
 
@@ -333,15 +523,13 @@ CONTENIDO ORIGINAL:
 
         # Verificar metadata
         if "--- METADATA ---" in documento_final or "---\nMETADATA\n---" in documento_final:
-            print(f"   ✅ Guardado con metadata: {nombre_salida}")
+            print(f"      ✅ Guardado con metadata: {nombre_salida}")
             archivos_procesados += 1
         else:
-            print(f"   ⚠️  ADVERTENCIA: Metadata no encontrada en {nombre_salida}")
+            print(f"      ⚠️  ADVERTENCIA: Metadata no encontrada en {nombre_salida}")
             archivos_con_error += 1
 
-        print()
-
-print("=" * 50)
+print("\n" + "=" * 50)
 print("✅ Proceso completado exitosamente")
 print(f"📂 Archivos guardados en: {CARPETA_SALIDA}")
 print(f"\n📊 Estadísticas:")

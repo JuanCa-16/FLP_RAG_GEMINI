@@ -1,0 +1,66 @@
+####
+
+**Integración de objetos en el interpretador**
+
+Para incorporar objetos al lenguaje, un programa debe constar de un conjunto de declaraciones de clases seguidas de una expresión. El proceso de evaluación se modifica de la siguiente manera:
+
+- Se utiliza una función denominada `elaborate-class-decls` para procesar las declaraciones de clases. Esta función almacena las declaraciones de forma que sean accesibles cuando el interpretador las requiera.
+- Tras el procesamiento de las clases, se evalúa la expresión principal del programa.
+
+En términos de implementación, `eval-program` debe actualizarse para ejecutar estas dos tareas secuencialmente: primero la elaboración de las declaraciones de clases y luego la evaluación de la expresión.
+
+####
+
+**Modificación de la gramática y expresiones de objetos**
+
+La incorporación de objetos al lenguaje requiere definir tres nuevos tipos de expresiones en la gramática:
+
+- **Creación de objetos (`new`):** Permite instanciar una clase.
+- **Invocación de métodos (`send`):** Permite aplicar un método asociado a un objeto.
+- **Superllamados (`super`):** Permite invocar un método de la clase padre; esta expresión solo es válida dentro del contexto de un objeto.
+
+Estas tres producciones deben agregarse a la especificación gramatical y a la función `eval-expression` del interpretador.
+
+####
+
+**Evaluación de la invocación de métodos**
+
+Cuando una expresión de tipo `send` es evaluada, se siguen estos pasos:
+
+1. Se evalúan los operandos (argumentos del método).
+2. Se evalúa la expresión del objeto en el entorno dado para obtener su representación.
+3. Se ejecuta el procedimiento `find-method-and-apply`, el cual busca el método asociado al nombre especificado en la declaración de la clase del objeto y lo aplica a los argumentos.
+
+Este procedimiento crea un entorno extendido donde se vinculan las variables necesarias para la ejecución del método.
+
+####
+
+**Evaluación de la creación de objetos**
+
+Cuando se evalúa una expresión `new`, el proceso es el siguiente:
+
+1. Se evalúan los operandos.
+2. Se crea una instancia de la clase especificada mediante la función `new-object`.
+3. Se invoca automáticamente el método `initialize` del objeto creado. Aunque este método pueda realizar configuraciones internas, su valor de retorno es ignorado.
+4. Se retorna la representación del nuevo objeto.
+
+####
+
+**Estructura de la implementación**
+
+Cualquier implementación de objetos debe proveer procedimientos fundamentales que orquesten el comportamiento, tales como:
+
+- `find-method-and-apply`: Gestiona la búsqueda y ejecución de métodos, incluyendo el manejo del valor de `self`.
+- `new-object`: Gestiona la creación de instancias.
+- `elaborate-class-decls`: Gestiona el almacenamiento de la información de las clases (nombre de la clase, superclase, campos y métodos).
+
+El comportamiento específico de estas funciones dependerá de la estructura interna elegida para representar los objetos (por ejemplo, una implementación simple o plana). En el caso de `super`, se requiere acceder al nombre de la clase padre, el cual debe estar guardado en una variable especial dentro del contexto del método.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=ZqTptDxsXCs
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

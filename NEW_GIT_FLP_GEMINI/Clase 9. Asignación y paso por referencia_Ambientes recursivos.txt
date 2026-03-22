@@ -1,0 +1,58 @@
+####
+**Ambientes recursivos**
+
+Los `ambientes recursivos` están diseñados estrictamente para procedimientos. No se permite la modificación de sus valores, ya que esto requeriría un proceso adicional para validar que los elementos almacenados sean efectivamente procedimientos.
+
+####
+**Implementación de `apply-env-ref` para entornos**
+
+La función `apply-env-ref` se encarga de recuperar una referencia dentro de un entorno dado. En el caso de un `extend-env`, utiliza una función auxiliar `search-var` para buscar recursivamente en la lista de `bindings`.
+
+```racket
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+        (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec ((search-var
+                  (lambda (lid vec pos)
+                    (cond
+                      [(null? lid) (apply-env-ref old-env var)]
+                      [(equal? (car lid) var) (a-ref pos vec)]
+                      [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec 0)))))))
+```
+
+La función realiza la búsqueda de la variable. Si no se encuentra en el entorno actual (`null? lid`), delega la búsqueda al entorno anterior (`old-env`). Si encuentra la variable, retorna una referencia (`a-ref`) con la posición y el vector correspondiente.
+
+####
+**Manejo de `extend-recursively-env`**
+
+Cuando el entorno es de tipo `extend-recursively-env`, el sistema busca un procedimiento específico. Al localizarlo, se retorna una referencia que contiene un único valor: una `closure`.
+
+```racket
+(define (extend-recursively-env procnames llargs bodies old-env)
+  (letrec ((search-proc
+            (lambda (procs args bodies)
+              (cond
+                [(null? procs) (apply-env-ref old-env var)]
+                [(eqv? (car procs) var)
+                 (a-ref 0 (list->vector (list (closure (car args) (car bodies) env))))]
+                [else (search-proc (cdr procs) (cdr args) (cdr bodies))]))))
+    (search-proc procnames llargs bodies)))
+```
+
+En esta modificación, al consultar el procedimiento, el sistema construye la `closure` utilizando los argumentos (`car args`), el cuerpo (`car bodies`) y el entorno `env` actual, encapsulándolo dentro de un vector en una referencia.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Ambientes recursivos
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Ambientes%20recursivos/

@@ -1,0 +1,129 @@
+####
+Constructor del entorno vacío (`empty-env`) para la gestión de ámbitos:
+
+```racket
+(define empty-env
+  (lambda ()
+    (lambda (signal var)
+      (cond
+        [(= signal 0) 'empty-env]
+        [(= signal 1) (eopl:error "No se encuentra el identificador" var)]
+        [else (eopl:error "Señal no válida")]))))
+```
+
+**Conceptos clave**
+`entorno`, `cierre (closure)`, `señal`, `abstracción de datos`, `manejo de errores`
+
+**Aplicación**
+Representa la base de la estructura de datos del entorno. Se utiliza como caso base en la búsqueda de variables, disparando un error si se intenta acceder a un identificador que no existe en el alcance.
+
+####
+Constructor para extender el entorno (`extend-env`) mediante nuevos pares variable-valor:
+
+```racket
+(define extend-env
+  (lambda (var value old-env)
+    (lambda (signal fvar)
+      (cond
+        [(= signal 0) 'extend-env]
+        [(= signal 1)
+         (if (equal? var fvar)
+             value
+             (old-env 1 var))]
+        [(= signal 2) var]
+        [(= signal 3) value]
+        [(= signal 4) old-env]))))
+```
+
+**Conceptos clave**
+`extensión de entorno`, `búsqueda léxica`, `procedimiento de despacho`, `vinculación`
+
+**Aplicación**
+Permite añadir una nueva vinculación a un entorno existente. A través del mecanismo de `señal`, este procedimiento permite consultar el identificador (`signal 2`), el valor (`signal 3`) o el entorno previo (`signal 4`), facilitando la recursión sobre la estructura de datos.
+
+####
+Predicados para la identificación de tipos de entorno:
+
+```racket
+(define empty-env?
+  (lambda (env)
+    (equal? (env 0 empty) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (env 0 empty) 'extend-env)))
+```
+
+**Conceptos clave**
+`predicados`, `identificación de tipos`, `abstracción`, `despacho de señales`
+
+**Aplicación**
+Se emplean para verificar la estructura de un entorno dado antes de aplicar operaciones, permitiendo distinguir si se trata de un entorno vacío o uno extendido.
+
+####
+Procedimientos extractores para entornos extendidos:
+
+```racket
+(define extend-env->id
+  (lambda (e)
+    (e 2 empty)))
+
+(define extend-env->value
+  (lambda (e)
+    (e 3 empty)))
+
+(define extend-env->old-env
+  (lambda (e)
+    (e 4 empty)))
+```
+
+**Conceptos clave**
+`extractores`, `acceso a campos`, `encapsulamiento`
+
+**Aplicación**
+Proporcionan una interfaz para acceder a los componentes internos de un entorno extendido: el identificador almacenado, su valor asociado y la referencia al entorno superior (o anterior).
+
+####
+Creación de un entorno de prueba con múltiples vinculaciones:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+```
+
+**Conceptos clave**
+`entornos anidados`, `vinculaciones`, `recursión`, `ámbito`
+
+**Aplicación**
+Ilustra la construcción de una estructura jerárquica de entornos donde se definen variables y valores, permitiendo la sombra de identificadores (como en el caso de la variable 'y').
+
+####
+Procedimiento recursivo `apply-env` para la búsqueda de variables en el entorno:
+
+```racket
+(define apply-env
+  (lambda (e var)
+    (cond
+      [(empty-env? e) (eopl:error "La variable" var "no ha sido encontrada")]
+      [(extend-env? e)
+       (if (equal? (extend-env->id e) var)
+           (extend-env->value e)
+           (apply-env (extend-env->old-env e) var))]
+      [else (eopl:error "Estructura no válida")])))
+```
+
+**Conceptos clave**
+`búsqueda recursiva`, `resolución de nombres`, `entornos`, `errores`
+
+**Aplicación**
+Implementa la lógica de búsqueda de variables: si el identificador coincide con la vinculación actual, retorna el valor; de lo contrario, delega la búsqueda recursivamente al entorno anterior. Si alcanza el entorno vacío, reporta un error de variable no definida.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionProcedimientos.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

@@ -1,0 +1,65 @@
+####
+**Modificaciones a la gramática para chequeo de tipos**
+
+En el lenguaje con `chequeo de tipos`, es un requisito que el programador especifique el tipo de cada variable incluida. Para implementar esto, es necesario realizar cambios en la gramática, específicamente en la forma en que se definen los procedimientos mediante `proc expression` y los procedimientos recursivos mediante `let-trec expression`.
+
+La modificación consiste en incorporar `type expression` junto a los identificadores. La nueva estructura gramatical permite especificar los tipos de entrada en los procedimientos y, en el caso de los procedimientos recursivos, también el tipo de retorno.
+
+**Cambios en la gramática de procedimientos**
+
+Se modifica la especificación gramatical para integrar `type expression`:
+
+- `proc expression`: ahora incluirá una `separated list` de `type expression` asociada a cada identificador.
+- `let-trec expression`: incluirá `type expression` para el tipo de retorno, seguido de una `separated list` de identificadores y sus tipos correspondientes.
+
+La necesidad de especificar el tipo de salida en los procedimientos recursivos radica en que, durante la evaluación de llamados recursivos, el sistema requiere conocer el tipo de retorno sin tener que recorrer toda la recursión hasta el final.
+
+####
+**Definición de expresiones de tipo**
+
+Para representar los tipos en el lenguaje, se define `type expression`. Estas expresiones permiten categorizar los datos que maneja el interpretador. Las estructuras básicas son:
+
+- `int type`: representa el tipo entero.
+- `bool type`: representa el tipo booleano.
+- `proc type`: representa un procedimiento, el cual se define mediante una `separated list` de `type expression` (argumentos) y un `type expression` final (tipo de salida).
+
+Este esquema permite declarar procedimientos con tipado explícito, por ejemplo:
+```racket
+proc (int x, int y)
+```
+Donde se especifica tanto la entrada como el tipo de dato esperado. Es importante distinguir que la declaración de tipos es una construcción sintáctica, mientras que la evaluación de la expresión puede resultar en un valor específico, como un entero.
+
+####
+**Representación interna de los tipos (Data Type)**
+
+Para implementar la verificación de tipos en el interpretador, se utiliza un `data type` que diferencia entre tipos atómicos y tipos de procedimientos. La implementación se define de la siguiente manera:
+
+```racket
+(define-datatype type type?
+  (atomic-type (name symbol?))
+  (proc-type (arg-types (list-of type?))
+             (result-type type?)))
+```
+
+Esta estructura permite representar los tipos básicos y complejos:
+
+- `atomic-type`: almacena tipos directos como `int` y `bool`.
+- `proc-type`: contiene una lista de tipos para los argumentos y un tipo único para el resultado.
+
+A partir de esta estructura, se definen los tipos base:
+
+```racket
+(define int-type (atomic-type 'int))
+(define bool-type (atomic-type 'bool))
+```
+
+Con estas definiciones, el interpretador cuenta con la representación necesaria para gestionar la validación de tipos durante el análisis semántico del código.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=J8kdPqy64gc
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,73 @@
+####
+**Definición de lenguajes compilados**
+Los lenguajes compilados son aquellos que transforman el código fuente en código máquina, el cual se ejecuta directamente sobre la `CPU`, o bien generan un código binario ejecutable por un programa específico, como una `Máquina Virtual`. Este proceso suele incluir diversas etapas de optimización para lograr la máxima velocidad de ejecución.
+
+```mermaid
+graph TD
+    A["Código fuente"] --> |Parser| B["AST"]
+    B --> |Traducción| C["Código binario"]
+```
+
+En el proceso de traducción, el `AST` (Abstract Syntax Tree) es transformado a código binario para la `CPU` o para un entorno de ejecución como la `Máquina Virtual de Java`.
+
+####
+**Ventajas y desventajas de los lenguajes compilados**
+Los lenguajes compilados presentan características distintivas en cuanto a su ejecución y diseño:
+- Al no requerir intermediarios para comunicarse con la `CPU`, su ejecución es más rápida.
+- Su sintaxis suele estar más cercana al lenguaje máquina, como ocurre en `C++`.
+
+####
+**Definición de lenguajes interpretados**
+Un lenguaje interpretado es aquel cuyas instrucciones son leídas y ejecutadas por otro programa denominado `intérprete`. A diferencia de los compilados, el intérprete procesa las instrucciones línea por línea; esto implica que el código fuente es traducido por un programa intermediario que envía las instrucciones a la `CPU`.
+
+```mermaid
+graph TD
+    A["Código fuente"] --> |Frontend| B["AST"]
+    B --> |Interpretado| C["Salida"]
+```
+
+####
+**Proceso de interpretación y Frontend**
+El proceso de generación del `AST` es realizado por un componente denominado `Frontend`.
+
+```mermaid
+graph TD
+    A["Parser"] --> |AST| B["Interpretación"]
+```
+
+El `parser` puede enviar el `AST` directamente al intérprete o generar código en un lenguaje intermedio que posteriormente será interpretado, permitiendo aplicar diversas técnicas de optimización.
+
+####
+**Cuadro comparativo: Lenguajes compilados e interpretados**
+
+| Aspecto | Lenguajes Compilados | Lenguajes Interpretados |
+| :--- | :--- | :--- |
+| **Ejecución** | Directa en la `CPU` o `Máquina Virtual` | Mediante intérprete línea por línea |
+| **Velocidad** | Mayor rendimiento (sin intermediarios) | Menor rendimiento (`overhead` del intérprete) |
+| **Detección de errores** | Tiempo de compilación (antes de ejecutar) | Tiempo de ejecución (hasta la línea fallida) |
+| **Portabilidad** | Depende de la arquitectura | Más portable (usa intérprete) |
+| **Optimización** | Agresiva en tiempo de compilación | Limitada (ejecución o `JIT`) |
+| **Flexibilidad** | Menor (requiere recompilación) | Mayor (cambios efectivos inmediatos) |
+| **Ejemplos** | `C`, `C++`, `Rust`, `Go` | `Python`, `JavaScript`, `Ruby`, `PHP` |
+| **Proceso** | Código fuente → `AST` → Binario | Código fuente → `AST` → Interpretación |
+| **Recursos** | Menor uso de memoria (estático) | Mayor uso (entorno `runtime`) |
+| **Depuración** | Difícil (nivel de binario) | Fácil (nivel de código fuente) |
+
+####
+**Notas sobre el paradigma de ejecución**
+- Los lenguajes compilados generan código binario optimizado para la `CPU` o una `Máquina Virtual` (por ejemplo, la `JVM` para Java).
+- Los lenguajes interpretados dependen de un programa que traduce y ejecuta instrucciones en tiempo real.
+- Muchos lenguajes modernos utilizan enfoques híbridos, donde el código se compila a `bytecode` y posteriormente es interpretado o compilado mediante `JIT` (Just-In-Time compilation).
+- La elección entre estos enfoques depende del equilibrio necesario entre rendimiento, portabilidad y flexibilidad.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Lenguajes interpretado vs compilados
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Lenguajes%20interpretado%20vs%20compilados/

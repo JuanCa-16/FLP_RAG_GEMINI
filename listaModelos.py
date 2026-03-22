@@ -10,10 +10,10 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 print("--- MODELOS DISPONIBLES ---")
 # Usamos el atributo correcto: supported_actions
 for model in client.models.list():
-    if 'generateContent' in model.supported_actions:
-        # El nombre técnico que necesitas suele estar en model.name
-        # Ej: 'models/gemini-1.5-flash'
+    # Verificamos si sirve para generar texto O para crear embeddings
+    if 'generateContent' in model.supported_actions or 'embedContent' in model.supported_actions:
         model_id = model.name.replace('models/', '')
-        print(f"ID para el código: {model_id}")
-        print(f"Nombre completo: {model.display_name}")
+        print(f"ID: {model_id}")
+        print(f"Acciones: {model.supported_actions}") # Esto te dirá qué puede hacer cada uno
+        print(f"Nombre: {model.display_name}")
         print("-" * 30)

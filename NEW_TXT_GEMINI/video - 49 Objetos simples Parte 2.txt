@@ -1,0 +1,60 @@
+####
+**Definición de una parte de objeto**
+
+Para implementar la representación de clases basada en partes, el primer paso es definir la estructura de una "parte" (`part`). Cada parte contiene un nombre de clase y un vector. Este vector almacena el estado del objeto, donde cada posición corresponde a los valores de los atributos definidos en esa clase específica. Por defecto, los valores de los atributos se inicializan en cero al momento de crear el vector.
+
+####
+**Construcción de la cadena de herencia**
+
+La construcción de un objeto se realiza mediante la creación de una lista de partes (`list of parts`) dada una clase. El proceso es el siguiente:
+- Si el nombre de la clase es `object`, se ha alcanzado el tope de la jerarquía de herencia y se retorna una lista vacía.
+- Si no es `object`, se busca la declaración de la clase actual. Se retorna una lista cuyo primer elemento es la parte correspondiente a la clase actual y cuya cola se obtiene mediante una llamada recursiva a la superclase.
+
+El procedimiento `new-object` automatiza este proceso: busca la clase, construye su parte y continúa recursivamente con el padre hasta llegar a `object`.
+
+```racket
+(define (new-object class-name)
+  (if (eqv? class-name 'object)
+      '()
+      (cons (make-first-part class-name)
+            (new-object (lookup-class-super-name class-name)))))
+```
+
+La función `make-first-part` crea la estructura de la parte utilizando el nombre de la clase y un vector inicializado con ceros, cuyo tamaño corresponde a la cantidad de campos definidos en dicha clase.
+
+####
+**Implementación de extractores para declaraciones**
+
+Para manipular las declaraciones de clases y métodos, se requiere implementar funciones extractoras que permitan acceder a la información definida en la gramática (nombres, cuerpos de métodos, campos y superclases). Estos extractores facilitan la extracción de datos desde los `data types` generados automáticamente por el sistema:
+
+- `class-declaration-super-name`: Extrae el nombre de la superclase de una declaración.
+- `class-fields`: Extrae los campos de una clase.
+- `method-body` y `method-name`: Extraen los componentes de un método.
+
+Estos métodos son esenciales para navegar la jerarquía de clases durante la creación del objeto y la ejecución de métodos.
+
+####
+**Aplicación de métodos y búsqueda en la jerarquía**
+
+El procedimiento `find-method-and-apply` busca un método a través de la cadena de herencia hasta encontrar la clase que lo declare. Su funcionamiento es:
+1. Si se alcanza `object`, el método no existe.
+2. Si la clase actual contiene el método, se procede a ejecutarlo.
+3. Si no se encuentra en la clase actual, se realiza una llamada recursiva a la superclase.
+
+Al encontrar el método, se construye un ambiente extendido que contiene las ligaduras para `super`, `self` (la referencia al objeto), los argumentos formales del método y los campos visibles desde la clase donde se define el método (la clase `western`).
+
+####
+**Consideraciones sobre la representación de ambientes**
+
+Durante la ejecución de un método, el ambiente resultante debe gestionar la jerarquía del objeto. Un objeto se representa como una lista de partes. Al invocar un método, el ambiente debe vincular correctamente las variables del método y permitir el acceso a los campos distribuidos en las distintas partes (clases) de la cadena de herencia.
+
+Es importante notar que esta implementación simple genera redundancia de información, ya que el estado del objeto se mantiene distribuido en las partes de cada clase. Esta redundancia puede influir en el consumo de memoria en comparación con implementaciones más optimizadas, donde se busca reducir el espacio ocupado por la información repetida en la jerarquía.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=yXIqoR2-FL0
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

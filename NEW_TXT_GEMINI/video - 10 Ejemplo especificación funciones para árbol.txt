@@ -1,0 +1,54 @@
+####
+
+**Análisis comparativo de funciones recursivas sobre árboles**
+
+Al analizar la implementación de funciones sobre un `árbol binario`, observamos una estructura común tanto para calcular la suma de sus elementos como para convertir el árbol en una `lista`. Aunque las operaciones finales difieren, ambas funciones comparten la misma lógica estructural derivada de la gramática del árbol:
+
+1.  **Condición de terminación (`caso base`)**: Ambas funciones verifican cuándo detener la `recursión`.
+2.  **Llamado recursivo**: Ambas utilizan la misma estructura de descomposición para navegar a través de los nodos.
+
+Lo que cambia es la construcción de la salida: en la suma, se realiza una operación aritmética, mientras que en la conversión, se construye una `lista` utilizando el valor del nodo actual. La estructura de la función es consistente porque sigue directamente las reglas gramaticales que definen al `árbol binario`.
+
+####
+
+**Gramática y representación de reglas**
+
+La gramática de un `árbol binario` puede expresarse utilizando la notación `|` (OR) para representar alternativas, o mediante reglas independientes. Por ejemplo, un nodo `bintree` puede definirse como:
+
+- `bintree` ::= `entero` | `(nodo símbolo bintree bintree)`
+
+La barra vertical actúa como un operador lógico OR, indicando que el árbol puede ser un entero (caso base) o un nodo con una estructura definida. Alternativamente, esto puede expresarse mediante dos reglas separadas:
+
+1. `bintree` ::= `entero`
+2. `bintree` ::= `(nodo símbolo bintree bintree)`
+
+Ambas representaciones son equivalentes y sirven como base formal para diseñar las funciones recursivas que procesan la estructura de datos.
+
+####
+
+**Diseño de programas recursivos**
+
+Para el diseño de programas que operan sobre estructuras recursivas, es necesario seguir un enfoque sistemático:
+
+- **Identificar el `caso base`**: Es el estado donde termina la `recursión`. Corresponde al símbolo terminal de la gramática (por ejemplo, cuando el árbol es solo un número).
+- **Identificar el `estado no terminal`**: Es la parte de la estructura que requiere un llamado recursivo.
+- **Estrategia de recursión**: Se debe llamar a la función recursivamente desde un `estado no terminal` para converger eventualmente hacia un `estado terminal`.
+
+La garantía de que la `recursión` terminará y no caerá en un bucle infinito reside en cómo se descompone el problema en cada llamado, asegurando un avance hacia los casos base.
+
+####
+
+**Garantía de terminación en la recursión**
+
+En las funciones que recorren un `árbol binario`, la terminación del proceso está garantizada por la navegación a través de los hijos del nodo. Al utilizar selectores como `car` y `cdr` (o funciones equivalentes para acceder al hijo izquierdo y al hijo derecho), el algoritmo descompone el árbol en subárboles más pequeños.
+
+Este proceso asegura que, tarde o temprano, se alcanzará una "hoja" del árbol (el `caso base`), lo cual impide que la función entre en un bucle infinito. La estructura del programa refleja la estructura de los datos, y es precisamente el avance constante hacia los nodos terminales lo que asegura que la `recursión` concluya satisfactoriamente.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Vglvl_buuZE
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

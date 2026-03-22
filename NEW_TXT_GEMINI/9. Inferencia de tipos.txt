@@ -1,0 +1,163 @@
+####
+**Inferencia de tipos**
+
+Algunos lenguajes de programación permiten que el compilador determine los tipos de todas las variables mediante la observación de su uso y la asistencia del programador. Esta estrategia se denomina `inferencia de tipos`. Para el lenguaje en desarrollo, todas las expresiones de tipo son opcionales y, en caso de no especificarse, se utiliza el símbolo `?`.
+
+Un ejemplo de programa utilizando esta notación es:
+
+```racket
+letrec
+? even (? x) =
+  if zero?(x) then 1 else (odd sub1(x))
+in
+letrec
+? odd (? x) =
+  if zero?(x) then 0 else (even sub1(x))
+in
+(odd 13)
+```
+
+Los símbolos de interrogación marcan los lugares donde el tipo debe ser inferido.
+
+####
+**Modificaciones a la gramática**
+
+Se introducen reglas de producción para permitir expresiones de tipo opcionales:
+
+- `⟨tipo-exp-opcional⟩ ::= ⟨tipo-exp⟩` (denotado como `a-type-exp (texp)`)
+- `⟨tipo-exp-opcional⟩ ::= ?` (denotado como `no-type-exp ()`)
+
+Para integrar esto en el lenguaje, se actualizan las reglas de `proc-exp` y `letrec-exp`:
+
+- `⟨expresión⟩ ::= proc ({⟨tipo-exp-opcional⟩ ⟨identificador⟩}*) ⟨expresión⟩`
+- `⟨expresión⟩ ::= letrec {⟨tipo-exp-opcional⟩ ⟨identificador⟩ ({⟨tipo-exp-opcional⟩ ⟨identificador⟩}*) = ⟨expresión⟩}* in ⟨expresión⟩`
+
+Asimismo, se añade a la especificación de la gramática:
+- `(tipo-exp-opcional (tipo-exp) a-type-exp)`
+- `(tipo-exp-opcional ("?") no-type-exp)`
+
+####
+**Variables de tipo**
+
+Para operar con tipos desconocidos (marcados con `?`), se añade la clase `variable de tipo` (`tvar`). Cada variable de tipo consta de un número serial y un contenedor (un vector de tamaño 1).
+
+- Una variable de tipo puede ser vacía (almacena `()`), lo que significa que el tipo es desconocido.
+- Una variable de tipo puede ser llena (almacena un tipo). Una vez llena, su contenido no cambia, por lo que se denomina de `asignación simple` o `única escritura`.
+
+El tipo de dato `type` se modifica incluyendo la variante `tvar`:
+
+```racket
+(define-datatype type type?
+  (atomic-type (name symbol?))
+  (proc-type (arg-types (list-of type?))
+             (result-type type?))
+  (tvar-type (serial-number integer?)
+             (container vector?)))
+```
+
+####
+**Procedimiento fresh-tvar**
+
+El procedimiento `fresh-tvar` crea una nueva variable de tipo con un valor único global para su contador y un vector inicializado en `()`.
+
+```racket
+(define fresh-tvar
+  (let ((serial-number 0))
+    (lambda ()
+      (set! serial-number (+ 1 serial-number))
+      (tvar-type serial-number (vector '())))))
+```
+
+####
+**Expansión de expresiones de tipo**
+
+Los llamados a `expand-type-expression` se sustituyen por `expand-optional-type-expression`. Este procedimiento recibe una expresión de tipo opcional y un ambiente de tipos (`tenv`). Si encuentra una expresión de tipo explícita, llama a `expand-type-expression`; si encuentra `?`, emite una nueva `variable de tipo` mediante `fresh-tvar`.
+
+```racket
+(define expand-optional-type-expression
+  (lambda (otexp tenv)
+    (cases optional-type-exp otexp
+      (no-type-exp () (fresh-tvar))
+      (a-type-exp (texp) (expand-type-expression texp tenv)))))
+```
+
+####
+**Ecuaciones de tipo**
+
+Para deducir el tipo de una expresión, se generan ecuaciones basadas en sus componentes.
+
+Para una expresión condicional `if e0 then e1 else e2`:
+```racket
+(type-of-expression <<e0>> tenv) = bool
+(type-of-expression <<e1>> tenv) = (type-of-expression <<e2>> tenv)
+= (type-of-expression <<if e0 then e1 else e2>> tenv)
+```
+
+Para una aplicación de procedimiento `(rator rand1 ... randn)`:
+`(type-of-expression <<rator>> tenv) = ((type-of-expression <<rand1>> tenv) * ... * (type-of-expression <<randn>> tenv) -> (type-of-expression <<(rator rand1 ... randn)>> tenv))`
+
+Para un `proc (x1 ... xn) exp`:
+`(type-of-expression <<proc (x1 ... xn) exp>> tenv) = ((type-of-expression x1 tenv body) * ... * (type-of-expression xn tenv body) -> (type-of-expression <<exp>> tenv body))`
+
+####
+**Ejemplo de inferencia de tipos**
+
+Considerando `proc(f,x) (f +(1,x) zero?(x))`, se asignan tipos a variables y aplicaciones:
+
+| Expresión | Variable de Tipo |
+| :--- | :--- |
+| `f` | `tf` |
+| `x` | `tx` |
+| `(f +(1,x) zero?(x))` | `t1` |
+| `+(1,x)` | `t2` |
+| `zero?(x)` | `t3` |
+| `proc(f,x) (f +(1,x) zero?(x))` | `tp` |
+
+Las ecuaciones resultantes son:
+1. `tf = (t2 * t3 -> t1)`
+2. `(int * int -> int) = (int * tx -> t2)`
+3. `(int -> bool) = (tx -> t3)`
+
+Al resolver mediante `unificación`, se determina que `tx = int`, `t2 = int`, `t3 = bool` y `tf = (int * bool -> t1)`. La expresión es polimórfica en `t1`.
+
+####
+**Procedimiento check-equal-type!**
+
+La inferencia utiliza `check-equal-type!` para verificar si dos tipos pueden ser iguales, ajustando las variables de tipo si es necesario.
+
+1. Si `t1` y `t2` son idénticos, tiene éxito.
+2. Si alguno es una `tvar`, llama a `check-tvar-equal-type!`.
+3. Si ambos son `atomic-type`, verifica que tengan el mismo nombre.
+4. Si ambos son `proc-type`, verifica el número de argumentos y llama recursivamente a los componentes.
+
+```racket
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (cond
+      ((eqv? t1 t2))
+      ((tvar-type? t1) (check-tvar-equal-type! t1 t2 exp))
+      ((tvar-type? t2) (check-tvar-equal-type! t2 t1 exp))
+      ((and (atomic-type? t1) (atomic-type? t2))
+       (if (not (eqv? (atomic-type->name t1) (atomic-type->name t2)))
+           (raise-type-error t1 t2 exp)))
+      ((and (proc-type? t1) (proc-type? t2))
+       (let ((arg-types1 (proc-type->arg-types t1))
+             (arg-types2 (proc-type->arg-types t2))
+             (result-type1 (proc-type->result-type t1))
+             (result-type2 (proc-type->result-type t2)))
+         (if (not (= (length arg-types1) (length arg-types2)))
+             (raise-wrong-number-of-arguments t1 t2 exp)
+             (begin
+               (for-each (lambda (t1 t2) (check-equal-type! t1 t2 exp)) arg-types1 arg-types2)
+               (check-equal-type! result-type1 result-type2 exp)))))
+      (else (raise-type-error t1 t2 exp)))))
+```
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 9. Inferencia de tipos

@@ -1,0 +1,37 @@
+####
+**Evaluación de expresiones con `let` anidados**
+
+Para determinar el resultado de una expresión con `let` anidados, debemos seguir el `scope léxico` de cada variable. Analizando la estructura, primero evaluamos `x` y `y`:
+
+- Tenemos una expresión donde `x + 2` resulta en 5.
+- La variable `x` se vincula a una `y`, la cual a su vez hace referencia a otra `x`. Al rastrear estos valores, encontramos que `x` vale 6, por lo tanto `y` también vale 6.
+- Al sumar los términos: 6 + 5, obtenemos 11.
+- Al continuar la evaluación, encontramos que `x` vale 6 y `y` vale 8. Sumando los términos parciales (11 + 6) obtenemos 17. Luego, al sumar 7 + 8 obtenemos 25.
+- Finalmente, en la expresión interna, `x` vale 4 y `y` se busca en el entorno superior, resultando en 7 - 4 = 3. Multiplicando 3 * 25, el resultado final es 75.
+
+####
+**Implementación y comprobación en Racket**
+
+Para verificar el cálculo anterior, utilizamos la sintaxis de `let` en `racket`. Es necesario definir correctamente los bloques de ámbito para asegurar que el `scope` de cada variable sea el correcto durante la ejecución:
+
+```racket
+(let ([x 8])
+  (+ (let ([x 6]
+           [y x])
+       (+ x y))
+     (let ([y 8])
+       (+ 7 y))
+     (let ([x 4])
+       (* 3 (- 7 x)))))
+```
+
+En este código, cada `let` establece un nuevo entorno de vinculación. Al ejecutar esta estructura en el entorno de desarrollo de `racket`, el sistema resuelve las referencias de las variables de forma jerárquica, confirmando que el valor resultante de la expresión completa es 75.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=e_DfC91mtas
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

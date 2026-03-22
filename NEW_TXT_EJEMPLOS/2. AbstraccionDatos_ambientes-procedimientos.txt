@@ -1,0 +1,74 @@
+####
+Implementación de un ambiente vacío mediante un procedimiento:
+
+```racket
+(define empty-env
+  (lambda ()
+    (lambda (search-var)
+      (eopl:error 'apply-env "No binding for ~s" search-var))))
+```
+
+**Conceptos clave**
+`ambientes`, `procedimientos`, `clausuras`, `eopl:error`
+
+**Aplicación**
+Representa la base de la jerarquía de ambientes. Cuando se invoca un ambiente vacío para buscar una variable, dispara un error, indicando que la variable no está ligada en el alcance actual.
+
+####
+Extensión de un ambiente con nuevas ligaduras:
+
+```racket
+(define extend-env
+  (lambda (saved-var saved-val saved-env)
+    (lambda (search-var)
+      (if (eqv? search-var saved-var)
+          saved-val
+          (apply-env saved-env search-var)))))
+```
+
+**Conceptos clave**
+`ligaduras`, `alcance`, `recursión`, `condicionales`
+
+**Aplicación**
+Crea un nuevo ambiente que asocia `saved-var` con `saved-val`. Si la variable buscada coincide con la variable guardada, retorna el valor; de lo contrario, delega la búsqueda de forma recursiva al ambiente previo (`saved-env`).
+
+####
+Mecanismo para aplicar un ambiente sobre una variable:
+
+```racket
+(define apply-env
+  (lambda (env search-var)
+    (env search-var)))
+```
+
+**Conceptos clave**
+`abstracción de datos`, `procedimientos`, `búsqueda`, `ambiente`
+
+**Aplicación**
+Actúa como la interfaz estándar para consultar el valor de una variable en un ambiente dado, aplicando el procedimiento que representa el ambiente sobre la variable objetivo.
+
+####
+Construcción y consulta de un ambiente compuesto:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+(apply-env e 'd)
+```
+
+**Conceptos clave**
+`instanciación`, `ligaduras anidadas`, `sombreamiento`
+
+**Aplicación**
+Demuestra cómo se apilan múltiples ligaduras. En este ejemplo, el ambiente `e` contiene varias variables; al evaluar `(apply-env e 'd)`, el sistema recupera el valor `6` asociado a la variable `d` en la capa superior del ambiente.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-procedimientos.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

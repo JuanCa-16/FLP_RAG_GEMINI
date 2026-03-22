@@ -1,0 +1,267 @@
+####
+**Definición de alfabeto**
+
+Un `alfabeto` es un conjunto finito no vacío cuyos elementos se llaman `símbolos`.
+Sea $\Sigma = \{ a, b \}$ el alfabeto que consta de los símbolos `a` y `b`. Algunas cadenas sobre $\Sigma$ son: `aba`, `abaabaaa`, `aaaab`.
+El `alfabeto binario` se define como $\Sigma = \{ 0, 1 \}$, donde las cadenas son secuencias finitas de ceros y unos.
+
+Las `cadenas` son secuencias ordenadas y finitas de símbolos. Por ejemplo, si $w = aaab$ y $w_1 = baaa$, entonces $w \neq w_1$.
+
+Si $\Sigma = \{ a, b, c, \dots, z \}$, tenemos el alfabeto del idioma castellano. Si $\Sigma = \{ a, b, c \}$, podemos formar todas las cadenas sobre $\Sigma$, incluyendo la `cadena vacía`.
+
+Aunque un alfabeto $\Sigma$ sea un conjunto finito, $\Sigma^*$ es siempre un conjunto infinito (enumerable). Es necesario distinguir entre cuatro objetos distintos: $\emptyset$ (conjunto vacío), $\epsilon$ (cadena vacía), $\{\emptyset\}$ (conjunto que contiene al vacío) y $\{\epsilon\}$ (conjunto que contiene a la cadena vacía).
+
+####
+**Operaciones con alfabetos**
+
+Si $\Sigma$ es un alfabeto, la notación $\sigma \in \Sigma$ indica que $\sigma$ es un símbolo del alfabeto. Por ejemplo, si $\Sigma = \{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 \}$, entonces $0 \in \Sigma$.
+
+Dados dos alfabetos $\Sigma_1$ y $\Sigma_2$, se pueden realizar las siguientes operaciones, resultando siempre en un nuevo alfabeto:
+- Unión: $\Sigma_1 \cup \Sigma_2$
+- Intersección: $\Sigma_1 \cap \Sigma_2$
+- Diferencia: $\Sigma_1 - \Sigma_2$ y $\Sigma_2 - \Sigma_1$
+
+####
+**Definición de lenguaje**
+
+Un `lenguaje` es un conjunto de palabras o cadenas. Un lenguaje $L$ sobre un alfabeto $\Sigma$ es un subconjunto de $\Sigma^*$. Si $L = \Sigma^*$, se denomina el lenguaje de todas las cadenas sobre $\Sigma$. El lenguaje vacío se denota como $L = \emptyset$. Se cumple que:
+$$\emptyset \subseteq L \subseteq \Sigma^*$$
+
+Ejemplos sobre $\Sigma = \{ a, b, c \}$:
+- $L = \{ a, aba, aca \}$
+- $L = \{ a, aa, aaa \} = \{ a^n : n \geq 1 \}$
+- $L = \{ w \in \Sigma^* : w \text{ no contiene el símbolo } c \}$
+    - Ejemplo: $abbaab \in L$ pero $abbcaa \notin L$.
+
+Sobre $\Sigma = \{ 0, 1, 2 \}$, un lenguaje puede ser el conjunto de cadenas que tienen igual número de ceros, unos y doses en cualquier orden.
+
+####
+**Potencia del lenguaje**
+
+Dado un lenguaje $A$ sobre $\Sigma$ (donde $A \subseteq \Sigma^*$) y un número natural $n \in \mathbb{N}$, la `potencia del lenguaje` se define como:
+- $A^0 = \{ \epsilon \}$
+- $A^n = A \cdot A^{n-1}$, para $n \geq 1$
+
+Ejemplo con $A = \{ ab \}$ sobre $\Sigma = \{ a, b \}$:
+- $A^0 = \{ \epsilon \}$
+- $A^1 = A = \{ ab \}$
+- $A^2 = A \cdot A^1 = \{ abab \}$
+- $A^3 = A \cdot A^2 = \{ ababab \}$
+
+####
+**Cerradura de Kleene**
+
+La `cerradura de Kleene` de un lenguaje $A \subseteq \Sigma^*$, denotada por $A^*$, es la unión de todas sus potencias:
+$$A^* = \bigcup_{i \geq 0} A^i = A^0 \cup A^1 \cup A^2 \cup \dots \cup A^n$$
+
+Observación: $A^*$ se puede describir como el conjunto de todas las concatenaciones de cadenas de $A$, incluyendo $\epsilon$:
+$$A^* = \{ u_1 u_2 \dots u_n : u_i \in A, n \geq 0 \}$$
+
+La `cerradura positiva`, denotada por $A^+$, se define como:
+$$A^+ = \bigcup_{i \geq 1} A^i = A^1 \cup A^2 \cup A^3 \cup \dots \cup A^n$$
+
+####
+**Expresiones regulares**
+
+Las `expresiones regulares` sobre un alfabeto $\Sigma$ se definen recursivamente:
+- $\emptyset$, $\epsilon$ y $a$ (donde $a \in \Sigma$) son expresiones regulares.
+- Si $A$ y $B$ son expresiones regulares, también lo son:
+    - $A \cup B$ (Unión)
+    - $A \cdot B$ (Concatenación)
+    - $A^*$ (Cerradura de Kleene)
+
+Ejemplos:
+- Son expresiones regulares: $aab^*$, $ab^+$, $(aaba^*)^+$
+- Sea el conjunto $\{ \epsilon, aa, aba, ab^2a, ab^3a, \dots \}$, entonces $\{ \epsilon \} \cup ab^*a$ es una expresión regular.
+
+Ejemplos de construcción:
+- Lenguaje de palabras de longitud par sobre $\Sigma = \{ a, b \}$: $(aa \cup ab \cup ba \cup bb)^*$
+- Lenguaje de palabras de longitud impar sobre $\Sigma = \{ a, b \}$: $a(aa \cup ab \cup ba \cup bb)^* \cup b(aa \cup ab \cup ba \cup bb)^*$
+- Lenguaje de palabras con número par de `a`'s: $b^*(ab^*a)^*b^*$
+
+####
+**Gramáticas Regulares (Tipo 3)**
+
+Según Chomsky, las gramáticas se clasifican jerárquicamente. Una `gramática regular` $G$ es una 4-tupla $G = (N, \Sigma, S, P)$ donde $N$ es el conjunto de no terminales, $\Sigma$ el alfabeto, $S$ el símbolo inicial y $P$ el conjunto de producciones. Las reglas tienen la forma $A \rightarrow w$, donde $A \in N$ y $w$ es una cadena sobre $\Sigma \cup N$, cumpliendo:
+1. $w$ contiene un no terminal como máximo.
+2. Si $w$ contiene un no terminal, este debe estar en el extremo derecho.
+
+El conjunto de reglas $P$ se define como:
+$P \subseteq N \times \Sigma^* (N \cup \epsilon)$ o $P \subseteq N \times (N \cup \epsilon)\Sigma^*$
+
+Una gramática es regular por la derecha si sus producciones tienen la forma:
+- $A \rightarrow wB$ (con $w \in \Sigma^*, B \in N$)
+- $A \rightarrow \epsilon$
+
+Ejemplo de gramática que genera $a^*$:
+```text
+G = (N, Σ, S, P), donde Σ = {a, b}, N = {S, A}
+P: S → aA | ε
+   A → aA | ε
+```
+
+Ejemplo de gramática que genera el lenguaje $(a \cup b)^*$:
+```text
+P: S → aS | bS | ε
+```
+
+####
+**Forma de Backus-Naur (BNF)**
+
+La `Forma de Backus-Naur` se emplea para especificar reglas sintácticas de lenguajes de programación y lenguaje natural. Utiliza el símbolo `::=` en lugar de $\rightarrow$ y coloca los símbolos no terminales entre `<>`. Se usa frecuentemente para definir la sintaxis de lenguajes como Java, LISP, SQL y XML.
+
+Ejemplo de conversión de una gramática a BNF:
+- Gramática: $A \rightarrow Aa \mid a \mid AB$
+- BNF: `<A> ::= <A> a | a | <A> <B>`
+
+Ejemplo de enteros con signo:
+```text
+<entero con signo> ::= <signo><entero>
+<signo> ::= + | -
+<entero> ::= <dígito> | <dígito><entero>
+<dígito> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+```
+
+####
+**Entorno de programación DrRacket**
+
+Se recomienda utilizar la versión 7.9 de DrRacket. Las expresiones en Racket utilizan `notación prefija`. Por ejemplo, `(+ 5 2)` equivale a $5+2$. Se sugiere usar paréntesis para evitar problemas de interpretación, como en `(+ (- 3 2) 4)`, que equivale a $((3 - 2) + 4)$.
+
+Para el curso, debe seleccionar el lenguaje `The Racket Language` y agregar en la primera línea:
+```racket
+#lang eopl
+```
+
+####
+**Definición de variables y funciones en Racket**
+
+Se utiliza la palabra reservada `define` para declarar variables. Las funciones se definen de la siguiente manera:
+`(define (nombreFuncion argumentosEntrada) (operaciones))`
+
+Ejemplo de función:
+```racket
+(define (multiplique a b)
+  (* a (* b b)))
+```
+El resultado de evaluar `(multiplique 3 9)` es $3 \times (9 \times 9) = 243$.
+
+####
+**Funciones anónimas (Lambda)**
+
+Es posible definir funciones anónimas usando la expresión `lambda`. Esta retorna un valor de tipo función o procedimiento que puede ser evaluado.
+
+Ejemplo:
+```racket
+(lambda (x y)
+  (if (> x y)
+      (* x y)
+      (- x y)))
+```
+Para evaluar una función lambda:
+```racket
+((lambda (x y) (if (> x y) (* x y) (- x y))) 3 4)
+```
+En el paradigma funcional no hay diferencia entre funciones y valores, por lo que `lambda` permite representar funciones como datos.
+
+####
+**Condicionales en Racket**
+
+Racket utiliza `if` para estructuras condicionales:
+`(if pregunta hacer_si_verdad hacer_si_falso)`
+
+Ejemplo:
+```racket
+(define funcionMisteriosa
+  (lambda (n l)
+    (if (< n l)
+        "n es menor que l"
+        "n es mayor o igual que l")))
+```
+
+También existe `cond`, que permite verificar varias condiciones sucesivamente. Se ejecuta la respuesta de la primera condición verdadera; si ninguna lo es, se ejecuta la rama `else`.
+
+Ejemplo:
+```racket
+(define verificarPar
+  (lambda (n)
+    (cond
+      [(even? n) "Par"]
+      [(< n 0) "Impar y menor que 0"]
+      [else "Impar y mayor o igual que 0"])))
+```
+
+####
+**Definiciones locales: let, letrec y let***
+
+Para realizar definiciones dentro de funciones, se utilizan las siguientes estructuras:
+
+- `let`: Para definiciones no recursivas. Las funciones definidas aquí no se conocen a sí mismas.
+- `letrec`: Para definiciones recursivas. Las funciones se conocen a sí mismas. Su sintaxis es igual a la de `let`.
+- `let*`: Permite que un valor declarado conozca a los anteriores, pero las funciones no se conocen a sí mismas.
+
+####
+**Listas en Racket**
+
+Las listas son estructuras recursivas que constan de un valor y el resto de la lista (o una lista vacía).
+- Construcción manual: `(cons 1 (cons 2 (cons 3 empty)))`
+- Azúcar sintáctico: `(list 1 2 3)`
+
+Para acceder a los elementos:
+- `car`: Accede al primer elemento.
+- `cdr`: Accede al resto de la lista.
+- `cadr`: Accede al primer elemento del resto (segundo elemento de la lista).
+
+Representación especial de listas:
+`'(perro gato 1 2 3)`
+Aquí, `perro` y `gato` se convierten en símbolos. Las listas se declaran entre paréntesis.
+
+####
+**Funciones de orden superior**
+
+Las funciones en Racket pueden ser pasadas como parámetros y retornadas como valores.
+
+Ejemplo de función que recibe otra función:
+```racket
+(define filtro
+  (lambda (lst num f)
+    (cond
+      [(eqv? lst '()) empty]
+      [(f (car lst) num) (cons (car lst) (filtro (cdr lst) num f))]
+      [else (filtro (cdr lst) num f)])))
+```
+
+Ejemplo de función que retorna otra función:
+```racket
+(define funcionMisterio
+  (lambda (a b)
+    (lambda (x y) (+ x y a b))))
+```
+
+####
+**Paradigma imperativo y estado**
+
+Para trabajar en un paradigma imperativo, se debe incluir la noción de estado mediante la instrucción `set!`, que permite que las variables cambien su valor durante la ejecución.
+
+Ejemplo:
+```racket
+(define valor 1)
+(set! valor 2)
+```
+
+La `secuenciación` permite ejecutar varias instrucciones en un paso usando `begin`:
+```racket
+(begin
+  (expresion1)
+  (expresion2)
+  ...)
+```
+`begin` retorna el valor de la última expresión ejecutada.
+
+--- METADATA ---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 0.1. Repaso gramaticas I

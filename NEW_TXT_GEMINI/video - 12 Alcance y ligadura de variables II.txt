@@ -1,0 +1,61 @@
+####
+**Definición de ocurrencia libre en `cálculo lambda`**
+
+En `cálculo lambda`, una variable `x` tiene una ocurrencia libre en una expresión `e` de acuerdo a las siguientes reglas recursivas:
+
+1.  **Caso identificador**: Si `e` es una variable `x`, entonces `x` ocurre libre en `e` si y solo si `x` es igual a `e`.
+2.  **Caso `lambda`**: Si la expresión `e` es de la forma `lambda (y) e_prima`, la variable `x` ocurre libre en `e` si y solo si `y` es distinto de `x` y `x` ocurre libre en `e_prima`.
+3.  **Caso aplicación**: Si la expresión `e` es de la forma `(e1 e2)`, la variable `x` ocurre libre en `e` si y solo si `x` ocurre libre en `e1` o `x` ocurre libre en `e2`.
+
+La gramática de una expresión de `cálculo lambda` se define como:
+- Un identificador.
+- Una expresión `lambda` definida como `lambda` seguido de un identificador y una expresión.
+- Una aplicación definida por dos expresiones entre paréntesis.
+
+####
+**Implementación del predicado `ocurre-libre` en `Racket`**
+
+Para determinar si una variable ocurre libre en una expresión, diseñamos una función `ocurre-libre` que mapea las reglas lógicas mencionadas anteriormente. 
+
+Primero, definimos estructuras de ejemplo basadas en la gramática:
+
+```racket
+; Caso identificador
+(define exp1 'x)
+
+; Caso lambda: lambda x . x
+(define exp2 '(lambda (x) x))
+
+; Caso aplicación: (lambda (y) x) x
+(define exp3 '((lambda (y) x) x))
+```
+
+La función `ocurre-libre` evalúa la estructura de la expresión para aplicar la regla correspondiente:
+
+```racket
+(define (ocurre-libre expr var)
+  (cond
+    ; Caso 1: Identificador
+    [(symbol? expr) (eq? expr var)]
+    
+    ; Caso 2: Lambda
+    [(eq? (car expr) 'lambda)
+     (and (not (eq? (car (cdr (car (cdr expr)))) var))
+          (ocurre-libre (car (cdr (cdr expr))) var))]
+    
+    ; Caso 3: Aplicación
+    [else
+     (or (ocurre-libre (car expr) var)
+         (ocurre-libre (car (cdr expr)) var))]))
+```
+
+En el caso de la expresión `lambda`, el identificador ligado se extrae mediante `car (cdr (car (cdr expr)))` y el cuerpo de la expresión mediante `car (cdr (cdr expr))`. En el caso de la aplicación, el primer elemento se obtiene con `car` y el segundo con `cadr`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=KEyfWgouql0
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

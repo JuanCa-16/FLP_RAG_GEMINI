@@ -1,0 +1,41 @@
+####
+**Independencia de la representación**
+Cuando se utiliza la `abstracción de datos`, los programas adquieren independencia respecto a la representación de dichos datos. Esta estrategia permite definir tipos de datos de forma que el resto del programa no dependa de su implementación interna. Un ejemplo fundamental es el tipo de datos `ambiente`, que utilizaremos de ahora en adelante para asociar valores con elementos de un conjunto finito de variables. El `ambiente` es esencial en la implementación de lenguajes de programación para asociar variables con sus valores.
+
+####
+**Representación de variables**
+Las variables pueden ser representadas de cualquier manera, siempre que sea posible verificar la igualdad entre dos de ellas. Entre las formas de representación posibles se encuentran:
+- Símbolos
+- Referencias a tablas hash
+- Números
+
+####
+**Definición formal de ambiente**
+Un `ambiente` se define como una función cuyo dominio es un conjunto finito de variables y cuyo codominio son todos los valores del lenguaje. Para gestionar esta estructura, el tipo de datos `ambiente` debe contar con tres procedimientos fundamentales:
+- `empty-env`: Crea un ambiente vacío.
+- `apply-env`: Busca el valor asociado a una variable dentro de un ambiente.
+- `extend-env`: Crea un ambiente extendido a partir de uno existente.
+
+####
+**Especificación de los procedimientos del ambiente**
+Los procedimientos que definen el comportamiento de un ambiente son los siguientes:
+- `empty-env`: Debe producir una representación del ambiente vacío, el cual sirve como condición de parada en definiciones recursivas.
+- `apply-env`: Aplica la representación de un ambiente a una variable para obtener su valor.
+- `extend-env`: Produce un nuevo ambiente que se comporta como el ambiente original, excepto porque asocia un nuevo valor a un símbolo (`var`) específico.
+
+####
+**Estructura del ambiente**
+Consideremos un ejemplo donde tenemos las siguientes asociaciones: la variable `D` vale 6, `Y` vale 8, `X` vale 7 y otra instancia de `Y` vale 14, partiendo desde un `ambiente vacío`. Para representar esta estructura mediante una gramática, definimos el `ambiente` de la siguiente manera:
+- El `ambiente vacío`.
+- El `ambiente extendido`, que contiene un identificador, un valor y una referencia al ambiente anterior.
+
+Esta estructura puede ser implementada utilizando dos estrategias principales: una basada en `listas` y otra basada en `procedimientos`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=oq0ZwXqmJT0
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

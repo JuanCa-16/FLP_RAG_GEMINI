@@ -1,0 +1,61 @@
+####
+El objetivo es extender el lenguaje de programación actual para incorporar estructuras de control condicionales (`if`-`else`) y la creación de variables mediante asignación de ligadura local (`let`). Actualmente, el lenguaje se limita a realizar operaciones matemáticas sobre un conjunto definido de variables. Para lograr esta extensión, se modificará tanto la gramática como el conjunto de valores expresados y denotados, integrando ahora los valores booleanos (`true` y `false`).
+
+####
+La gramática se extiende para incluir la estructura de los condicionales y los booleanos. La definición formal de las expresiones se actualiza de la siguiente manera:
+
+- Booleanos: `true` y `false`.
+- Condicionales: `if` `expresión` `then` `expresión` `else` `expresión`.
+- Ligaduras locales: `let` `identificador` `=` `expresión` (donde la secuencia `identificador` `=` `expresión` puede repetirse cero o más veces mediante la clausura de Kleene) `in` `expresión`.
+
+Adicionalmente, se deben incorporar primitivas booleanas, las cuales permiten realizar comparaciones necesarias para la evaluación de las condiciones dentro de las estructuras `if`.
+
+####
+Para implementar los booleanos en el intérprete, se asigna su representación correspondiente en `Racket`:
+
+```racket
+(define (eval-expression exp env)
+  (cond
+    [(true-exp? exp) #t]
+    [(false-exp? exp) #f]
+    ; ... resto de la implementación
+    ))
+```
+
+El valor `true` se mapea a `#t` y `false` a `#f` dentro del sistema.
+
+####
+La implementación de la expresión `if` aprovecha la estructura condicional nativa del lenguaje `Racket`. El intérprete evalúa la condición en el ambiente actual y, dependiendo del resultado booleano, evalúa la rama `then` o la rama `else`:
+
+```racket
+(define (eval-if-exp exp env)
+  (if (eval-expression (if-condition exp) env)
+      (eval-expression (if-then exp) env)
+      (eval-expression (if-else exp) env)))
+```
+
+Esta función garantiza que solo se ejecute la rama lógica que corresponda al valor de verdad de la condición evaluada.
+
+####
+Es necesario integrar primitivas booleanas al intérprete para realizar comparaciones numéricas. Las primitivas definidas son: mayor que (`>`), mayor o igual (`>=`), menor que (`<`), menor o igual (`<=`) e igualdad numérica (`==`). Estas funciones reciben dos argumentos y realizan la comparación correspondiente:
+
+```racket
+(define (apply-primitive prim val1 val2)
+  (cond
+    [(eq? prim 'mayor-prim) (> val1 val2)]
+    [(eq? prim 'mayor-igual-prim) (>= val1 val2)]
+    [(eq? prim 'menor-prim) (< val1 val2)]
+    [(eq? prim 'menor-igual-prim) (<= val1 val2)]
+    [(eq? prim 'igual-prim) (= val1 val2)]))
+```
+
+Si se proporcionan argumentos insuficientes, el sistema generará un error; si se reciben más de dos, los excedentes serán ignorados.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=WCkgIVxDA1U
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,95 @@
+####
+**Configuración inicial del repositorio**
+
+Para comenzar con el ejercicio, es necesario clonar el repositorio base, acceder al directorio del proyecto y eliminar la configuración de `git` existente para inicializar un nuevo historial si es requerido:
+
+```bash
+git clone git@github.com:cardel/plantilla-funcional.git
+cd plantilla-funcional
+rm -rf .git
+```
+
+####
+**Implementación de `promedioMovil` en Scala**
+
+La función `promedioMovil` calcula el promedio para cada ventana de tamaño `k` dentro de un `Vector` de enteros. Utiliza una transformación sobre un rango para generar los promedios calculados:
+
+```scala
+import scala.util.Random
+import common._
+import org.scalameter._
+
+object Promedio {
+  def promedioMovil(a: Vector[Int], k: Int): Vector[Double] = {
+    val n = a.length
+    // Genera promedios móviles para cada ventana de tamaño k
+    (0 to n - k).map { i =>
+      // Suma los elementos en la ventana actual y calcula el promedio
+      (0 until k).map(t => a(i + t)).sum / k.toDouble
+    }.toVector
+  }
+}
+```
+
+####
+**Ejecución y Benchmarking secuencial**
+
+El método `main` permite probar la función con un vector pequeño y realizar una medición de rendimiento (`benchmarking`) sobre un vector de gran tamaño utilizando `scalameter`:
+
+```scala
+def main(arr: Array[String]): Unit = {
+  // Prueba básica con vector pequeño
+  val v = Vector(2, 4, 5, 1, 3)
+  println(promedioMovil(v, 3))
+
+  // Benchmarking con vector grande
+  val n = 1000000
+  val k = 10
+  val rand = new Random()
+  val v2 = (1 to n).map(_ => rand.nextInt(1000)).toVector
+
+  // Versión secuencial
+  val t1 = withWarmer(new Warmer.Default) measure {
+    val res = promedioMovil(v2, k)
+  }
+  println(s"Tiempo secuencial ${t1}")
+}
+```
+
+####
+**Procesamiento paralelo con división de vectores**
+
+Para evaluar una estrategia de computación paralela, el `Vector` original se divide en dos segmentos (`v21` y `v22`). Se utiliza la primitiva `parallel` para ejecutar el cálculo de `promedioMovil` de manera concurrente, comparando el rendimiento frente a la versión secuencial:
+
+```scala
+// Versión paralela dividiendo el vector
+val v21 = v2.slice(0, (n - k) / 2 + k)
+val v22 = v2.slice((n - k) / 2 + 1, n)
+
+val t2 = withWarmer(new Warmer.Default) measure {
+  val (r1, r2) = parallel(promedioMovil(v21, k), promedioMovil(v22, k))
+}
+
+val (r1, r2) = parallel(
+  promedioMovil(v21, k),
+  promedioMovil(v22, k)
+)
+val rt = r1 ++ r2
+
+println(rt.take(10))
+println(rt.drop(rt.length - 10))
+println(rt.length)
+println(s"Tiempo con dos hilos ${t2}")
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Ejercicio
+URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%2012/Ejercicio/

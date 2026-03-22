@@ -1,0 +1,38 @@
+####
+Para el manejo de métodos en el interpretador, el procedimiento `FindMethodOnApply` se mantiene funcionalmente igual, ya que opera sobre la representación existente de las declaraciones de objetos. Sin embargo, la definición de `ApplyMethod` se modifica para gestionar un vector de campos. En `ApplyMethod`, se debe evaluar el cuerpo del método en un ambiente extendido que contenga las referencias a `super`, `self`, `superName` y los campos del objeto. La gran diferencia radica en la extracción del vector de campos (`fieldIds`); al construir un ambiente que contiene esta información, la ejecución del método se simplifica significativamente.
+
+####
+El procedimiento `ApplyMethod` utiliza la función `rollUpFieldIds` para extraer la lista de identificadores de los campos. Esta lista tiene el mismo tamaño que el vector de campos cuando la clase donde reside el método (`wed`) y la clase del `self` son la misma. Si la clase `wed` se encuentra más arriba en la cadena de herencia, la cantidad de elementos será diferente; en este caso, se utilizan índices y "banderitas" para determinar la posición correcta dentro del vector y saber qué segmento del mismo debe ser considerado durante la ejecución.
+
+####
+La función `rollUpFieldIds` se encarga de realizar la búsqueda y construcción de la lista de identificadores. Por ejemplo, si una jerarquía tiene en `C1` los campos `x, y`, en `C2` se añade `x` y en `C3` se añade `x, z`, la función construye la lista de identificadores consolidada para la clase correspondiente. Esta implementación es fundamental para asegurar que el ambiente tenga acceso a los campos correctos según el contexto de la clase.
+
+####
+Para evitar el costo computacional de calcular repetidamente la información de los campos y los índices en cada llamado a un método, se propone almacenar esta información de manera estática mediante una nueva representación de los métodos. Un `method` consistirá ahora en:
+- La declaración del método (cuerpo).
+- El nombre de la superclase.
+- La lista de símbolos (identificadores) necesaria para la ejecución.
+
+Al hacer esto, la declaración de métodos ya contiene la información requerida, eliminando la necesidad de recalcular la lista de símbolos y las posiciones en tiempo de ejecución.
+
+####
+La información de los métodos es estática y no depende de los valores denotados o expresados durante la ejecución. Por lo tanto, la representación de las `class` debe ser actualizada para almacenar esta estructura de forma eficiente:
+- `className`: El nombre de la clase.
+- `superName`: El nombre de la clase padre.
+- `fieldSize`: El tamaño total de los campos (entero).
+- `fieldIds`: Lista de símbolos de los campos.
+- `methodEnv`: Un `methodEnvironment` (lista de métodos) que contiene toda la información precalculada.
+
+Esta representación permite que, al declarar las clases, se generen estas estructuras que contienen toda la información necesaria para el tiempo de ejecución.
+
+####
+La construcción de las clases se realiza redefiniendo el procedimiento de elaboración de declaraciones de clase (`elaborateClassDecls`). Este proceso toma cada declaración de clase y la almacena en un ambiente de clases (`classEnv`), calculando la lista de métodos mediante una función auxiliar, por ejemplo `rollUpMethodDeclaration`. Al utilizar esta estructura, se evita recalcular valores como el tamaño de los campos o la estructura de métodos en cada instancia, dado que la jerarquía de clases es estática. El interpretador ahora utiliza estas representaciones preprocesadas para facilitar el proceso de ejecución.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=9kgBLpcG2x8
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

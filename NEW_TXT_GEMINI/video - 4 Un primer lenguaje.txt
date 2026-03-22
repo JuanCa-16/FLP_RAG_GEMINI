@@ -1,0 +1,112 @@
+####
+
+**Definición de tipos de datos para una gramática**
+
+Para implementar una gramática en el lenguaje de programación, utilizamos los `define-data-type`. A continuación, se define la estructura de las declaraciones y expresiones:
+
+```racket
+(define-data-type declaración
+  (declaración-tipo-1 (d1 declaración) (d2 declaración))
+  (declaración-tipo-2 (e expresión) (d declaración))
+  (declaración-tipo-3 (id symbol?) (e expresión)))
+
+(define-data-type expresión
+  (expresión-tipo-1 (id symbol?))
+  (expresión-tipo-2 (e1 expresión) (e2 expresión)))
+```
+
+Esta estructura permite construir el árbol de sintaxis abstracta, aunque este método manual puede resultar complejo para implementaciones extensas.
+
+####
+
+**Especificación léxica**
+
+La especificación léxica consiste en una lista simbólica que define cómo el sistema reconoce los componentes básicos del lenguaje. Se definen las siguientes reglas:
+
+- `whitespace`: Los espacios en blanco son ignorados.
+- `comment`: Los comentarios inician con el símbolo `%` y se ignoran hasta el final de la línea.
+- `identifier`: Se define como una letra seguida de letras, dígitos o caracteres especiales (evitando el símbolo `%`). Se transforma en un `symbol`.
+- `number`: Incluye dígitos y números en punto flotante (`dígito` seguido de `.` y `dígito`). Los números negativos también se contemplan añadiendo el símbolo `-`.
+
+```racket
+(define especificación-léxica
+  '((whitespace (whitespace) skip)
+    (comment ("%" (arbno (not #\newline))) skip)
+    (identifier (letter (arbno (or letter digit))) symbol)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (number (digit (arbno digit) "." digit (arbno digit)) number)))
+```
+
+####
+
+**Especificación gramatical**
+
+La gramática define las reglas de construcción del lenguaje, mapeando las estructuras de alto nivel:
+
+```racket
+(define especificación-gramática
+  '((declaración (declaración ";" declaración) declaración-tipo-1)
+    (declaración ("while" expresión "do" declaración) declaración-tipo-2)
+    (declaración (identifier ":=" expresión) declaración-tipo-3)
+    (expresión (identifier) expresión-tipo-1)
+    (expresión (expresión "+" expresión) expresión-tipo-2)))
+```
+
+####
+
+**Generación automática de tipos de datos**
+
+Para evitar la construcción manual, utilizamos la librería `SLGEN` para crear los `data-types` de forma automática a partir de las especificaciones léxica y gramatical:
+
+```racket
+(SLGEN:make-define-datatypes especificación-léxica especificación-gramática)
+
+;; Función para listar los tipos de datos generados
+(define list-data-types 
+  (SLGEN:list-define-datatypes especificación-léxica especificación-gramática))
+```
+
+####
+
+**Construcción del escáner y el parser**
+
+El escáner convierte el flujo de caracteres en tokens, mientras que el parser construye el árbol de sintaxis abstracta basándose en la gramática definida.
+
+```racket
+;; Construcción del escáner
+(define escáner (SLGEN:make-stream-scanner especificación-léxica especificación-gramática))
+
+;; Construcción del parser
+(define parser (SLGEN:make-stream-parser especificación-léxica especificación-gramática))
+```
+
+Es importante identificar errores en la gramática, como ambigüedades en la recursión por la izquierda o definiciones mal estructuradas, los cuales son reportados por las herramientas de `SLGEN` durante la construcción.
+
+####
+
+**Implementación del interpretador**
+
+El interpretador crea una interfaz (consola) para evaluar programas. Utiliza una función auxiliar `evaluar-programa` que procesa el árbol de sintaxis abstracta mediante el uso de `cases`:
+
+```racket
+(define interpretador
+  (SLGEN:make-rep "PrimerLenguaje" evaluar-programa parser))
+
+(define (evaluar-programa prog)
+  (cases declaración prog
+    (declaración-tipo-1 (d1 d2) (list d1 d2))
+    (declaración-tipo-2 (e d) (list e d))
+    (declaración-tipo-3 (id e) (list id e))))
+```
+
+Al ejecutar el `interpretador`, este permite ingresar código que sigue la gramática y devuelve el árbol de sintaxis abstracta resultante, el cual puede ser desglosado utilizando `cases` para su ejecución u operación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=RmcKbgU1rbM
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

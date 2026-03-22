@@ -1,0 +1,43 @@
+####
+**Definición de alcance (`scope`)**
+
+El alcance o `scope` se limita a la región donde ha sido creada una variable. Cuando se realiza una consulta por una variable dentro de un `scope` determinado, el lenguaje busca la primera definición disponible en el nivel actual. Si la variable no existe en el nivel actual, la búsqueda se traslada al nivel anterior o superior, siguiendo esta jerarquía hasta encontrar la definición más cercana.
+
+####
+**Ocultamiento de variables (`variable shadowing`)**
+
+El `ocultamiento de variables` ocurre cuando se declara una variable con el mismo nombre dentro de un `scope` interno que ya existe en uno externo. En este escenario, la búsqueda siempre devolverá la variable declarada en el nivel más cercano al punto de uso. 
+
+Por ejemplo, al definir `lambda z`, `lambda a`, `b`, `c`, si se declara una nueva variable `a` dentro de un bloque interno, las referencias a `a` dentro de ese bloque utilizarán la nueva definición, mientras que las referencias a `c` (si no está definida localmente) buscarán la definición en el nivel anterior o externo. Esto es fundamental en el `scope léxico`.
+
+####
+**Estructura de `let` y evaluación de expresiones**
+
+La construcción `let` en `racket` se divide en dos áreas principales: el área de declaración de variables (donde se definen los nombres y valores) y el área de uso (donde se realizan las operaciones). 
+
+Considere el siguiente código que ilustra el uso de `let` anidados y el alcance de las variables `x` e `y`:
+
+```racket
+(let ([x 3]
+      [y 4])
+  (* (let ([x (+ y 5)])
+       (* x x))
+     y))
+```
+
+En este ejemplo:
+- El primer `let` declara `x` con valor 3 e `y` con valor 4.
+- El segundo `let` (interno) define un nuevo `x` basado en la suma de `y` (que toma el valor 4 del nivel superior) y 5, resultando en 9.
+- La expresión `(* x x)` utiliza el `x` local recién definido (9 * 9 = 81).
+- Finalmente, el resultado del bloque interno se multiplica por el `y` externo (4), resultando en 324. 
+
+*Nota:* La lógica de búsqueda de variables siempre prioriza la declaración más cercana al punto donde la variable es invocada. No se debe confundir la búsqueda de la definición con el lugar donde se utiliza la variable en una operación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=dIhRmt4Khgw
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

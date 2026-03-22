@@ -1,0 +1,138 @@
+####
+**Árboles de sintaxis abstracta (AST)**
+
+Los `AST` (Abstract Syntax Trees) son representaciones basadas en la gramática de un lenguaje, las cuales relacionan la estructura del tipo de dato con respecto a su especificación formal. Esta representación permite validar si el código fuente está bien escrito y permite representar los datos de forma independiente al lenguaje de programación utilizado.
+
+La gramática para expresiones lambda se define como:
+- `<lc-exp> ::= <identifier> | var-exp(id)`
+- `<lc-exp> ::= "lambda" "(" <identifier>* ")" <lc-exp> | lambda-exp(lid, exp)`
+- `<lc-exp> ::= "(" <lc-exp> <lc-exp> ")" | app-exp(rator, rand)`
+
+####
+**Ejemplo: Representación de una expresión de variable**
+
+Para la expresión `var-exp` con el identificador `x`, la estructura se representa como:
+
+```racket
+(var-exp 'x)
+```
+
+```mermaid
+graph TD
+    A["var-exp"] --> |id| B["x"]
+```
+
+####
+**Ejemplo: Representación de una expresión lambda**
+
+Para la expresión `lambda-exp` con lista de parámetros `(x, y, z)` y cuerpo `(var-exp 'y)`, la estructura es:
+
+```racket
+(lambda-exp (list x y z) (var-exp 'y))
+```
+
+```mermaid
+graph TD
+    A["lambda-exp"] --> |lid| B["x, y, z"]
+    A --> |exp| C["var-exp"]
+    C --> |id| D["y"]
+```
+
+####
+**Ejemplo: Representación de una aplicación de expresiones**
+
+Este ejemplo muestra una `app-exp` compuesta por dos `app-exp` anidadas, involucrando `lambda-exp` y `var-exp`.
+
+```racket
+(app-exp
+  (app-exp
+    (lambda-exp '(a b c) (lambda '(x y z) (var-exp 'x)))
+    (var-exp 'z))
+  (lambda-exp '(a b c d e f) (var-exp 'e)))
+```
+
+```mermaid
+graph TD
+    A["app-exp"] --> |rator| B["app-exp"]
+    A --> |rand| C["lambda-exp"]
+    B --> |rator| D["lambda-exp"]
+    B --> |rand| E["var-exp"]
+    D --> |lid| F["a, b, c"]
+    D --> |exp| G["lambda-exp"]
+    G --> |lid| H["x, y, z"]
+    G --> |exp| I["var-exp"]
+    I --> |id| J["x"]
+    E --> |id| K["z"]
+    C --> |lid| L["a, b, c, d, e, f"]
+    C --> |exp| M["var-exp"]
+    M --> |id| N["e"]
+```
+
+####
+**Ejemplo: Representación compleja de aplicaciones anidadas**
+
+El siguiente árbol ilustra una estructura de `app-exp` altamente anidada que combina múltiples `var-exp` y `lambda-exp` con diversos identificadores.
+
+```racket
+(app-exp
+  (app-exp
+    (app-exp
+      (app-exp (var-exp 'x) (lambda-exp '(a b c) (var-exp 'y)))
+      (app-exp (lambda '(x y z) (var-exp 'p))
+               (lambda '(m n o p q r t u)
+                 (lambda '(v w x y z)
+                   (lambda '(a b c) (var-exp 'p))))))
+    (app-exp (var-exp 's) (var-exp 'r)))
+  (app-exp (app-exp (var-exp 'a) (var-exp 'b)) (var-exp 'x)))
+```
+
+```mermaid
+graph TD
+    A["app-exp"] --> |rator| B["app-exp"]
+    A --> |rand| C["app-exp"]
+    B --> |rator| D["app-exp"]
+    B --> |rand| E["app-exp"]
+    D --> |rator| F["app-exp"]
+    D --> |rand| G["app-exp"]
+    F --> |rator| H["var-exp"]
+    H --> |id| I["x"]
+    F --> |rand| J["lambda-exp"]
+    J --> |lid| K["a, b, c"]
+    J --> |exp| L["var-exp"]
+    L --> |id| M["y"]
+    G --> |rator| N["lambda-exp"]
+    G --> |rand| O["lambda-exp"]
+    N --> |lid| P["x, y, z"]
+    N --> |exp| Q["var-exp"]
+    Q --> |id| R["p"]
+    O --> |lid| S["m n o p q r t u"]
+    O --> |exp| T["lambda-exp"]
+    T --> |lid| U["v w x y z"]
+    T --> |exp| V["lambda-exp"]
+    V --> |lid| W["a b c"]
+    V --> |exp| X["var-exp"]
+    X --> |id| Y["p"]
+    C --> |rator| Z["app-exp"]
+    C --> |rand| AA["var-exp"]
+    AA --> |id| AF["x"]
+    Z --> |rator| AB["var-exp"]
+    AB --> |id| AC["a"]
+    Z --> |rand| AD["var-exp"]
+    AD --> |id| AE["b"]
+    E --> |rator| AG["var-exp"]
+    AG --> |id| AH["s"]
+    E --> |rand| AI["var-exp"]
+    AI --> |id| AJ["r"]
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_AST Introducción
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/AST%20Introducci%C3%B3n/

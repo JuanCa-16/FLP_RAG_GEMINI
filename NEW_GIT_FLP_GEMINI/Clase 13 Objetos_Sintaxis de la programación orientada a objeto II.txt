@@ -1,0 +1,86 @@
+####
+**Herencia y llamado a super**
+
+La `herencia` permite definir nuevas clases a partir de clases existentes. Es una práctica recomendada que las clases hijas ejecuten el método `initialize` de su clase padre mediante un llamado a `super`, el cual permite a una clase hija invocar métodos definidos en su clase base.
+
+```text
+class c1 extends object
+  field x
+  field y
+  method initialize () 1
+  method setx1 (a) set x = a
+  method sety1 (a) set y = a
+  method getx1 () x
+  method gety1 () y
+
+class c2 extends c1
+  field y
+  method initialize () super initialize ()
+  method sety2 (a) set y = a
+  method getx2 () x
+  method gety2 () y
+```
+
+En este ejemplo, si el método `initialize` no asigna valores, los campos se inicializan en 0 por defecto. Al definir `c2`, el campo `y` de `c2` oculta o es independiente del campo `y` heredado de `c1`, mientras que `x` es compartido.
+
+####
+**Uso de la instancia self**
+
+Los métodos poseen un parámetro implícito llamado `self`, que contiene la instancia actual del objeto. Este parámetro permite invocar otros métodos dentro del mismo objeto, facilitando la comunicación entre métodos de la clase padre y la clase hija.
+
+```text
+class c1 extends object
+  method initialize () 1
+  method m1 () 1
+  method m2 () 2
+  method m3 () send self m2 ()
+
+class c2 extends c1
+  method initialize () 1
+  method m2 () 3
+```
+
+####
+**Despacho dinámico de métodos**
+
+El uso de `self` habilita el `despacho dinámico de métodos`. Cuando un objeto invoca un método mediante `self`, el sistema busca la implementación basándose en la clase real de la instancia, no en la clase donde se define el método que contiene la llamada.
+
+- En `o1` (instancia de `c1`), `send self m2()` invoca la versión de `c1` (retorna 2).
+- En `o2` (instancia de `c2`), `send self m2()` invoca la versión sobrescrita en `c2` (retorna 3).
+
+Esto permite que el comportamiento de un método como `m3` varíe según la clase del objeto que recibe el mensaje.
+
+####
+**Conceptos fundamentales de POO**
+
+El diseño de clases orientado a objetos incluye mecanismos clave para la estructura y el comportamiento de los sistemas:
+
+- `Shadowing de campos`: Ocurre cuando una clase hija define un campo con el mismo nombre que una clase padre, ocultando el acceso al campo del padre.
+- `Llamada a super`: Mecanismo para acceder a funcionalidades de la clase padre desde la hija.
+- `Referencia self`: Puntero implícito que permite al objeto referenciarse a sí mismo, esencial para el `polimorfismo`.
+- `Encadenamiento de constructores`: Práctica donde la inicialización de la clase hija dispara la del padre para asegurar la integridad del objeto.
+
+####
+**Resumen de conceptos avanzados**
+
+| Concepto | Definición | Ejemplo |
+| :--- | :--- | :--- |
+| `Herencia` | Creación de clases basadas en existentes | `class c2 extends c1` |
+| `Super llamado` | Invocación de métodos de la clase padre | `super initialize()` |
+| `Shadowing` | Ocultamiento de campos de la clase padre | `field y` en `c2` |
+| `Self` | Referencia a la instancia actual | `send self m2()` |
+| `Despacho dinámico` | Selección de método según tipo real | `send o2 m3()` |
+
+Estos mecanismos aseguran que el comportamiento se adapte al tipo real del objeto en tiempo de ejecución, facilitando la extensibilidad y el reuso de código.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Sintaxis de la programación orientada a objeto II
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objeto%20II/

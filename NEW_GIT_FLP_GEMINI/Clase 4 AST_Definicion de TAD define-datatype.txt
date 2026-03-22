@@ -1,0 +1,94 @@
+####
+**Definición de tipos algebraicos con `define-datatype`**
+
+La función `define-datatype` en EOPL (*Essentials of Programming Languages*) es una herramienta fundamental para definir `tipos algebraicos de datos` (TAD) en Racket/Scheme. Permite crear tipos recursivos con múltiples variantes, cada una con sus propios campos y verificadores de tipo.
+
+Los componentes principales de `define-datatype` son:
+
+- **Nombre del tipo**: El identificador del nuevo tipo de dato.
+- **Predicado del tipo**: Un procedimiento generado automáticamente que verifica si un valor pertenece al tipo definido.
+- **Variantes (constructores)**: Definiciones de las distintas formas que puede tomar el dato, especificando los campos requeridos y sus validadores.
+
+####
+**Procedimientos generados por `define-datatype`**
+
+Al utilizar `define-datatype`, el sistema genera automáticamente un conjunto de procedimientos para manipular los datos:
+
+- **Constructores**: Procedimientos para crear instancias de cada variante.
+- **Predicado del tipo**: Un procedimiento único que retorna `#t` si el valor pertenece al tipo definido.
+- **Reconocedores de variante**: Procedimientos específicos para cada variante que devuelven `#t` si el valor corresponde a dicha variante.
+- **Extractores de campos**: Procedimientos para acceder a los valores almacenados en los campos de cada variante.
+
+####
+**Ejemplo de definición y construcción de tipos**
+
+El siguiente ejemplo muestra la definición del tipo `lc-exp` para representar expresiones de cálculo lambda, junto con la creación de algunas instancias:
+
+```racket
+(define-datatype lc-exp lc-exp?
+  (var-exp
+    (id symbol?))
+  (lambda-exp
+    (lid (list-of symbol?))
+    (exp lc-exp?))
+  (app-exp
+    (rator lc-exp?)
+    (rand lc-exp?)))
+
+;; Construcción de instancias
+(define exp1 (var-exp 'x))
+(define exp2 (lambda-exp '(x) (var-exp 'x)))
+(define exp3 (app-exp (var-exp 'f) (var-exp 'a)))
+```
+
+Aquí, `var-exp`, `lambda-exp` y `app-exp` actúan como constructores, mientras que `lc-exp?` sirve para validar el tipo de dato.
+
+####
+**El uso de `cases` para procesamiento de datos**
+
+Para procesar los `tipos algebraicos de datos`, EOPL proporciona la construcción `cases`. Esta herramienta permite realizar `pattern matching` (reconocimiento de patrones) para descomponer los datos de manera segura.
+
+La estructura general de `cases` es:
+
+```racket
+(cases <tipo> <expresión>
+  (<variante1> (<campo1> ...) <cuerpo1>)
+  (<variante2> (<campo1> ...) <cuerpo2>)
+  ...
+  (else <cuerpo-else>))
+```
+
+`cases` integra los predicados de variante y los extractores de campos, permitiendo ejecutar acciones específicas dependiendo de la variante detectada en la expresión.
+
+####
+**Ejemplo de `pattern matching` con `cases`**
+
+El siguiente procedimiento `occurs-free?` determina si una variable ocurre de forma libre en una expresión `lc-exp`, utilizando `cases` para manejar recursivamente cada variante:
+
+```racket
+(define occurs-free?
+  (lambda (exp var)
+    (cases lc-exp exp
+      (var-exp (id)
+        (equal? var id))
+      (lambda-exp (lid exp)
+        (and (not (member var lid))
+             (occurs-free? exp var)))
+      (app-exp (rator rand)
+        (or (occurs-free? rator var)
+            (occurs-free? rand var))))))
+```
+
+En este ejemplo, `cases` descompone `exp` y permite acceder a sus componentes (como `id`, `lid`, `rator` o `rand`) de forma directa mediante las variables vinculadas en cada cláusula.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_Definicion de TAD define-datatype
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Definicion%20de%20TAD/

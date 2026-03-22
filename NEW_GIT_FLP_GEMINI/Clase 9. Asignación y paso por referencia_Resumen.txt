@@ -1,0 +1,100 @@
+####
+**Tuplas en programación funcional**
+Las `tuplas` permiten agrupar valores heterogéneos en una sola estructura. Son inmutables, no recursivas y facilitan el uso de `pattern matching`.
+
+| Concepto | Propósito | Características | Ejemplo | Resultado |
+| :--- | :--- | :--- | :--- | :--- |
+| `Tuplas` | Agrupar valores | Inmutables, no recursivas | `(1, "hola", 3.14)` | `(Int, String, Double)` |
+
+####
+**Simplificación de código con Pattern Matching**
+El `pattern matching` con tuplas permite reducir el anidamiento de estructuras condicionales (`nested matches`), mejorando la legibilidad del código.
+
+```scala
+// Ejemplo conceptual de pattern matching sobre tuplas
+(u, v) match {
+  case (x::xs, y::ys) => // Lógica procesando las listas de forma paralela
+}
+```
+
+####
+**Operaciones sobre listas: Map, Filter y Reduce**
+Las funciones de alto orden permiten procesar colecciones de forma declarativa.
+
+- `Map`: Transforma los elementos manteniendo la estructura de la lista, permitiendo cambiar el tipo de los datos. Ejemplo: `List(1, 2, 3).map(_ * 2)` resulta en `List(2, 4, 6)`.
+- `Filter`: Selecciona elementos basados en un predicado booleano, manteniendo el tipo original. Ejemplo: `List(1, 2, 3, 4).filter(_ % 2 == 0)` resulta en `List(2, 4)`.
+- `Reduce`: Reduce una lista a un solo valor. Requiere que los elementos sean del mismo tipo y no puede operar sobre listas vacías. Ejemplo: `List(1, 2, 3).reduce(_ + _)` resulta en `6`.
+
+####
+**Operaciones con acumulador: Fold**
+El `fold` funciona de manera similar al `reduce`, pero permite definir un acumulador inicial, lo que permite cambiar el tipo de retorno y manejar listas vacías de forma segura.
+
+```scala
+// Ejemplo de fold con acumulador inicial 0
+List(1, 2, 3).fold(0)(_ + _) // Resultado: 6
+```
+
+####
+**Diferencias clave entre Reduce y Fold**
+| Aspecto | `Reduce` | `Fold` |
+| :--- | :--- | :--- |
+| Tipo de retorno | Mismo que los elementos | Puede ser diferente |
+| Listas vacías | Lanza excepción | Retorna el acumulador |
+| Acumulador inicial | Primer/último elemento | Se especifica explícitamente |
+| Asociatividad | Importante (Left/Right) | Importante (Left/Right) |
+
+####
+**Asociatividad en operaciones**
+La asociatividad afecta el resultado final dependiendo de si la operación es aplicada desde la izquierda (`Left`) o la derecha (`Right`).
+
+| Operación | Asociativa | Left | Right |
+| :--- | :--- | :--- | :--- |
+| Suma | ✅ | `(((1+2)+3)+4)=10` | `(1+(2+(3+4)))=10` |
+| Resta | ❌ | `(((1-2)-3)-4)=-8` | `(1-(2-(3-4)))=-2` |
+
+####
+**Implementación: Producto Punto con Tuplas**
+El uso de tuplas permite limpiar código anteriormente anidado, facilitando el manejo de múltiples listas simultáneamente.
+
+```scala
+// Antes: código anidado complejo
+case x :: xs => v match {
+  case y :: ys => prodI(xs)(ys)(x * y + acc)
+}
+
+// Después: código limpio con tuplas
+case (x :: xs, y :: ys) => prodI(xs)(ys)(x * y + acc)
+```
+
+####
+**Parametrización de tipos (Genéricos)**
+La parametrización permite que las funciones acepten cualquier tipo de dato, facilitando la reutilización del código.
+
+```scala
+// Definición de una función genérica
+def funcion[T](l: List[T]): ...
+
+// Uso con diferentes tipos
+funcion[Int](List(1, 2, 3))
+funcion[String](List("a", "b"))
+```
+
+####
+**Ventajas del enfoque funcional**
+- `Type safety`: El compilador detecta errores de tipo en tiempo de compilación.
+- `Reutilización`: Las funciones genéricas trabajan con múltiples tipos de datos.
+- `Expresividad`: El `pattern matching` simplifica lógicas complejas.
+- `Eficiencia`: La recursión de cola (`tail recursion`) optimiza el uso de memoria.
+- `Flexibilidad`: El uso de `fold` supera las limitaciones del `reduce` convencional.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Resumen
+URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%207/Resumen/
