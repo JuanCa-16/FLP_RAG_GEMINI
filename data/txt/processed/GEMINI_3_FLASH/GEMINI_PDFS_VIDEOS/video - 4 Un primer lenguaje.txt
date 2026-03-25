@@ -1,0 +1,165 @@
+####
+**Implementación de gramáticas mediante tipos de datos definidos**
+
+A continuación, se presenta un ejemplo basado en la literatura para implementar una gramática en nuestro lenguaje de programación utilizando los `define-datatype`. El objetivo es definir la estructura de la gramática para luego implementarla en el entorno de desarrollo.
+
+Para una declaración, se definen tres variantes principales:
+- `declaracion-tipo-1`: Contiene dos elementos que son, a su vez, declaraciones.
+- `declaracion-tipo-2`: Contiene una expresión seguida de una declaración.
+- `declaracion-tipo-3`: Representa una asignación donde un identificador (símbolo) es igual a una expresión.
+
+Para las expresiones, se definen las siguientes variantes:
+- `expresion-tipo-1`: Un símbolo que representa un identificador.
+- `expresion-tipo-2`: Una operación de suma que involucra dos expresiones.
+
+```racket
+(define-datatype declaracion declaracion?
+  (decl1 (a declaracion?) (b declaracion?))
+  (decl2 (exp expresion?) (decl declaracion?))
+  (decl3 (id symbol?) (exp expresion?)))
+
+(define-datatype expresion expresion?
+  (exp1 (id symbol?))
+  (exp2 (exp1 expresion?) (exp2 expresion?)))
+```
+
+####
+**Construcción manual de árboles de sintaxis abstracta (AST)**
+
+Una vez definidos los tipos de datos, es posible construir manualmente un árbol de sintaxis abstracta (AST). Por ejemplo, para representar una declaración que contiene otras declaraciones y expresiones, se utilizarían los constructores definidos en el `define-datatype`.
+
+Si se desea construir una `declaracion-tipo-1` que incluya una asignación y otra declaración compleja, el código seguiría esta estructura:
+
+```racket
+(decl1 
+  (decl3 'x (exp1 'x))
+  (decl2 
+    (exp1 'x) 
+    (decl3 'y (exp2 (exp1 'a) (exp1 'b)))))
+```
+
+Sin embargo, construir los árboles de sintaxis abstracta de esta manera programática no es eficiente para el desarrollo de lenguajes a gran escala. Por ello, se utilizan librerías especializadas para automatizar este proceso.
+
+####
+**Especificación léxica con SLLGEN**
+
+La especificación léxica permite definir cómo el lenguaje reconocerá los diferentes componentes del código fuente (tokens). Esta se define como una lista simbólica que asocia expresiones regulares con acciones o tipos de datos.
+
+Los elementos básicos de esta especificación incluyen:
+- **Espacios en blanco**: Se definen para ser ignorados por el escáner.
+- **Comentarios**: En este ejemplo, inician con el carácter `%` y se ignoran hasta el final de la línea.
+- **Identificadores**: Comienzan con una letra seguida de letras o dígitos, transformándose en símbolos.
+- **Números**: Se pueden definir números enteros, negativos y números de punto flotante.
+
+```racket
+(define especificacion-lexica
+  '((whitespace (whitespace) skip)
+    (comment ("%" (arbno (not #\newline))) skip)
+    (identifier (letter (arbno (or letter digit))) symbol)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (number (digit (arbno digit) "." digit (arbno digit)) number)
+    (number ("-" digit (arbno digit) "." digit (arbno digit)) number)))
+```
+
+####
+**Especificación gramatical con SLLGEN**
+
+La especificación gramatical permite mapear las reglas de la gramática directamente a estructuras de datos. Cada regla asocia una producción con un nombre de variante para los tipos de datos.
+
+En esta gramática:
+- Una `declaracion` puede ser una secuencia de dos declaraciones separadas por punto y coma, una estructura `while`, o una asignación.
+- Una `expresion` puede ser un identificador, un número o una suma de expresiones.
+
+```racket
+(define especificacion-gramatical
+  '((declaracion ( "{" declaracion ";" declaracion "}" ) declaracion-tipo-1)
+    (declaracion ("while" expresion "do" declaracion) declaracion-tipo-2)
+    (declaracion (identifier ":=" expresion) declaracion-tipo-3)
+    (expresion (identifier) expresion-tipo-1)
+    (expresion (number) expresion-tipo-2)
+    (expresion ("(" expresion "+" expresion ")") expresion-tipo-3)))
+```
+
+Se añaden paréntesis en la producción de la suma para evitar ambigüedades en el proceso de análisis sintáctico.
+
+####
+**Generación automática de tipos de datos y análisis sintáctico**
+
+La librería `sllgen` permite generar automáticamente los `define-datatype` a partir de las especificaciones léxica y gramatical, eliminando la necesidad de definirlos manualmente.
+
+Para generar los tipos de datos se utiliza la función `sllgen:make-define-datatypes`. Asimismo, se puede usar `sllgen:list-define-datatypes` para visualizar las estructuras creadas automáticamente por el sistema.
+
+```racket
+(sllgen:make-define-datatypes especificacion-lexica especificacion-gramatical)
+
+(define listar-datatypes
+  (sllgen:list-define-datatypes especificacion-lexica especificacion-gramatical))
+```
+
+####
+**Construcción y prueba del Escáner**
+
+El escáner es el componente encargado de convertir el flujo de texto en una secuencia de tokens. Se construye utilizando la función `sllgen:make-string-scanner`.
+
+Al ejecutar el escáner sobre una cadena de texto, este identifica los literales definidos en la gramática (como `while`, `do` o `:=`) y los tipos de datos léxicos (como `identifier` o `number`).
+
+```racket
+(define escanner
+  (sllgen:make-string-scanner especificacion-lexica especificacion-gramatical))
+
+;; Ejemplo de uso del escáner:
+;; (escanner "while hola do x := (1.4 + -1.4)")
+```
+
+El resultado del escáner permite verificar que los números negativos, flotantes e identificadores están siendo capturados correctamente según las reglas definidas.
+
+####
+**Construcción del Parser y gestión de conflictos**
+
+El `parser` (analizador sintáctico) toma los tokens y construye el árbol de sintaxis abstracta (AST). Se define mediante la función `sllgen:make-string-parser`.
+
+Durante la construcción del `parser`, pueden surgir conflictos de ambigüedad si la gramática no puede diferenciar entre producciones que inician de la misma manera. Por ejemplo, si una `expresion` puede ser tanto un `identifier` como una suma que comienza con un `identifier`, el analizador podría no saber cuál camino tomar. En estos casos, se deben ajustar las reglas gramaticales, por ejemplo, añadiendo delimitadores como paréntesis.
+
+```racket
+(define parser
+  (sllgen:make-string-parser especificacion-lexica especificacion-gramatical))
+
+;; Ejemplo de uso del parser:
+;; (parser "{ x := 1.8 ; while x do y := (a + b) }")
+```
+
+####
+**Construcción del intérprete y el ciclo REPL**
+
+Para crear una interfaz interactiva del lenguaje, se utiliza un ciclo de lectura, evaluación e impresión (REPL). La función `sllgen:make-rep-loop` automatiza la creación de esta pantalla.
+
+El intérprete requiere una función de evaluación (por ejemplo, `evaluar-programa`) que procese el AST devuelto por el `parser`. Dentro de esta función, se utiliza la expresión `cases` para desglosar el árbol según los tipos de datos definidos en la gramática.
+
+```racket
+(define evaluar-programa
+  (lambda (pgm)
+    (cases declaracion pgm
+      (declaracion-tipo-1 (d1 d2)
+        (list d1 d2))
+      (declaracion-tipo-2 (exp decl)
+        (list exp decl))
+      (declaracion-tipo-3 (id exp)
+        (list id exp)))))
+
+(define interpretador
+  (sllgen:make-rep-loop "primer-lenguaje > " evaluar-programa
+    (sllgen:make-stream-parser especificacion-lexica especificacion-gramatical)))
+```
+
+Con esta estructura, el intérprete recibe el código fuente, genera el AST y permite operar sobre cada variante de la gramática de forma sistemática.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 4 Un primer lenguaje.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=RmcKbgU1rbM
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

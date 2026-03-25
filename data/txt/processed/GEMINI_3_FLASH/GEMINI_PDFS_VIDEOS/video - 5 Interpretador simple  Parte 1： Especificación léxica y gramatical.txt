@@ -1,0 +1,116 @@
+####
+**Introducción al desarrollo del interpretador**
+
+A partir de este punto, vamos a construir un interpretador simple que utilizaremos a lo largo del curso. Este lenguaje comenzará con operaciones matemáticas básicas y, progresivamente, agregaremos nuevas funcionalidades. Durante el primer corte, el objetivo es llegar hasta el tema de los procedimientos recursivos. Posteriormente, el contenido del curso cubrirá el manejo de tipos y, finalmente, la programación orientada a objetos.
+
+Para la primera versión del lenguaje, trabajaremos exclusivamente con expresiones aritméticas. El sistema permitirá el uso de variables, números y la aplicación de operaciones fundamentales como la suma, la multiplicación, la resta, el incremento (`add1`) y el decremento (`sub1`).
+
+####
+**Valores expresados y valores denotados**
+
+En el diseño de lenguajes de programación, es fundamental distinguir entre valores denotados y valores expresados:
+
+- **Valores expresados**: Son aquellos valores que el programador maneja directamente en el lenguaje y que pueden ser visualizados como resultado de una evaluación.
+- **Valores denotados**: Son los valores que están almacenados en las variables (dentro de un ambiente o estado).
+
+Para nuestro primer interpretador, trabajaremos únicamente con números como tipos de datos básicos.
+
+####
+**Especificación de la gramática del lenguaje**
+
+Es importante agrupar toda la codificación del lenguaje en una gramática principal para facilitar el trabajo. La gramática para este lenguaje inicial se define de la siguiente manera:
+
+- **Programa**: Un `program` consiste en una única `expression`.
+- **Expresiones**: Una `expression` puede ser:
+  - Un número (`literal-expression`).
+  - Un identificador (`var-expression`).
+  - Una `primitive` seguida de una lista de expresiones encerradas en paréntesis y separadas por comas (`prim-expression`).
+- **Primitivas**: Las operaciones disponibles inicialmente son la suma (`+`), resta (`-`), multiplicación (`*`), incremento (`add1`) y decremento (`sub1`).
+
+####
+**Especificación léxica en SLLGEN**
+
+Para implementar el interpretador en `Racket` utilizando la herramienta `SLLGEN`, definimos primero la especificación léxica (`scanner-spec`). Esta define cómo se reconocen los componentes mínimos (tokens) del lenguaje:
+
+**Especificación léxica**
+```racket
+(define scanner-spec
+  '((white-sp (whitespace) skip)
+    (comment ("%" (arbno (not #\newline))) skip)
+    (identifier (letter (arbno (or letter digit "?" "!"))) symbol)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (number (digit (arbno digit) "." (arbno digit)) number)
+    (number ("-" digit (arbno digit) "." (arbno digit)) number)))
+```
+
+En esta especificación:
+- Los espacios en blanco (`whitespace`) y los comentarios (que inician con `%`) son ignorados mediante la directiva `skip`.
+- Los `identifiers` comienzan con una letra seguida de letras, dígitos o caracteres especiales, y se transforman en el tipo `symbol`.
+- Se definen reglas para reconocer números enteros (positivos y negativos) y números de punto flotante, transformándolos al tipo `number` de `Scheme`.
+
+####
+**Especificación gramatical en SLLGEN**
+
+La especificación gramatical (`grammar-spec`) representa las reglas sintácticas del lenguaje y cómo se deben construir los tipos de datos abstractos (AST).
+
+**Especificación gramatical**
+```racket
+(define grammar-spec
+  '((program (expression) a-program)
+    (expression (number) literal-exp)
+    (expression (identifier) var-exp)
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    (primitive ("+") add-prim)
+    (primitive ("-") minus-prim)
+    (primitive ("*") mult-prim)
+    (primitive ("/") div-prim)
+    (primitive ("add1") add1-prim)
+    (primitive ("sub1") sub1-prim)))
+```
+
+En esta estructura:
+- El `program` usa la variante `a-program`.
+- Las expresiones pueden ser literales, variables o aplicaciones de primitivas.
+- Se utiliza `separated-list` para manejar los argumentos de las primitivas separados por comas.
+- Cada primitiva tiene su propia variante identificadora (ej. `add-prim`, `minus-prim`).
+
+####
+**Construcción del interpretador y el REPL**
+
+Una vez definidas las especificaciones, utilizamos las funciones de `SLLGEN` para generar automáticamente los tipos de datos y el analizador sintáctico.
+
+**Definición de tipos y parser**
+```racket
+(sllgen:make-define-datatypes scanner-spec grammar-spec)
+
+(define scan&parse
+  (sllgen:make-string-parser scanner-spec grammar-spec))
+```
+
+Para interactuar con el lenguaje, creamos una función de interpretador que implementa un `REPL` (Read-Eval-Print Loop).
+
+**Implementación del REPL**
+```racket
+(define interpretador
+  (sllgen:make-rep-loop "--> "
+    (lambda (pgm) (eval-program pgm))
+    (sllgen:make-string-parser scanner-spec grammar-spec)))
+
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp) exp))))
+```
+
+La función `eval-program` recibe un programa (cuya variante inicial es `a-program`) y, por ahora, simplemente devuelve la expresión capturada. Un ejemplo de entrada válida en este interpretador sería `+(5, 4)`, lo cual generaría el árbol de sintaxis abstracta correspondiente tras el proceso de escaneo y parseo.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 5 Interpretador simple  Parte 1： Especificación léxica y gramatical.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=f45S2x0W9Wk
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

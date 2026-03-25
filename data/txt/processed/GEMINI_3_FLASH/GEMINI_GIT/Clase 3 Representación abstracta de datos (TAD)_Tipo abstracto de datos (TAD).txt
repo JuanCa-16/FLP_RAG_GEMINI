@@ -1,0 +1,160 @@
+####
+**Tipo Abstracto de Dato (TAD) en EOPL**
+
+Un `Tipo Abstracto de Dato` (TAD) es una especificación matemática de un conjunto de datos y las operaciones definidas sobre ellos, independiente de su implementación concreta en memoria. En `Essentials of Programming Languages` (`EOPL`), los `TADs` enfatizan la separación entre la `interfaz` (qué hace el tipo) y la `implementación` (cómo lo hace).
+
+####
+**Contraste entre tipos primitivos y abstracción**
+
+Los tipos primitivos como `int` dependen directamente del hardware. Por ejemplo:
+```c
+int pollito = 8;
+// Representación: 32 bits (000...1000)
+```
+Esta representación tiene ventajas como la eficiencia en operaciones a nivel de CPU y soporte nativo, pero presenta desventajas como un rango limitado (-2^31 a 2^31-1), problemas de desbordamiento y comportamiento dependiente de la plataforma. 
+
+En contraste, los lenguajes de alto nivel utilizan la abstracción para ocultar la implementación interna:
+- En Python: `a = 3` es un objeto con comportamiento definido.
+- En Racket: `(define x 10)` es una representación abstracta donde las operaciones tienen una implementación interna oculta.
+
+####
+**Representación recursiva de números naturales**
+
+La definición de los números naturales en un `TAD` puede basarse en los axiomas de Peano, expresados de la siguiente forma:
+- 0 \in N
+- n \in N \rightarrow n+1 \in N
+
+Esta estructura permite definir números de forma recursiva partiendo de un elemento base y una función sucesora.
+
+####
+**Implementación de naturales usando números nativos**
+
+Esta implementación utiliza las capacidades aritméticas del lenguaje subyacente para definir el `TAD`. Se divide en una sección oculta (implementación) y una sección visible (interfaz).
+
+```racket
+#lang eopl
+;; === IMPLEMENTACIÓN (OCULTA) ===
+(define zero 0) ; Constructor del cero
+(define isZero? (lambda (n) (eqv? n zero))) ; Predicado de cero
+(define succ (lambda (n) (+ n 1))) ; Constructor de sucesor
+(define pred (lambda (n) (- n 1))) ; Constructor de predecesor
+
+;; === INTERFAZ (VISIBLE) ===
+(define cinco (succ (succ (succ (succ (succ zero))))))
+```
+
+En este fragmento, el programador interactúa con `cinco` mediante constructores y no manipulando el valor `0` directamente.
+
+####
+**Operaciones aritméticas abstractas: Suma y Multiplicación**
+
+Utilizando únicamente la interfaz del `TAD` de naturales, es posible definir operaciones como la `suma` y la `multiplicación` mediante recursión estructural.
+
+```racket
+(define suma
+  (lambda (a b)
+    (cond
+      [(isZero? b) a] ; Caso base: a + 0 = a
+      [else (suma (succ a) (pred b))]))) ; Paso recursivo: a + b = (a+1) + (b-1)
+
+(define diez (suma cinco cinco))
+
+(define multiplicacion
+  (lambda (a b)
+    (cond
+      [(isZero? b) zero] ; a × 0 = 0
+      [(eqv? (succ zero) b) a] ; a × 1 = a
+      [else (suma a (multiplicacion a (pred b)))]))) ; a × b = a + (a × (b-1))
+
+(define cincuenta (multiplicacion cinco diez))
+```
+
+Estas funciones son independientes de la implementación interna de los números; solo requieren que los procedimientos `succ`, `pred`, `isZero?` y `zero` estén definidos.
+
+####
+**Implementación de naturales usando listas (representación unaria)**
+
+Es posible cambiar la representación interna de los números naturales a una representación unaria basada en listas sin afectar el código que utiliza la interfaz.
+
+```racket
+#lang eopl
+;; === IMPLEMENTACIÓN ALTERNATIVA ===
+(define zero '()) ; Cero representado como lista vacía
+(define isZero? (lambda (n) (eqv? n zero)))
+(define succ (lambda (n) (cons #T n))) ; Sucesor: agregar elemento
+(define pred (lambda (n) (cdr n))) ; Predecesor: remover elemento
+
+;; === MISMA INTERFAZ ===
+; El código del programador permanece IDÉNTICO
+(define cinco (succ (succ (succ (succ (succ zero))))))
+; Las funciones suma y multiplicación funcionan sin cambios.
+```
+
+Aquí, el número se representa por la longitud de la lista, demostrando que la lógica del programa es independiente de la estructura de datos elegida.
+
+####
+**Implementación de naturales en base 16 (Bignum)**
+
+Para mayor eficiencia en el manejo de números grandes, se puede utilizar una representación posicional en `base 16` utilizando listas para representar los dígitos.
+
+```racket
+#lang eopl
+;; === IMPLEMENTACIÓN EFICIENTE ===
+(define zero '())
+(define base 16)
+(define isZero? (lambda (n) (equal? n zero)))
+
+(define succ
+  (lambda (n)
+    (cond
+      [(isZero? n) '(1)] ; Caso base: cero -> 1
+      [(equal? (- base 1) (car n)) ; Acarreo: dígito llega al máximo
+       (cons 0 (succ (cdr n)))] ; Poner 0 y propagar acarreo
+      [else (cons (+ (car n) 1) (cdr n))]))) ; Incremento normal
+
+(define pred
+  (lambda (n)
+    (cond
+      [(equal? n (list 1)) zero] ; 1 -> 0
+      [(equal? 0 (car n)) ; Préstamo: dígito es 0
+       (cons (- base 1) (pred (cdr n)))] ; Poner máximo y propagar préstamo
+      [else (cons (- (car n) 1) (cdr n))]))) ; Decremento normal
+```
+
+Esta implementación permite que el programador use exactamente las mismas operaciones de la interfaz, pero con una gestión de memoria y cálculo más escalable.
+
+####
+**Análisis de la abstracción de datos**
+
+Los puntos clave sobre los `TADs` según `EOPL` son:
+- **Ocultamiento de información**: La implementación está encapsulada y no es visible para el usuario.
+- **Invariantes preservadas**: Las operaciones aseguran que el tipo siempre mantenga un estado válido.
+- **Sustituibilidad**: Diferentes implementaciones pueden satisfacer la misma interfaz.
+- **Independencia de representación**: El comportamiento lógico no depende de la representación física.
+
+En el código se identifican tres componentes esenciales:
+- `Constructores`: Como `zero` y `succ`, que crean instancias válidas del tipo.
+- `Observadores`: Como `isZero?`, que permiten examinar los datos sin revelar su implementación.
+- `Operaciones`: Que definen el comportamiento abstracto mediante `recursión estructural` y `pattern matching`.
+
+####
+**Conclusión sobre la abstracción de datos**
+
+La abstracción de datos permite definir tipos mediante su comportamiento (interfaz) independientemente de su implementación concreta. Como se ha demostrado, un mismo programa puede funcionar con tres implementaciones radicalmente diferentes: números nativos, listas unarias y representación posicional en base 16.
+
+Esto permite:
+- **Optimizaciones transparentes**: Cambiar de una representación unaria a una de tipo `bignum` sin alterar el código cliente.
+- **Mantenibilidad**: Corregir errores en la implementación sin afectar a los usuarios del tipo.
+- **Flexibilidad**: Adaptar el sistema a diferentes requisitos de rendimiento o memoria.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 3 Representación abstracta de datos (TAD)_Tipo abstracto de datos (TAD)
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/TAD/

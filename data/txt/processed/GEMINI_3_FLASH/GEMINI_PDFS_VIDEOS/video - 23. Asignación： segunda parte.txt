@@ -1,0 +1,117 @@
+####
+**Implicaciones de la asignación en el manejo de procedimientos**
+
+Al introducir la asignación en un lenguaje de programación, surge la necesidad de estudiar sus implicaciones en el manejo de los procedimientos. Hasta este punto, el `ambiente` se define como un tipo de dato que asigna valores a variables mediante una estructura de lista que incluye ambientes extendidos (`extended-env`) y ambientes vacíos (`empty-env`). Cada ambiente contiene una lista de identificadores (`IDs`) y una lista de valores correspondientes.
+
+El problema fundamental aparece al combinar procedimientos y asignación. Consideremos un escenario donde se define un procedimiento para mantener la consistencia léxica:
+```racket
+(let ((f (proc (x) (set x 10))))
+  (f 10))
+```
+Cuando se crearon los procedimientos, se introdujo la `clausura` para guardar una copia del ambiente y garantizar que el procedimiento accediera a las variables correctas. Sin embargo, con la asignación (`set`), si se realiza un cambio en una variable, la clausura podría mantener una copia estática del ambiente que no refleje los cambios posteriores, generando una inconsistencia entre el ambiente de la clausura y el ambiente de ejecución.
+
+####
+**Inconsistencia de valores en clausuras con asignación**
+
+El uso de clausuras puede presentar problemas de actualización de valores cuando se utiliza `set`. Analicemos el siguiente ejemplo:
+
+```racket
+let z = 0
+in let f = proc (x) z
+   in begin
+        set z = 1;
+        (f 2)
+      end
+```
+
+En este caso, lo lógico es que al ejecutar `(f 2)`, el valor retornado sea `1`, dado que `z` fue modificado mediante `set z = 1` antes de la llamada. No obstante, si la `clausura` guarda el valor de `z` en el momento en que el procedimiento fue creado (cuando `z` era `0`), el resultado será `0`. Para solucionar esto, es necesario introducir el concepto de `referencia`.
+
+Hasta ahora, se han ligado nombres directamente a valores. El cambio propuesto consiste en que la relación sea indirecta: la variable no guardará el valor directamente, sino una `referencia` hacia la ubicación donde se encuentra el elemento en memoria.
+
+####
+**Conceptos de L-valores y R-valores en referencias**
+
+Las referencias o ubicaciones de memoria también son denominadas `L-valores` y `R-valores`:
+
+- **L-valor (Left-value):** Es la referencia o ubicación que se asocia con las variables que aparecen al lado izquierdo de una asignación. Representa la dirección o el contenedor.
+- **R-valor (Right-value):** Es el valor expresado que está almacenado en la memoria, es decir, el contenido de la dirección.
+
+Para ilustrarlo mediante una analogía: la dirección física de una casa (donde queda) actúa como el `L-valor`, mientras que la casa en sí misma (lo que representa la construcción) actúa como el `R-valor`. La `referencia` es el mecanismo que conecta ambos elementos. Para implementar esto en el interpretador, se debe proponer un tipo de dato para las referencias que permita realizar esta conexión de forma dinámica.
+
+####
+**Implementación del tipo de dato Referencia**
+
+Para implementar las referencias en el interpretador, se define un nuevo tipo de dato que contiene dos campos: un entero y un vector. El entero corresponde a la posición dentro del vector donde se encuentra el valor asociado a la referencia.
+
+La interfaz para manejar estas referencias incluye procedimientos observadores esenciales:
+- `deref`: Permite obtener el valor asociado a una referencia.
+- `setref!`: Permite cambiar el valor asociado a una referencia.
+
+La estructura en Racket se define de la siguiente manera:
+
+```racket
+(define-datatype referencia referencia?
+  (a-ref (pos integer?)
+         (vec vector?)))
+```
+
+Aquí, `a-ref` actúa como el constructor, mientras que `deref` y `setref!` actúan como los procedimientos observadores que permiten la manipulación de la memoria.
+
+####
+**Funcionamiento lógico de las referencias en el ambiente**
+
+En el nuevo esquema, el ambiente no mapea variables directamente a valores, sino a referencias. Por ejemplo, si tenemos variables `X`, `Y` y `Z`, cada una apuntará a una posición específica en un vector global de valores.
+
+Si se ejecuta una operación como `set X = 9`, el sistema identifica la referencia de `X` (por ejemplo, la posición 0 del vector) y actualiza ese índice en el vector. Cuando posteriormente se evalúa una expresión que utiliza `X`, como `(+ X 2)`, el interpretador genera una nueva consulta a la referencia, extrae el valor actualizado del vector (en este caso `9`) y realiza la operación. Este mecanismo garantiza que todas las partes del programa que comparten la misma referencia vean el valor actualizado, resolviendo el problema de las clausuras con valores estáticos.
+
+####
+**Implementación del procedimiento observador deref**
+
+El procedimiento `deref` es el encargado de extraer el valor actual de una referencia. Su implementación se apoya en una función primitiva que utiliza el comando `vector-ref` de Racket. `vector-ref` recibe un vector y una posición (indexada desde cero) para retornar el elemento correspondiente.
+
+```racket
+;; Procedimiento de alto nivel
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+;; Implementación de la primitiva
+(define primitive-deref
+  (lambda (ref)
+    (cases referencia ref
+      (a-ref (pos vect)
+             (vector-ref vect pos)))))
+```
+
+Esta estructura separa la interfaz del usuario de la implementación interna, facilitando futuras modificaciones en el manejo de la memoria del interpretador.
+
+####
+**Implementación del procedimiento observador setref!**
+
+El procedimiento `setref!` se utiliza para la asignación o cambio de valores en una referencia. Por convención en Racket, los procedimientos que generan efectos secundarios terminan con un signo de exclamación o guion. Este procedimiento recibe una referencia y el nuevo valor que se desea asignar.
+
+```racket
+;; Procedimiento de alto nivel para asignación
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+;; Implementación de la primitiva mediante vector-set!
+(define primitive-setref!
+  (lambda (ref val)
+    (cases referencia ref
+      (a-ref (pos vect)
+             (vector-set! vect pos val)))))
+```
+
+El uso de `vector-set!` permite modificar el vector original en la posición indicada por la referencia. Con esta interfaz de `a-ref`, `deref` y `setref!`, el interpretador cuenta con las herramientas necesarias para integrar las referencias en los ambientes y soportar correctamente la asignación en el lenguaje de programación.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 23. Asignación： segunda parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=BZ6YfPlSitA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

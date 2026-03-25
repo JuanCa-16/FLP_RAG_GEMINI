@@ -1,0 +1,91 @@
+####
+**Introducción a los objetos planos**
+
+La implementación de `objetos planos` surge para resolver las ineficiencias de la representación de `objetos simples`. En la representación simple, cada vez que se invoca un método, es necesario reconstruir la `vista del objeto`, lo cual implica una carga computacional significativa. Este proceso de reconstrucción constante hace que el sistema sea ineficiente, especialmente cuando se trabaja con objetos que poseen múltiples características, estructuras complejas o cadenas de herencia extensas. La implementación de `objetos planos` busca optimizar este comportamiento, siguiendo principios de diseño utilizados en lenguajes de programación de amplio uso actual.
+
+####
+**Estructura de datos y almacenamiento de campos**
+
+En la implementación de `objetos planos`, se sustituye la lista de partes por un `data type` denominado `on-chain` (u objeto). Este `data type` está compuesto por un `símbolo` y un vector de `campos`.
+
+La organización de los campos en el vector sigue un orden específico basado en la `cadena de herencia`: se almacenan primero los campos de la clase más antigua (la superclase inicial) y se desciende sucesivamente a través de las subclases. De este modo, el vector resultante contiene la totalidad de los campos definidos en toda la jerarquía de la cual hereda el objeto.
+
+####
+**Ejemplo de jerarquía de herencia y acumulación de campos**
+
+Para ilustrar cómo se organizan los campos en un objeto plano, considérese la siguiente jerarquía de clases:
+
+- `C1`: Posee los campos `AX` y `AY`.
+- `C2`: Extiende de `C1` y define su propio campo `AY`.
+- `C3`: Extiende de `C2` y define los campos `X` y `Z`.
+
+Si se crea una instancia de la clase `C3`, el vector de campos contendrá todos los elementos de la cadena:
+1. `AX` y `AY` correspondientes a la clase `C1`.
+2. `AY` correspondiente a la clase `C2`.
+3. `X` y `Z` correspondientes a la clase `C3`.
+
+A pesar de que el nombre del campo `AY` se repite en `C1` y `C2`, el sistema debe ser capaz de diferenciar a qué clase pertenece cada posición en el vector para responder correctamente según el contexto de la clase que realiza la consulta.
+
+####
+**Determinación de posiciones mediante RefinePosition**
+
+Para diferenciar campos con nombres idénticos y gestionar la ubicación de los datos en el vector, se utilizan las funciones `RefinePosition` y `FindLastPosition`. Estas funciones permiten delimitar qué segmentos del vector corresponden a cada clase dentro de la jerarquía.
+
+El método `RefinePosition` toma el nombre de una clase y los elementos del objeto para determinar la posición final de los campos de dicha clase en el vector. Por ejemplo, en una jerarquía dada, `RefinePosition` podría determinar que:
+- Los campos de `C1` terminan en la posición 0 y 1.
+- Los campos de `C2` terminan en la posición 2.
+- Los campos de `C3` terminan en la posición 4.
+
+Estas funciones son fundamentales para que el interpretador localice correctamente los datos dentro del vector de campos de cada clase.
+
+####
+**Modificación del interpretador para la implementación plana**
+
+Para migrar de un interpretador de `objetos simples` a uno de `objetos planos`, es necesario eliminar los componentes relacionados con la representación anterior basada en partes. Los cambios principales incluyen:
+
+- Eliminar las definiciones relativas a `partes` (`parts`).
+- Eliminar funciones como `MakeFibsPart`, `NewObject` (en su versión simple) y el constructor de la `vista del objeto`.
+- Eliminar el `constructor del ambiente` que dependía de la estructura de partes.
+
+Una vez depurado el código, se procede a integrar la nueva representación del objeto y las funciones de localización de posiciones en el vector de campos.
+
+####
+**Creación de nuevos objetos y cálculo de longitud de campos**
+
+La creación de un nuevo objeto a través de la instrucción `new-object` (o `newJet`) requiere calcular previamente el tamaño total del vector de campos. Este tamaño es la sumatoria de todos los campos definidos en la `cadena de herencia`.
+
+El proceso de creación sigue esta lógica:
+1. Se recibe el nombre de la clase a instanciar.
+2. Se utiliza una función (como `calculate-field-length`) que recorre la cadena de herencia hasta llegar a la clase base.
+3. En cada nivel de la jerarquía, se suma la cantidad de campos definidos.
+4. Si se alcanza la clase base (`object`), la suma de campos adicionales es 0.
+5. Se instancia el `data type` del objeto con el nombre de la clase y un vector del tamaño total calculado, inicializado con ceros.
+
+Posteriormente, el método inicializador de la clase se encarga de asignar los valores correspondientes a cada posición del vector. 
+
+####
+**Cálculo de la longitud del vector de campos**
+
+La función encargada de calcular la longitud del vector de campos recorre la jerarquía de clases de la siguiente manera:
+
+```racket
+; Lógica para calcular la longitud total de los campos en la cadena de herencia
+; Si la clase es la raíz (new-object/object), la longitud es 0
+; De lo contrario, se suma la cantidad de campos de la clase actual 
+; con la longitud de los campos de su superclase
+```
+
+Por ejemplo, si un objeto de la clase `C3` tiene 2 campos, su superclase `C2` tiene 1, y la superclase `C1` tiene 2, la sumatoria total será:
+Longitud Total = 2 (de C3) + 1 (de C2) + 2 (de C1) = 5.
+
+Este valor define el tamaño del vector que almacenará el estado del objeto de forma plana.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - Video 52 Objetos planos Implementación Parte 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=Dn_pnE-UGm8
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

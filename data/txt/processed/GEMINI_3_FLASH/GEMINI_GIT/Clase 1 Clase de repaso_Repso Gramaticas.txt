@@ -1,0 +1,37 @@
+####
+**Gramáticas regulares**
+
+Vamos a utilizar `gramáticas regulares`. Los `terminales` están por la izquierda, por ejemplo:
+
+```text
+var x = 10
+var y
+```
+
+Van a producir conflicto porque inician igual.
+
+####
+**Gramáticas en forma BNC**
+
+```bnf
+<lista> ::= <empty>
+        | <int> <lista>
+
+<lista> ::= <int>*
+
+<lista> ::= <int>+
+```
+
+Estas representaciones definen la estructura de una `<lista>` utilizando la forma `BNC` (Backus-Naur Form), incluyendo definiciones recursivas y el uso de clausuras.
+
+---
+METADATA
+---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 1 Clase de repaso_Repso Gramaticas
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

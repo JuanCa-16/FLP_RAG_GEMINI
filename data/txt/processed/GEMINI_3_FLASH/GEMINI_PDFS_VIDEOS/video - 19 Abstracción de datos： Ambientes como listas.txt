@@ -1,0 +1,135 @@
+####
+**Representación de ambientes mediante listas**
+
+Vamos a representar los ambientes utilizando listas, siguiendo el enfoque de abstracción de datos. Para ello, definiremos dos tipos de funciones:
+
+- **Constructoras**: Son aquellas que nos permiten construir el tipo de dato ambiente.
+- **Observadoras**: Son funciones que nos permiten extraer información del tipo de dato. Estas se dividen en:
+    - **Predicados**: Permiten determinar si un objeto pertenece a un tipo de dato específico (por ejemplo, si es un ambiente vacío).
+    - **Extractores**: Permiten obtener los componentes internos de la estructura de datos.
+
+Esta organización define el área del programador para la manipulación de ambientes, facilitando la gestión de identificadores y valores.
+
+####
+**Funciones constructoras para ambientes**
+
+Las funciones constructoras definen cómo se crea la estructura de un ambiente. Utilizaremos una representación basada en etiquetas dentro de listas:
+
+```racket
+(define empty-env
+  (lambda ()
+    (list 'empty-env)))
+
+(define extend-env
+  (lambda (id val env)
+    (list 'extend-env id val env)))
+```
+
+La función `empty-env` retorna una lista con el símbolo `'empty-env`, lo que permite identificar un ambiente vacío. La función `extend-env` recibe un identificador (`id`), un valor (`val`) y un ambiente previo (`env`), retornando una lista que agrupa estos elementos bajo la etiqueta `'extend-env`. Es fundamental utilizar la función `list` para evitar que los valores se transformen erróneamente en símbolos durante la construcción.
+
+####
+**Construcción de un ambiente de ejemplo**
+
+Podemos construir un ambiente complejo anidando múltiples extensiones. A continuación, se presenta un ejemplo de definición de un ambiente `a` que contiene diversos vínculos:
+
+```racket
+(define a
+  (extend-env 'x 3
+    (extend-env 'y 4
+      (extend-env 'y 8
+        (extend-env 'x 4
+          (extend-env 'w 9
+            (empty-env)))))))
+```
+
+Esta estructura representa una jerarquía de alcances. Al evaluar `a`, obtendremos una lista anidada donde cada nivel contiene la información de una variable y su valor, finalizando en el ambiente vacío.
+
+####
+**Funciones predicados para ambientes**
+
+Los predicados se utilizan para identificar el tipo de ambiente que se está procesando en un momento dado. Aprovechamos el primer elemento de la lista para realizar esta distinción:
+
+```racket
+(define empty-env?
+  (lambda (env)
+    (eqv? (car env) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (eqv? (car env) 'extend-env)))
+```
+
+La función `empty-env?` verifica si el ambiente es vacío, mientras que `extend-env?` confirma si se trata de un ambiente extendido. Estas funciones son esenciales para el control de flujo en algoritmos recursivos de búsqueda.
+
+####
+**Funciones extractoras para ambientes**
+
+Para acceder a la información contenida en un ambiente extendido sin depender directamente de la estructura de la lista, definimos las funciones extractoras:
+
+```racket
+(define extend-env->id
+  (lambda (env)
+    (cadr env)))
+
+(define extend-env->val
+  (lambda (env)
+    (caddr env)))
+
+(define extend-env->env
+  (lambda (env)
+    (cadddr env)))
+```
+
+- `extend-env->id`: Extrae el identificador (el segundo elemento de la lista).
+- `extend-env->val`: Extrae el valor asociado (el tercer elemento).
+- `extend-env->env`: Extrae el ambiente que fue extendido (el cuarto elemento).
+
+El uso de estas funciones permite manipular el tipo de dato de forma abstracta, facilitando cambios futuros en la representación interna sin afectar el código que las utiliza.
+
+####
+**Función de búsqueda apply-env**
+
+La función `apply-env` busca el valor asociado a un símbolo en un ambiente determinado. Su implementación es recursiva y utiliza los predicados y extractores definidos:
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cond
+      [(empty-env? env)
+       (eopl:error 'apply-env "El símbolo ~s no se encuentra en el ambiente" sym)]
+      [(extend-env? env)
+       (if (eqv? (extend-env->id env) sym)
+           (extend-env->val env)
+           (apply-env (extend-env->env env) sym))]
+      [else
+       (eopl:error 'apply-env "Ambiente inválido")])))
+```
+
+La lógica de la función consiste en:
+1. Si el ambiente es vacío (`empty-env?`), se lanza un error indicando que el símbolo no fue encontrado.
+2. Si el ambiente es extendido (`extend-env?`), se compara el identificador actual con el símbolo buscado.
+3. Si coinciden, se retorna el valor.
+4. Si no coinciden, se realiza un llamado recursivo con el resto del ambiente.
+
+####
+**Comportamiento de la búsqueda y binding de variables**
+
+Al realizar búsquedas en un ambiente que contiene múltiples definiciones para un mismo identificador, `apply-env` retorna el primer valor que encuentra. Esto ilustra el concepto de `binding` y ocultamiento de variables:
+
+```racket
+(apply-env a 'y) ; Retorna 4
+(apply-env a 'w) ; Retorna 9
+(apply-env a 'x) ; Retorna 3
+```
+
+En el caso de `x`, aunque existan otras definiciones posteriores en la lista, la función devuelve el valor `3` por ser el más reciente en la estructura del ambiente. Esta es la noción básica de cómo funcionan los ambientes en los lenguajes de programación y cómo se gestiona el `scope` léxico. La ventaja de este diseño es que la lógica de `apply-env` se mantiene idéntica independientemente de la representación interna de los datos, siempre que se respeten los extractores y predicados.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 19 Abstracción de datos： Ambientes como listas.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=hsHRvKwYGU8
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

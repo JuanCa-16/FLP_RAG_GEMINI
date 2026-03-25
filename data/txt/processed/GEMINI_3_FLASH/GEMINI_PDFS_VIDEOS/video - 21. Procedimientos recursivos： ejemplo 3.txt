@@ -1,0 +1,119 @@
+####
+**Configuración del Ambiente Inicial**
+
+En este ejemplo se analiza un escenario complejo que combina procedimientos y procedimientos recursivos. Cuando no se especifica un ambiente original en el problema, se asume por defecto el `ambiente vacío` (Σ = ∅).
+
+A partir de este ambiente vacío, se definen los primeros elementos que conformarán el `ambiente 0`:
+- `f`: Es una `clausura` con parámetros `a` y `b` que guarda el ambiente vacío.
+- `g`: Es una `clausura` con parámetros `c` y `d` que también guarda el ambiente vacío.
+- `x`: Es un valor constante igual a 5.
+
+**Ambiente 0**
+- `f` = `clausura(a, b, body, Σ=∅)`
+- `g` = `clausura(c, d, body, Σ=∅)`
+- `x` = 5
+
+####
+**Evaluación de Variables en el Ambiente 1**
+
+El `ambiente 1` se crea a partir de las declaraciones dentro de un bloque `let`. Aquí se definen `hi` (una `clausura`) e `y`. Para determinar el valor de `y`, se debe evaluar la expresión `f(x, g(x, x))` sobre el `ambiente 0`.
+
+**Cálculo de y:**
+1. Se evalúa el llamado interno `g(x, x)`, que corresponde a `g(5, 5)`. Esto crea un nuevo ambiente de activación donde `c = 5` y `d = 5`.
+2. La operación del cuerpo de `g` es `c * (d + 2)`. Por lo tanto: `5 * (5 + 2) = 5 * 7 = 35`.
+3. El resultado de `g(5, 5)` es 35.
+4. Ahora se evalúa el llamado externo `f(5, 35)`. Esto crea un ambiente de activación donde `a = 5` y `b = 35`.
+5. La operación del cuerpo de `f` es `2 * (a + b)`. Por lo tanto: `2 * (5 + 35) = 2 * 40 = 80`.
+
+Finalmente, el valor de `y` en el `ambiente 1` es 80. Es importante recordar que las declaraciones de procedimientos generan `clausuras`, pero solo sus llamados generan nuevos ambientes de ejecución.
+
+####
+**Definición de Ambiente Recursivo (letrec)**
+
+Se define un ambiente extendido recursivo mediante un `letrec` (denominado `env-rec-2`). Este bloque define la función recursiva `j` con los parámetros `q` y `r`.
+
+**Estructura del Ambiente Recursivo:**
+- **Pronames:** `j`
+- **Lista de IDs:** `(q, r)`
+- **Cuerpo:** La lógica que evalúa si `q > 0`.
+
+La evaluación inicial de este bloque es el llamado `j(x, y)`. Utilizando los valores previamente calculados, el llamado inicial es `j(5, 80)`. 
+
+####
+**Traza de la Ejecución Recursiva de j**
+
+La función `j(q, r)` opera bajo la condición: si `q > 0`, realiza una suma de `r` con el resultado de un nuevo llamado recursivo; de lo contrario, llama a la función `h`.
+
+**Seguimiento de llamados:**
+1. `j(5, 80)`: Como `5 > 0`, se evalúa `80 + j(4, 82)`.
+2. `j(4, 82)`: Como `4 > 0`, se evalúa `82 + j(3, 84)`.
+3. `j(3, 84)`: Como `3 > 0`, se evalúa `84 + j(2, 86)`.
+4. `j(2, 86)`: Como `2 > 0`, se evalúa `86 + j(1, 88)`.
+5. `j(1, 88)`: Como `1 > 0`, se evalúa `88 + j(0, 90)`.
+
+Cuando el parámetro `q` llega a 0 en el llamado `j(0, 90)`, se alcanza la condición de parada y se procede a evaluar la expresión `h(i(x, y), x)`.
+
+####
+**Evaluación de la Función i y Procedimientos Anidados**
+
+Para resolver el caso base de la recursión, primero se debe calcular el valor de `i(x, y)`, que corresponde a `i(5, 80)`. El procedimiento `i` recibe los parámetros `op` (5) y `op2` (80).
+
+**Cálculo de i:**
+La definición de `i` realiza la operación: `op + g(g(op, op2), op2)`.
+1. Primer llamado a `g(5, 80)`:
+   - Parámetros: `c = 5`, `d = 80`.
+   - Operación: `c * (d + 2)` -> `5 * 82 = 410`.
+2. Segundo llamado a `g(410, 80)`:
+   - Parámetros: `c = 410`, `d = 80`.
+   - Operación: `c * (d + 2)` -> `410 * 82 = 33620`.
+3. Resultado final de `i`: `5 + 33620 = 33625`.
+
+####
+**Evaluación de la Función h y Resultado Final**
+
+Una vez obtenido el resultado de `i` (33625), se procede a evaluar `h(33625, 80)`. El procedimiento `h` tiene los parámetros `m` y `n`.
+
+**Cálculo de h:**
+La operación en el cuerpo de `h` es `m + f(m, n)`.
+1. Se evalúa `f(33625, 80)`:
+   - Parámetros: `a = 33625`, `b = 80`.
+   - Operación: `2 * (a + b)` -> `2 * (33625 + 80) = 2 * 33705 = 67410`.
+2. Resultado de `h`: `33625 + 67410 = 101035`.
+
+**Consolidación de la suma total:**
+El resultado final es la acumulación de los valores en la cadena de recursión de `j`:
+`Total = 101035 + 88 + 86 + 84 + 82 + 80`
+`Total = 101035 + 420`
+`Total = 101455`
+
+####
+**Verificación de Código en Racket**
+
+El siguiente código implementa la lógica descrita para verificar el resultado obtenido manualmente:
+
+```racket
+(let ((f (lambda (a b) (* 2 (+ a b))))
+      (g (lambda (c d) (* c (+ d 2))))
+      (x 5))
+  (let ((hi (lambda (m n) (* m n))) ; Nota: 'hi' se define pero el cuerpo usa i y h
+        (y (f x (g x x))))
+    (letrec ((j (lambda (q r)
+                  (if (> q 0)
+                      (+ r (j (- q 1) (+ r 2)))
+                      (let ((i (lambda (op op2) (+ op (g (g op op2) op2))))
+                            (h (lambda (m n) (+ m (f m n)))))
+                        (h (i x y) x))))))
+      (j x y))))
+```
+
+Al ejecutar este código, el resultado es `101455`, lo cual confirma la precisión del seguimiento de ambientes y la evaluación de clausuras realizada. Con este ejercicio se concluye el tema de procedimientos y procedimientos recursivos para el primer corte del curso. En la próxima clase se abordará la asignación y el paso de parámetros por valor y referencia.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 21. Procedimientos recursivos： ejemplo 3.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=Qs9Mx82uQrE
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

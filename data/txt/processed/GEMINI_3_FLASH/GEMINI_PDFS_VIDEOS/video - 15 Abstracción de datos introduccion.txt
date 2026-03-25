@@ -1,0 +1,40 @@
+####
+**Abstracción de datos y representación de bits**
+
+Hasta el momento se ha estudiado la representación recursiva de datos, la cual puede definirse a través de una especificación inductiva o mediante gramáticas. Los programas están directamente vinculados a la estructura de los datos; para escribir programas es necesario seguir dicha gramática. A partir de esto, se definen tipos de datos mediante un proceso llamado `abstracción de datos`. Este proceso consiste en asignar un significado a los conjuntos de ceros y unos en el computador. Por ejemplo, un conjunto de 32 bits puede ser interpretado como un `entero`. Al declarar `int a = 10` en un lenguaje como Java o C++, se define que un espacio de 32 bits, con un valor de 10 en binario, será representado de esa manera, otorgando un significado técnico a ese conjunto de bits dentro del lenguaje de programación.
+
+####
+**Implementación e interfaz en los tipos de datos**
+
+La representación de los datos se divide en dos componentes: la `implementación` y la `interfaz`. La `implementación` representa las operaciones a bajo nivel, es decir, el manejo de los binarios y la representación específica del dato junto con el código de sus operaciones. Por otro lado, la `interfaz` es lo que el programador utiliza para manipular los tipos de datos. En el caso de un `entero`, la `interfaz` ofrece la posibilidad de realizar operaciones como incrementar, decrementar, obtener un módulo o multiplicar por un número. Aunque los algoritmos internos que trabajan sobre los binarios (como la división o multiplicación binaria) posean una complejidad elevada, la `interfaz` permite utilizarlos sin necesidad de conocer su lógica interna.
+
+####
+**Tipos Abstractos de Datos (ADT) e independencia de la representación**
+
+Un tipo de datos que es abstracto se denomina `Tipo Abstracto de Datos` (ADT). Se refiere a cualquier tipo de datos que transforme una representación de bits en un espacio de memoria a un concepto de alto nivel, como un `entero` o un `doble`. El resto del programa que utiliza el tipo de datos se denomina `cliente`. El `cliente` solo manipula el dato a través de la `interfaz`. Una característica fundamental es la independencia de la representación: si la `implementación` cambia (por ejemplo, si se pasa de 32 bits a 64 bits o se cambia la lógica interna de representación), el programa `cliente` no se ve afectado. Las operaciones de la `interfaz` deben funcionar de la misma manera, garantizando que el desarrollo sea independiente de la representación interna.
+
+####
+**Especificación y notación de la representación**
+
+Todo lo relacionado con el dato debe estar contenido en el código de la `implementación`. La parte más importante de este proceso es la especificación de cómo los datos son representados, determinando si un valor se manejará como una cadena de texto, un booleano u otra forma. Para indicar la representación de un tipo de datos se utiliza una notación similar a la función techo. Por ejemplo:
+- ⌈10.5⌉ representa un valor de tipo `doble`.
+- ⌈10⌉ representa un valor de tipo `entero`.
+
+####
+**Ejemplo de representación de números naturales**
+
+En la representación de los números naturales, partiendo desde el 0, se definen funciones básicas: `is-zero?` (para verificar si un número es cero), `sucesor` (para sumar 1) y `predecesor` (que transforma un valor N + 1 en N). Para la función `predecesor`, se debe cumplir que N >= 0. Esta especificación es análoga a la representación inductiva:
+- 0 pertenece al conjunto S.
+- Si N pertenece a S, entonces N + 1 también pertenece a S.
+
+Esta especificación indica cómo se representan los números naturales y permite escribir programas para su manipulación basándose en el comportamiento definido, sin depender de su implementación interna.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 15 Abstracción de datos introduccion.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=oXmddkgASKY
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

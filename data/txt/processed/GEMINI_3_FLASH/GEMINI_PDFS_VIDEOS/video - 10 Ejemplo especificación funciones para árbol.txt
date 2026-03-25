@@ -1,0 +1,60 @@
+####
+**Comparación entre suma de elementos y conversión a lista en árboles binarios**
+
+Al comparar la función para sumar los elementos de un `árbol binario` con la función para transformarlo en una `lista`, se observa que la estructura fundamental es la misma, aunque el resultado final cambie. En ambos casos, el código comparte una condición para el `caso base` y una estructura de `recursión`.
+
+La diferencia principal radica en la construcción del resultado:
+- En la suma, se realiza una operación aritmética entre los valores.
+- En la conversión a lista, se utiliza un constructor (como `cons`) para unir los elementos durante el llamado recursivo.
+
+A pesar de que solucionan problemas diferentes, ambas soluciones siguen los casos definidos en la `gramática`. Esta estructura gramatical determina tanto la condición de terminación como los llamados recursivos. Por lo tanto, independientemente de la operación, la estructura del código será consistente con la definición del dato.
+
+####
+**Representación de reglas en la gramática BNF**
+
+En la notación de gramáticas, la barra vertical `|` representa un operador de elección lógica (`OR`). Por ejemplo, puede indicar que un valor es un `entero` o un `símbolo`. En el contexto de un `árbol binario`, la salida puede definirse como una lista vacía, un entero o un símbolo seguido de una lista.
+
+Existen dos formas de expresar estas reglas en la sintaxis de Backus-Naur (`BNF`):
+- Usando el separador `|` en una sola línea para indicar alternativas.
+- Expresando cada alternativa como una regla separada utilizando el símbolo `::=`.
+
+Ejemplo de reglas separadas:
+`<regla> ::= <vacío>`
+`<regla> ::= <valor>`
+
+Ambas formas de representación son equivalentes y definen cómo se estructura el lenguaje o los datos.
+
+####
+**Estrategias de diseño para programas recursivos**
+
+El diseño de programas basados en gramáticas requiere identificar primero el `caso base`. Este es el punto donde la `recursión` termina al alcanzar un `símbolo terminal`, como una lista vacía, un número o un símbolo.
+
+La estrategia principal consiste en:
+- Identificar el `caso base` (símbolo terminal).
+- Pasar de `estados no terminales` hacia un `estado terminal`.
+- Realizar llamados recursivos desde un estado no terminal hasta que la condición de parada se cumpla.
+
+En la función de procesamiento, el `número` suele actuar como la condición de parada. Si la función no encuentra un número, continúa la ejecución recursiva hasta alcanzar la estructura terminal definida.
+
+####
+**Garantía de terminación en la recursión**
+
+Para asegurar que una función recursiva sobre un árbol no entre en un bucle infinito y llegue siempre a una condición de terminación, el código debe reducir el problema hacia el `caso base`. En un `árbol binario`, esto se garantiza mediante el uso de selectores o funciones de acceso a la estructura.
+
+**Control de flujo y acceso**
+```racket
+(car lista)   ; Acceso al hijo izquierdo
+(cadr lista)  ; Acceso al hijo derecho
+```
+
+El uso de `car` y `cdr` (o sus equivalentes para hijos izquierdos y derechos) asegura que se recorra toda la estructura. Tarde o temprano, el recorrido llegará a una hoja (un número o símbolo terminal). Esta navegación sistemática a través de la jerarquía del árbol es lo que asegura que la función procese todos los elementos y finalice correctamente sin quedar atrapada en una ejecución infinita.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 10 Ejemplo especificación funciones para árbol.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=Vglvl_buuZE
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

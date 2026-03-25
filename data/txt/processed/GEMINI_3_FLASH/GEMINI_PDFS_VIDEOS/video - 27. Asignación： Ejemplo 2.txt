@@ -1,0 +1,45 @@
+####
+**Ejemplo de función recursiva y ambientes**
+
+Se analiza un ejemplo basado en la estructura `ntn` cuyo resultado esperado es 726. En este escenario, se parte de un ambiente inicial (ambiente 1) que se trata como un ambiente extendido. En este contexto, `f` se define como una `clausura` que recibe un parámetro `x`. La característica fundamental de este proceso es que la clausura guarda el mismo ambiente, lo que permite la recursión. Técnicamente, esto se representa a través de un `vector de clausura` en lugar de una lista simple.
+
+####
+**Ejecución recursiva y generación de ambientes**
+
+En el flujo de ejecución, se define un `let` donde la variable `j` toma el valor resultante de invocar `f(6)`. La ejecución de `f(6)` genera una serie de ambientes extendidos debido a los llamados recursivos:
+
+- Ambiente con `x` valiendo 6
+- Ambiente con `x` valiendo 5
+- Ambiente con `x` valiendo 4
+- Ambiente con `x` valiendo 3
+- Ambiente con `x` valiendo 2
+- Ambiente con `x` valiendo 1
+- Ambiente con `x` valiendo 0
+
+Siguiendo la regla recursiva (factorial), el resultado de esta ejecución es 720, valor que queda almacenado en `j`.
+
+####
+**Uso de set y evaluación final del resultado**
+
+Tras obtener el valor de `j`, se procede a ejecutar la instrucción `set f`. En este momento, el identificador `f` deja de ser una `clausura` y toma el valor numérico 6. Al realizar la operación final de suma:
+
+```racket
+(+ j f)
+```
+
+Dado que `j` equivale a 720 y el nuevo valor de `f` es 6, el resultado total es 726. Este cambio es significativo porque `f` se conoce a sí mismo dentro de su área de definiciones, permitiendo que la asignación afecte el valor utilizado en la expresión final.
+
+####
+**Introducción al paso por valor y paso por referencia**
+
+El estudio de los ambientes y la asignación permite introducir los conceptos de `paso por valor` y `paso por referencia`. Se observa que el alcance de una asignación mediante `set x` puede estar limitado. Por ejemplo, en un escenario previo donde el resultado era 202, si se cambia la lógica para utilizar una variable externa `a` y se aplica `paso por referencia`, el resultado podría cambiar a 203. La diferencia radica en si el cambio realizado sobre un parámetro (como `x`) afecta o no a la variable externa que fue enviada al procedimiento.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 27. Asignación： Ejemplo 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=gGiwIY4jviU
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,181 @@
+####
+**Definición Formal de Ambientes**
+En Essentials of Programming Languages, un `ambiente` (ρ) es una función parcial que mapea identificadores a sus valores asociados. Formalmente:
+ρ: Identifier -> Value
+
+La gramática abstracta define:
+`<environment> ::= (empty-env)`
+`                ::= (extend-env <list<identifier>> <list<value>> <environment>)`
+
+**Propiedades Fundamentales de los Ambientes**
+- `Alcance léxico`: Las variables se resuelven en el entorno donde fueron definidas.
+- `Shadowing`: Las definiciones más recientes ocultan las anteriores.
+- `Extensibilidad`: Los ambientes pueden extenderse con nuevos bindings.
+
+####
+**Implementación de Ambientes Basada en Listas**
+Esta implementación utiliza listas de Racket para representar la estructura y los datos del `ambiente`.
+```racket
+#lang eopl
+
+;; === CONSTRUCTORES ===
+(define empty-env
+  (lambda ()
+    (list 'empty-env)))
+
+(define extend-env
+  (lambda (lid lval old-env)
+    (list 'extend-env lid lval old-env)))
+
+;; === OBSERVADORES ===
+;; Predicados
+(define empty-env?
+  (lambda (env)
+    (equal? (car env) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (car env) 'extend-env)))
+
+;; Extractores
+(define extend-env->lid
+  (lambda (env)
+    (cadr env))) ; Lista de identificadores
+
+(define extend-env->lval
+  (lambda (env)
+    (caddr env))) ; Lista de valores
+
+(define extend-env->old-env
+  (lambda (env)
+    (cadddr env))) ; Ambiente anterior
+```
+
+####
+**Operación Fundamental apply-env**
+La función `apply-env` implementa la búsqueda de variables en la implementación basada en listas, utilizando búsqueda recursiva en listas paralelas.
+```racket
+(define apply-env
+  (lambda (env var)
+    (cond
+      [(empty-env? env)
+       (eopl:error "Variable no encontrada: " var)]
+      [(extend-env? env)
+       (letrec
+         ([buscar-var
+           (lambda (lid lval old-env)
+             (cond
+               [(null? lid)
+                (apply-env old-env var)] ; No encontrado -> buscar en ambiente padre
+               [(equal? (car lid) var)
+                (car lval)] ; Encontrado -> retornar valor
+               [else
+                (buscar-var (cdr lid) (cdr lval) old-env)]))]) ; Continuar búsqueda
+         (buscar-var
+           (extend-env->lid env)
+           (extend-env->lval env)
+           (extend-env->old-env env)))]
+      [else
+       (eopl:error "Ambiente no válido")])))
+```
+
+####
+**Ejemplo de Uso de Ambientes**
+Definición de un ambiente `env1` con múltiples niveles de bindings y su comportamiento esperado:
+```racket
+(define env1
+  (extend-env
+    '(a b c)
+    '(1 2 3) ; Bindings: a->1, b->2, c->3
+    (extend-env
+      '(x y z)
+      '(4 5 6) ; Bindings: x->4, y->5, z->6
+      (empty-env))))
+```
+- `(apply-env env1 'a)` retorna 1 (encuentra en el ambiente más reciente).
+- `(apply-env env1 'x)` retorna 4 (busca en el ambiente padre).
+- `(apply-env env1 'w)` genera error (variable no definida).
+
+####
+**Implementación de Ambientes Basada en Procedimientos**
+Esta representación utiliza `closures` de Racket para encapsular los datos del `ambiente`. El ambiente se convierte en una función que recibe un selector numérico para acceder a sus componentes.
+```racket
+#lang eopl
+
+;; === CONSTRUCTORES (Usando closures) ===
+(define empty-env
+  (lambda ()
+    (lambda (s)
+      (cond
+        [(= s 0) 'empty-env] ; Selector 0: tipo
+        [else (eopl:error "Error en empty-env")]))))
+
+(define extend-env
+  (lambda (lid lval old-env)
+    (lambda (s)
+      (cond
+        [(= s 0) 'extend-env] ; Tipo
+        [(= s 1) lid]        ; Identificadores
+        [(= s 2) lval]       ; Valores
+        [(= s 3) old-env]    ; Ambiente padre
+        [else (eopl:error "Error en extend-env")]))))
+
+;; === OBSERVADORES ===
+(define empty-env?
+  (lambda (env)
+    (equal? (env 0) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (env 0) 'extend-env)))
+
+(define extend-env->lid
+  (lambda (env)
+    (env 1)))
+
+(define extend-env->lval
+  (lambda (env)
+    (env 2)))
+
+(define extend-env->old-env
+  (lambda (env)
+    (env 3)))
+```
+Bajo este esquema de abstracción mediante observadores, la función `apply-env` permanece idéntica a la utilizada en la versión de listas.
+
+####
+**Análisis de Ambientes: Invariantes y Propiedades**
+**Invariantes Preservadas**
+- `empty-env` siempre representa el ambiente vacío.
+- `extend-env` siempre produce un ambiente válido.
+- `apply-env` siempre termina para ambientes finitos.
+
+**Propiedades de la Búsqueda**
+- `Complejidad`: O(n) donde n es el número de bindings.
+- `Orden de búsqueda`: De izquierda a derecha en las listas.
+- `Shadowing natural`: El primer matching prevalece sobre definiciones anteriores.
+
+####
+**Consideraciones de Diseño y Abstracción en EOPL**
+El diseño de ambientes sigue el patrón fundamental de EOPL: definir interfaces abstractas con múltiples implementaciones.
+
+**Ventajas de la Abstracción**
+- `Independencia de implementación`: El código cliente no distingue si se usan listas o procedimientos.
+- `Encapsulación`: Los detalles de representación interna están ocultos.
+- `Extensibilidad`: Permite añadir nuevos tipos de ambientes sin modificar el código existente.
+- `Verificación de tipos`: Los observadores validan la estructura de los datos.
+- `Manejo de errores`: Define comportamientos para entradas inválidas.
+
+Este patrón se aplica de forma recursiva en la construcción de evaluadores, `type checkers` y compiladores.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 3 Representación abstracta de datos (TAD)_Ambientes
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/Ambientes/

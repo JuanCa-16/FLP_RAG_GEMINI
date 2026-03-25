@@ -1,0 +1,101 @@
+####
+**Definición de Alfabeto y Símbolos**
+
+Un `alfabeto` es un conjunto finito no vacío cuyos elementos se llaman `símbolos`. Por ejemplo, en un alfabeto compuesto por los símbolos {a, b}, se pueden formar todas las palabras posibles combinando estos elementos en cualquier orden. Un `alfabeto binario` contiene los símbolos {0, 1}.
+
+Las `cadenas` son secuencias ordenadas de símbolos; por esta razón, la palabra "roma" es diferente a "amor". En cualquier alfabeto es posible formar cadenas, incluyendo la `cadena vacía`, que es la secuencia de tamaño 0. Generalmente, se utiliza la letra griega `Σ` (sigma) para denotar los alfabetos, las letras minúsculas para representar los `símbolos` y las letras mayúsculas para denotar los `lenguajes`. Dado que los alfabetos son conjuntos, poseen propiedades como la unión, la intersección y la diferencia.
+
+####
+**Definición de Lenguaje**
+
+Un `lenguaje` es un conjunto de palabras asociadas a un `alfabeto` y a una regla específica. Existen diferentes tipos de lenguajes:
+- `Lenguaje vacío`: Es aquel que no contiene ningún carácter.
+- `Lenguajes por extensión`: Por ejemplo, un lenguaje `C` definido sobre un alfabeto que contiene solo tres cadenas específicas.
+- `Lenguajes por repetición`: Cadenas compuestas por el símbolo "a" denotadas como `A^n`, donde `n >= 1`.
+
+En esta notación, el exponente indica la repetición del símbolo: `A^2` equivale a dos símbolos "a" seguidos (`aa`), y `A^3` equivale a tres símbolos "a" seguidos (`aaa`). Los lenguajes pueden especificarse tanto con descripciones en lenguaje natural como mediante formalismos matemáticos.
+
+####
+**Potencias de un Lenguaje**
+
+La `potencia de un lenguaje` consiste en concatenar el lenguaje consigo mismo. Se rige por las siguientes reglas:
+- `L^0`: Cualquier lenguaje elevado a la potencia cero es igual a `ε` (`épsilon`), que representa la `cadena vacía`.
+- `L^1`: Un lenguaje elevado a la potencia 1 es el mismo lenguaje.
+- `L^2`: Es el resultado de concatenar el lenguaje consigo mismo. Por ejemplo, si el lenguaje es {a, b}, `L^2` implica tomar las cadenas y pegarlas, resultando en el conjunto de combinaciones {aa, ab, ba, bb}.
+- `L^3`: Es la concatenación del lenguaje original con su potencia al cuadrado (`L * L^2`).
+
+####
+**Cerradura de Kleene y Cerradura Positiva**
+
+La `cerradura de Kleene` (denotada con un asterisco `*`) contiene la unión de todas las potencias de un lenguaje, desde la potencia cero hasta el infinito. Se utiliza para especificar que un elemento se repite cero o más veces.
+
+La `cerradura positiva` (denotada con el símbolo `+`) es la unión de las potencias de los elementos empezando desde la potencia 1. A diferencia de la cerradura de Kleene, la cerradura positiva no incluye la `cadena vacía`.
+
+En términos de estructuras de datos, una lista se puede especificar con `*`, lo que significa que la lista puede estar vacía o tener uno o más elementos. El uso de `+` implica que la secuencia debe tener obligatoriamente al menos un elemento.
+
+####
+**Expresiones Regulares y el Lenguaje EOPL**
+
+Las `expresiones regulares` se utilizan para denotar lenguajes y definir las gramáticas de los lenguajes de programación. En este contexto, utilizaremos las herramientas que proporciona la librería `EOPL` (Essentials of Programming Languages) dentro de `Racket`.
+
+Los componentes fundamentales de las expresiones regulares incluyen el `lenguaje vacío`, `ε` (`épsilon`), la `unión` de dos lenguajes, la `concatenación`, la `cerradura de Kleene` y la `cerradura positiva`.
+
+Ejemplos de aplicación:
+- `ab*`: Cadenas que inician con "a" seguidas por cualquier cantidad de "b" (desde cero en adelante).
+- `ab+`: Cadenas que inician con "a" y siguen con una o más "b". La cadena más básica es "ab".
+- `(aba*)+`: El asterisco afecta a la segunda "a", por lo que el bloque mínimo es "ab". El signo `+` permite repetir todo el bloque `aba*` una o más veces. Cualquier palabra válida de este lenguaje se puede concatenar con otra palabra válida del mismo para formar nuevas cadenas.
+
+####
+**Ejemplos de Lenguajes Regulares**
+
+Un lenguaje regular puede representar conjuntos específicos de cadenas:
+- `ab*a`: Representa todas las palabras que inician por "a" y terminan por "a", con cualquier cantidad de "b" en medio. Las palabras válidas incluyen "aa", "aba", "abba", etc.
+- `Cadenas de longitud par`: Se pueden generar usando una expresión que agrupe pares de símbolos, como `(aa | ab | ba | bb)*`. Al repetir estos bloques, se garantiza que la longitud total sea siempre par.
+- `Número par de As`: Se puede representar mediante una expresión que permita cualquier cantidad de "b" (`b*`) y asegure que las "a" aparezcan en parejas, por ejemplo: `(b*ab*ab*)*`. La cerradura de Kleene permite repetir esta secuencia de dos "aes" cero o más veces.
+
+####
+**Jerarquía de Chomsky y Gramáticas Regulares**
+
+Chomsky definió una jerarquía de gramáticas según su capacidad expresiva:
+1. `Gramáticas regulares`: Se trabajan con autómatas finitos.
+2. `Gramáticas libres de contexto`.
+3. `Gramáticas dependientes de contexto`.
+4. `Estructuras de frase`.
+
+En las `gramáticas regulares`, los símbolos terminales deben iniciar por la izquierda. Esta característica impone limitaciones en la implementación de lenguajes, especialmente en cómo se estructuran las reglas para que el analizador pueda reconocerlas correctamente.
+
+####
+**Limitaciones de Sintaxis en la Librería EOPL**
+
+La librería `EOPL` trabaja con `gramáticas regulares`, lo que genera una limitación importante: dos formas de sintaxis no pueden comenzar de la misma manera en dos reglas diferentes. 
+
+Por ejemplo, no es posible tener estas dos reglas por separado:
+1. `bar <identificador>`
+2. `bar <identificador> = <expresión>`
+
+Esto se debe a que el analizador verifica el primer símbolo a la izquierda y, al ser ambos "bar", no sabría cómo diferenciarlos. Para resolver esto, se debe crear una única regla que cubra ambas estructuras de manera condicionada. Al especificar la gramática de un proyecto, es fundamental evitar que dos construcciones inicien igual para que el procesador pueda identificar la ruta correcta desde el primer símbolo.
+
+####
+**Generación de Palabras mediante Reglas Gramaticales**
+
+La generación de palabras consiste en aplicar reglas de producción hasta obtener una secuencia de símbolos terminales. Consideremos las reglas:
+- `S -> ε | aA`
+- `A -> aA | ε`
+
+Para generar la palabra "aaa":
+1. Se inicia con `S` y se elige la regla `aA`.
+2. Para el símbolo `A`, se vuelve a aplicar la regla `aA`, resultando en `aaA`.
+3. Se aplica nuevamente la regla para obtener `aaaA`.
+4. Finalmente, se selecciona la opción `ε` (cadena vacía) para `A`, finalizando la secuencia como "aaa".
+
+Este proceso muestra cómo las reglas permiten definir y construir las cadenas que pertenecen a un lenguaje específico.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 4. Repaso de gramáticas： Primer parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=-xmyQ9vPPmw
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

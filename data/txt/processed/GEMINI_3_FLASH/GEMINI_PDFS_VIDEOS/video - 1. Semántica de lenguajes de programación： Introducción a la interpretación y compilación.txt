@@ -1,0 +1,70 @@
+####
+**Semántica de los lenguajes de programación: Interpretación y Compilación**
+
+A partir de este momento, abordaremos la `semántica` de los conceptos de los lenguajes de programación, específicamente los procesos de `interpretación` y `compilación`. Este estudio es el paso previo para comprender cómo funcionan los `compiladores` que se manejarán a lo largo del curso. Para ello, es fundamental entender el proceso de transformación del código fuente en un `árbol de sintaxis abstracta` (AST), lo cual facilita su manipulación.
+
+La `interpretación` consiste, básicamente, en tomar el texto de un programa escrito en un `código fuente` y transformarlo en un `árbol de sintaxis abstracta`. Este árbol sirve para dos propósitos fundamentales:
+- Validar que el código esté correctamente escrito de acuerdo con la `gramática`.
+- Ejecutar el programa.
+
+####
+**El proceso de Frontend: Escáner y Parser**
+
+El código fuente ingresa a una etapa denominada `frontend`, la cual se encarga de realizar dos pasos principales:
+
+1. **Escáner (Scanner):** Su función es identificar los elementos significativos del código y descartar aquello que no tiene valor académico o semántico, como los espacios en blanco o los comentarios. Por ejemplo, en un lenguaje de programación, el siguiente código debería ser interpretado igual sin importar el exceso de espacios:
+
+```cpp
+int  a   =    5;
+```
+
+2. **Parsing:** Una vez escaneada la información, se procede a la construcción del `árbol de sintaxis abstracta`. En esta fase se valida si la estructura está correctamente escrita y si existen errores de `gramática` o de escritura. Tras la validación, se procede a ejecutar acciones específicas basadas en dicha estructura.
+
+####
+**Funcionamiento detallado del Frontend y el Intérprete**
+
+El proceso general sigue una progresión lógica donde el `código fuente` (por ejemplo, declaraciones como `int a = 3; int b = 4;`) pasa por el `frontend`. El `escáner` selecciona los componentes significativos e ignora comentarios y espacios. Posteriormente, el `parser` utiliza la `gramática` para generar el `árbol de sintaxis abstracta`.
+
+Un `interpretador` es un programa que toma este `árbol de sintaxis abstracta` y lo convierte en una respuesta. En el caso de un lenguaje interpretado, el `interpretador` está escrito en un `lenguaje de implementación` o `lenguaje de definición`. Ejemplos clásicos son:
+
+- **Python:** Posee una `máquina virtual` escrita en `C++`. El código de Python se transforma en un `árbol de sintaxis abstracta` que la máquina entiende para producir una ejecución.
+- **Java:** Sigue un proceso diferente donde se crean archivos `.class`, que son una interpretación binaria del código Java. La `máquina virtual de Java` (JVM), escrita en `C++`, extrae el `árbol de sintaxis abstracta` para su ejecución.
+- **JavaScript:** La ejecución ocurre en el motor del navegador (como Chrome o Firefox), donde también se construye el `árbol de sintaxis abstracta` para generar una respuesta.
+
+####
+**Comparación entre lenguajes interpretados y compilados**
+
+Los programas interpretados suelen ser más lentos que los programas compilados debido al proceso de intermediación. En la `interpretación`, primero se realiza una traducción a un lenguaje intermedio o se genera el `árbol de sintaxis abstracta` antes de la ejecución. Esta intermediación añade un tiempo de espera, similar a enviar un mensaje a través de un tercero.
+
+A pesar de la pérdida de velocidad, la ganancia reside en la facilidad de programación, ya que la sintaxis de lenguajes interpretados como Python o JavaScript suele ser más sencilla en comparación con `C++`. No obstante, debido a esta lentitud, no se recomiendan lenguajes interpretados para tareas intensivas como `machine learning` o procesamiento de datos, aunque `Python` es una excepción debido a optimizaciones específicas. En contraste, los lenguajes compilados como `C++` o `Assembly` son preferidos cuando se requiere alto rendimiento.
+
+####
+**Proceso de compilación y archivos objeto**
+
+En los lenguajes compilados, el `árbol de sintaxis abstracta` se crea durante la fase de compilación y luego se traduce para su ejecución. Por ejemplo, en `C++`, el código es procesado para generar el árbol y luego se traduce a `lenguaje ensamblador`.
+
+Cuando se ejecuta un comando de compilación como:
+```bash
+g++ -c archivo.cpp
+```
+Se genera un archivo `.o` (archivo objeto), que es un archivo binario que contiene la información del `árbol de sintaxis abstracta`. Posteriormente, se realiza el proceso de traducción para crear un ejecutable que el sistema operativo pueda entender. En este flujo, la `CPU` actúa directamente como el ejecutor del código de máquina.
+
+####
+**Arquitectura del compilador: Analizador y Traductor**
+
+Un compilador se divide habitualmente en dos partes:
+
+1. **Analizador:** Su finalidad es deducir información útil sobre el programa y descartar elementos irrelevantes, como los comentarios.
+2. **Traductor:** Lleva a cabo la traducción del lenguaje original a un lenguaje destino (como `código de máquina` o `bytecode`) basándose en la información del analizador.
+
+En algunos casos, el lenguaje destino es un `lenguaje de propósito especial` o código intermedio. Un ejemplo es `Java`, donde el compilador genera un archivo `.class` en `bytecode`. Este código intermedio permite optimizaciones que el programador podría haber omitido y facilita la portabilidad, permitiendo que el programa se ejecute en diferentes plataformas siempre que la `máquina virtual` sea compatible. Otros lenguajes que utilizan máquinas virtuales y conceptos similares son `Scala`, `Haskell` y `Erlang`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 1. Semántica de lenguajes de programación： Introducción a la interpretación y compilación.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=zL0zWJgVB2E
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

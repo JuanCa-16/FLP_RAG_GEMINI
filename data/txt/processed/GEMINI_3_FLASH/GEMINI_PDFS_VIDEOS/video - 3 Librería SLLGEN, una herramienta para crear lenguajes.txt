@@ -1,0 +1,122 @@
+####
+**Introducción a la librería sllgen**
+
+La librería `sllgen` proporcionada por `DrRacket` permite aterrizar conceptos fundamentales como el `scanner` y el `parser`. Esta herramienta es esencial para el curso, ya que el desarrollo de los temas posteriores dependerá de su uso. Es fundamental comprender cómo utilizar sus opciones y entender los mensajes de error que puedan presentarse.
+
+`sllgen` es un generador de `parsers` que recibe:
+- Una especificación léxica: define cómo se procesa la información de entrada, como números, identificadores, espacios en blanco y comentarios.
+- Una gramática: define la estructura sintáctica del lenguaje de programación.
+
+Como resultado, la librería produce un `scanner` y un `parser` que se integran para ejecutar un interpretador.
+
+####
+**Especificación léxica en sllgen**
+
+La especificación léxica es una lista que satisface una gramática compuesta por expresiones regulares y acciones. Cada entrada en la especificación consta de un nombre (símbolo), una expresión regular y una acción de salida.
+
+Las expresiones regulares disponibles en la librería incluyen:
+- `letter`: captura una letra.
+- `digit`: captura un dígito.
+- `whitespace`: captura espacios en blanco.
+- `any`: captura cualquier carácter.
+- `not`: permite excluir caracteres específicos.
+- `or`: permite definir alternativas entre expresiones.
+- `arbno`: representa la cerradura de Kleene (captura cero o más ocurrencias).
+- `concat`: sirve para concatenar expresiones.
+
+Las acciones de salida definen cómo se trata la cadena capturada:
+- `skip`: ignora la cadena (útil para espacios y comentarios).
+- `symbol`: transforma la cadena en un símbolo de `Racket`.
+- `number`: transforma la cadena en un número.
+- `string`: transforma la cadena en un `string`.
+
+####
+**Ejemplo de especificación léxica**
+
+A continuación se presenta un ejemplo de cómo se define una especificación léxica para identificar diferentes elementos de un lenguaje:
+
+```racket
+(define lex-spec
+  '((whitespace (whitespace) skip)
+    (comment ("%" (arbno (not #\newline))) skip)
+    (identifier (letter (arbno (or letter digit "?"))) symbol)
+    (number (digit (arbno digit)) number)))
+```
+
+**Explicación de los componentes**
+- `whitespace`: utiliza la palabra clave `whitespace` de la librería y aplica la acción `skip`.
+- `comment`: busca el carácter `%` seguido de cualquier carácter que no sea un salto de línea (`arbno (not #\newline)`) y lo ignora.
+- `identifier`: busca una letra seguida de cualquier combinación de letras, dígitos o signos de interrogación, convirtiéndolos en un `symbol`.
+- `number`: busca un dígito seguido de cualquier cantidad de dígitos adicionales, tratándolos como un `number`.
+
+####
+**Funcionamiento del scanner**
+
+A medida que el `scanner` trabaja, recolecta caracteres en un `buffer`. Cuando determina que ha encontrado la cadena más larga posible que coincide con alguna de las expresiones regulares definidas, ejecuta la acción asociada. El `scanner` extrae la secuencia máxima según las reglas léxicas y la almacena en una lista para su procesamiento.
+
+Dicha salida puede ser procesada mediante:
+- `skip`: para omitir información no relevante.
+- `symbol`: para convertir caracteres en símbolos manejables por el sistema.
+- `number`: para transformar caracteres en tipos numéricos.
+- `string`: para generar cadenas de texto.
+
+####
+**Especificación gramatical y tipos de datos**
+
+La especificación gramatical define la estructura del lenguaje. Una gran ventaja de `sllgen` es que permite especificar la gramática como una lista, generando automáticamente los `define-datatype` necesarios sin tener que construirlos manualmente.
+
+La gramática se organiza en una lista de producciones compuestas por:
+- `LHS` (Left Hand Side): el nombre del tipo de dato (`datatype`).
+- `RHS` (Right Hand Side) items: los elementos que la gramática capturará.
+- **Nombre de la producción**: el nombre de la variante (similar a los constructores en un `define-datatype`).
+
+####
+**Relación entre gramáticas y variantes de tipos de datos**
+
+Para ilustrar cómo se relacionan las producciones gramaticales con los tipos de datos, consideremos la definición manual de un árbol:
+
+```racket
+(define-datatype arbol arbol?
+  (arbol-vacio)
+  (arbol-no-vacio
+    (dato number?)
+    (hijo-izq arbol?)
+    (hijo-der arbol?)))
+```
+
+En este ejemplo, `arbol-vacio` y `arbol-no-vacio` son las variantes. En `sllgen`, estas se definen dentro de la especificación gramatical como el nombre de la producción. El `LHS` representaría el nombre del `datatype` (`arbol`), mientras que los ítems del `RHS` representarían los campos de cada variante (como el dato o los hijos izquierdo y derecho).
+
+####
+**Gramáticas LL y conflictos por la izquierda**
+
+`sllgen` utiliza gramáticas determinadas por la izquierda (`LL`), lo que significa que el `parser` toma decisiones basándose en el primer símbolo (`token`) encontrado. Por esta razón, no se permiten producciones que comiencen con el mismo símbolo para un mismo no terminal.
+
+Si dos producciones inician de la misma manera, se produce un conflicto por la izquierda. Por ejemplo:
+- `produccion1 = "var" identificador`
+- `produccion2 = "var"`
+
+Este caso generaría un conflicto porque ambas inician con la cadena `"var"`. En estos casos, es necesario reestructurar la gramática para diferenciar las producciones desde su primer elemento.
+
+####
+**Funciones principales de sllgen**
+
+La librería `sllgen` incorpora funciones clave para la construcción de lenguajes:
+
+- `sllgen:make-define-datatypes`: genera automáticamente los tipos de datos a partir de la especificación gramatical.
+- `sllgen:make-string-parser`: construye el `scanner` y el `parser` basándose en las especificaciones léxicas y gramaticales. Retorna un procedimiento que toma una cadena de texto y produce un árbol de sintaxis abstracta (`AST`).
+- `sllgen:make-rep-loop` (Read-Eval-Print Loop): crea una consola interactiva que permite ingresar código y evaluarlo línea por línea. Recibe el `parser` y un manejador de errores para procesar la entrada del usuario en tiempo real.
+
+####
+**Progresión del curso**
+
+En las siguientes etapas se integrarán estos componentes para generar el primer interpretador pequeño. Se abordarán ejemplos prácticos para consolidar el uso de la especificación léxica, la gramática y el ciclo de evaluación (`REPL`).
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 3 Librería SLLGEN, una herramienta para crear lenguajes.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=vNQauK4mMHA
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

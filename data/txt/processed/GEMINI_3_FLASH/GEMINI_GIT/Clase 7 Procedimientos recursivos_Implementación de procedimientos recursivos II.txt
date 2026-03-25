@@ -1,0 +1,119 @@
+####
+**Modificaciones a la gramática para soportar letrec**
+
+Para incluir la directiva `letrec` en la gramática, se define la siguiente estructura:
+
+`<expression> ::= "letrec" (<identificador> "(" (<identificador>)* (",") ")" "=" <expression>)* "in" <expression>`
+
+Esta modificación permite escribir expresiones de la siguiente forma:
+
+```racket
+letrec
+    f(x, y) = if >(x, 0) then g(-(x, 1), y) else y
+    g(a, b) = if >(a, 0) then +(b, f(-(x, y), y)) else y
+in (f 10 2)
+```
+
+La especificación formal en la gramática para soportar `letrec` es:
+
+```racket
+;; Modificación a la gramática para soportar letrec
+(expression
+  ("letrec"
+    (arbno ; Permite cero o más definiciones recursivas
+      identifier
+      "(" (separated-list identifier ",") ")" ; Lista de parámetros separados por comas
+      "=" expression) ; Cuerpo del procedimiento
+    "in" expression)
+  letrec-exp) ; Constructor: letrec-exp
+```
+
+####
+**Estructura general y componentes de letrec**
+
+La estructura general de una expresión `letrec` se compone de la siguiente manera:
+
+```racket
+letrec
+    proc1(param1, param2, ...) = cuerpo1
+    proc2(arg1, arg2, ...) = cuerpo2
+    ...
+in expresión-cuerpo
+```
+
+**Componentes clave**
+
+- `letrec`: Palabra clave que indica un bloque de definiciones recursivas mutuas. Es el diferenciador clave frente a `let` o `let*`.
+- `(arbno ...)`: Permite definir cero o más procedimientos recursivos. Cada definición sigue el patrón `nombre(param1, param2, ...) = cuerpo`.
+- `(separated-list identifier ",")`: Define los parámetros formales como una lista de identificadores separados por comas, estableciendo la firma del procedimiento. Por ejemplo, `f(x, y, z)` crea un procedimiento con tres parámetros.
+- `expression` (después de `=`): Define el cuerpo y la implementación del procedimiento. Puede hacer referencia a otros procedimientos definidos en el mismo `letrec`.
+- `expression` (después de `in`): Representa el cuerpo principal o contexto de ejecución donde las definiciones recursivas están en `scope`.
+
+####
+**Ejemplo de uso y características de letrec**
+
+Un ejemplo de uso de `letrec` para definir procedimientos mutuamente recursivos es el siguiente:
+
+```racket
+;; Definición de procedimientos mutuamente recursivos
+(letrec
+    es-par?(n) = if =(n, 0) #t (es-impar? -(n, 1))
+    es-impar?(n) = if =(n, 0) #f (es-par? -(n, 1))
+in (es-par? 4))
+;; → #t
+```
+
+**Características importantes**
+
+- `Recursión mutua`: Los procedimientos pueden referenciarse entre sí.
+- `Ámbito extendido`: Las definiciones son visibles en todos los cuerpos de los procedimientos definidos.
+- `Evaluación perezosa`: Las clausuras se crean con el ambiente extendido recursivo.
+- `Consistencia`: Se evitan problemas de referencias circulares gracias al mecanismo de ambientes recursivos.
+
+####
+**Implementación de letrec-exp en eval-expression**
+
+El manejo de las expresiones `letrec` dentro de la función `eval-expression` se realiza delegando la creación del ambiente al mecanismo de recursividad:
+
+```racket
+;; Manejo de expresiones letrec en eval-expression
+(letrec-exp (procnames llargs bodies expn)
+  ; procnames: Lista de nombres de procedimientos
+  ; llargs: Lista de listas de argumentos (parámetros formales)
+  ; bodies: Lista de cuerpos de los procedimientos
+  ; expn: Expresión del cuerpo principal (después de "in")
+  (eval-expression expn
+    (extend-recursively-env
+      procnames
+      llargs
+      bodies
+      env))) ; env: Ambiente actual (base para la extensión)
+```
+
+####
+**Flujo de ejecución y características de la implementación**
+
+El proceso de ejecución de una expresión `letrec` sigue estos pasos:
+
+1. **Parseo de la expresión**: Se extraen los `procnames` (identificadores), `llargs` (listas de parámetros por cada procedimiento), `bodies` (expresiones de los cuerpos) y la `expn` (expresión principal).
+2. **Extensión del ambiente**: Mediante `extend-recursively-env`, se crea un nuevo ambiente que contiene las definiciones recursivas. Este ambiente permite que los procedimientos tengan referencias mutuas.
+3. **Evaluación del cuerpo**: Se evalúa `expn` en el contexto del nuevo ambiente extendido, donde todas las definiciones de `letrec` ya están disponibles.
+
+**Características clave**
+
+- `Evaluación Pospuesta`: Los cuerpos de los procedimientos no se evalúan inmediatamente; se crean clausuras que se ejecutan solo al ser invocadas.
+- `Ambiente Recursivo`: El uso de `extend-recursively-env` garantiza que cada clausura tenga acceso a todas las definiciones del bloque, resolviendo el problema de la referencia circular.
+
+Esta implementación delega la complejidad de la recursión mutua al mecanismo de ambientes, manteniendo `eval-expression` simple y consistente.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Implementación de procedimientos recursivos II
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20II/

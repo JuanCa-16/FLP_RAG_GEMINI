@@ -1,0 +1,97 @@
+####
+**Implementación simple de declaraciones de clase**
+
+En la implementación simple, una declaración de clase contiene toda la información necesaria para definir su comportamiento y estructura. Esta representación, aunque puede ser ineficiente, es funcional e incluye el nombre de la clase, el nombre de su superclase, sus campos y la declaración de sus métodos.
+
+A partir de la especificación gramatical, se generan los `datatypes` correspondientes para representar estas estructuras:
+
+```racket
+(define-datatype class-decl class-decl?
+  (a-class-decl
+    (class-name symbol?)
+    (super-name symbol?)
+    (field-names (list-of symbol?))
+    (m-decls (list-of method-decl?)))
+
+(define-datatype method-decl method-decl?
+  (a-method-decl
+    (method-name symbol?)
+    (vars (list-of symbol?))
+    (body expression?)))
+```
+
+La `class-decl` consiste en el nombre de la clase, el nombre de la superclase, los campos y la lista de métodos. Por su parte, un `method-decl` consiste en un nombre (símbolo), los argumentos de entrada (lista de símbolos) y una expresión que define el cuerpo del método.
+
+####
+**El ambiente de clases y la variable global the-class-env**
+
+Para gestionar las clases en el interpretador, se utiliza una variable global denominada `the-class-env`. Esta variable se encarga de almacenar las declaraciones de clase procesadas. Al inicio, el ambiente de clases está vacío y se va poblando conforme se declaran las clases en el código fuente.
+
+El procedimiento `elaborate-class-decls` se encarga de inicializar esta variable global con las declaraciones obtenidas:
+
+```racket
+(define the-class-env '())
+
+(define elaborate-class-decls
+  (lambda (c-decls)
+    (set! the-class-env c-decls)))
+```
+
+Este mecanismo permite que, una vez declaradas las clases, el interpretador pueda consultar `the-class-env` para obtener la información necesaria de cualquier clase durante la ejecución del programa.
+
+####
+**Búsqueda de clases mediante lookup-class**
+
+Para recuperar la información de una clase específica a partir de su nombre, se define el procedimiento `lookup-class`. Este actúa como un observador que busca en el ambiente global `the-class-env` y retorna la declaración correspondiente.
+
+```racket
+(define lookup-class
+  (lambda (name)
+    (let ((maybe-pair (assq name the-class-env)))
+      (if maybe-pair
+          (cadr maybe-pair)
+          (eopl:error 'lookup-class "Unknown class: ~s" name)))))
+```
+
+Si el nombre de la clase existe en el ambiente, el procedimiento devuelve su contenido. En caso de que la búsqueda llegue al final (ambiente vacío) sin éxito, el interpretador arroja un error indicando que la clase no ha sido definida, lo que requiere una revisión del código fuente.
+
+####
+**Representación de objetos como una lista de partes**
+
+En la implementación simple, un objeto se representa como una lista de partes, donde cada parte corresponde a una clase dentro de su cadena de herencia. Esta estructura permite manejar la jerarquía de clases de forma secuencial.
+
+La lista se organiza de la siguiente manera:
+- La primera posición representa la clase más baja en la jerarquía (la clase del objeto instanciado).
+- A medida que se avanza en la lista, se encuentran las partes de las superclases superiores.
+- El final de la cadena de herencia, correspondiente a la clase `object`, se representa mediante una lista vacía.
+
+Por ejemplo, si se tiene una cadena de herencia donde `C3` extiende de `C2`, `C2` extiende de `C1`, y `C1` extiende de `object`, la representación de un objeto de la clase `C3` sería:
+
+```racket
+;; Representación conceptual de un objeto de clase C3
+(list parte-C3 parte-C2 parte-C1 '())
+```
+
+Esta implementación asume herencia simple (una sola fila), donde cada clase tiene exactamente una superclase hasta llegar al tope de la jerarquía.
+
+####
+**Ejemplo de jerarquía y herencia en la implementación simple**
+
+Considerando un sistema con las siguientes declaraciones:
+- `class1` extiende de `object` con campos `x`, `y` y método `initialize`.
+- `class2` extiende de `class1` con campo `y` y método `initialize` que invoca `super initialize`.
+- `class3` extiende de `class2`.
+
+Al declarar un objeto de `class3`, el interpretador construye una lista de partes que refleja esta estructura. Siempre se mantiene la característica de que la herencia es lineal. Si existiera una `class4` que también extiende de `class2`, un objeto de `class4` tendría su propia cadena: `class4` -> `class2` -> `class1` -> `object`. 
+
+No se maneja herencia múltiple, lo que garantiza que cada objeto sea una secuencia clara de partes desde la clase más específica hasta la raíz de la jerarquía.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 48 Objetos simples Parte 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=fbWUE8jvebo
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,85 @@
+####
+**Introducción a la implementación de tipos en el lenguaje**
+
+En este punto se abordarán los aspectos a implementar en el lenguaje, tomando como punto de partida el `interpretador de asignación`. El lenguaje desarrollado será `fuerte` y `estáticamente tipado`. Que sea `fuerte` significa que no se permiten ni se toleran errores de tipos. Que sea `estáticamente tipado` implica que, desde el principio, se deben especificar los tipos de las variables. Si se presenta algún error de tipos, el sistema no lo permitirá y enviará un mensaje al programador indicando que su código tiene un error y debe revisarlo.
+
+####
+**Definición de errores de tipos**
+
+Un `error de tipo` ocurre, por ejemplo, al intentar aplicar un `entero` o un `booleano` a un argumento cuando se espera un procedimiento. En una expresión como `(p 5)`, el elemento `p` debe ser un `procedimiento` o una `primitiva`. Otros casos de errores de tipos incluyen:
+
+- El intento de aplicar un procedimiento o primitiva a un número errado de argumentos. Si la primitiva espera 10 argumentos, deben proporcionarse exactamente 10; si el procedimiento espera 5 argumentos, deben ser exactamente 5.
+- El intento de aplicar una primitiva que espera un `entero` a un valor que no es un `entero`.
+- El intento de usar un valor no `booleano` como la prueba de una expresión condicional. En las expresiones condicionales, se debe validar que la pregunta sea de tipo `booleano`.
+
+Es importante aclarar que errores como la `división por cero` no son considerados errores de tipo, sino errores de `uso de tipos`.
+
+####
+**El procedimiento type-of-expression**
+
+Se define un procedimiento llamado `type-of-expression` que toma una expresión `s` y un ambiente de tipos `tm` que asocia cada variable con un tipo. Este procedimiento asigna a una expresión un tipo `t` con la siguiente propiedad: siempre que la expresión sea ejecutada en un ambiente donde cada variable tiene el tipo especificado por `tm`, el resultado será de tipo `t`.
+
+Si una variable espera un tipo `entero` en el ambiente de tipos, se espera que la evaluación de esa variable en la función `type-of-expression` también resulte en un `entero`. El análisis está basado en el principio de que, si se conocen los tipos de los valores de cada una de las variables de una expresión, se puede deducir el tipo del valor de la expresión resultante.
+
+####
+**Reglas de tipamiento para literales y variables**
+
+El procedimiento `type-of-expression` se comporta de la siguiente manera para los casos básicos:
+
+- Si la expresión es un número, el resultado será siempre un `entero`.
+- Si es una expresión booleana (`true` o `false`), el resultado siempre será `booleano`.
+- Si la expresión es una variable, el resultado será el especificado por el ambiente de tipos. Se debe buscar qué tipo está registrado para ese identificador en `tm`.
+
+Las reglas se pueden expresar de la siguiente forma:
+- `type-of-expression(un-numero) = int`
+- `type-of-expression(true-o-false) = bool`
+- `type-of-expression(id) = apply-env(tm, id)`
+
+####
+**Estrategia de reglas de tipamiento y aplicaciones**
+
+Para la evaluación de expresiones se utiliza la estrategia conocida como `reglas de tipamiento`, que consiste en evaluar condicionales sobre las condiciones que se cumplen para especificar un tipo como consecuencia. La estructura es: si `condición 1` y `condición 2` y `condición n`, entonces `consecuencia`.
+
+En una expresión de aplicación de la forma `(reitor rand1 rand2 ... randn)`, el tipo del resultado se infiere del tipo del operador y de los tipos de los operandos:
+- El operador (`reitor`) debe ser obligatoriamente un tipo `procedimiento`.
+- Si el tipo del operador es `t1 * t2 * ... * tn -> t`, debe haber exactamente `n` operandos.
+- Los tipos de los argumentos ingresados deben coincidir con los tipos que espera el procedimiento: `rand1` es de tipo `t1`, `rand2` es de tipo `t2`, hasta `randn` de tipo `tn`.
+- Si se cumplen estas condiciones, la evaluación de la aplicación es de tipo `t`.
+
+Por ejemplo, en una aplicación `(p x y)`, si `p` tiene el tipo `t1 * t2 -> tn`, se requiere que `x` sea de tipo `t1` y `y` sea de tipo `t2`. El resultado de la evaluación será únicamente de tipo `tn`.
+
+####
+**Regla de tipamiento de los condicionales**
+
+La regla de tipamiento para las expresiones condicionales establece los siguientes requisitos:
+- La expresión de prueba (`test-expression`) debe ser de tipo `boolean`.
+- La expresión para el caso verdadero (`true-expression`) y la expresión para el caso falso (`false-expression`) deben tener el mismo tipo `t`.
+Si estas condiciones se cumplen, el resultado del condicional completo es de tipo `t`.
+
+####
+**Regla de tipamiento de los procedimientos**
+
+Para una expresión que crea un procedimiento, como `(proc (x1 x2 ... xn) body)`, el procedimiento resultante tiene el tipo `t1 * t2 * ... * tn -> t`. Cada entrada `xi` está asociada a un tipo `ti` y el procedimiento debe tener exactamente `n` argumentos. Se puede demostrar que, cuando el cuerpo de la expresión se ejecuta bajo estas asociaciones, el resultado debe ser de tipo `t`.
+
+La regla de tipamiento para los procedimientos se define así:
+Si el tipo de `x1` es `t1`, el de `x2` es `t2` hasta `xn` igual a `tn`, y el cuerpo de la función produce un tipo `t`, entonces el tipo del procedimiento es `t1 * t2 * t3 * ... * tn -> t`.
+
+####
+**Estrategias de Chequeo e Inferencia de tipos**
+
+La regla de los procedimientos presenta el problema de cómo encontrar los tipos de los parámetros y de la salida, ya que en una definición como `(proc (x1 x2 ... xn) body)` no resulta evidente qué tipo tiene cada variable o la expresión resultante sin evaluarla. Para resolver esto, se utilizan dos estrategias:
+
+1. **Chequeo de tipos (estático):** Requiere que el programador brinde la información sobre los tipos de las variables. Por ejemplo, definir `proc (int x, int y)`. Se especifican los tipos de entrada y el tipo de lo que devolverá.
+2. **Inferencia de tipos (dinámico):** El analizador deduce los tipos analizando la expresión que está dentro del cuerpo del procedimiento. Esto implica un análisis adicional para el interpretador.
+
+Aunque el interpretador académico posee limitaciones y ciertos análisis no podrán realizarse, se implementará la capacidad de realizar inferencia de tipos en alguna medida para el estudio de estos lenguajes.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 37 Chequeo de tipos Reglas de implementación.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=KS3IishsjUM
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

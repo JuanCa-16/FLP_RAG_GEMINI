@@ -20,18 +20,17 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 # Nombres de las carpetas de entrada y salida
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-CARPETA_ENTRADA = os.path.join(BASE_DIR, "TXT_METADATA")
-CARPETA_SALIDA = os.path.join(BASE_DIR, "NEW_TXT_GEMINI")
-
-os.makedirs(CARPETA_SALIDA, exist_ok=True) # Crear la carpeta de salida si no existe
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "data", "txt", "raw", "NEW")
+CARPETA_SALIDA = os.path.join(BASE_DIR,  "data", "txt", "processed", "GEMINI_3_FLASH","GEMINI_PDFS_VIDEOS")
+os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 # ----------------------------
 # CONTROL DE RATE LIMITING
 # ----------------------------
 # Gemini 1.5 Flash: 15 peticiones por minuto
-MAX_REQUESTS_PER_MINUTE = 15
+MODELO = "gemini-3-flash-preview" 
+MAX_REQUESTS_PER_MINUTE = 5
 REQUEST_INTERVAL = 60.0 / MAX_REQUESTS_PER_MINUTE  # ~4 segundos entre peticiones
 last_request_time = 0
 
@@ -140,6 +139,12 @@ def limpiar_con_reintentos(texto, intentos=3, espera=10):
     - Mantener el orden de presentación de los temas tal como aparecen en la clase
     - No reorganizar contenido por tema si eso rompe el flujo pedagógico original
 
+    NOTACIÓN MATEMÁTICA:
+    - Usar exclusivamente texto plano o símbolos Unicode para expresiones matemáticas
+    - Escribir conjuntos y expresiones de forma directa: usar formato plano como Σ = a, b, c
+    - NO usar ningún tipo de notación especial, markup matemático o formatos externos
+    - Las expresiones deben ser legibles directamente en texto sin renderizado adicional
+
     FORMATO MARKDOWN:
     - Bloques de código con sintaxis correcta:
     ```lenguaje
@@ -171,9 +176,6 @@ def limpiar_con_reintentos(texto, intentos=3, espera=10):
     {texto}
 
     """
-    # Cambiado a gemini-3.1-flash-lite-preview para respetar límite de 15 peticiones/minuto
-    MODELO = "gemini-3.1-flash-lite-preview" 
-
     for i in range(intentos):
         try:
             # Esperar antes de hacer la petición para respetar rate limit

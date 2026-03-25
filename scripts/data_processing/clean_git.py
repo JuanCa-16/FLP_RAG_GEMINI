@@ -17,12 +17,13 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # root
 
-CARPETA_ENTRADA = os.path.join(BASE_DIR, "GIT_FLP")  # Carpeta padre con las clases
-CARPETA_SALIDA = os.path.join(BASE_DIR, "NEW_GIT_FLP_GEMINI")
-ARCHIVO_METADATA_JSON = os.path.join(BASE_DIR, "tematicas.json")  # Ruta al JSON
 
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "data", "txt", "raw", "NEW")
+CARPETA_SALIDA = os.path.join(BASE_DIR,  "data", "txt", "processed", "GEMINI_3_FLASH","GEMINI_GIT")
+ARCHIVO_METADATA_JSON = os.path.join(BASE_DIR, "data", "metadata","tematicas.json")  # Ruta al JSON
 
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
@@ -30,7 +31,7 @@ os.makedirs(CARPETA_SALIDA, exist_ok=True)
 # CONTROL DE RATE LIMITING
 # ----------------------------
 # Gemini 1.5 Flash: 15 peticiones por minuto
-MAX_REQUESTS_PER_MINUTE = 15
+MAX_REQUESTS_PER_MINUTE = 5
 REQUEST_INTERVAL = 60.0 / MAX_REQUESTS_PER_MINUTE  # ~4 segundos entre peticiones
 last_request_time = 0
 
@@ -50,7 +51,7 @@ def esperar_rate_limit():
     last_request_time = time.time()
 
 
-MODELO = "gemini-3.1-flash-lite-preview"
+MODELO = "gemini-3-flash-preview"
 
 print(f"🌟 Script de procesamiento de archivos web iniciado.")
 print(f"   Modelo: Gemini 1.5 Flash")
@@ -321,6 +322,12 @@ def organizar_contenido_web(contenido_original):
     - Formato correcto: digraph nombre { ... }
     - Nodos: A [label="texto"]
     - Aristas: A -> B [label="etiqueta"]
+
+    NOTACIÓN MATEMÁTICA:
+    - Usar exclusivamente texto plano o símbolos Unicode para expresiones matemáticas
+    - Escribir conjuntos y expresiones de forma directa: usar formato plano como Σ = a, b, c
+    - NO usar ningún tipo de notación especial, markup matemático o formatos externos
+    - Las expresiones deben ser legibles directamente en texto sin renderizado adicional
 
     FORMATO MARKDOWN:
     - Bloques de código con sintaxis correcta:

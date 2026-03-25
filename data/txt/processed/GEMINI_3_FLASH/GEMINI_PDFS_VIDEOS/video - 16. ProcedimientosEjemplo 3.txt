@@ -1,0 +1,114 @@
+####
+**Ambiente inicial y definición de la clausura f**
+
+En este ejemplo se evalúa el funcionamiento de los ambientes con procedimientos. El estado inicial comienza con un `ambiente vacío` (`empty-env`). A partir de este, se define el `ambiente 0` (`env0`) que contiene las siguientes variables y valores:
+
+- `x = 4`
+- `y = 2`
+- `z = 5`
+- `f`: Es una `clausura` (`closure`) que recibe un parámetro `y`. El cuerpo del procedimiento realiza la operación `*(y, sub1(y))` y almacena el `ambiente vacío`.
+
+El hecho de que `f` almacene el `ambiente vacío` implica que cualquier llamado a esta función extenderá directamente de ese ambiente, sin importar el contexto donde sea invocada posteriormente.
+
+####
+**Creación del ambiente env1**
+
+Sobre el ambiente inicial, se define un primer bloque `let` que genera el `environment 1` (`env1`). En este nivel se definen:
+
+- `g`: Una `clausura` que recibe un parámetro `x`. Su cuerpo ejecuta la operación `+(y, (f x))`. Esta clausura extiende del `ambiente 0`.
+- `m`: Una variable con el valor 6.
+
+```racket
+let g = proc (x) +(y, (f x))
+    m = 6
+```
+
+####
+**Creación del ambiente env2**
+
+Posteriormente, se define un segundo bloque `let` que genera el `environment 2` (`env2`), el cual contiene las siguientes definiciones:
+
+- `g`: Una nueva `clausura` que recibe dos parámetros, `x` e `y`. Su cuerpo ejecuta `*(x, (g y))`. Esta clausura almacena el ambiente en el que está siendo creada, que es el `env1`.
+- `h`: Una `clausura` que no recibe argumentos y ejecuta el llamado `(g m)`. Esta también almacena el `env1`.
+- `q`: Una variable con el valor 7.
+
+```racket
+let g = proc (x, y) *(x, (g y))
+    h = proc () (g m)
+    q = 7
+```
+
+Sobre este `environment 2` se procederá a evaluar la expresión final `-( (h), q)`.
+
+####
+**Evaluación de la expresión principal y llamado a h**
+
+Para resolver la expresión `-( (h), q)`, se realizan los siguientes pasos:
+
+1. Se busca el valor de `q` en el ambiente actual (`env2`), encontrando que `q = 7`.
+2. Se evalúa el llamado al procedimiento `h`. Aunque `h` no recibe argumentos, su ejecución implica la creación de un nuevo ambiente.
+
+Al ejecutar `h`, se genera el `environment h`. Este ambiente consiste en dos listas vacías (pues no hay parámetros), pero su importancia radica en que extiende del ambiente guardado en su clausura, es decir, el `env1`.
+
+####
+**Búsqueda y ejecución de g dentro de h**
+
+Dentro del cuerpo de `h`, se debe evaluar la instrucción `(g m)`:
+
+1. Se busca el valor de `m`. Al buscar en la jerarquía desde `env1`, se encuentra que `m = 6`.
+2. Se busca el procedimiento `g`. En este punto hay dos definiciones de `g`. Sin embargo, como `h` extiende de `env1`, se utiliza el `g` definido en ese ambiente (el que recibe un solo parámetro `x`). Si se intentara utilizar el `g` del `env2`, el sistema arrojaría un error de aridad porque ese procedimiento espera dos variables y solo se le está pasando una.
+
+Se crea entonces el `environment g` donde el parámetro `x = 6`. Este ambiente extiende de `env0`, que es el ambiente que la clausura de `g` tenía almacenado.
+
+####
+**Evaluación de f y resolución de la operación en g**
+
+Dentro del `environment g`, se ejecuta la instrucción `+(y, (f x))`:
+
+1. Se busca `y`. Al no estar en el ambiente actual de `g`, se busca en el ambiente del que extiende (`env0`), encontrando `y = 2`.
+2. Se evalúa `(f 6)`. Esto genera un nuevo ambiente, el `environment f`, donde el parámetro `y = 6`.
+3. El `environment f` extiende del `ambiente vacío` (según su definición original). La operación en `f` es `*(y, sub1(y))`.
+4. El cálculo es `6 * (6 - 1) = 6 * 5 = 30`.
+
+El resultado de `(f 6)` es 30. Volviendo a la operación de `g`, tenemos `2 + 30 = 32`. Por lo tanto, el valor retornado por el llamado a `h` es 32.
+
+####
+**Resultado final de la expresión**
+
+Una vez obtenido el valor del procedimiento `h`, se completa la operación de la resta inicial `-( (h), q)`:
+
+- Valor de `h`: 32
+- Valor de `q`: 7
+- Operación: `32 - 7 = 25`
+
+El resultado final de la ejecución de todo el código es 25. Este proceso demuestra cómo cada llamado a un procedimiento implica la creación de un nuevo ambiente y cómo las clausuras mantienen la referencia al ambiente donde fueron creadas.
+
+####
+**Código fuente completo del ejercicio**
+
+A continuación se presenta el código fuente que representa la ejecución analizada, respetando la estructura de bloques y procedimientos:
+
+```racket
+let x = 4
+    y = 2
+    z = 5
+    f = proc (y) *(y, sub1(y))
+in let g = proc (x) +(y, (f x))
+       m = 6
+   in let g = proc (x, y) *(x, (g y))
+          h = proc () (g m)
+          q = 7
+      in -( (h), q)
+```
+
+Este ejemplo ilustra la abstracción y la conexión de ambientes necesaria para comprender el flujo de programas con procedimientos y `scope léxico`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 16. ProcedimientosEjemplo 3.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=JJcxJbQPn_U
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

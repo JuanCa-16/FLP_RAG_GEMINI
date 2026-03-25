@@ -1,0 +1,56 @@
+####
+**Uso y sintaxis de la expresión cases**
+
+Para trabajar con los `data-types`, se utiliza la expresión `cases`. Esta herramienta permite extraer la información contenida en un tipo de dato y descomponerla para poder manipularla. La estructura sintáctica de `cases` es la siguiente:
+
+```racket
+(cases nombre-tipo expresión
+  (nombre-variante (nombre-campo ...) expresión-consecuente)
+  ...
+  (else expresión-por-defecto))
+```
+
+El uso de `else` es opcional y se emplea cuando el tipo de dato tiene múltiples variantes y solo se desea manejar explícitamente algunas de ellas, dejando un comportamiento por defecto para las restantes. Esta estructura es fundamental para la construcción de interpretadores.
+
+####
+**Evaluación de la expresión cases**
+
+La expresión `cases` evalúa una expresión que debe dar como resultado un valor `v` perteneciente al `nombre-tipo` especificado. El proceso de evaluación consiste en:
+
+1. Validar que la expresión evaluada sea del tipo `nombre-tipo`.
+2. Identificar a qué `nombre-variante` corresponde el valor `v`.
+3. Asociar cada uno de los `nombre-campo` definidos en la variante a los valores correspondientes dentro de `v`.
+4. Evaluar la `expresión-consecuente` asociada a dicha variante y retornar su valor.
+
+Cada variante debe contemplar el número exacto de campos definidos en la declaración del `data-type`.
+
+####
+**Aplicación de cases en estructuras de árboles binarios**
+
+Al aplicar `cases` en estructuras de datos como árboles binarios, es necesario respetar la cantidad de campos definidos para cada variante:
+
+- **Variante leaf**: En este modelo, cuenta con un solo campo.
+- **Variante node**: Cuenta con tres campos asociados: `key`, `left` y `right`.
+
+En consecuencia, al implementar el `cases`, la sección correspondiente a `leaf` manejará un parámetro, mientras que la sección de `node` manejará los tres parámetros correspondientes para poder extraer y operar con la información del árbol.
+
+####
+**Manejo de expresiones de cálculo lambda con cases**
+
+A partir de la definición de un `data-type` para expresiones de cálculo lambda (`lc-expression`), se utiliza `cases` para procesar sus tres variantes posibles:
+
+- `var-expression`: Posee un solo campo (el nombre de la variable).
+- `lambda-expression`: Posee dos campos, que representan la variable ligada (`bound-var`) y el cuerpo (`body`).
+- `app-expression`: Posee dos campos correspondientes a las expresiones de la aplicación.
+
+El `cases` permite definir la lógica consecuente para cada una de estas situaciones. Un ejemplo de esto se observa en la implementación de funciones como `occurs-free`, donde se extraen los componentes de la `lc-expression` para determinar el comportamiento del programa.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 25  Abstracción de datos Cases.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=-axhDvoZYQ0
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

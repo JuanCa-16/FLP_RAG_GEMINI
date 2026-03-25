@@ -1,0 +1,424 @@
+####
+**Efectos en la computación y asignación de memoria**
+
+Hasta el momento, solo se ha considerado el valor producido por una computación. No obstante, una computación puede también tener efectos: en ella se puede leer, imprimir o alterar el estado de la memoria o de un archivo del sistema.
+
+La diferencia entre producir un valor y producir un efecto es que un efecto es global, es decir, afecta a toda la computación. En este contexto, el enfoque principal será un único efecto: la asignación de ubicaciones en memoria.
+
+####
+**Diferencias entre ligadura y asignación**
+
+Existen distinciones fundamentales entre la `ligadura` y la `asignación` de variables:
+
+- La `ligadura` de una variable es una acción local, mientras que la `asignación` de una variable es potencialmente global.
+- Una `ligadura` crea una nueva asociación de un nombre con un valor, mientras que la `asignación` cambia el valor de una `ligadura` existente.
+- La `ligadura` comprende la asociación de nombres con valores; la `asignación` comprende el compartimiento de valores entre diferentes procedimientos.
+
+####
+**Extensión del lenguaje para ejecución secuencial y asignación**
+
+Para permitir la asignación de variables es necesario permitir la ejecución secuencial de expresiones. El lenguaje será extendido para incorporar las expresiones `begin ...; ... end` (ejecución secuencial) y `set ... = ...` (asignación).
+
+Para este lenguaje se extiende el conjunto de valores expresados y denotados:
+
+- `Valor Expresado` = Número + Booleano + ProcVal
+- `Valor Denotado` = Ref(Valor Expresado)
+
+Las producciones gramaticales añadidas son:
+
+- `<expresión> ::= set <identificador> = <expresión>` (`varassign-exp (ids rhs-exp)`)
+- `<expresión> ::= begin <expresión> { ; <expresión> }* end` (`begin-exp (exp exps)`)
+
+Especificación de la gramática en Racket:
+
+```racket
+(expression
+  ("begin" expression (arbno ";" expression) "end")
+  begin-exp)
+
+(expression
+  ("set" identifier "=" expression)
+  set-exp)
+```
+
+####
+**Ejemplos de programas con asignación y ejecución secuencial**
+
+Los siguientes programas ilustran el uso de las nuevas extensiones del lenguaje:
+
+**Uso de begin y set:**
+```racket
+let m = 0
+in
+begin
+  set m = add1(m);
+  set m = *(m, 2);
+  m
+end
+```
+
+**Asignación dentro de un procedimiento:**
+```racket
+let x = 100
+in
+let p = proc (x)
+  begin
+    set x = add1(x);
+    x
+  end
+in
++((p x), (p x))
+```
+
+####
+**Semántica de evaluación para begin y set**
+
+Para determinar el valor de una expresión `begin(exp exps)` se debe evaluar la expresión `exp` y cada una de las expresiones en la lista `exps`. Si `exps` es una lista vacía, se retorna el valor de `exp`. En caso contrario, se retorna el valor de la última expresión en `exps`.
+
+Para evaluar una expresión de asignación `set`, se debe evaluar la expresión de la parte derecha de la asignación. Luego, se debe modificar el contenido correspondiente a la variable con el identificador de la parte izquierda por este valor. El resultado de la expresión de asignación original es cualquier valor simbólico (como 1), dado que esta expresión solo causa un efecto pero no produce un valor académico relevante por sí misma.
+
+####
+**Problemas de estado en ambientes con procedimientos**
+
+Un `ambiente` es un tipo de dato que asigna valores a variables. Con la inclusión de procedimientos, surgió el problema de que el estado del ambiente no se guardaba correctamente en el momento de la aplicación, ocasionando retornos errados.
+
+Con la asignación de variables surge otro inconveniente: cuando se crea un procedimiento, se guarda el estado del ambiente. Por esta razón, al llamar al procedimiento, este se ejecuta sobre el ambiente almacenado y no es sensible a los cambios posteriores en las variables del ambiente original.
+
+####
+**Ejemplo de insensibilidad al cambio en ambientes locales**
+
+Considere la siguiente expresión:
+
+```racket
+let z = 0
+in
+let f = proc (x) z
+in
+begin
+  set z = 1;
+  (f 2)
+end
+```
+
+La expresión anterior tiene como valor 0, en vez de 1. Esto se debe a que, en el momento de la asignación de `z` a 1, el valor de dicha variable en el ambiente almacenado no cambió; lo que cambió fue la asociación creada en la ligadura local. Al llamar al procedimiento, la evaluación se realiza en el ambiente almacenado (donde `z` es 0), por lo que retorna 0.
+
+####
+**Referencias, Store y L-valores**
+
+Para solucionar los problemas de actualización de estado, cada identificador debe denotar la dirección de una ubicación en memoria (denominada `store`). Dicha dirección se llama `referencia` y la asignación modifica su contenido.
+
+- `L-valores`: Son las referencias o ubicaciones asociadas con variables que aparecen al lado izquierdo (`Left`) de una asignación.
+- `R-valores`: Son los valores expresados que aparecen en el lado derecho (`Right`) de una asignación.
+
+####
+**Interfaz del tipo de dato referencia**
+
+Una `referencia` es un tipo de dato que contiene dos campos: un entero (posición) y un vector. La interfaz consta de:
+
+- `a-ref (n v)`: Constructor que crea una referencia en la posición `n` del vector `v`.
+- `deref (r)`: Observador que retorna el valor almacenado en la referencia.
+- `setref! (r v)`: Modificador que cambia el valor almacenado por la referencia.
+
+Ejemplo técnico: Una referencia `a-ref 2` apunta a la posición 2 de un vector; si dicho vector contiene `[0, 1, 7, 3]`, el valor de la referencia es 7.
+
+####
+**Implementación del tipo de dato referencia en Racket**
+
+```racket
+(define-datatype reference reference?
+  (a-ref
+    (position integer?)
+    (vec vector?)))
+
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+        (vector-ref vec pos)))))
+
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+        (vector-set! vec pos val)))))
+```
+
+####
+**Implementación de ambientes con vectores de valores**
+
+Un ambiente se estructura como una lista de símbolos asociada a un vector de valores.
+
+```racket
+(define-datatype environment environment?
+  (empty-env-record)
+  (extended-env-record
+    (syms (list-of symbol?))
+    (vec vector?)
+    (env environment?)))
+
+(define empty-env
+  (lambda ()
+    (empty-env-record)))
+
+(define extend-env
+  (lambda (syms vals env)
+    (extended-env-record syms (list->vector vals) env)))
+```
+
+####
+**Implementación de ambientes recursivos e iota**
+
+Para manejar procedimientos recursivos y la indexación, se utilizan las siguientes funciones:
+
+```racket
+(define extend-env-recursively
+  (lambda (proc-names idss bodies old-env)
+    (let ((len (length proc-names)))
+      (let ((vec (make-vector len)))
+        (let ((env (extended-env-record proc-names vec old-env)))
+          (for-each
+            (lambda (pos ids body)
+              (vector-set! vec pos (closure ids body env)))
+            (iota len)
+            idss
+            bodies)
+          env)))))
+
+(define iota
+  (lambda (end)
+    (let loop ((next 0))
+      (if (>= next end)
+          '()
+          (cons next (loop (+ 1 next)))))))
+```
+
+####
+**Interfaz apply-env-ref y apply-env**
+
+Se incluye la operación `apply-env-ref` para que, al encontrar un identificador, se retorne la referencia en lugar de su valor directamente. `apply-env` se define en términos de `apply-env-ref` y `deref`.
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (deref (apply-env-ref env sym))))
+
+(define apply-env-ref
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+        (eopl:error 'apply-env-ref "No binding for ~s" sym))
+      (extended-env-record (syms vals env)
+        (let ((pos (rib-find-position sym syms)))
+          (if (number? pos)
+              (a-ref pos vals)
+              (apply-env-ref env sym)))))))
+```
+
+####
+**Actualización de eval-expression para asignación y secuenciación**
+
+El comportamiento de `set` y `begin` se integra en el intérprete mediante las siguientes cláusulas:
+
+```racket
+(varassign-exp (id rhs-exp)
+  (begin
+    (setref!
+      (apply-env-ref env id)
+      (eval-expression rhs-exp env))
+    1))
+
+(begin-exp (exp exps)
+  (let loop ((acc (eval-expression exp env))
+             (exps exps))
+    (if (null? exps)
+        acc
+        (loop (eval-expression (car exps) env)
+              (cdr exps)))))
+```
+
+####
+**Ejemplos de ejecución y resultados de asignación**
+
+- **Ejemplo 1:**
+```racket
+let x = 2 in set x = 3
+```
+Valor: 1 (resultado simbólico de la asignación).
+
+- **Ejemplo 2:**
+```racket
+let x = 2 in begin set x = 3; x end
+```
+Valor: 3.
+
+- **Ejemplo 3:**
+```racket
+let x = 100
+in let p = proc (x) begin set x = add1(x); x end
+in +((p x), (p x))
+```
+Valor: 202.
+
+####
+**Paso por valor (Call by Value)**
+
+En el lenguaje definido, cada llamado a un procedimiento crea una nueva referencia para cada parámetro formal. Esta política es conocida como `paso por valor`. Cuando se realiza una asignación a un parámetro formal, el cambio es local al procedimiento.
+
+Ejemplo:
+```racket
+let p = proc (x) set x = 4
+in let a = 3
+in begin (p a); a end
+```
+
+En el llamado `(p a)`, se evalúa `a` y se crea una nueva referencia con el valor 3. La asignación `set x = 4` afecta solo a esa nueva referencia interna. La expresión final `a` se evalúa en el ambiente original donde `a` sigue siendo 3. El valor total es 3.
+
+####
+**Visualización de ambientes en paso por valor**
+
+La evaluación de la expresión anterior genera una estructura de ambientes donde se observa la separación entre la variable original y la referencia creada para el procedimiento:
+
+**Descripción técnica:** El diagrama muestra el ambiente global `env0` que contiene el `closure` de `p`. El ambiente `env2` se crea para la ejecución de `p`, conteniendo un vector con el valor 4 (resultado del `set`), pero este es independiente del valor 3 almacenado en el ambiente donde se definió `a`.
+
+####
+**Paso por referencia (Call by Reference)**
+
+El `paso por referencia` permite pasar variables a un procedimiento de forma que estas puedan ser asignadas y el cambio sea visible tanto dentro como fuera del procedimiento. Esto se logra pasando una referencia a la ubicación de la variable en lugar de su contenido.
+
+Bajo este mecanismo:
+- `Valor Expresado` = Número + Booleano + ProcVal
+- `Valor Denotado` = Ref(Valor Expresado)
+
+La diferencia radica en la creación de referencias: en el `paso por valor` se crea una nueva referencia para cada operando; en el `paso por referencia` se crea una nueva ubicación solo si el operando no es una variable.
+
+####
+**Implementación de Blancos (Targets)**
+
+Para el paso por referencia, una referencia apunta a un `target` (blanco), que puede ser:
+- `Blancos directos`: Contienen valores expresados (comportamiento similar a paso por valor).
+- `Blancos indirectos`: Contienen referencias a otros valores (permite compartir la ubicación).
+
+```racket
+(define-datatype target target?
+  (direct-target
+    (expval expval?))
+  (indirect-target
+    (ref ref-to-direct-target?)))
+```
+
+####
+**Predicados para el tipo de dato target**
+
+```racket
+(define expval?
+  (lambda (x)
+    (or (number? x) (procval? x))))
+
+(define ref-to-direct-target?
+  (lambda (x)
+    (and (reference? x)
+         (cases reference x
+           (a-ref (pos vec)
+             (cases target (vector-ref vec pos)
+               (direct-target (v) #t)
+               (indirect-target (v) #f)))))))
+```
+
+####
+**Deref y Setref! para Paso por Referencia**
+
+La implementación de `deref` y `setref!` debe considerar si el blanco es directo o indirecto:
+
+**Deref:**
+```racket
+(define deref
+  (lambda (ref)
+    (cases target (primitive-deref ref)
+      (direct-target (expval) expval)
+      (indirect-target (ref1)
+        (cases target (primitive-deref ref1)
+          (direct-target (expval) expval)
+          (indirect-target (p) (eopl:error 'deref "Illegal reference")))))))
+```
+
+**Setref!:**
+```racket
+(define setref!
+  (lambda (ref expval)
+    (let ((ref (cases target (primitive-deref ref)
+                 (direct-target (expval1) ref)
+                 (indirect-target (ref1) ref1))))
+      (primitive-setref! ref (direct-target expval)))))
+```
+
+####
+**Evaluación de aplicaciones y ligaduras en paso por referencia**
+
+Se modifican las cláusulas de `eval-expression` para manejar los blancos directos en primitivas y expresiones `let`:
+
+```racket
+;; Para primitivas
+(primapp-exp (prim rands)
+  (let ((args (eval-primapp-exp-rands rands env)))
+    (apply-primitive prim args)))
+
+;; Para let
+(let-exp (ids rands body)
+  (let ((args (eval-let-exp-rands rands env)))
+    (eval-expression body (extend-env ids args env))))
+
+(define eval-let-exp-rand
+  (lambda (rand env)
+    (direct-target (eval-expression rand env))))
+```
+
+####
+**Semántica de eval-rand para paso por referencia**
+
+El procedimiento `eval-rand` determina si se pasa un blanco directo o indirecto:
+- Si el operando es una variable (`var-exp`), se retorna un `indirect-target` apuntando a su ubicación actual.
+- Si no es una variable, se evalúa y se retorna un `direct-target`.
+
+```racket
+(define eval-rand
+  (lambda (rand env)
+    (cases expression rand
+      (var-exp (id)
+        (indirect-target
+          (let ((ref (apply-env-ref env id)))
+            (cases target (primitive-deref ref)
+              (direct-target (expval) ref)
+              (indirect-target (ref1) ref1)))))
+      (else
+        (direct-target (eval-expression rand env))))))
+```
+
+####
+**Efecto del paso por referencia y visualización**
+
+Considere nuevamente:
+```racket
+let p = proc (x) set x = 4
+in let a = 3
+in begin (p a); a end
+```
+Con `paso por referencia`, el valor de esta expresión es 4, ya que `x` dentro del procedimiento apunta a la misma ubicación de memoria que `a`.
+
+**Descripción técnica de la estructura:** El ambiente de ejecución del procedimiento `p` contiene un `indirect-target` que apunta a la ubicación original de `a` en el vector del ambiente padre. Cualquier operación `set` sobre `x` modifica directamente el valor 3 por 4 en el blanco directo original.
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 7. Asignacion y paso de parametros

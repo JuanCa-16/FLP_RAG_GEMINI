@@ -1,0 +1,63 @@
+####
+
+**Generación de ambientes y tipos de targets**
+
+Para solucionar estos problemas, analizaremos cómo se generan los ambientes a partir de una expresión, considerando un ambiente inicial vacío en `TN` (Top-Level).
+
+En el primer ambiente, denominado `E0`, se encuentra la variable `P`. Esta variable es un `direct target` que apunta a una `clausura`. Dicha `clausura` contiene el parámetro `X`, el cuerpo del procedimiento y guarda una referencia al ambiente vacío en `TN`.
+
+```racket
+; Representación del Ambiente E0
+P = direct-target(closure(X, (set! X 4), EmptyEnv))
+```
+
+####
+
+**Declaración de variables y Direct Targets**
+
+En el siguiente paso, se define la variable `A` en el ambiente `E1`. La variable `A` tiene un valor de `3` y se clasifica como un `direct target`.
+
+Se define como `direct target` (DT) debido a que su valor está declarado directamente como `3`. Es fundamental indicar si una referencia es un `direct target` o un `indirect target` (ID) al evaluar el estado de los ambientes.
+
+```racket
+; Representación del Ambiente E1 (extiende E0)
+A = direct-target(3)
+```
+
+####
+
+**Evaluación de procedimientos e Indirect Targets**
+
+Al realizar la evaluación de la expresión `(P A)`, se ejecuta el código bajo el ambiente `E1`. En este proceso, se crea un nuevo ambiente para la ejecución del procedimiento `P`. 
+
+Como se está pasando la variable `A` como argumento al parámetro `X`, se crea un `indirect target`. Este `indirect target` para `X` contiene una referencia hacia `A`; es decir, ambas variables están conectadas. El uso de `indirect target` permite que los cambios realizados en el parámetro se reflejen en la variable original externa.
+
+```racket
+; Evaluación de (P A)
+; Creación de Ambiente E2 (extiende el ambiente de la clausura)
+X = indirect-target(A)
+```
+
+####
+
+**Efecto de la asignación y resultado final**
+
+Durante la ejecución del procedimiento, se encuentra la instrucción `set X = 4`. Al modificar `X`, dado que es un `indirect target` conectado a `A`, la modificación afecta directamente a la variable referenciada.
+
+Como resultado de esta operación, el valor en la ubicación de memoria de `A` (que era un `direct target` con valor `3`) se actualiza a `4`. Al finalizar la ejecución de `(P A)`, el valor de la expresión evaluada es `4`. Esta dinámica ilustra la diferencia de comportamiento entre un `direct target` y un `indirect target` cuando se ejecutan procedimientos con paso por referencia.
+
+```racket
+; Estado final tras (set! X 4)
+X = indirect-target(A)
+A = direct-target(4)
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 32. Paso por referencia： Ejemplo 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=Rdvff81e2IY
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

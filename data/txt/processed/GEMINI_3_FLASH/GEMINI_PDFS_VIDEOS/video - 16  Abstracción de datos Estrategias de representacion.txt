@@ -1,0 +1,43 @@
+####
+**Representación de datos y el tipo de datos ambiente**
+
+Cuando se utiliza la `abstracción de datos`, los programas poseen independencia de la representación. Un tipo de datos `ambiente` asocia un valor con cada elemento de un conjunto finito de variables. Este `ambiente` puede ser utilizado para asociar las variables con sus valores en la implementación de un lenguaje de programación. Las variables pueden representarse de cualquier manera, siempre y cuando sea posible verificar la igualdad entre dos variables; por ejemplo, mediante `símbolos`, referencias a `tablas hash` o incluso mediante números.
+
+####
+**Definición y procedimientos del ambiente**
+
+Un `ambiente` es una función cuyo dominio es un conjunto finito de variables y cuyo rango o codominio son todos los valores de `DrRacket`. El tipo de datos cuenta con tres procedimientos fundamentales:
+
+- `empty-env`: Crea un ambiente vacío. Este procedimiento debe producir una representación del ambiente vacío.
+- `apply-env`: Busca un valor dentro de un ambiente. Aplica una representación de un ambiente a un argumento para devolver el valor asociado a una variable.
+- `extend-env`: Crea un ambiente extendido. Produce un nuevo ambiente que se comporta como el original, excepto que asocia un nuevo valor a una variable específica.
+
+####
+**Estructura y gramática del ambiente**
+
+El `ambiente` se define de forma recursiva, donde el ambiente vacío funciona como la condición de parada. Por ejemplo, se puede definir un ambiente donde la variable `d` vale 6, la variable `y` vale 8, la variable `x` vale 7 y la variable `y` también toma el valor 14, extendiéndose sobre el ambiente vacío. Cada ambiente puede ser construido mediante una expresión siguiendo esta gramática:
+
+```racket
+<ambiente> ::= (empty-env)
+            | (extend-env <identificador> <valor> <ambiente>)
+```
+
+Esta estructura permite representar la jerarquía de asociaciones entre variables y valores.
+
+####
+**Estrategias de implementación**
+
+Para implementar la estructura de un `ambiente` se pueden utilizar dos estrategias principales:
+
+- Una estrategia basada en `listas`.
+- Una estrategia basada en `procedimientos`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 16  Abstracción de datos Estrategias de representacion.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=oq0ZwXqmJT0
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

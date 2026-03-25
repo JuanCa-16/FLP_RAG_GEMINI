@@ -16,19 +16,20 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # root
 
-CARPETA_ENTRADA = os.path.join(BASE_DIR, "EJEMPLOS")
-CARPETA_SALIDA = os.path.join(BASE_DIR, "NEW_TXT_EJEMPLOS")
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "data", "txt", "raw", "NEW")
+CARPETA_SALIDA = os.path.join(BASE_DIR,  "data", "txt", "processed", "GEMINI_3_FLASH","GEMINI_EJEMPLO_COD")
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
+
+
+
 
 # ----------------------------
 # CONTROL DE RATE LIMITING
 # ----------------------------
 # Gemini 1.5 Flash: 15 peticiones por minuto
-MAX_REQUESTS_PER_MINUTE = 15
+MAX_REQUESTS_PER_MINUTE = 5
 REQUEST_INTERVAL = 60.0 / MAX_REQUESTS_PER_MINUTE  # ~4 segundos entre peticiones
 last_request_time = 0
 
@@ -48,7 +49,7 @@ def esperar_rate_limit():
     last_request_time = time.time()
 
 
-MODELO = "gemini-3.1-flash-lite-preview"
+MODELO = "gemini-3-flash-preview"
 
 print(f"🌟 Script de documentación de código fuente iniciado.")
 print(f"   Modelo: Gemini 1.5 Flash")
@@ -167,7 +168,6 @@ def generar_documentacion(codigo):
     - No mezclar conceptos distintos en un mismo fragmento
     - Priorizar coherencia temática sobre longitud uniforme
 
-
     ESTRUCTURA DE FRAGMENTOS DE CÓDIGO:
     Cada fragmento que contenga código debe incluir:
     1. Propósito (1-2 líneas): Qué problema resuelve o qué concepto ilustra
@@ -179,6 +179,39 @@ def generar_documentacion(codigo):
     - Usar verbos variados: implementa, demuestra, ilustra, aplica, resuelve, ejemplifica
     - NO repetir "Ejemplo de..." al inicio de cada fragmento
     - Incluir nombres de funciones clave y estructuras sintácticas relevantes
+
+    NOTACIÓN MATEMÁTICA:
+    - Usar exclusivamente texto plano o símbolos Unicode para expresiones matemáticas
+    - Escribir conjuntos y expresiones de forma directa: usar formato plano como Σ = a, b, c
+    - NO usar ningún tipo de notación especial, markup matemático o formatos externos
+    - Las expresiones deben ser legibles directamente en texto sin renderizado adicional
+
+    FORMATO MARKDOWN:
+    - Bloques de código con sintaxis correcta:
+    ```lenguaje
+    (código aquí)
+    ```
+
+    - Usar negrita EXCLUSIVAMENTE para subtítulos de secciones dentro de fragmentos:
+    **Subtítulo de sección**
+
+    - Palabras técnicas importantes, conceptos clave y términos resaltados usar comillas invertidas:
+    `lambda`, `recursión`, `closure`, `scope léxico`
+
+    - Listas con viñetas para enumeraciones:
+    - Punto 1
+    - Punto 2
+
+    - NO usar HTML, solo Markdown puro
+    - NO agregar títulos decorativos inventados (como "Definición:", "Características:")
+    - NO incluir metaexplicaciones del editor
+
+    SALIDA DIRECTA:
+    - INICIAR INMEDIATAMENTE con #### y el primer fragmento
+    - NO incluir texto previo como "Aquí está tu respuesta:", "He procesado el texto:", "Resultado:"
+    - NO incluir encabezados introductorios
+    - NO incluir comentarios del editor
+    - Solo devolver los fragmentos separados por ####
 
     [EJEMPLOS]
 
@@ -229,33 +262,7 @@ def generar_documentacion(codigo):
     **Aplicación**
     Operación fundamental utilizada en cálculos matemáticos y procesamiento de datos numéricos.
 
-    FORMATO MARKDOWN:
-    - Bloques de código con sintaxis correcta:
-    ```lenguaje
-    (código aquí)
-    ```
-
-    - Usar negrita EXCLUSIVAMENTE para subtítulos de secciones dentro de fragmentos:
-    **Subtítulo de sección**
-
-    - Palabras técnicas importantes, conceptos clave y términos resaltados usar comillas invertidas:
-    `lambda`, `recursión`, `closure`, `scope léxico`
-
-    - Listas con viñetas para enumeraciones:
-    - Punto 1
-    - Punto 2
-
-    - NO usar HTML, solo Markdown puro
-    - NO agregar títulos decorativos inventados (como "Definición:", "Características:")
-    - NO incluir metaexplicaciones del editor
-
-    SALIDA DIRECTA:
-    - INICIAR INMEDIATAMENTE con #### y el primer fragmento
-    - NO incluir texto previo como "Aquí está tu respuesta:", "He procesado el texto:", "Resultado:"
-    - NO incluir encabezados introductorios
-    - NO incluir comentarios del editor
-    - Solo devolver los fragmentos separados por ####
-
+    
     CONTENIDO A PROCESAR:
     {codigo}
 """

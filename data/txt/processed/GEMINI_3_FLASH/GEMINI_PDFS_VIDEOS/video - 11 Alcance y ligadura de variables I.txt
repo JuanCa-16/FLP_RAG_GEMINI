@@ -1,0 +1,90 @@
+####
+**Concepto de variable: Ligadura y Referencia**
+
+Una `variable` es un concepto fundamental en los lenguajes de programación. Una `variable` puede ser declarada sin necesidad de instanciarla ni asignarle un valor inicialmente, para ser posteriormente ligada. La `ligadura` ocurre cuando se le asigna un valor directamente.
+
+En el lenguaje `Racket`, por ejemplo, se utiliza la siguiente sintaxis para realizar una `ligadura`:
+
+```racket
+(define x 5)
+```
+
+Por otro lado, en lenguajes como `C++`, una declaración como la siguiente se conoce como una `referencia`:
+
+```cpp
+int x = 8;
+```
+
+El término `variable` es muy general. Dependiendo del lenguaje, a la `ligadura` se le conoce como un `nombre` y a la `referencia` se le conoce propiamente como una `variable`. Cuando se liga un nombre, se está renombrando un valor; por ejemplo, el número 5 se renombra como `x`. Al consultar `x`, este contiene directamente el valor 5. En cambio, en una `referencia`, al consultar `x` se está accediendo a una `dirección de memoria` que apunta hacia donde está guardado el valor.
+
+En el caso de la `ligadura`, el proceso es directo: `x` vale 5 y así se almacena. En lenguajes que manejan `variables` mediante referencias, como `Java`, `C++` o `Python`, la `x` guarda una `dirección de memoria` donde está almacenado el valor.
+
+####
+**Inmutabilidad, Mutabilidad y Evolución de las Variables**
+
+En el contexto de las ligaduras, cuando se establece que `x` es igual a 5, este valor no puede cambiar, ya que se trata de un nombramiento. Una vez definido, `x` permanece como 5; es decir, no es `mutable`. En cambio, en los lenguajes que usan referencias, existe la posibilidad de que el valor asociado a `x` cambie.
+
+Es importante distinguir entre la capacidad de cambio y los conceptos de `mutable` e `inmutable`. La `mutabilidad` se refiere a si la estructura interna de un objeto puede cambiar. Por ejemplo, si en un arreglo se pueden modificar sus elementos internos, es `mutable`; si no es posible, es `inmutable`. Esta es la diferencia fundamental entre las `listas` y las `tuplas` en `Python`.
+
+Históricamente, en los lenguajes funcionales, una ligadura como `(define x 5)` implicaba que `x` sería 5 permanentemente. Esto cambió con la introducción de los lenguajes procedimentales en las décadas de los 60 y 70. En estos lenguajes, `x` se liga a una `posición de memoria` cuyo contenido sí puede ser modificado, aunque la `posición de memoria` en sí no cambie. Este concepto de `asignación` se profundiza habitualmente después de estudiar los fundamentos iniciales de los lenguajes.
+
+####
+**Reglas de alcance: Estático y Dinámico**
+
+El `alcance` (scope) de una variable determina en qué partes del código es visible y depende del lenguaje de programación. Existen dos tipos principales: `alcance estático` y `alcance dinámico`.
+
+1. `Alcance estático`: Cuando una variable se declara dentro de una función (por ejemplo, una variable `j`), su vida útil está limitada exclusivamente a ese entorno.
+2. `Alcance dinámico`: Permite que una variable sea accesible incluso si no ha sido declarada en el entorno local actual, dependiendo de la jerarquía de ejecución. Ejemplos de esto se encuentran en `Octave` y `MATLAB`.
+
+Lenguajes como `Python` o `Ruby` pueden combinar comportamientos. En `Python`, si se declara una variable con la palabra clave `global` dentro de una función, dicha variable se vuelve visible en todo el código. Esto combina elementos de `alcance estático` con capacidades de `alcance global`. El `alcance estático` estándar dicta que si se declara una variable de forma normal, esta solo vive dentro de la función donde fue definida.
+
+####
+**Tipos de Alcance Estático: Block Scope y Function Scope**
+
+Dentro del `alcance estático`, existen dos subdivisiones principales:
+
+1. `Block scope` (Alcance de bloque): La visibilidad de la variable está limitada por delimitadores, usualmente llaves `{ }`. Si se declara una variable dentro de un bloque `if`, `while` o `for`, solo vive allí. Lenguajes como `C++` y `Java` manejan este esquema.
+
+```cpp
+{
+    int x = 8;
+    // x solo es visible dentro de estas llaves
+}
+```
+
+2. `Function scope` (Alcance de función): La variable es visible en toda la función, independientemente de si fue declarada dentro de una estructura de control como un `if`. `Python` es un ejemplo de este comportamiento.
+
+En `Python`, es posible realizar lo siguiente:
+
+```python
+if condicion:
+    a = 8
+else:
+    a = 0
+
+b = a + 8 # 'a' es visible fuera del bloque if/else
+```
+
+Aunque `a` se defina dentro del bloque `if`, su alcance no está limitado a esas líneas, sino que puede vivir en toda la función.
+
+####
+**Alcance en JavaScript: let vs var**
+
+El lenguaje `JavaScript` es un caso particular que maneja ambos tipos de alcance (`block scope` y `function scope`), dependiendo de la palabra clave utilizada:
+
+- `let`: Introduce el `block scope`. Las variables declaradas con `let` dentro de unas llaves (como en un ciclo `for`) no son visibles fuera de ellas.
+- `var`: Utiliza el `function scope`.
+
+Este comportamiento se estandarizó a partir de la versión de 2016 (`ES6`). Anteriormente, el manejo del alcance en `JavaScript` era inconsistente y dependía de diversas interpretaciones de las normas, lo que dificultaba el desarrollo. La llegada de `ES6` (ECMAScript 2016) estructuró el lenguaje, le dio fuerza y permitió un crecimiento significativo en el desarrollo web de frontend al clarificar estas reglas de visibilidad.
+
+Otros lenguajes como `C#` también presentan características de `function scope` en ciertos contextos, permitiendo que una variable creada dentro de un `if` sea visible en toda la función, aunque habitualmente utilizan llaves como delimitadores de bloque.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 11 Alcance y ligadura de variables I.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=zj2QEeqNyLo
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

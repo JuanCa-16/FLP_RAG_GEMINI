@@ -1,0 +1,96 @@
+####
+**Transición del paradigma funcional a la asignación**
+
+Se ha implementado un interpretador bajo el paradigma funcional, donde toda computación tiene un valor y el programa se ejecuta a partir de las relaciones entre funciones. Se introduce el concepto de que una operación puede producir un efecto en la computación, el cual es potencialmente global. Para esto, se trabajará un único efecto: la `asignación`, que permite gestionar ubicaciones en memoria.
+
+####
+**Diferencia entre ligadura y asignación**
+
+La `ligadura` es una acción local. Crea una nueva asociación con un nombre, mientras que la `asignación` cambia el valor de una `ligadura` existente. La `ligadura` asocia nombres con valores en los ambientes:
+
+```racket
+let x = 3
+    y = 8
+in +(x,y)
+```
+
+####
+**Definición del tipo de dato ambiente**
+
+El tipo de dato `environment` permite gestionar las asociaciones entre nombres y valores:
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+    (lid (list-of symbol?)) ;; Nombres
+    (lval (list-of value?)) ;; Valores
+    (old-env environment?))
+)
+```
+
+####
+**Efectos y secuenciación**
+
+Se introduce la capacidad de cambiar los valores de las ligaduras mediante una operación de efecto que no retorna un valor. Dado que habrá cambios en las variables, el programa es gobernado por la `secuenciación`, es decir, por el orden en que se realizan las operaciones.
+
+####
+**Especificación del interpretador con asignación**
+
+En este interpretador, los valores se definen de la siguiente manera:
+- Valores expresados: `Número` + `Booleanos` + `ProcVal`
+- Valores denotados: `Ref(valor expresado)`
+
+La gramática incorpora las siguientes reglas para el manejo de asignación y bloques secuenciales:
+```text
+<expression> ::= set <identifier> "=" <expression> (set-exp)
+             ::= begin <expression> (";" <expression>)* "end" (begin-exp)
+```
+
+####
+**La expresión begin**
+
+El `begin` evalúa una serie de expresiones y retorna el último valor generado. En la gramática, se define mediante una cerradura positiva, lo que garantiza que siempre tendrá al menos una expresión:
+
+```racket
+(expression
+  ("begin" expression (arbno ";" expression) "end")
+  begin-exp)
+```
+
+La implementación en la función `eval-expression` asegura que las expresiones se evalúen en orden y se retorne el valor de la última:
+
+```racket
+(begin-exp (exp lexp)
+  (letrec
+    ((evaluation
+       (lambda (lexp)
+         (cond
+           [(null? (cdr lexp))
+            (eval-expression (car lexp) env)]
+           [else
+            (begin
+              (eval-expression (car lexp) env)
+              (evaluation (cdr lexp)))]))))
+    (evaluation (cons exp lexp))))
+```
+
+####
+**Ejemplos de evaluación de secuenciación**
+
+La evaluación de bloques `begin` retorna exclusivamente el resultado de la última expresión evaluada:
+
+- `--> begin 1 end` retorna `1`
+- `--> begin 1; 2; 3; 4 end` retorna `4`
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Asignación
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Asignaci%C3%B3n/

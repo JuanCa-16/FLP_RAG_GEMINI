@@ -1,0 +1,167 @@
+#### **Implementación de tipos en el lenguaje de programación**
+
+En el diseño de nuestro lenguaje de programación, definiremos inicialmente los tipos fundamentales que se podrán manejar:
+
+- `intype`: Representa el tipo entero.
+- `booltype`: Representa el tipo booleano.
+- `proctype`: Representa el tipo de procedimiento.
+
+El tipo de un procedimiento se define por el conjunto de tipos de sus argumentos, separados por asteriscos, y el tipo del valor de retorno. Por ejemplo, un procedimiento que recibe un entero y un booleano y retorna un entero se representaría como: `int * bool -> int`.
+
+Cuando un lenguaje permite explicitar los tipos, lo hace mediante expresiones de tipos. Esto implica que cada expresión escrita en el interpretador tiene una expresión de tipo asociada (sea `int`, `bool` o un tipo procedimiento).
+
+#### **Propiedad de los valores expresados y definición inductiva de tipos**
+
+Todo valor expresado `v` posee un tipo `t`. Esta relación se define inductivamente de la siguiente manera:
+
+- Un valor expresado es de tipo `int` si y solo si es un entero.
+- Un valor expresado es de tipo `bool` si y solo si es un booleano.
+- Un valor expresado es de tipo `t1 * t2 * ... * tn -> tr` si y solo si es un valor de procedimiento (`prodval`) que espera exactamente `n` argumentos de tipos `t1, t2, ..., tn` y retorna un valor de tipo `tr`.
+
+Para validar esto, se debe realizar una verificación de que cada uno de los tipos corresponda según la definición.
+
+#### **Estrategias de tipado: Chequeo e Inferencia**
+
+En nuestro lenguaje, cada valor expresado tiene como máximo un tipo. Al ser un sistema de tipado estático, no se permiten cambios de tipo durante la ejecución. 
+
+Sin embargo, no siempre es posible determinar el tipo de un valor en tiempo de ejecución (por ejemplo, el tipo retornado por un procedimiento). Para resolver esto, existen dos estrategias principales:
+
+1. `Chequeo de tipos`: Se especifican los tipos de forma directa y estática.
+2. `Inferencia de tipos`: El sistema deduce automáticamente el tipo que retorna un procedimiento basándose en su uso y contexto.
+
+#### **Análisis de tipos en funciones y procedimientos básicos**
+
+Podemos identificar el tipo de diversas funciones observando sus entradas y salidas:
+
+- **Función even?**: Recibe un entero y retorna un booleano. Sirve para determinar si un número es par. Su tipo es: `int -> bool`.
+- **Operación suma**: Recibe dos enteros y retorna un entero. Su tipo es: `int * int -> int`.
+
+Al analizar un procedimiento `lambda`, podemos inferir tipos a partir de las operaciones internas:
+
+```racket
+(lambda (x)
+  (lambda (y)
+    (+ x y)))
+```
+
+En este caso, como `x` e `y` forman parte de una suma, inferimos que ambos son de tipo `int`. El tipo del primer `lambda` sería `int -> (int -> int)`, ya que recibe un entero y devuelve otro procedimiento que, al recibir un entero, retorna la suma (un entero). Es fundamental distinguir entre el tipo del procedimiento en sí mismo y el tipo del valor resultante tras su evaluación.
+
+#### **Análisis de tipos en procedimientos compuestos**
+
+Consideremos el siguiente ejemplo para inferir los tipos de sus componentes:
+
+```racket
+(lambda (f x)
+  (even (f (+ x 1))))
+```
+
+Para determinar los tipos, analizamos las restricciones:
+- `x` debe ser `int` porque se usa en `(+ x 1)`.
+- La expresión `(+ x 1)` retorna un `int`.
+- La función `f` recibe el resultado de `(+ x 1)`, por lo que su entrada es `int`.
+- El resultado de `(f (+ x 1))` es el argumento de `even`. Como `even` espera un `int`, la salida de `f` debe ser `int`.
+- El resultado final del procedimiento es la salida de `even`, que es un `bool`.
+
+Por lo tanto:
+- `f`: `int -> int`
+- `x`: `int`
+- Tipo del procedimiento completo: `(int -> int) * int -> bool`
+
+#### **Derivación de tipos en expresiones condicionales y desconocidas**
+
+En el análisis de tipos, cuando no se puede determinar la salida de un procedimiento, usamos una variable de tipo (por ejemplo, `tx`).
+
+**Regla para condicionales:**
+En una expresión `if`, los tipos de las cláusulas `then` y `else` deben ser idénticos. Esta es una restricción fundamental de nuestro lenguaje.
+
+Ejemplo de análisis:
+```racket
+(proc (x) (if x 1 3))
+```
+- La condición `x` en un `if` debe ser de tipo `bool`.
+- Las salidas `1` y `3` son de tipo `int`.
+- El tipo del procedimiento es: `bool -> int`.
+
+Ejemplo con tipos desconocidos:
+```racket
+(proc (f x) (if (f (x 1)) 2 3))
+```
+- `f` recibe el resultado de `(x 1)`. Como el resultado de `f` es la condición del `if`, la salida de `f` debe ser `bool`.
+- `x` es un procedimiento que recibe un `int` (el valor `1`). No sabemos qué retorna `x`, así que lo llamamos `tx`.
+- Entonces, `f` recibe `tx` y retorna `bool`.
+- El tipo final es: `(tx -> bool) * (int -> tx) -> int`.
+
+#### **Análisis de tipos con operadores aritméticos y procedimientos anidados**
+
+Veamos el tipo del siguiente procedimiento:
+```racket
+(proc (x) (- x 3))
+```
+Aquí `x` debe ser `int` debido a la resta, y el resultado de la resta es un `int`. Por lo tanto, el tipo es: `int -> int`.
+
+Para casos más complejos:
+```racket
+(proc (f) (proc (x) (- (f x) 1)))
+```
+- Analizamos la resta: `(f x)` debe devolver un `int`.
+- No hay restricciones sobre `x`, por lo que su tipo es `tx`.
+- `f` es un procedimiento que recibe `tx` y devuelve `int`.
+- El procedimiento interno `(proc (x) ...)` recibe `tx` y devuelve `int`.
+- El tipo final es: `(tx -> int) -> (tx -> int)`.
+
+#### **Errores de tipos en definiciones recursivas y aplicaciones**
+
+Existen casos donde la estructura de la expresión impide asignar un tipo único, generando un error de tipos.
+
+**Definiciones recursivas no permitidas:**
+Consideremos la expresión `(proc (x) (x x))`.
+- Aquí `x` es un procedimiento que se recibe a sí mismo como argumento.
+- Si `x` tiene tipo `tx`, y `x` recibe a `x`, entonces `tx` tendría que ser un tipo que recibe a `tx`.
+- Esto genera una definición recursiva infinita: `tx = tx -> result`. En nuestro sistema de tipos simple, esto no es posible y se considera un error de tipos.
+
+**Errores en la aplicación de argumentos:**
+```racket
+(proc (p) (if p 88 69)) (33)
+```
+- El procedimiento espera que `p` sea un `bool` debido a su uso en el `if`.
+- Sin embargo, se le está pasando el valor `33`, que es un `int`.
+- Como `int` es distinto de `bool`, esto produce un error de tipos.
+
+#### **Análisis de tipos en el uso de procedimientos como argumentos**
+
+Analicemos la siguiente estructura:
+```racket
+(proc (f) 
+  (proc (g) 
+    (proc (p) 
+      (proc (x) 
+        (if (p (f x)) (g 1) 0)))))
+```
+
+1. **Análisis de f:** Recibe `x` (tipo `tx`) y su salida va a `p`. No hay restricciones iniciales, pero se asume que retorna un tipo `tf`.
+2. **Análisis de g:** Recibe `1` (un `int`). Como su salida está en una rama del `if` y la otra rama es `0` (`int`), `g` debe retornar `int`. Por lo tanto, `g`: `int -> int`.
+3. **Análisis de p:** Recibe el resultado de `(f x)`. Su salida es la condición del `if`, por lo que `p` debe retornar `bool`. Si `(f x)` retorna `tf`, entonces `p`: `tf -> bool`.
+4. **Análisis de f (revisión):** Como `(f x)` es el argumento de `p` y `p` espera `tf`, y `f` participa en una resta o contexto de `int` (según el código original del docente), si `f` retorna `int`, entonces `p`: `int -> bool`.
+
+Finalmente, el tipo del procedimiento completo se construye encadenando las entradas y salidas de cada `proc`.
+
+#### **Error de tipos en expresiones con Let y recursión**
+
+En expresiones que involucran `let`, el análisis sigue la misma lógica de sustitución y verificación:
+
+```racket
+let d = (proc (x) (d x))
+in (f d)
+```
+
+Si dentro de la definición de un procedimiento se intenta utilizar el mismo identificador que se está definiendo de forma que genere una auto-referencia en los tipos (como un procedimiento que recibe su propio tipo), el sistema detectará una definición recursiva. En nuestro interpretador, a menos que se implementen tipos recursivos explícitos, esto resultará en un error de tipos.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 36 Chequeo de tipos Aspectos de implementación.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=GxyNVcOdTQE
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

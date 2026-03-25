@@ -1,0 +1,111 @@
+####
+**Sistema de tipos y gramática de expresiones de tipo**
+
+En el diseño de un intérprete, una expresión de tipo indica la naturaleza del dato y no su representación física en memoria. Por ejemplo, en la declaración `int a = 3`, `int` es la expresión de tipo que clasifica a la variable.
+
+La gramática para las expresiones de tipo (`<tipo-exp>`) se define de la siguiente manera:
+
+```racket
+<tipo-exp> ::= int
+               int-type-exp()
+           ::= bool
+               bool-type-exp()
+           ::= (<tipo-exp>*(,) -> <tipo-exp>)
+               proc-type-exp(targs result-type)
+```
+
+Esta gramática permite definir tipos básicos como `int` y `bool`, así como tipos complejos para procedimientos que reciben una lista de argumentos y retornan un valor.
+
+####
+**Ejemplos de expresiones tipadas y tipos de procedimientos**
+
+A continuación se presentan ejemplos de expresiones dentro del lenguaje y su correspondencia con expresiones de tipo:
+
+**Expresiones del lenguaje**
+- `proc (int a, int b) +(a, b)` tiene el tipo `(int * int) -> int`
+- `5` tiene el tipo `int`
+- `true` tiene el tipo `bool`
+
+**Tipos de procedimientos comunes**
+- `even?(x)` tiene el tipo `int -> bool`
+- `+` tiene el tipo `int * int -> int`
+- `(lambda (x) (lambda (y) (+ x y)))` tiene el tipo `int -> (int -> int)`
+- `(lambda (f x) (zero? (f (+ x 1))))` tiene el tipo `((int -> int) * int) -> bool`
+
+Estos ejemplos ilustran cómo se mapean las estructuras sintácticas de los procedimientos a sus signaturas de tipo correspondientes.
+
+####
+**Ejercicio de inferencia de tipos y tipos polimórficos**
+
+A partir de la estructura de las expresiones, es posible inferir el tipo resultante:
+
+- `-(32, 26)` resulta en `int`
+- `proc (x) (x 26)` resulta en `(int -> t) -> t`
+- `proc (x) if x then 1 else 3` resulta en `bool -> int`
+- `proc (f, x) if (f x) then 1 else 2` resulta en `(tx -> bool) * tx -> int`
+- `proc (x) proc (y) if y then x else 3` resulta en `int -> (bool -> int)`
+
+Cuando un tipo no se puede determinar unívocamente a partir del contexto, se denomina `tipo polimórfico`.
+
+####
+**Especificación del lenguaje y errores de tipo**
+
+El lenguaje implementado será `fuertemente y estáticamente tipado`. Esto implica que el sistema de tipos validará las expresiones antes de la ejecución. Se emitirán errores de tipo en las siguientes situaciones:
+
+- Cuando se intente aplicar (llamar) algo que no sea un `procVal` (evaluación de un no-procedimiento).
+- Cuando se envíe un número incorrecto de argumentos a un procedimiento.
+- Cuando se aplique un argumento de tipo incorrecto a una primitiva (por ejemplo, intentar sumar un valor booleano).
+- Cuando se utilice una expresión que no sea de tipo `bool` en la condición de un condicional (`if`).
+
+Es importante notar que las divisiones por cero no se consideran `errores de tipo`, sino `errores semánticos` de ejecución.
+
+####
+**Implementación del verificador de tipos (type-of-expression)**
+
+Para verificar la validez de los tipos se define el procedimiento `type-of-expression`, el cual recibe una expresión y un `ambiente de tipos`, retornando el tipo asignado a dicha expresión. El sistema requiere un `ambiente inicial de tipos` que contenga las definiciones de las primitivas.
+
+Las reglas de comportamiento de `type-of-expression` son:
+
+- **Número**: Retorna `int`.
+- **Booleano**: Retorna `bool`.
+- **Variable**: Busca y retorna la ligadura correspondiente en el `ambiente de tipos`.
+- **Condicional (if)**: 
+    1. Verifica que la condición sea de tipo `bool`.
+    2. Verifica que las expresiones de las ramas `then` y `else` tengan el mismo tipo.
+    3. Retorna el tipo común de ambas ramas.
+- **Procedimiento (proc)**: Retorna una estructura `(t1 × t2 × ... × tn) → t`, donde cada `ti` es el tipo de los parámetros y `t` es el tipo resultante del cuerpo del procedimiento.
+- **Aplicación**: Para una llamada `(rator rand1 ... randn)`:
+    1. `rator` debe ser de tipo `(t1 × t2 × ... × tn) → t`.
+    2. Cada operando `randi` debe coincidir con el tipo `ti` correspondiente.
+    3. El resultado de la aplicación es el tipo `t`.
+
+####
+**Estrategias para la determinación de tipos en procedimientos**
+
+Al evaluar una aplicación de procedimiento, el sistema debe contrastar el tipo del operador (`rator`) con los tipos de los operandos (`rands`). Surge una limitación cuando no se pueden determinar directamente los tipos de los parámetros del operador en casos como:
+
+```racket
+let f = proc (x, y) ... in (f 1 2)
+```
+
+Existen dos estrategias principales para solucionar este problema:
+
+1. **Chequeo de tipos explícito**: Consiste en incluir anotaciones de tipo obligatorias en la declaración de los procedimientos.
+   Ejemplo: `let f = proc (int x, int y) ... in (f 1 2)`
+
+2. **Inferencia de tipos**: Utiliza reglas de tipado y un mecanismo de unificación lógica para deducir automáticamente los tipos basándose en el contexto de uso.
+   Ejemplo: `let f = proc (? x, ? y) ... in (f 1 2)`
+
+La inferencia de tipos emplea un sistema de ecuaciones de tipos para resolver las incógnitas sin necesidad de anotaciones manuales por parte del programador.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Interpretador I
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/

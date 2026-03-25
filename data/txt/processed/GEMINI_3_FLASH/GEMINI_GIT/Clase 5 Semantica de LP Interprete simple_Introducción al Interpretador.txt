@@ -1,0 +1,43 @@
+####
+**Librería EOPL en Racket**
+`Essentials of Programming Languages` (`EOPL`) tiene una librería en `Racket` denominada `eopl` (https://docs.racket-lang.org/eopl/). Esta contiene funciones para construir intérpretes basados en la sintaxis.
+
+####
+**Gramáticas LL y conflictos de desplazamiento**
+Las `gramáticas LL` (`Left-to-right, Leftmost derivation`) son gramáticas por la izquierda donde el terminal está en la izquierda y corresponden a lenguajes regulares. En situaciones de ambigüedad como:
+```racket
+var x
+var x = 10
+```
+Si esto sucede, aparecerá un `left shift conflict`.
+
+####
+**El Frontend: Scanner**
+El `scanner` toma el código fuente y genera unidades léxicas o significativas. Su función principal es extraer las partes importantes del código e ignorar elementos sin valor semántico como los comentarios. Estas unidades incluyen:
+- Números
+- Identificadores
+- Expresiones
+
+####
+**El Frontend: Parser**
+El `parser` toma un conjunto de unidades significativas y las traduce en un `AST` (`Abstract Syntax Tree`). Si el `AST` se puede generar con éxito, significa que el programa posee una `sintaxis correcta` y está bien escrito.
+
+####
+**Definición de intérprete**
+Un `intérprete` es un programa que toma un `AST` y produce un resultado. Mediante este proceso, se le otorga `semántica` o significado al código que ha sido escrito.
+
+####
+**Analizador léxico y gramática**
+El `analizador léxico` utiliza reglas sobre las unidades significativas del lenguaje para devolver una lista de ellas. Por otro lado, la `gramática` se define como el conjunto de reglas que rigen un lenguaje de programación.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Introducción al Interpretador
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Introduccion%20Interpretador/

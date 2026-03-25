@@ -1,0 +1,125 @@
+####
+**Definición de Racket**
+Racket es un lenguaje de programación multiparadigma que permite trabajar con diferentes enfoques de programación:
+- `Funcional`
+- `Procedural`
+- `Objetos`
+- `Eventos`
+
+En este contexto, se trabajará específicamente bajo el enfoque `funcional`.
+
+####
+**Características de Racket y notación prefija**
+Racket utiliza `notación prefija`, lo que significa que primero se especifica la función y posteriormente sus argumentos. Toda la sintaxis está basada en el uso de paréntesis. Para definir variables, se utiliza la directiva `#lang eopl` y la palabra clave `define`.
+
+```racket
+#lang eopl
+
+(define pollito 5)
+(define gallinita (* pollito 2))
+```
+
+####
+**Declaración de funciones con lambda**
+Las funciones en Racket se declaran exclusivamente utilizando `lambda`, ya que en este paradigma las funciones son tratadas como `valores`. No se aceptan otras notaciones para la definición de funciones.
+
+```racket
+(define funcion
+  (lambda (x y)
+    (+ x y)))
+
+(funcion 1 2)
+```
+
+####
+**Funciones con parámetros por defecto**
+Es posible definir funciones que incluyan parámetros con valores predeterminados. Si el argumento no se proporciona al invocar la función, se utiliza el valor asignado en la definición.
+
+```racket
+(define funcionPro
+  (lambda (x [p 8])
+    (+ x p)))
+
+(funcionPro 4)   ; Retorna 12
+(funcionPro 4 9) ; Retorna 13
+```
+
+####
+**Estructuras condicionales**
+Para el manejo de lógica condicional se utiliza la estructura `cond`, la cual permite evaluar múltiples expresiones y ejecutar el bloque correspondiente a la primera condición verdadera. El caso por defecto se define con `else`.
+
+```racket
+(define funcion
+  (lambda (x y)
+    (cond
+      [(> x 5) (+ x y)]
+      [(and (> x 0) (< x 5)) (* x y)]
+      [else (+ x y 2)])))
+```
+
+####
+**Construcción de listas**
+Existen diversas formas de crear listas en Racket: utilizando la función `list`, mediante constructores `cons` de forma anidada con un `empty` al final, o usando la notación de comilla simple `'`.
+
+```racket
+; Uso de list
+(list 1 2 3 5) ;(1 2 3 5)
+
+; Uso de cons
+(cons 1 (cons 2 (cons 3 (cons 5 empty)))) ;(1 2 3 5)
+
+; Uso de comilla simple para listas literales y mixtas
+'(1 2 3 4 a b (1 2 3))
+
+; Mezcla de list y símbolos
+(list 1 2 3 'a 'b (list 1 2 3))
+```
+
+####
+**Operaciones básicas sobre listas (car y cdr)**
+Para manipular listas se utilizan las funciones `car` (que obtiene la cabeza o primer elemento) y `cdr` (que obtiene la cola o el resto de la lista). Racket permite abreviaciones como `cadr` o `caddr` para acceder a elementos internos mediante la composición de estas operaciones.
+
+```racket
+(define l '(1 2 3 4 5))
+
+(car l) ; 1 (cabeza)
+(cdr l) ; '(2 3 4 5) (cola)
+
+(car (cdr l))       ; 2
+(car (cdr (cdr l))) ; 3
+
+(cadr l)  ; car del cdr (segundo elemento)
+(caddr l) ; car del cdr del cdr (tercer elemento)
+```
+
+####
+**Implementación de recursión en listas**
+La suma de los elementos de una lista puede implementarse mediante `recursión` simple o mediante recursión de cola (`tail recursion`) utilizando un acumulador `acc` para optimizar el uso de memoria.
+
+```racket
+; Suma con recursión simple
+(define sumarL
+  (lambda (lst)
+    (cond
+      [(null? lst) 0]
+      [else (+ (car lst) (sumarL (cdr lst)))])))
+
+; Suma con recursión de cola y parámetro por defecto
+(define sumarColita
+  (lambda (lst [acc 0])
+    (cond
+      [(null? lst) acc]
+      [else (sumarColita (cdr lst) (+ acc (car lst)))])))
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 2 Especificación recursiva de datos y programas_Repaso de Racket
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Racket/

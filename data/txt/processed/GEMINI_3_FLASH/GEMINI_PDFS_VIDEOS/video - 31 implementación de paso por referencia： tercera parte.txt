@@ -1,0 +1,79 @@
+####
+**Modificación del interpretador para el manejo de targets**
+
+Para implementar el paso por referencia, es necesario modificar el interpretador de modo que pueda gestionar los `targets`. Previamente, se desarrolló la infraestructura necesaria para crearlos mediante `define-datatype` y sus funciones observadoras. También se implementaron las funciones `deref` para consultar referencias y `setref!` para modificarlas, considerando si se trata de un `direct-target` o un `indirect-target`.
+
+En cuanto a la función `apply-primitive`, no requiere cambios. Las primitivas del lenguaje no se ven afectadas por la distinción entre blancos directos o indirectos, por lo que el código de `eval-expression` relacionado con las primitivas permanece idéntico.
+
+####
+**El manejo de targets en la expresión let**
+
+En la evaluación de un `let`, como en el caso de `let a = 5` o `let b = 8`, cada una de las variables genera un `direct-target`. En el intérprete, esto implica que al evaluar las ramas del `let` mediante `eval-expression`, el resultado debe almacenarse como un blanco directo. 
+
+Debido a que el `let` maneja valores expresados, estos se comportan naturalmente como `direct-target`. Por lo tanto, el cambio consiste en asegurar que cada vinculación creada en el ambiente para un `let` apunte a un `direct-target` que contenga el valor evaluado de la expresión.
+
+####
+**Implementación de eval-rand para la aplicación de procedimientos**
+
+La aplicación de procedimientos (`app-exp`) es el punto crítico para el paso por referencia. Al evaluar los operandos (`rands`), se debe decidir si se crea un nuevo blanco o se pasa una referencia existente. Para esto, se introduce la función `eval-rand`.
+
+La lógica de `eval-rand` es la siguiente:
+- Si el operando es una variable (`var-exp`), se busca su referencia en el ambiente usando `apply-env-ref`. Se inspecciona el `target` contenido:
+    - Si es un `direct-target`, se retorna un `indirect-target` que apunta a esa referencia.
+    - Si ya es un `indirect-target`, se extrae la referencia interna y se retorna un nuevo `indirect-target` que apunta a la ubicación original. Esto evita la creación de blancos indirectos anidados (un `indirect-target` dentro de otro).
+- Si el operando es cualquier otra expresión, se evalúa normalmente y su resultado se empaqueta en un `direct-target`.
+
+####
+**Definición de la función eval-rand en Racket**
+
+La función `eval-rand` se encarga de procesar los argumentos de una función para determinar cómo deben ser pasados al procedimiento, permitiendo el comportamiento de paso por referencia:
+
+```racket
+(define eval-rand
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id)
+               (let ((ref (apply-env-ref env id)))
+                 (cases target (primitive-deref ref)
+                   (direct-target (val) 
+                                  (indirect-target ref))
+                   (indirect-target (ref2) 
+                                    (indirect-target ref2)))))
+      (else
+       (direct-target (eval-expression exp env))))))
+```
+
+Esta función asegura que, si pasamos una variable que ya apunta a un valor, se cree un vínculo indirecto. Si pasamos algo que ya es una referencia (como una variable recibida por referencia en un procedimiento anterior), simplemente propagamos la referencia original. En cualquier otro caso (como pasar un número o una operación), se crea un `direct-target` estándar.
+
+####
+**Verificación del paso por referencia y corrección de errores**
+
+Para validar la implementación del paso por referencia, se utiliza un caso de prueba donde un procedimiento modifica una variable externa. Es fundamental verificar la correcta implementación de las referencias en el sistema de almacenamiento. Por ejemplo, si se utiliza un vector para representar la memoria, se debe asegurar que la función `vector-set!` o `vector-ref` reciba los argumentos en el orden correcto: el vector seguido de la posición.
+
+Ejemplo de código para probar el paso por referencia:
+
+```racket
+let p = proc (x) set x = 4
+in let a = 3
+   in begin
+        (p a);
+        a
+      end
+```
+
+En este flujo:
+1. Se define un procedimiento `p` que modifica su parámetro `x`.
+2. Se define una variable `a` con valor inicial `3`.
+3. Al llamar a `(p a)`, gracias a `eval-rand`, el parámetro `x` se vincula a la misma referencia que `a` a través de un `indirect-target`.
+4. La asignación `set x = 4` modifica el contenido de la ubicación de memoria compartida.
+5. Al finalizar, el valor de `a` será `4`, confirmando que el paso por referencia es funcional.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 31 implementación de paso por referencia： tercera parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=NdSjy4I5B-8
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

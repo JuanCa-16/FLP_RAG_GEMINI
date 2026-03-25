@@ -1,0 +1,150 @@
+#### **Implementación de objetos en el interpretador**
+
+Cuando se incorporan los objetos en los conceptos de programación orientada a objetos, un programa consta de un conjunto de declaraciones de clases y una expresión. Al evaluar un programa, las declaraciones de clases son procesadas por el procedimiento `elaborate-class-decls` y, posteriormente, la expresión es evaluada.
+
+El trabajo de `elaborate-class-decls` consiste en procesar y almacenar las declaraciones de clases de forma que se hagan accesibles cuando se necesiten, dándoles una representación para su uso posterior. Debido a esto, la definición de `eval-program` cambia para ejecutar primero la elaboración de las clases y luego la evaluación de la expresión.
+
+**Modificación de eval-program**
+
+```racket
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (class-decls exp)
+        (elaborate-class-decls class-decls)
+        (eval-expression exp (init-env))))))
+```
+
+En esta modificación, un programa consiste en un conjunto de una o más declaraciones de clases seguidas de una expresión.
+
+#### **Modificaciones en la gramática y primitiva list**
+
+Para soportar el modelo de objetos, es necesario realizar cambios en la especificación gramatical. Se define que un programa recibe un conjunto de declaraciones de clases. Asimismo, se incorpora la primitiva `list` al interpretador.
+
+**Especificación de la primitiva list**
+
+```racket
+(define apply-primitive
+  (lambda (prim args)
+    (cases primitive prim
+      (list-prim () args)
+      ; ... otras primitivas
+    )))
+```
+
+En el caso de `list-prim`, su función es retornar los valores recibidos. Dado que en el interpretador los operandos ya han sido procesados por `eval-rands` (o un mapeo de `eval-expression`), los argumentos ya se encuentran en su forma evaluada.
+
+#### **Nuevos tipos de expresiones: creación, invocación y superllamados**
+
+Al incorporar objetos al lenguaje, se definen tres nuevos tipos de expresiones que deben agregarse a la gramática y al procedimiento `eval-expression`: creación de objetos (`new`), invocación de métodos (`send`) y superllamados (`super`).
+
+**Producciones gramaticales para objetos**
+
+```racket
+(expression ("new" identifier "(" (separated-list expression ",") ")") new-object-exp)
+(expression ("send" expression identifier "(" (separated-list expression ",") ")") method-app-exp)
+(expression ("super" identifier "(" (separated-list expression ",") ")") super-call-exp)
+```
+
+**Incorporación en eval-expression**
+
+```racket
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (new-object-exp (class-name rands)
+        ; Lógica para creación de objetos
+      )
+      (method-app-exp (obj-exp method-name rands)
+        ; Lógica para invocación de métodos
+      )
+      (super-call-exp (method-name rands)
+        ; Lógica para superllamados
+      )
+      ; ... otros casos
+    )))
+```
+
+#### **Invocación de métodos con send**
+
+Cuando se evalúa una expresión `send`, se evalúan los operandos y la expresión del objeto. Posteriormente, se ejecuta el procedimiento `find-method-and-apply`. Este procedimiento localiza el método asociado al nombre en la declaración del objeto y lo aplica a sus argumentos.
+
+**Implementación de method-app-exp**
+
+```racket
+(method-app-exp (obj-exp method-name rands)
+  (let ((args (map (lambda (x) (eval-expression x env)) rands))
+        (obj (eval-expression obj-exp env)))
+    (find-method-and-apply
+      method-name
+      (object->class-name obj)
+      obj
+      args)))
+```
+
+El procedimiento `find-method-and-apply` recibe cuatro argumentos:
+- El nombre del método.
+- El nombre de la clase donde comenzará la búsqueda.
+- El valor de `self` (la implementación del objeto mismo).
+- La lista de argumentos evaluados.
+
+Esto crea un ambiente extendido donde se ejecutan las variables del método.
+
+#### **Superllamados en la herencia**
+
+El superllamado funciona de forma similar a la invocación de un método, pero con la diferencia de que la búsqueda del método no comienza en la clase del objeto actual, sino en su clase padre (superclase). Los superllamados solo son válidos dentro del contexto de los métodos de un objeto.
+
+**Implementación de super-call-exp**
+
+```racket
+(super-call-exp (method-name rands)
+  (let ((args (map (lambda (x) (eval-expression x env)) rands))
+        (obj (apply-env env 'self)))
+    (find-method-and-apply
+      method-name
+      (apply-env env '%super)
+      obj
+      args)))
+```
+
+En este caso, se utiliza una variable de ambiente denominada `%super` para identificar el nombre de la clase padre desde la cual se debe realizar la búsqueda del método.
+
+#### **Creación de objetos con la expresión new**
+
+Cuando se evalúa una expresión `new`, se evalúan los operandos y se crea un nuevo objeto basado en el nombre de la clase. Inmediatamente después de la creación, se invoca automáticamente su método `initialize`.
+
+**Implementación de new-object-exp**
+
+```racket
+(new-object-exp (class-name rands)
+  (let ((args (map (lambda (x) (eval-expression x env)) rands))
+        (obj (new-object class-name)))
+    (find-method-and-apply
+      'initialize
+      class-name
+      obj
+      args)
+    obj))
+```
+
+En este proceso, el valor retornado por el método `initialize` (constructor) es ignorado; lo que se retorna finalmente como resultado de la expresión es la representación del objeto creado.
+
+#### **Requerimientos para la implementación de objetos**
+
+Cualquier implementación del sistema de objetos debe proveer los siguientes procedimientos fundamentales:
+- `elaborate-class-decls`: Para procesar las declaraciones de clases.
+- `find-method-and-apply`: Para la búsqueda y ejecución de métodos.
+- `object->class-name`: Para obtener la clase a la que pertenece un objeto.
+- `new-object`: Para instanciar la estructura de un objeto.
+
+Independientemente de si se utiliza una implementación simple o una implementación plana, estos elementos son comunes. Una declaración de clase debe contener toda la información necesaria: el nombre de la clase, su superclase, sus campos (variables de instancia) y la declaración de sus métodos. A continuación, se abordará el detalle de la **implementación simple**.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 47 Objetos Aspectos de implementación.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=ZqTptDxsXCs
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

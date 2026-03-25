@@ -1,0 +1,62 @@
+#### **Relación entre especificación de datos y especificación de programas**
+
+En la especificación de programas se utiliza la estructura definida previamente en la especificación de datos, ya sea mediante la "Backus-Naur Form" (`BNF`) o definiciones inductivas. La definición inductiva o mediante gramáticas sirve como guía para desarrollar procedimientos que operan sobre esos datos.
+
+Cuando se define un tipo de dato, como una `lista`, se establece una estructura fija. Por ejemplo, una `lista de enteros` se define como un entero seguido de una `lista de enteros`. Para manipular esta estructura, se utilizan las funciones de acceso `car` (para obtener el primer elemento) y `cdr` (para obtener el resto de la lista). Toda función que trabaje sobre un tipo de dato debe considerar obligatoriamente su estructura gramatical.
+
+#### **Análisis de la condición de parada en funciones recursivas**
+
+Al diseñar una función recursiva, como `sumar-lista`, es fundamental considerar todos los casos definidos en la gramática, incluyendo el símbolo terminal o condición de parada. En el caso de una `lista`, la gramática indica que también puede ser una `lista vacía`.
+
+La condición de parada se verifica preguntando si el dato es vacío. En este punto, la respuesta no debe incluir ningún llamado recursivo, ya que se ha alcanzado un símbolo terminal. La respuesta en el caso base suele ser trivial y depende del problema; por ejemplo, si se requiere sumar los elementos de una `lista vacía`, la respuesta inmediata es `0`. El concepto del `0` es fundamental aquí: si no hay elementos que sumar, el resultado es la ausencia de valor numérico, representado por el cero.
+
+#### **El caso recursivo en la especificación de programas**
+
+El caso recursivo en una función se activa cuando no se ha alcanzado la condición de parada. Siguiendo la estructura de una `lista de enteros`, el caso recursivo identifica que la lista está compuesta por un entero seguido de otra `lista de enteros`.
+
+Para resolver el problema de sumar los elementos, se opera sobre el componente inmediato y se delega el resto:
+1. Se obtiene el primer elemento usando `car`.
+2. Se realiza un llamado recursivo con el `cdr` de la lista.
+3. Se suma el valor del `car` con el resultado del llamado recursivo.
+
+Este procedimiento es necesario porque el `cdr` es, a su vez, una lista que debe ser procesada bajo la misma lógica hasta reducirse al caso base.
+
+#### **Diseño de funciones basado en la estructura de datos**
+
+Al diseñar funciones, estas deben seguir fielmente la estructura de los datos; no es posible crear una función que ignore dicha estructura y esperar que funcione correctamente. La especificación recursiva de programas busca dividir un problema en versiones más pequeñas del mismo.
+
+El "problema más pequeño" es aquel que ofrece una respuesta inmediata sin necesidad de cálculos adicionales, como ocurre con la `lista vacía`. El objetivo del diseño recursivo es realizar llamados sucesivos que adapten el problema original hasta alcanzar este caso base. Por ejemplo, al procesar una lista, se realizan llamados con el `cdr` sucesivamente hasta que la función recibe una lista vacía, momento en el cual la recursión comienza a resolverse.
+
+#### **Implementación de la función para calcular la longitud de una lista**
+
+Para diseñar una función que devuelva el número de elementos de una lista (similar a `length` en Racket), se deben considerar los dos casos de la gramática: la `lista vacía` como símbolo terminal y el par compuesto por un `número` seguido de una `lista`.
+
+En Racket, la estructura del `if` se compone de una pregunta (condición), una respuesta si es verdadero y una respuesta si es falso:
+
+```racket
+(if pregunta
+    respuesta-si-verdadero
+    respuesta-si-falso)
+```
+
+Para la función de longitud, si la lista está vacía, la respuesta inmediata es `0`. Si no está vacía, se asume que hay al menos un elemento y se suma `1` al resultado del llamado recursivo con el resto de la lista (`cdr`). La implementación lógica sigue este esquema:
+
+```racket
+(define list-len
+  (lambda (l)
+    (if (null? l)
+        0
+        (+ 1 (list-len (cdr l))))))
+```
+
+En este código, cada vez que se encuentra un elemento según la estructura de la gramática, se cuenta y se busca el siguiente, hasta encontrar la lista vacía.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 8 Especificación recursiva de programas I.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=VpJGNtKpskI
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

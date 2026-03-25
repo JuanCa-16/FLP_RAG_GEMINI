@@ -1,0 +1,68 @@
+#### **Diseño de interfaces de datos recursivos**
+
+Recordemos la receta para el diseño general de interfaces de datos recursivos, es decir, de los `tipos de datos abstractos` (ADT):
+- Incluir un constructor para cada clase de datos (la regla de producción o variante).
+- Incluir un predicado que identifique cada tipo de datos.
+- Incluir un extractor para cada uno de los diferentes campos de los tipos de datos.
+
+#### **Introducción a define-datatype**
+
+El diseño de interfaces se puede realizar directamente mediante una función de interfaz llamada `define-datatype`. El uso de `DrRacket` en este curso se debe, en parte, a que esta herramienta provee automáticamente los constructores, los observadores y los extractores en un solo paso.
+
+Para utilizar `define-datatype`, se debe definir el nombre del tipo, el nombre del predicado (para consultar el tipo de dato), el nombre de la variante y el nombre de los campos.
+
+#### **Recomendaciones y restricciones de define-datatype**
+
+Existen algunas consideraciones técnicas al definir tipos de datos:
+- Dos tipos de datos no pueden tener el mismo nombre.
+- Dos variantes no pueden tener el mismo nombre, incluso si pertenecen a tipos de datos diferentes.
+- Para cada variante se genera automáticamente un procedimiento constructor.
+- Si una variante posee `N` campos, el constructor recibirá `N` argumentos, construyendo las funciones automáticamente a partir de las indicaciones dadas.
+
+#### **Ejemplo de define-datatype para lc-expression**
+
+A continuación, se presenta el `data-type` para `lc-expression`:
+
+```racket
+(define-datatype lc-expression lc-expression?
+  (var-exp
+    (id symbol?))
+  (lambda-exp
+    (id symbol?)
+    (body lc-expression?))
+  (app-exp
+    (rator lc-expression?)
+    (rand lc-expression?)))
+```
+
+En esta estructura, se definen las variantes `var-exp` (con un identificador), `lambda-exp` (con un identificador y un cuerpo) y `app-exp` (con un `rator` y un `rand`). Los nombres asignados a los campos pueden ser cualesquiera, pero se recomienda usar nombres recordables. Una ventaja fundamental es que `define-datatype` permite verificar que los datos recibidos correspondan exactamente al tipo esperado, algo que no era posible en implementaciones anteriores.
+
+#### **Ejemplo de define-datatype para s-list**
+
+Para el caso de una `s-list` (lista de símbolos) y una `s-expression`, la definición se estructura de la siguiente manera:
+
+```racket
+(define-datatype s-list s-list?
+  (empty-s-list)
+  (non-empty-s-list
+    (first s-exp?)
+    (rest s-list?)))
+
+(define-datatype s-exp s-exp?
+  (symbol-s-exp
+    (id symbol?))
+  (s-list-s-exp
+    (slst s-list?)))
+```
+
+En este ejemplo, una `s-list` puede estar vacía o contener un primer elemento (`first`) y el resto de la lista (`rest`). Asimismo, una `s-expression` puede ser un símbolo o una lista de símbolos.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 23  Abstracción de datos Datatypes.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=wGuA726RKUM
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,231 @@
+####
+**Introducción a las referencias para la implementación de set**
+
+Para implementar la expresión `set` es necesario introducir el concepto de `referencia`. La `referencia` mapea un nombre con su valor. El cambio principal respecto al paradigma funcional es la introducción de estas referencias, las cuales permiten relacionar nombres con valores. Cuando se realiza una asignación, se gestiona a través de estas referencias.
+
+####
+**Definición del TAD de referencias**
+
+Las referencias son Tipos Abstractos de Datos (`TADs`) que permiten gestionar la relación entre nombres y valores. Para su implementación, se genera un nuevo `datatype`:
+
+```racket
+(define-datatype reference reference?
+  (a-ref
+   (position integer?)
+   (vec vector?)))
+```
+
+Bajo esta definición, una `referencia` se compone de una posición (`position`) y un vector (`vec`).
+
+####
+**Operación deref**
+
+La operación `deref` toma una `referencia` y devuelve el valor asociado a ella. Se apoya en una función primitiva para realizar la extracción del valor desde el vector.
+
+```racket
+;; dref: reference -> value
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+;; primitive-deref: reference -> valor
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-ref vec pos)))))
+```
+
+Esta operación utiliza `vector-ref` para obtener el contenido almacenado en la posición específica del vector contenido en la `referencia`.
+
+####
+**Operación setref!**
+
+El procedimiento `setref!` permite cambiar el valor de una `referencia`. Toma una `referencia` y un nuevo valor para modificar el estado actual.
+
+```racket
+;; setref! : reference * value -> void
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-set! vec pos val)))))
+```
+
+Esta operación es fundamental para el cambio de estado, permitiendo que las consultas futuras al ambiente reflejen el valor actualizado.
+
+####
+**Estructura de datos del entorno (environment)**
+
+Para soportar mutabilidad, el `entorno` debe modificarse para almacenar vectores de valores en lugar de listas simples. Esto permite realizar cambios en los valores de manera destructiva.
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+   (lid (list-of symbol?))
+   (lval vector?)
+   (old-env environment?))
+  (extend-recursively-env
+   (procname (list-of symbol?))
+   (argss (list-of (list-of symbol?)))
+   (bodies (list-of expression?))
+   (old-env environment?)))
+```
+
+Cabe notar que, por el momento, los ambientes extendidos recursivamente no pueden ser redefinidos. El uso de `vector?` en `extend-env` es lo que facilita la implementación de las referencias.
+
+####
+**Búsqueda de referencias en el entorno**
+
+El cambio principal en la búsqueda dentro del entorno es que `apply-env` ahora depende de una función intermedia llamada `apply-env-ref`, la cual retorna una `referencia` en lugar del valor directo.
+
+```racket
+;; apply-env: environment -> valor
+(define apply-env
+  (lambda (env var)
+    (deref (apply-env-ref env var))))
+
+;; apply-env-ref: environment -> referencia
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+        (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec
+            ((search-var
+              (lambda (lid vec pos)
+                (cond
+                  [(null? lid) (apply-env-ref old-env var)]
+                  [(equal? (car lid) var) (a-ref pos vec)]
+                  [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec 0)))
+      (extend-recursively-env (procnames llargs bodies old-env)
+        (letrec
+            ((search-proc
+              (lambda (procs args bodies)
+                (cond
+                  [(null? procs) (apply-env-ref old-env var)]
+                  [(eqv? (car procs) var)
+                   (closure (car args) (car bodies) env)]
+                  [else (search-proc (cdr procs) (cdr args) (cdr bodies))]))))
+          (search-proc procnames llargs bodies))))))
+```
+
+Al encontrar una variable en un `extend-env`, se genera una estructura `a-ref` que encapsula la posición y el vector de valores.
+
+####
+**Visualización de referencias asociadas a ligaduras**
+
+Cuando se consultan las variables en un sistema basado en referencias, el resultado de la búsqueda (sin aplicar `deref`) muestra la estructura de la referencia apuntando al vector del ambiente:
+
+```racket
+--> x
+#(struct:a-ref 0 #(1 2 3))
+--> y
+#(struct:a-ref 1 #(1 2 3))
+--> z
+#(struct:a-ref 2 #(1 2 3))
+--> a
+#(struct:a-ref 0 #(4 5 6))
+--> b
+#(struct:a-ref 1 #(4 5 6))
+--> c
+#(struct:a-ref 2 #(4 5 6))
+```
+
+Esto demuestra cómo múltiples variables pueden compartir el mismo vector físico, diferenciándose únicamente por su índice o posición.
+
+####
+**Adaptación de let-exp y app-exp para ambientes mutables**
+
+Para adaptarse al uso de vectores en los ambientes, las expresiones de ligadura (`let`) y de aplicación de funciones deben convertir las listas de valores evaluados en vectores antes de extender el entorno.
+
+**Implementación en let-exp:**
+```racket
+(let-exp (lid lexpr expr)
+  (let ((vexpr (map (lambda (x) (eval-expression x env)) lexpr)))
+    (eval-expression expr 
+      (extend-env lid (list->vector vexpr) env))))
+```
+
+**Implementación en app-exp:**
+```racket
+(app-exp (rator rands)
+  (let ((procv (eval-expression rator env))
+        (vrands (map (lambda (x) (eval-expression x env)) rands)))
+    (if (and (procVal? procv)
+             (= (length (procVal->lid procv)) (length vrands)))
+        (cases procVal procv
+          (closure (lid exp old-env)
+            (eval-expression exp 
+              (extend-env lid (list->vector vrands) old-env))))
+        (eopl:error "Not a procedure or incorrect number of args"))))
+```
+
+####
+**Implementación de la expresión set-exp**
+
+La implementación de `set` consiste en obtener la referencia de la variable, evaluar la nueva expresión y actualizar la referencia mediante `setref!`.
+
+```racket
+(set-exp (id exp)
+  (begin
+    (setref! (apply-env-ref env id)
+             (eval-expression exp env))
+    (void)))
+```
+
+El proceso sigue estos pasos:
+1. Obtiene la `referencia` asociada al identificador `id` usando `apply-env-ref`.
+2. Evalúa el argumento de la derecha (`exp`) para obtener el nuevo valor.
+3. Invoca el procedimiento observador `setref!` para aplicar el cambio en la `referencia`.
+4. Retorna `void` para indicar que es una operación con efecto de lado.
+
+####
+**Ejemplos de ejecución con mutabilidad**
+
+A continuación se muestra el comportamiento de una variable mutada y un bloque de código que utiliza `set` dentro de una expresión `begin`:
+
+**Ejemplo básico:**
+```racket
+--> x
+1
+--> set x = 10
+#(struct:void)
+--> x
+10
+```
+
+**Ejemplo con bloque let y begin:**
+```racket
+let x = 10
+    y = 20
+    z = 30
+in begin
+    set x = 30;
+    set y = 40;
+    set z = 100;
+    +(x, y, z)
+   end
+;; Resultado: 170
+```
+
+En este ejemplo, las variables `x`, `y` y `z` son modificadas secuencialmente antes de realizar la suma final, resultando en 170.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Implementación del set
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Implementaci%C3%B3n%20del%20set/

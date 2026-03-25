@@ -1,0 +1,163 @@
+####
+**Implementación de expresiones `let`**
+
+Para implementar la sección del `let`, se deben evaluar los tipos de cada una de las expresiones declaradas (por ejemplo, `x = 1`, `y = 2`). El resultado de una expresión `let` es, fundamentalmente, el tipo obtenido al evaluar su cuerpo.
+
+Para esto, se implementa el procedimiento `type-of-let-expression`. Este procedimiento encuentra el tipo de las expresiones en las declaraciones del `let` y extiende el ambiente de tipos con las variables y sus tipos correspondientes. Posteriormente, la función `type-of-expression` determina el tipo del cuerpo en este ambiente extendido.
+
+El procedimiento recibe los identificadores (`ids`), las expresiones de la derecha (`rands`), el cuerpo (`body`) y el ambiente de tipos actual (`tenv`).
+
+```racket
+;; Función auxiliar para determinar el tipo de un let
+(define type-of-let-expression
+  (lambda (ids rands body tenv)
+    (let ((types (map (lambda (rand) (type-of-expression rand tenv)) rands)))
+      (type-of-expression body (extend-tenv ids types tenv)))))
+```
+
+####
+**Reglas de tipado para expresiones `letrec`**
+
+La implementación de `letrec` requiere un análisis más detallado. En un `letrec`, se definen los tipos de los nombres de los procedimientos y sus argumentos. Por ejemplo, para un procedimiento `P1`, su tipo se define como `T11 * T12 * ... -> T1`.
+
+El cuerpo del `letrec` y los cuerpos de cada procedimiento deben ser revisados en un ambiente donde cada variable tenga el tipo correcto. Dado que los procedimientos deben conocerse a sí mismos para permitir la recursión, el ambiente debe incluir todas las declaraciones de los procedimientos antes de evaluar sus cuerpos.
+
+La regla de tipado establece que si las expresiones de los cuerpos de los procedimientos coinciden con los tipos de retorno declarados (`T1`, `T2`, ..., `Tn`), entonces el tipo de toda la expresión `letrec` es igual al tipo del resultado de la evaluación de su cuerpo (`T`).
+
+####
+**Procedimiento `type-of-letrec-expression`**
+
+El procedimiento `type-of-letrec-expression` realiza las siguientes acciones:
+1. Convierte las expresiones de tipo de los argumentos y del resultado en tipos reales.
+2. Liga la lista de tipos de los procedimientos al ambiente de tipos, creando un ambiente extendido para el cuerpo del `letrec` y para los cuerpos de los procedimientos.
+3. Computa el tipo de cada cuerpo de procedimiento y lo compara con el tipo especificado en la declaración.
+
+```racket
+(define type-of-letrec-expression
+  (lambda (result-types proc-names texps idss bodies letrec-body tenv)
+    (let ((arg-types (map (lambda (texp) (expand-type-expressions texp)) texps)))
+      (let ((the-proc-types (map (lambda (arg-t res-t) (proc-type arg-t res-t)) arg-types result-types)))
+        (let ((tenv-for-letrec-body (extend-tenv proc-names the-proc-types tenv)))
+          (for-each
+            (lambda (ids args-t body res-t)
+              (check-equal-type!
+                (type-of-expression body (extend-tenv ids args-t tenv-for-letrec-body))
+                res-t
+                body))
+            idss arg-types bodies result-types)
+          (type-of-expression letrec-body tenv-for-letrec-body))))))
+```
+
+####
+**Modificaciones en la gramática y el verificador de tipos**
+
+Es necesario actualizar la función `type-of-expression` para incluir los nuevos casos de la gramática, tales como procedimientos, llamadas a procedimientos y `letrec`.
+
+En el caso de `proc-expression`, se extraen los tipos de los argumentos. Para `letrec-expression`, se invocan los tipos de retorno (`result-types`), los nombres de los procedimientos, los tipos de los identificadores y los cuerpos correspondientes. Las expresiones como `begin` o `set` pueden retornar un valor por defecto o `true` si no requieren una verificación de tipos compleja en este nivel del sistema.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (if-expression (test-exp true-exp false-exp)
+        (let ((test-type (type-of-expression test-exp tenv))
+              (true-type (type-of-expression true-exp tenv))
+              (false-type (type-of-expression false-exp tenv)))
+          (check-equal-type! test-type (bool-type) test-exp)
+          (check-equal-type! true-type false-type exp)
+          true-type))
+      (proc-expression (ids texps body)
+        (let ((arg-types (expand-type-expressions texps)))
+          (proc-type arg-types (type-of-expression body (extend-tenv ids arg-types tenv)))))
+      (let-expression (ids rands body)
+        (type-of-let-expression ids rands body tenv))
+      (letrec-expression (result-types proc-names texps idss bodies letrec-body)
+        (type-of-letrec-expression result-types proc-names texps idss bodies letrec-body tenv))
+      (prim-expression (prim rands)
+        (type-of-primitive-expression prim rands tenv))
+      (else (bool-type)))))
+```
+
+####
+**Ambientes de tipos (`tenv`)**
+
+Los ambientes de tipos (`tenv`) no guardan valores, sino únicamente la asociación entre símbolos y tipos. Se definen mediante una estructura que contiene los símbolos, la lista de tipos y el ambiente anterior.
+
+El procedimiento `apply-tenv` busca un símbolo en el ambiente. Si el ambiente está extendido, realiza la búsqueda por posición; si el símbolo no se encuentra o el ambiente está vacío, se reporta un error.
+
+```racket
+;; Definición de ambientes de tipos
+(define-datatype type-environment type-environment?
+  (empty-tenv-record)
+  (extended-tenv-record
+    (syms (list-of symbol?))
+    (vals (list-of type?))
+    (tenv type-environment?)))
+
+(define apply-tenv
+  (lambda (tenv sym)
+    (cases type-environment tenv
+      (empty-tenv-record ()
+        (eopl:error 'apply-tenv "Unbound variable ~s" sym))
+      (extended-tenv-record (syms vals next-tenv)
+        (let ((pos (list-index sym syms)))
+          (if (integer? pos)
+              (list-ref vals pos)
+              (apply-tenv next-tenv sym)))))))
+```
+
+####
+**Funciones auxiliares para la verificación de tipos**
+
+Para el correcto funcionamiento del `checker`, se requieren funciones que validen la igualdad entre tipos y que permitan convertir tipos a formatos externos legibles.
+
+La función `equal-type?` verifica si dos tipos son estructuralmente idénticos. En el caso de tipos atómicos (como `int` o `bool`), se comparan directamente como símbolos. Para tipos compuestos como `proc-type`, se deben comparar recursivamente tanto los tipos de los argumentos como el tipo de retorno.
+
+```racket
+(define equal-type?
+  (lambda (ty1 ty2)
+    (cases type ty1
+      (atomic-type (name1)
+        (cases type ty2
+          (atomic-type (name2) (eqv? name1 name2))
+          (else #f)))
+      (proc-type (arg-types1 res-type1)
+        (cases type ty2
+          (proc-type (arg-types2 res-type2)
+            (and
+              (every2? equal-type? arg-types1 arg-types2)
+              (equal-type? res-type1 res-type2)))
+          (else #f))))))
+```
+
+####
+**Integración del verificador en el interpretador**
+
+El interpretador debe realizar la verificación de tipos antes de ejecutar el programa. Se define la función `type-of-program`, la cual inicia la verificación de la expresión principal del programa utilizando un ambiente de tipos inicial vacío.
+
+La función `auxiliar-interpretador` coordina este proceso: primero invoca a `type-of-program`; si la verificación es exitosa y el programa está bien tipado, procede a llamar a `eval-program` para ejecutar la lógica. En caso de encontrar una inconsistencia de tipos, el sistema debe retornar un error y detener la ejecución.
+
+```racket
+(define type-of-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp)
+        (type-of-expression exp (empty-tenv))))))
+
+(define auxiliar-interpretador
+  (lambda (pgm)
+    (let ((t (type-of-program pgm)))
+      (if t
+          (eval-program pgm)
+          (eopl:error 'auxiliar-interpretador "Type checking failed")))))
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 41 Chequeo de tipos Implementación Parte 4.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=ukFGcDhW2xc
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,103 @@
+####
+**Correcciones de nomenclatura y adaptaciones en el intérprete**
+
+Para mantener la consistencia con el idioma del material educativo y el sistema de tipos del libro, es necesario realizar ajustes en los nombres de las variables y estructuras del intérprete. En la declaración de clases (`class-declaration` o `class-d`), se debe sustituir el término `identifier` por `identificador` en todas sus apariciones dentro de la gramática y las expresiones.
+
+Asimismo, en la función `evaluar-expresion`, el término `en` se debe renombrar como `ambiente` para reflejar con mayor claridad su propósito. Por otro lado, en el procedimiento `elaborar-declaración-de-clase` (parte de `evaluar-programa`), se debe asegurar la correcta inicialización de la variable que gestiona el ambiente de clases.
+
+####
+**Representación de objetos basada en partes**
+
+Para implementar una representación de objetos basada en partes, se define primero qué es una `parte`. Una `parte` consta de un nombre de clase y un `vector` que contiene el estado del objeto. Cada posición de este vector está asociada a los valores actuales de los atributos o campos. Inicialmente, este vector se llena con ceros (0), lo cual explica por qué los campos que no se inicializan explícitamente suelen tener este valor por defecto.
+
+```racket
+(define-datatype part part?
+  (a-part
+    (class-name symbol?)
+    (fields-vector vector?)))
+```
+
+####
+**Construcción de la cadena de herencia con `new-object`**
+
+La construcción de un objeto implica generar una lista de partes basada en la jerarquía de herencia. Dado un nombre de clase, el proceso es el siguiente:
+1. Si el nombre de la clase es `object`, se ha alcanzado el tope de la cadena de herencia y se retorna una lista vacía.
+2. De lo contrario, se busca la declaración de la clase actual y se crea una lista cuyo primer elemento es la `parte` de dicha clase.
+3. El resto de la lista se construye de forma recursiva llamando a `new-object` con el nombre de la superclase.
+
+Este proceso garantiza que el objeto final contenga la información de su clase y de todas sus clases antecesoras hasta llegar a la raíz.
+
+```racket
+(define new-object
+  (lambda (class-name)
+    (if (eqv? class-name 'object)
+        '()
+        (let ((c-decl (lookup-class class-name)))
+          (cons
+            (make-first-part c-decl)
+            (new-object (class-declaration->super-name c-decl)))))))
+```
+
+####
+**Extractores para declaraciones de clase y métodos**
+
+Para facilitar la manipulación de la gramática y los `data-types` generados automáticamente, se utilizan extractores que obtienen información específica de las declaraciones de clase. Estos extractores operan sobre la sintaxis definida en la gramática:
+
+- `class-declaration->super-name`: Extrae el nombre de la superclase.
+- `class-declaration->fields`: Extrae los nombres de los campos o atributos.
+- `class-declaration->class-name`: Extrae el nombre de la clase.
+- `class-declaration->methods`: Extrae las declaraciones de los métodos.
+
+En el caso de los métodos, los extractores permiten obtener el nombre del método y su cuerpo. El procedimiento para obtener los nombres de todos los métodos de una clase consiste en aplicar un mapeo (`map`) sobre la lista de declaraciones de métodos.
+
+####
+**El procedimiento `make-first-part`**
+
+El procedimiento `make-first-part` es el encargado de instanciar la estructura de datos `part` para una clase específica. Su función es tomar la declaración de la clase, extraer sus campos y crear un vector del tamaño correspondiente inicializado en cero.
+
+```racket
+(define make-first-part
+  (lambda (c-decl)
+    (let ((f-names (class-declaration->fields c-decl)))
+      (a-part
+        (class-declaration->class-name c-decl)
+        (make-vector (length f-names) 0)))))
+```
+
+####
+**Búsqueda y aplicación de métodos con `find-method-and-apply`**
+
+La aplicación de métodos se gestiona mediante el procedimiento `find-method-and-apply`. Este busca en la cadena de herencia, empezando por la clase actual, hasta encontrar una que declare el método solicitado. El proceso requiere:
+- `method-name`: El nombre del método a buscar.
+- `host-class-name`: El nombre de la clase donde se encontró el método.
+- `self`: La representación del objeto (la lista de partes).
+- `args`: Los argumentos pasados al método.
+
+Si se llega a la clase `object` sin encontrar el método, se produce un error. Si se encuentra, se procede a ejecutar `apply-method`. De lo contrario, se realiza una llamada recursiva buscando en la superclase.
+
+####
+**Construcción del ambiente para la ejecución de métodos**
+
+Para aplicar un método, es necesario construir un ambiente extendido donde cada variable esté ligada a su valor correspondiente. Este ambiente debe contener:
+1. Ligaduras para las palabras clave `super` y `self`.
+2. Ligaduras para los parámetros formales del método.
+3. Ligaduras para cada campo (atributo) que sea visible desde el método, empezando por los campos de la clase donde el método está definido.
+
+Esto permite que, durante la ejecución del cuerpo del método, el intérprete tenga acceso tanto a los datos locales como al estado del objeto y su jerarquía.
+
+####
+**Análisis de redundancia en la representación simple de objetos**
+
+En la implementación simple basada en una lista de partes, puede existir redundancia de información. Por ejemplo, en una jerarquía de clases C1, C2 y C3 (donde C3 hereda de C2 y esta de C1), cada parte mantiene su propio estado.
+
+Al ejecutar un método, el ambiente resultante debe mapear correctamente todos los campos. Sin embargo, esta estructura puede ocupar un espacio considerable en memoria. Como observación técnica, los objetos en lenguajes como `Java` suelen ocupar menos espacio que en `C++` debido a cómo gestionan estas representaciones y evitan la redundancia de información que presentan las implementaciones de objetos más simples. Aquellas implementaciones que no optimizan la cadena de partes requieren más recursos de memoria para representar la misma instancia.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 49 Objetos simples Parte 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=yXIqoR2-FL0
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

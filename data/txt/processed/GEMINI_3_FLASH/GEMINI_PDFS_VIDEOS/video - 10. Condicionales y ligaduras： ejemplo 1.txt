@@ -1,0 +1,63 @@
+####
+**Diagramación de ambientes y configuración inicial**
+
+Para evaluar este ejemplo mediante diagramas de ambientes, se debe considerar un `ambiente inicial` con los identificadores `X`, `Y` y `Z` vinculados a los valores 4, 2 y 5 respectivamente. El proceso de construcción inicia sobre el `ambiente vacío`, que es el ambiente base en la jerarquía. Sobre este se construye el `ambiente 0`:
+
+- `X` = 4
+- `Y` = 2
+- `Z` = 5
+
+####
+**Evaluación de la variable T y extensión de ambientes**
+
+En la declaración `let Z = 5` y `T = let ...`, se observa que el valor de `T` se define mediante un `let` interno. Este `let` se crea en el área de declaraciones, por lo tanto, el ambiente de `T` extiende del `ambiente 0`. Esto ocurre porque, mientras se procesan las declaraciones de `X`, `Y`, `Z`, aún no se ha pasado al cuerpo `in` del `let` principal. 
+
+Para calcular el valor de `T`, se crea un ambiente local donde:
+- `P` = 5
+- `Q` = 2
+
+Al sumar `P` y `Q` (5 + 2), se obtiene 7. Este valor es el que se almacena en la variable `T`.
+
+####
+**Creación del ambiente 1 y cálculo de X**
+
+El `ambiente 1` comienza a tener vigencia a partir del `in` del primer `let`. Dentro de este bloque, se define `X` como el incremento en 1 de `Z` (`add1 Z`). 
+
+Al buscar el valor de `Z` para esta operación, el sistema localiza `Z = 5` en el ambiente correspondiente. Por lo tanto, en el nuevo contexto de evaluación (que surge de esta declaración), el identificador `X` toma el valor de 6.
+
+####
+**Evaluación de la expresión final y resolución de identificadores**
+
+La expresión final a evaluar sobre el ambiente resultante es `(* T (* Y X))`. El proceso de búsqueda de valores en la jerarquía de ambientes se realiza de la siguiente manera:
+
+- `T`: Se busca en el ambiente anterior y se encuentra el valor 7.
+- `Y`: No se encuentra en el ambiente inmediato superior, por lo que se busca en el `ambiente 0`, donde su valor es 2.
+- `X`: Se utiliza el primer valor encontrado en la jerarquía, que en este caso es 6.
+
+La operación final es `7 * (2 * 6)`, lo que resulta en `7 * 12 = 84`.
+
+####
+**Verificación en el interpretador y código fuente**
+
+La verificación del diagrama de ambientes se realiza mediante el siguiente código en el interpretador, configurando el ambiente inicial en 4, 2 y 5:
+
+```racket
+let Z = 5
+    T = let P = 5
+            Q = 2
+        in + P Q
+in let X = add1(Z)
+   in * T (* Y X)
+```
+
+Al ejecutar esta estructura, el interpretador devuelve efectivamente 84. Este ejercicio de contrastar la diagramación de ambientes con el código es fundamental para comprender el funcionamiento de los procedimientos y el alcance de las variables.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 10. Condicionales y ligaduras： ejemplo 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=3MmHqa7Qm3I
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

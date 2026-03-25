@@ -1,0 +1,50 @@
+####
+**Introducción a la sintaxis abstracta y datatypes**
+
+Ahora vamos a hablar de la `sintaxis abstracta`. Los `datatypes`, como el `struct` o el "árbol uno" que se mencionaron anteriormente, se denominan árboles de sintaxis abstracta. Este es un concepto fundamental en los lenguajes de programación para representar la estructura interna de las expresiones.
+
+####
+**Sintaxis concreta frente a sintaxis abstracta**
+
+Dada una gramática, como la de las expresiones de `cálculo lambda`, se puede representar cada expresión usando el tipo de dato definido mediante un `define-datatype`. 
+
+En general, una gramática específica define la representación particular de un tipo de dato que utiliza valores generados por dicha gramática. Esta representación es llamada `sintaxis concreta` o representación externa, que es lo que el programador escribe al redactar código. Sin embargo, para ejecutar ese código en un proceso de compilación o interpretación, se utiliza la representación interna o `sintaxis abstracta`. Esta es una sintaxis especial generada a partir de la gramática que permite verificar rápidamente si el código está correctamente escrito.
+
+####
+**Construcción de la sintaxis abstracta**
+
+Para crear una `sintaxis abstracta` a partir de una `sintaxis concreta`, se debe nombrar cada regla de producción y cada ocurrencia de un símbolo no terminal. En la gramática de expresiones que hemos visto, se asignan nombres a las producciones para poder administrarlas:
+
+- `var-exp`: Corresponde a un `identifier` (id).
+- `lambda-exp`: Corresponde a la estructura `lambda identifier expression`, compuesta por un `id` y un `cuerpo`.
+- `app-exp`: Corresponde a la aplicación `expression expression`, compuesta por un `rator` (operador) y un `rand` (operando).
+
+####
+**Ejemplo de árbol de sintaxis abstracta**
+
+A partir de una expresión de `cálculo lambda` como `lambda (x) (f (f x))`, podemos observar cómo se construye su representación interna. Una `lambda-expression` tiene dos partes: un `id` y un `cuerpo`.
+
+En este caso, el `id` es `x` y el `cuerpo` es una aplicación (`app-exp`). Esta aplicación se divide en `rator` y `rand`:
+- El `rator` es una `var-exp` con el identificador `f`.
+- El `rand` es, a su vez, otra `app-exp`.
+
+Dentro de esa segunda aplicación (`app-exp` interna):
+- El `rator` es una `var-exp` con el identificador `f`.
+- El `rand` es una `var-exp` con el identificador `x`.
+
+Si el árbol de sintaxis abstracta se puede construir siguiendo estas reglas, significa que la expresión es gramaticalmente correcta.
+
+####
+**Importancia del Abstract Syntax Tree (AST)**
+
+El `Abstract Syntax Tree` o `AST` es lo que generan los lenguajes de programación para transformar el código fuente y verificar su validez. Muchos procesos y pruebas de validez del código se realizan directamente sobre el `AST` y no sobre el código nativo. Esto se debe a que el código escrito por el programador es propenso a errores, mientras que el `AST` representa la estructura de un programa correctamente escrito que ya puede ejecutarse normalmente.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 27  Abstracción de datos Arboles de Sintaxis abstracta.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=E_IR22Uw7_o
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

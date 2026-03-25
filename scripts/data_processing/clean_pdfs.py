@@ -1,31 +1,27 @@
 import os
 import time
 import glob
-import re # Necesario para la comprobación del dígito
+import re
 from dotenv import load_dotenv
 from google import genai
 from google.genai.errors import APIError 
 
-# ----------------------------
+
 # CONFIGURACIÓN INICIAL
-# ----------------------------
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CARPETA_ENTRADA = os.path.join(BASE_DIR, "TXT_METADATA")
-CARPETA_SALIDA_ESTRUCTURA = os.path.join(BASE_DIR, "NEW_TXT_GEMINI")
-
-# Crear la carpeta de salida si no existe
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CARPETA_ENTRADA = os.path.join(BASE_DIR, "data", "txt", "raw", "NEW")
+CARPETA_SALIDA_ESTRUCTURA = os.path.join(BASE_DIR,  "data", "txt", "processed", "GEMINI_3_FLASH","GEMINI_PDFS_VIDEOS")
 os.makedirs(CARPETA_SALIDA_ESTRUCTURA, exist_ok=True)
 
-# ----------------------------
+
 # CONTROL DE RATE LIMITING
-# ----------------------------
-# gemini-3.1-flash-lite-preview: 15 peticiones por minuto
-MAX_REQUESTS_PER_MINUTE = 15
-REQUEST_INTERVAL = 60.0 / MAX_REQUESTS_PER_MINUTE  # ~4 segundos entre peticiones
+MODELO = "gemini-3-flash-preview" 
+MAX_REQUESTS_PER_MINUTE = 5
+REQUEST_INTERVAL = 60.0 / MAX_REQUESTS_PER_MINUTE  
 last_request_time = 0
 
 def esperar_rate_limit():
@@ -45,7 +41,7 @@ def esperar_rate_limit():
 
 
 print(f"🌟 Script de Estructuración de Documentos (limpiar_pdfs.py) iniciado.")
-print(f"   Modelo: gemini-3.1-flash-lite-preview")
+print(f"   Modelo: : {MODELO} ")
 print(f"   Rate Limit: {MAX_REQUESTS_PER_MINUTE} peticiones/minuto (~{REQUEST_INTERVAL:.1f}s entre peticiones)")
 print(f"   Carpeta de Entrada: {CARPETA_ENTRADA}")
 print(f"   Carpeta de Salida: {CARPETA_SALIDA_ESTRUCTURA}")
@@ -53,10 +49,8 @@ print("   Filtro: Procesando archivos que SÍ empiezan con un dígito (1..., 2..
 print("-" * 50)
 
 
-# ----------------------------
-# FUNCIONES AUXILIARES Y MANEJO DE ERRORES
-# ----------------------------
 
+# FUNCIONES AUXILIARES Y MANEJO DE ERRORES
 def separar_metadata(contenido):
     """
     Separa el texto principal y la metadata (si existe) usando
@@ -68,7 +62,6 @@ def separar_metadata(contenido):
         return texto.strip(), "--- METADATA ---\n" + metadata.strip()
     else:
         return contenido.strip(), ""
-
 
 def manejar_reintentos(prompt, modelo, intentos=3, espera=10):
     """Función genérica para manejar la llamada a la API con reintentos."""
@@ -102,10 +95,7 @@ def manejar_reintentos(prompt, modelo, intentos=3, espera=10):
     print("❌ Falló después de varios intentos.")
     return ""
 
-# ----------------------------
 # FUNCIÓN DE PROCESAMIENTO GEMINI: ESTRUCTURACIÓN
-# ----------------------------
-
 def estructurar_con_reintentos(texto):
     prompt = f"""[CONTEXTO]
     Eres un editor técnico especializado en preparar contenido educativo de "Fundamentos de Lenguajes de Programación" para un sistema RAG (Retrieval-Augmented Generation).
@@ -166,6 +156,12 @@ def estructurar_con_reintentos(texto):
     - Agregar descripción técnica mínima que explique qué hace el código
     - Mantener la relación entre el código y el texto académico circundante
 
+    NOTACIÓN MATEMÁTICA:
+    - Usar exclusivamente texto plano o símbolos Unicode para expresiones matemáticas
+    - Escribir conjuntos y expresiones de forma directa: usar formato plano como Σ = a, b, c
+    - NO usar ningún tipo de notación especial, markup matemático o formatos externos
+    - Las expresiones deben ser legibles directamente en texto sin renderizado adicional
+
     FORMATO MARKDOWN:
     - Bloques de código con sintaxis correcta:
     ```lenguaje
@@ -197,13 +193,11 @@ def estructurar_con_reintentos(texto):
     {texto}
 
     """
-    MODELO = "gemini-3.1-flash-lite-preview" 
+    
     return manejar_reintentos(prompt, MODELO)
 
 
-# ----------------------------
-# PROCESAMIENTO PRINCIPAL CON FILTRO INVERTIDO
-# ----------------------------
+# PROCESAMIENTO PRINCIPAL CON FILTRO
 
 # Buscar todos los archivos .txt en la carpeta de entrada
 patron_busqueda = os.path.join(CARPETA_ENTRADA, "*.txt")

@@ -1,0 +1,75 @@
+####
+**Procedimientos recursivos y la serie de Fibonacci**
+
+Los `procedimientos recursivos` tienen la característica de que se llaman a sí mismos. Un ejemplo clásico es la serie de Fibonacci, donde para evaluar un valor `N` que sea mayor o igual que 1, se requiere conocer los dos valores anteriores. Por ejemplo:
+
+`F(8) = F(7) + F(6)`
+
+Esto implica que la función `F` debe conocerse a sí misma; cada vez que se invoca a `F`, se realiza un nuevo llamado a `F`. Para que esto sea posible, el nombre del procedimiento debe estar reconocido dentro del `ambiente` de ejecución.
+
+####
+**Limitaciones de la implementación actual de ambientes y clausuras**
+
+Bajo el esquema actual de evaluación, un procedimiento recursivo como el `factorial` genera un error de búsqueda de variables. Considérese la regla recursiva del factorial: `n! = n * (n - 1)!`.
+
+Si definimos un procedimiento `fact` en un ambiente inicial (ambiente vacío), se crea una `clausura` que contiene el parámetro `X`, el cuerpo de la función y el `ambiente` donde fue declarada (en este caso, el ambiente vacío).
+
+Al intentar evaluar una expresión como `(fact 6)`, el sistema realiza lo siguiente:
+1. Crea un nuevo ambiente `M1` donde `X = 6`, apuntando al ambiente vacío (el que guardó la clausura).
+2. Evalúa el cuerpo: `X * (fact (X - 1))`.
+3. Busca el valor de `X` (encontrado en `M1`).
+4. Busca la ligadura `fact` para el llamado recursivo.
+
+El error ocurre porque la búsqueda de `fact` comienza en `M1` y continúa en el ambiente vacío. Como `fact` no está definido en ninguno de esos dos niveles (ya que la clausura no se incluye a sí misma en su propio ambiente de definición), el sistema arroja un error de variable no encontrada. La implementación estándar de ambientes no permite que un procedimiento se conozca a sí mismo.
+
+####
+**Introducción de la expresión `letrec`**
+
+Para resolver el problema de la recursión, se añade al lenguaje un nuevo tipo de expresión denominada `letrec`. Mientras que `let` se mantiene para definiciones no recursivas, `letrec` permite la creación de procedimientos que pueden referenciarse a sí mismos.
+
+En esta implementación, el uso de `letrec` está limitado exclusivamente a la declaración de procedimientos. La estructura gramatical propuesta es:
+
+`letrec {Identificador ({Identificador}*(,)) = Expression}* in Expression`
+
+Los componentes principales son:
+- **pronames**: Los nombres de los procedimientos definidos.
+- **ids**: Los parámetros de los procedimientos. Dado que se pueden definir múltiples procedimientos, se representa como una lista de listas (por ejemplo, si tenemos `f(x, y)` y `g(a, b)`, la estructura sería `((x y) (a b))`).
+- **bodies**: Una lista con los cuerpos (expresiones) de cada procedimiento.
+- **letrec-body**: La expresión donde los procedimientos definidos son visibles y pueden ser aplicados.
+
+####
+**Definición de `letrec` en la gramática del lenguaje**
+
+La incorporación de procedimientos recursivos requiere modificar la gramática y la función de evaluación (`eval-expression`). En la gramática, la estructura se define para aceptar una lista de declaraciones de procedimientos antes de la palabra clave `in`.
+
+```racket
+(expression
+ (letrec-exp
+  (list-of (identifier) "(" (separated-list identifier ",") ")" "=" expression)
+  "in"
+  expression)
+)
+```
+
+En esta estructura:
+- Se capturan los nombres de los procedimientos.
+- Se capturan los argumentos de cada procedimiento mediante una lista de listas.
+- Se define el cuerpo de cada procedimiento.
+- Se define la expresión final (`letrec-body`) donde estos procedimientos tienen capacidad de conocerse a sí mismos.
+
+####
+**El Ambiente Extendido Recursivo**
+
+Para soportar la recursión, es necesario un nuevo tipo de estructura de datos en el sistema de ambientes. Las herramientas actuales, como el `ambiente extendido` y la `clausura` estándar, no son suficientes para que un procedimiento pueda referenciarse a sí mismo durante su ejecución.
+
+Para solucionar esto, se introduce el `ambiente extendido recursivo`. A diferencia del ambiente extendido normal, este tipo de ambiente está diseñado para que, al buscar el nombre del procedimiento, el sistema retorne una clausura cuyo ambiente de referencia sea el mismo ambiente donde el procedimiento está siendo buscado, cerrando así el ciclo de referencia necesario para la recursión.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 17. Procedimientos recursivos： primera parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=ojG64qQkdZo
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

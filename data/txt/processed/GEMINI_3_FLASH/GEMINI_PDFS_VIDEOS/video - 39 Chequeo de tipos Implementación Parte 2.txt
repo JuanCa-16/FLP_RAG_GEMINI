@@ -1,0 +1,122 @@
+####
+**Expansión de expresiones de tipo**
+
+Debemos definir el procedimiento `expand-type-expression` que calcula el tipo denotado por una expresión de tipo. Básicamente, si recibe un número, lo representará como un `atomic-type` con la etiqueta `int`. El revisor llamará a `expand-type-expression` siempre que necesite utilizar el tipo denotado por una expresión de tipo.
+
+En `expand-type-expression`, en caso de que entre un `int-type-expression`, el resultado será un `int-type`. Si entra un `bool-type-expression`, será un `bool-type`. En el caso de un `proc-type-expression`, que recibe los tipos de los argumentos y el tipo del resultado, el resultado será un `proc-type` aplicando `expand-type-expression` a los argumentos (usando un `map`) y al resultado. Esto conecta lo definido en la gramática con la representación interna de los tipos.
+
+####
+**Implementación de expand-type-expression**
+
+Para implementar la interfaz que permite representar cada tipo con su `data-type` correspondiente y así realizar la verificación, definimos las funciones `expand-type-expression` y `expand-type-expressions`.
+
+```racket
+(define expand-type-expression
+  (lambda (texp)
+    (cases type-expression texp
+      (int-type-expression () (int-type))
+      (bool-type-expression () (bool-type))
+      (proc-type-expression (arg-texps result-texp)
+        (proc-type
+          (expand-type-expressions arg-texps)
+          (expand-type-expression result-texp))))))
+
+(define expand-type-expressions
+  (lambda (texps)
+    (map (lambda (texp) (expand-type-expression texp))
+         texps)))
+```
+
+La función `expand-type-expressions` recibe una lista de expresiones y aplica un `map` para ejecutar `expand-type-expression` sobre cada elemento, transformando la lista de expresiones gramaticales en una lista de tipos internos.
+
+####
+**El revisor de tipos type-of-expression**
+
+El revisor de tipos se implementará como un procedimiento llamado `type-of-expression` que recibe una expresión y un ambiente de tipos, y retorna el tipo correspondiente a ella o un error. Este procedimiento tendrá cláusulas que implementan las reglas de producción para las expresiones con tipo, asociando a cada valor expresado un tipo denotado.
+
+Las primeras cláusulas de `type-of-expression` manejan literales y variables:
+- Si es un `literal-expression`, se retorna `int-type`.
+- Si es una `true-expression` o `false-expression`, se retorna `bool-type`.
+- Si es una `var-expression`, se busca el tipo almacenado en el ambiente de tipos mediante `apply-tm`, que es similar a `apply-env` pero con un mensaje de error orientado a tipos.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (literal-expression (num) (int-type))
+      (bool-expression (bool) (bool-type))
+      (var-expression (id) (apply-tm tenv id))
+      (else (error "Expresión no soportada por ahora")))))
+```
+
+####
+**Chequeo de tipos en condicionales**
+
+Para las expresiones condicionales `if-exp`, se debe verificar que la `test-expression` sea de tipo booleano y que tanto la `true-expression` como la `false-expression` tengan el mismo tipo `T`.
+
+La implementación utiliza un `let` para calcular los tipos de las tres subexpresiones y luego emplea la función `check-equal-type!` para validar las restricciones.
+
+```racket
+(cases expression exp
+  (if-expression (test-exp true-exp false-exp)
+    (let ((test-type (type-of-expression test-exp tenv))
+          (true-type (type-of-expression true-exp tenv))
+          (false-type (type-of-expression false-exp tenv)))
+      (begin
+        (check-equal-type! test-type (bool-type) test-exp)
+        (check-equal-type! true-type false-type exp)
+        true-type))))
+```
+
+En este flujo, si las validaciones son exitosas, el tipo resultante de la expresión `if` completa es el tipo de la rama verdadera (que es igual al de la rama falsa).
+
+####
+**Verificación de igualdad de tipos y formato de errores**
+
+La función `check-equal-type!` nos ayuda a asegurar que dos tipos sean iguales. Si los tipos no coinciden, se genera un error técnico utilizando `eopl:error`.
+
+```racket
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'check-equal-type!
+                    "Los tipos no corresponden: ~s distinto de ~s en ~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2)
+                    exp))))
+```
+
+Para que los mensajes de error sean legibles, la función `type-to-external-form` formatea las estructuras internas de los tipos (`structs`) en representaciones de lista más sencillas.
+
+```racket
+(define type-to-external-form
+  (lambda (t)
+    (cases type t
+      (atomic-type (name) name)
+      (proc-type (arg-types result-type)
+        (append
+          (arg-types-to-external-form arg-types)
+          '(->)
+          (list (type-to-external-form result-type)))))))
+
+(define arg-types-to-external-form
+  (lambda (types)
+    (if (null? types)
+        '()
+        (if (null? (cdr types))
+            (list (type-to-external-form (car types)))
+            (cons (type-to-external-form (car types))
+                  (cons '* (arg-types-to-external-form (cdr types))))))))
+```
+
+Esta función es "pura carpintería" para transformar, por ejemplo, un tipo de procedimiento en una representación como `(int * bool -> int)`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 39 Chequeo de tipos Implementación Parte 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=KCAnqIIBwMY
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

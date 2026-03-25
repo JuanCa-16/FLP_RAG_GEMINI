@@ -1,0 +1,109 @@
+####
+**Conceptos de ligadura y variables libres**
+
+En el contexto de los lenguajes de programación, la ligadura de una variable puede ser de dos tipos:
+- **Ligadura libre**: Ocurre cuando una variable no ha sido asignada o no está dentro del alcance de un definidor.
+- **Estado ligado**: Ocurre cuando la variable ha sido asignada o declarada dentro de un contexto específico (como un parámetro de una función).
+
+En el `cálculo lambda`, determinamos si una variable `x` ocurre libre en una expresión `e` siguiendo estas reglas:
+
+1. Si la expresión `e` es una variable: La variable `x` ocurre libre si y solo si `x` es igual a `e`.
+2. Si la expresión `e` es de la forma `lambda y . e_prime`: La variable `x` ocurre libre siempre y cuando `x` sea distinto de `y` y `x` ocurra libre en `e_prime`. Básicamente, si `x` es igual al parámetro `y`, entonces `x` está ligada y no es libre.
+3. Si la expresión `e` es de la forma `(e1 e2)` (una aplicación): La variable `x` ocurre libre si `x` ocurre libre en `e1` o si ocurre libre en `e2`.
+
+####
+**Gramática del cálculo lambda**
+
+Para formalizar estas reglas, recordamos la gramática de una expresión de `cálculo lambda` (`lcExpresión`):
+
+- **Identificador**: Un nombre de variable único.
+- **Abstracción**: `lambda` seguido de un `identificador` entre paréntesis y una `lcExpresión`.
+- **Aplicación**: Un paréntesis que contiene dos `lcExpresión`.
+
+La gramática se define así:
+`lcExpresión ::= <identificador>`
+`lcExpresión ::= (lambda (<identificador>) <lcExpresión>)`
+`lcExpresión ::= (<lcExpresión> <lcExpresión>)`
+
+####
+**Análisis de ocurrencia libre en expresiones**
+
+A partir de las reglas de la gramática, podemos analizar casos específicos para determinar si una variable `x` ocurre libre:
+
+1. En la expresión `(lambda (x) x)`: Como la variable `x` es igual al identificador del `lambda`, la variable está ligada. Por lo tanto, `x` no ocurre libre.
+2. En una aplicación `(e1 e2)`: Debemos verificar ambos lados. Por ejemplo, si tenemos `x` como un identificador solo, la regla 1 dice que ocurre libre.
+3. En una expresión compleja como `((lambda (x) x) (lambda (y) (x y)))`:
+    - En el primer término `(lambda (x) x)`, `x` no ocurre libre porque está ligada.
+    - En el segundo término `(lambda (y) (x y))`, analizamos el cuerpo `(x y)`. Como `x` es diferente de `y`, y `x` es un identificador solo en el cuerpo, `x` ocurre libre aquí.
+    - Al ser una aplicación (caso 3), si ocurre libre en cualquiera de los dos lados, la variable ocurre libre en la expresión total. En este caso, el resultado es `true`.
+
+####
+**Representación de la gramática en Racket**
+
+Para implementar esto en código, primero mapeamos la gramática del `cálculo lambda` utilizando listas en Racket. Definiremos tres expresiones de ejemplo que representen los tres casos de la gramática:
+
+```racket
+#lang eopl
+
+;; Caso 1: Identificador solo
+(define expresion1 'x)
+
+;; Caso 2: Abstracción Lambda (lambda (identificador) cuerpo)
+(define expresion2 '(lambda (x) x))
+
+;; Caso 3: Aplicación (expresion1 expresion2)
+(define expresion3 '((lambda (y) x) (x y)))
+```
+
+Aquí, `expresion1` es un simple símbolo. `expresion2` representa una función que recibe `x` y retorna `x`. `expresion3` es una aplicación de dos expresiones lambda complejas.
+
+####
+**Implementación de la función ocurre-libre**
+
+Diseñaremos una función llamada `occurs-free?` que recibe una expresión y una variable para determinar si dicha variable ocurre libre, siguiendo fielmente las reglas lógicas:
+
+```racket
+(define occurs-free?
+  (lambda (exp var)
+    (cond
+      ;; Caso 1: La expresión es un identificador (símbolo)
+      [(symbol? exp) (eqv? exp var)]
+      
+      ;; Caso 2: La expresión es un lambda
+      [(eqv? (car exp) 'lambda)
+       (and
+        (not (eqv? (car (cadr exp)) var)) ; El parámetro no es la variable
+        (occurs-free? (caddr exp) var))]  ; La variable ocurre libre en el cuerpo
+      
+      ;; Caso 3: La expresión es una aplicación
+      [else
+       (or
+        (occurs-free? (car exp) var)      ; Ocurre libre en e1
+        (occurs-free? (cadr exp) var))]))) ; Ocurre libre en e2
+```
+
+En el caso del `lambda`, extraemos el parámetro usando `car(cadr exp)` y el cuerpo usando `caddr exp`. En el caso de la aplicación, el primer elemento es `car exp` y el segundo es `cadr exp`.
+
+####
+**Verificación de la función occurs-free?**
+
+Al ejecutar la función `occurs-free?` con nuestras expresiones de prueba, obtenemos los siguientes resultados:
+
+- Para `expresion1` (`'x`) y la variable `x`: Retorna `true`. Al ser un identificador igual a la variable buscada, ocurre libre.
+- Para `expresion2` (`'(lambda (x) x)`) y la variable `x`: Retorna `false`. Aunque `x` está en el cuerpo, está ligada por el parámetro del `lambda`. La regla indica que si `x = y`, no puede ocurrir libre.
+- Para `expresion3` (`'((lambda (y) x) (x y))`) y la variable `x`: Retorna `true`. Analizando por partes:
+    - En `(lambda (y) x)`, `x` es diferente de `y` y ocurre libre en el cuerpo.
+    - En `(x y)`, `x` es un identificador y ocurre libre.
+    - Como ocurre libre en al menos uno de los componentes de la aplicación, la función devuelve `true`.
+
+El objetivo de este procedimiento es automatizar la búsqueda de variables según las reglas formales de ligadura.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 12 Alcance y ligadura de variables II.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=KEyfWgouql0
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

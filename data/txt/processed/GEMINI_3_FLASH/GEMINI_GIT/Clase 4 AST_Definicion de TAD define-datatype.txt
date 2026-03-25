@@ -1,0 +1,187 @@
+####
+**Introducción a define-datatype**
+
+La función `define-datatype` en EOPL (Essentials of Programming Languages) es una herramienta fundamental para definir tipos algebraicos de datos (TAD) en `Scheme` o `Racket`. Permite crear tipos recursivos con múltiples variantes (constructores), cada una con sus propios campos y verificadores de tipos.
+
+**Partes de define-datatype**
+
+- **Nombre del tipo**: `lc-exp` es el nombre del tipo de dato que se está definiendo.
+- **Predicado del tipo**: `lc-exp?` es un procedimiento generado automáticamente que verifica si un valor pertenece al tipo `lc-exp`.
+- **Variantes (constructores)**:
+    - `var-exp`: Constructor para variables. Campo: `id` (debe ser un símbolo, verificado con `symbol?`).
+    - `lambda-exp`: Constructor para expresiones lambda. Campos: `lid` (una lista de símbolos, verificado con `(list-of symbol?)`) y `exp` (una expresión de tipo `lc-exp?`).
+    - `app-exp`: Constructor para aplicaciones de funciones. Campos: `rator` (el operador, verificado con `lc-exp?`) y `rand` (el operando, verificado con `lc-exp?`).
+
+####
+**Tipos de procedimientos generados en un TAD**
+
+Al definir un tipo de dato con `define-datatype`, se generan automáticamente varios procedimientos para manipular el TAD:
+
+- **Constructores**: Procedimientos para cada variante que crean instancias del tipo. Por ejemplo, `(var-exp 'x)` construye una expresión variable con el símbolo `x`.
+- **Predicado del tipo**: `lc-exp?` verifica si un valor pertenece al tipo general.
+- **Reconocedores de variante**: Procedimientos que verifican si una expresión pertenece a una variante específica: `var-exp?`, `lambda-exp?` y `app-exp?`.
+- **Extractores de campos**: Procedimientos para obtener los valores de los campos de cada variante.
+    - Para `var-exp`: `var-exp-id`.
+    - Para `lambda-exp`: `lambda-exp-lid` y `lambda-exp-exp`.
+    - Para `app-exp`: `app-exp-rator` y `app-exp-rand`.
+
+Estos extractores suelen manejarse de forma más eficiente mediante la construcción `cases`.
+
+####
+**Ejemplo de uso de constructores, predicados y extractores**
+
+A continuación se muestra cómo construir expresiones, verificar sus tipos y extraer sus componentes:
+
+```racket
+; Construcción
+(define exp1 (var-exp 'x))
+(define exp2 (lambda-exp '(x) (var-exp 'x)))
+(define exp3 (app-exp (var-exp 'f) (var-exp 'a)))
+
+; Verificación
+(lc-exp? exp1)      ; #t
+(var-exp? exp1)     ; #t
+(lambda-exp? exp2)  ; #t
+
+; Extracción
+(var-exp-id exp1)      ; 'x
+(lambda-exp-lid exp2)  ; '(x)
+(lambda-exp-exp exp2)  ; (var-exp 'x)
+```
+
+####
+**Resumen de procedimientos generados para lc-exp**
+
+| Procedimiento | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `var-exp` | Constructor | Crea una variable |
+| `lambda-exp` | Constructor | Crea una lambda |
+| `app-exp` | Constructor | Crea una aplicación |
+| `lc-exp?` | Predicado | Verifica el tipo general |
+| `var-exp?` | Predicado | Verifica variante `var-exp` |
+| `lambda-exp?` | Predicado | Verifica variante `lambda-exp` |
+| `app-exp?` | Predicado | Verifica variante `app-exp` |
+| `var-exp-id` | Extractor | Obtiene el `id` |
+| `lambda-exp-lid` | Extractor | Obtiene los parámetros |
+| `lambda-exp-exp` | Extractor | Obtiene el cuerpo |
+| `app-exp-rator` | Extractor | Obtiene el operador |
+| `app-exp-rand` | Extractor | Obtiene el operando |
+
+Este sistema permite un manejo "tipo-safe" y `pattern matching` mediante la construcción `cases` para procesar expresiones de manera recursiva.
+
+####
+**Definición de lc-exp con define-datatype**
+
+El siguiente código define la estructura del cálculo lambda utilizando la sintaxis de `define-datatype` en el lenguaje `#lang eopl`:
+
+```racket
+#lang eopl
+
+#|
+Gramática:
+<lc-exp> ::= <identificador>
+             var-exp(id)
+         ::= "lambda" "(" <identificador>* ")" <lc-exp>
+             lambda-exp(lid, exp)
+         ::= "(" <lc-exp> <lc-exp> ")"
+             app-exp(rator, rand)
+|#
+
+(define-datatype lc-exp lc-exp?
+  (var-exp
+   (id symbol?))
+  (lambda-exp
+   (lid (list-of symbol?))
+   (exp lc-exp?))
+  (app-exp
+   (rator lc-exp?)
+   (rand lc-exp?)))
+```
+
+####
+**Ejemplos de construcción de estructuras anidadas en lc-exp**
+
+Uso de los constructores para crear expresiones complejas y su representación interna:
+
+```racket
+(define exp1 (var-exp 'x))
+
+(define exp2 (lambda-exp '(x y z) (var-exp 'y)))
+
+(define exp3 
+  (app-exp 
+   (app-exp 
+    (lambda-exp '(a b c) 
+                (lambda-exp '(x y z) (var-exp 'x)))
+    (var-exp 'z))
+   (lambda-exp '(a b c d e f) (var-exp 'e))))
+
+; Salida en consola (representación de registros/structs)
+; exp1 -> #(struct:var-exp x)
+; exp2 -> #(struct:lambda-exp (x y z) #(struct:var-exp y))
+; exp3 -> #(struct:app-exp #(struct:app-exp #(struct:lambda-exp (a b c) #(struct:lambda-exp (x y z) #(struct:var-exp x))) #(struct:var-exp z)) #(struct:lambda-exp (a b c d e f) #(struct:var-exp e)))
+```
+
+####
+**La construcción cases para el manejo de TAD**
+
+Los `cases` en EOPL son una construcción que permite realizar `pattern matching` sobre los tipos de datos definidos con `define-datatype`. Proporcionan una forma segura de descomponer y procesar las variantes de un tipo algebraico, integrando predicados y extractores en un solo entorno.
+
+**Estructura general de cases**
+
+```racket
+(cases <tipo> <expresión>
+  (<variante1> (<campo1> <campo2> ... <campoN>)
+    <acción>)
+  (<variante2> (<campo1> <campo2> ... <campoN>)
+    <acción>)
+  ...
+  (else <acción-por-defecto>))
+```
+
+- **Tipo**: Debe coincidir con el nombre del tipo definido (ej: `lc-exp`).
+- **Predicados de variante**: Cada cláusula verifica automáticamente la variante (ej: `var-exp?`).
+- **Extractores**: Los nombres de los campos en cada cláusula se vinculan (`binding`) a los valores extraídos mediante los procedimientos generadores.
+
+####
+**Implementación de occurs-free? usando cases**
+
+Este ejemplo utiliza `cases` para determinar si una variable ocurre libremente en una expresión de cálculo lambda:
+
+```racket
+(define occurs-free?
+  (lambda (exp var)
+    (cases lc-exp exp
+      (var-exp (id)
+        (equal? var id))
+      (lambda-exp (lid exp)
+        (and (not (member var lid))
+             (occurs-free? exp var)))
+      (app-exp (rator rand)
+        (or (occurs-free? rator var)
+            (occurs-free? rand var))))))
+
+; Pruebas
+(define expr1 (var-exp 'x))
+(define expr2 (lambda-exp '(x) (app-exp (var-exp 'x) (var-exp 'y))))
+(define expr3 (app-exp (var-exp 'x) (var-exp 'y)))
+
+(occurs-free? expr1 'x) ; #t
+(occurs-free? expr1 'y) ; #f
+(occurs-free? expr2 'x) ; #f
+(occurs-free? expr2 'y) ; #t
+(occurs-free? expr3 'x) ; #t
+(occurs-free? expr3 'y) ; #t
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_Definicion de TAD define-datatype
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Definicion%20de%20TAD/

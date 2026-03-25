@@ -1,0 +1,55 @@
+####
+**Implementación de la función sumar-arbol**
+
+A partir de la definición del tipo de dato `árbol-b`, podemos implementar una función que sume los números contenidos en la estructura. Para esto, definiremos la función `sumar-arbol`, la cual recibe un árbol y utiliza la estructura `cases` para procesar sus variantes.
+
+Al utilizar `cases` sobre el tipo `árbol-b`, manejamos dos escenarios:
+- En el caso de un `leaf` (hoja), el cual recibe un dato numérico `num`, la función simplemente retorna dicho valor.
+- En el caso de un nodo (`node`), el cual contiene una `key`, un hijo izquierdo (`l`) y un hijo derecho (`r`), la función realiza la suma recursiva del resultado de llamar a `sumar-arbol` con el hijo izquierdo y con el hijo derecho.
+
+Miren lo interesante que resulta el uso de `cases`, ya que nos proporciona automáticamente los extractores de datos y facilita la manipulación de la estructura en comparación con los métodos manuales.
+
+```racket
+(define sumar-arbol
+  (lambda (arb)
+    (cases árbol-b arb
+      (leaf (num) num)
+      (node (key l r) (+ (sumar-arbol l) (sumar-arbol r))))))
+```
+
+Si probamos la función con los ejemplos definidos anteriormente:
+- `sumar-arbol` de `árbol-1` daría como resultado 5.
+- `sumar-arbol` de `árbol-2` daría como resultado 23 (que surge de sumar los valores 5, 7, 4 y 7).
+
+####
+**Extracción de una lista de símbolos en un árbol-b**
+
+Siguiendo la misma lógica de procesamiento recursivo, podemos construir una función que nos devuelva la lista de los símbolos presentes en un `árbol-b`. Para ello, definiremos la función `a-lista-s` (a lista de símbolos) que recibe un parámetro `arb`.
+
+Dentro de la estructura `cases` para `árbol-b`, el comportamiento se define así:
+- Si es un `leaf`, aunque contiene un número, no posee símbolos. Por lo tanto, en este caso no podemos hacer nada y retornamos una lista vacía.
+- Si es un nodo (`node`), contamos con una `key` (que es el símbolo), el hijo izquierdo (`l`) y el hijo derecho (`r`). Para obtener la lista completa, aplicamos un `append` entre la lista que contiene a `key` y los resultados de los llamados recursivos de la función sobre los hijos izquierdo y derecho.
+
+```racket
+(define a-lista-s
+  (lambda (arb)
+    (cases árbol-b arb
+      (leaf (num) '())
+      (node (key l r) (append (list key) (a-lista-s l) (a-lista-s r))))))
+```
+
+Al evaluar esta función con los casos de prueba:
+- Para `árbol-1`, el resultado es una lista vacía `()`.
+- Para `árbol-2`, el resultado es la lista de símbolos `(k p j)`.
+
+Como pueden observar, al estar definidos los tipos de datos, construir funciones y administrar la información se vuelve mucho más sencillo mediante el uso de `cases`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 26  Abstracción de datos Ejemplos Cases.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=Wec_PIRX7tY
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,48 @@
+#### **Implementación de la aplicación de procedimientos y extensión de ambientes**
+
+En la implementación de la aplicación de un procedimiento, por ejemplo `f(2, 28)`, debe crearse un ambiente que contenga los identificadores y sus valores correspondientes. El cuerpo del procedimiento se evalúa sobre este nuevo ambiente. Es fundamental tener presente que este ambiente debe extenderse desde el punto donde fue creado el procedimiento; es decir, el ambiente del cual hereda es aquel donde el procedimiento fue definido. La extensión del ambiente ocurre donde se creó el procedimiento y no desde el punto donde es llamado.
+
+#### **Evaluación de argumentos y el operador en la aplicación**
+
+Para implementar la aplicación de procedimientos dentro de la función `evaluar-expresion`, primero es necesario evaluar los `rands` o argumentos. Utilizaremos un `map` para transformar las expresiones de los argumentos en sus valores correspondientes dentro del ambiente actual:
+
+```racket
+(let ([l-rands (map (lambda (x) (evaluar-expresion x env)) rands)])
+  (let ([proc-v (evaluar-expresion rator env)])
+    ; Lógica de validación y ejecución
+    ))
+```
+
+Posteriormente, se evalúa el `rator` (el operador) en el ambiente para obtener una clausura. Es necesario validar si `proc-v` es efectivamente un procedimiento; si no es un valor de tipo procedimiento, el sistema debe arrojar un error indicando que no se puede evaluar algo que no posea esa naturaleza.
+
+#### **Ejecución del cuerpo del procedimiento y manejo de clausuras**
+
+Una vez validado el procedimiento, se utiliza la estructura `cases` para trabajar con la `clausura`. Una clausura contiene los identificadores (`ids`), el cuerpo (`body`) y el ambiente que la contiene en el momento de su creación. Para ejecutar el procedimiento, se realiza una llamada a `evaluar-expresion` sobre el `body`, utilizando un ambiente extendido que vincula los identificadores con los valores de los argumentos evaluados (`l-rands`), extendiendo el ambiente donde fue creado el procedimiento:
+
+```racket
+(cases proc-v proc-val
+  (clausura (ids body env-saved)
+    (evaluar-expresion body (extend-env ids l-rands env-saved))))
+```
+
+#### **Validación de aridad y gestión de errores informativos**
+
+Para garantizar que el número de argumentos coincida con el número de parámetros definidos, se debe implementar una condición de control utilizando la función `length`. Si las longitudes de las listas de identificadores y de argumentos evaluados no coinciden, se debe generar un error mediante `eopl:error` que informe al usuario sobre la discrepancia:
+
+```racket
+(if (= (length ids) (length l-rands))
+    (evaluar-expresion body (extend-env ids l-rands env-saved))
+    (eopl:error "El número de argumentos no es correcto. Debe enviar " (length ids) " y usted ha enviado " (length l-rands)))
+```
+
+Esta validación permite que los mensajes de error sean informativos, facilitando la depuración al indicar explícitamente cuántos argumentos se esperaban y cuántos fueron suministrados en la llamada al procedimiento.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 13. Implementación de procedimientos： Segunda parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=VeDViGXrwrQ
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

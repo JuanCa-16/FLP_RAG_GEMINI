@@ -1,0 +1,229 @@
+#### **Implementación de Ambientes Recursivos**
+
+Los ambientes recursivos están especializados exclusivamente en procedimientos que se conocen a sí mismos. Para implementarlos, se añade una nueva variante a la definición del tipo de dato de ambientes denominada `ambiente-extendido-recursivo`. 
+
+Esta estructura debe contener los siguientes elementos:
+- **Nombres de los procedimientos**: Una lista de símbolos (`list-of symbols`).
+- **Nombres de los argumentos**: Una lista de listas de símbolos (`list-of list-of symbols`), donde cada sublista corresponde a los argumentos de un procedimiento.
+- **Cuerpos de los procedimientos**: Una lista de expresiones (`list-of expressions`).
+- **Ambiente anterior**: El ambiente que se está extendiendo (`environment`).
+
+La inclusión de esta variante implica modificar la función `apply-env` (o `buscar-variable`) para gestionar la recuperación de estos procedimientos durante la ejecución.
+
+#### **Modificación de la función apply-env para Ambientes Recursivos**
+
+Al implementar el `ambiente-extendido-recursivo` en la función `apply-env`, el comportamiento de búsqueda varía respecto a un ambiente extendido tradicional. Si la variable buscada coincide con uno de los nombres de procedimientos almacenados en el ambiente recursivo, se debe retornar una `clausura`.
+
+**Lógica de búsqueda en ambiente-extendido-recursivo**
+
+En este tipo de ambiente, la clausura se crea a nivel de ejecución y no de declaración. Esto permite dos cosas fundamentales:
+1. El procedimiento puede conocerse a sí mismo al guardar el ambiente actual donde está definido.
+2. Permite que el valor de entrada cambie en cada llamado recursivo, posibilitando la creación de nuevos ambientes para cada evaluación (por ejemplo, al evaluar un factorial).
+
+Si el símbolo no se encuentra en la lista de nombres de procedimientos del ambiente actual, la función debe continuar la búsqueda en el ambiente anterior.
+
+#### **Implementación Técnica de la Búsqueda en Ambientes Recursivos**
+
+En la implementación dentro de `apply-env`, se utiliza un recorrido sobre las listas de nombres, argumentos y cuerpos. Dado que estas listas son correspondientes (la primera posición de cada una pertenece al mismo procedimiento), se puede optimizar el proceso de retorno de la clausura.
+
+```racket
+;; Fragmento de lógica para ambiente-extendido-recursivo en apply-env
+(define apply-env
+  (lambda (env var)
+    (cases environment env
+      (ambiente-vacio () (eopl:error "Variable no encontrada"))
+      (ambiente-extendido (ids vals env-previo)
+        ;; Lógica estándar de búsqueda
+        )
+      (ambiente-extendido-recursivo (proc-names id-lists bodies env-previo)
+        (let ((pos (buscar-posicion var proc-names)))
+          (if pos
+              ;; Si se encuentra, se crea la clausura con el ambiente actual
+              (closure (list-ref id-lists pos)
+                       (list-ref bodies pos)
+                       env) 
+              (apply-env env-previo var)))))))
+```
+
+Al utilizar `env` (el ambiente actual) dentro de la creación de la `clausura`, el procedimiento obtiene la capacidad de referenciarse a sí mismo, permitiendo la recursión.
+
+#### **Incorporación de letrec en evaluar-expresion**
+
+Para que el lenguaje soporte definiciones recursivas, se debe añadir el caso `letrec-expression` en la función `evaluar-expresion`. Esta expresión recibe los nombres de los procedimientos, las listas de argumentos, los cuerpos de los procedimientos y el cuerpo principal del `letrec`.
+
+La evaluación consiste en procesar el cuerpo del `letrec` en un nuevo `ambiente-extendido-recursivo` que vincula todos los procedimientos definidos.
+
+```racket
+;; Caso letrec en evaluar-expresion
+(define evaluar-expresion
+  (lambda (exp env)
+    (cases expression exp
+      ;; ... otros casos ...
+      (letrec-expression (proc-names id-lists bodies letrec-body)
+        (evaluar-expresion letrec-body
+                           (ambiente-extendido-recursivo proc-names id-lists bodies env))))))
+```
+
+Esta estructura permite que cualquier llamado a un procedimiento dentro del `letrec-body` tenga acceso al ambiente donde están definidos los demás procedimientos recursivos.
+
+#### **Ejemplo Práctico: Factorial con letrec**
+
+Un ejemplo de uso de esta implementación es el cálculo del factorial mediante una definición recursiva. En este escenario, el nombre `fact` se busca en el ambiente recursivo, devolviendo una clausura que se evalúa sucesivamente.
+
+**Código de ejemplo:**
+
+```racket
+letrec
+  fact(x) = if x > 0 
+            then x * (fact (sub1 x)) 
+            else 1
+in (fact 6)
+```
+
+**Resultado de ejecución:**
+- Para `(fact 6)`, el sistema retorna `720`.
+- Para `(fact 5)`, el sistema retorna `120`.
+- Para `(fact 3)`, el sistema retorna `6`.
+
+Cada llamado recursivo (por ejemplo, de `fact(6)` a `fact(5)`) genera un nuevo ambiente donde el parámetro `x` toma el nuevo valor, mientras la clausura mantiene la referencia al ambiente recursivo para poder invocar nuevamente a `fact`.
+
+#### **Diferencias entre Clausuras en Declaración y Ejecución**
+
+En los procedimientos estándar, las clausuras se crean a nivel de declaración (cuando se define un `proc`). Sin embargo, en los ambientes recursivos, la clausura se genera en el momento en que se solicita el procedimiento durante la ejecución (`apply-env`).
+
+**Análisis del flujo:**
+1. Al evaluar el `letrec`, se extiende el ambiente con la información de los procedimientos recursivos.
+2. Cuando el intérprete encuentra el símbolo `fact` en el cuerpo del `letrec`, `apply-env` detecta que está en un `ambiente-extendido-recursivo`.
+3. Se genera una clausura que captura el ambiente recursivo completo.
+4. Esto permite que el procedimiento se conozca a sí mismo y a otros procedimientos definidos en el mismo bloque.
+
+En lenguajes funcionales, este mecanismo es esencial para diferenciar la recursión. En lenguajes orientados a objetos, esta distinción suele gestionarse internamente a nivel de compilador para determinar si una función se invoca a sí misma.
+
+#### **Recursión y Generación de Ambientes**
+
+El uso de `letrec` y ambientes recursivos implica una progresión lógica en la memoria del intérprete. Al ejecutar un factorial de 6, ocurre lo siguiente:
+
+- Se genera una clausura para `fact(6)`.
+- Esta invoca a `fact(5)`, generando otra clausura y un nuevo ambiente donde `x` es 5.
+- El proceso continúa hasta alcanzar la condición de parada (`fact(0)`).
+
+Esta implementación asegura que el lenguaje sea puramente funcional y maneje el `scope` léxico correctamente, permitiendo que las funciones recursivas accedan tanto a sus propios nombres como a las variables definidas en ambientes superiores. En las sesiones sincrónicas se podrán discutir detalles adicionales sobre la implementación de las funciones de búsqueda de listas para evitar el uso de funciones auxiliares complejas.#### **Implementación de Ambientes Recursivos**
+
+Los ambientes recursivos están especializados exclusivamente en procedimientos que se conocen a sí mismos. Para implementarlos, se añade una nueva variante a la definición del tipo de dato de ambientes denominada `ambiente-extendido-recursivo`. 
+
+Esta estructura debe contener los siguientes elementos:
+- **Nombres de los procedimientos**: Una lista de símbolos (`list-of symbols`).
+- **Nombres de los argumentos**: Una lista de listas de símbolos (`list-of list-of symbols`), donde cada sublista corresponde a los argumentos de un procedimiento.
+- **Cuerpos de los procedimientos**: Una lista de expresiones (`list-of expressions`).
+- **Ambiente anterior**: El ambiente que se está extendiendo (`environment`).
+
+La inclusión de esta variante implica modificar la función `apply-env` (o `buscar-variable`) para gestionar la recuperación de estos procedimientos durante la ejecución.
+
+#### **Modificación de la función apply-env para Ambientes Recursivos**
+
+Al implementar el `ambiente-extendido-recursivo` en la función `apply-env`, el comportamiento de búsqueda varía respecto a un ambiente extendido tradicional. Si la variable buscada coincide con uno de los nombres de procedimientos almacenados en el ambiente recursivo, se debe retornar una `clausura`.
+
+**Lógica de búsqueda en ambiente-extendido-recursivo**
+
+En este tipo de ambiente, la clausura se crea a nivel de ejecución y no de declaración. Esto permite dos cosas fundamentales:
+1. El procedimiento puede conocerse a sí mismo al guardar el ambiente actual donde está definido.
+2. Permite que el valor de entrada cambie en cada llamado recursivo, posibilitando la creación de nuevos ambientes para cada evaluación (por ejemplo, al evaluar un factorial).
+
+Si el símbolo no se encuentra en la lista de nombres de procedimientos del ambiente actual, la función debe continuar la búsqueda en el ambiente anterior.
+
+#### **Implementación Técnica de la Búsqueda en Ambientes Recursivos**
+
+En la implementación dentro de `apply-env`, se utiliza un recorrido sobre las listas de nombres, argumentos y cuerpos. Dado que estas listas son correspondientes (la primera posición de cada una pertenece al mismo procedimiento), se puede optimizar el proceso de retorno de la clausura.
+
+```racket
+;; Fragmento de lógica para ambiente-extendido-recursivo en apply-env
+(define apply-env
+  (lambda (env var)
+    (cases environment env
+      (ambiente-vacio () (eopl:error "Variable no encontrada"))
+      (ambiente-extendido (ids vals env-previo)
+        ;; Lógica estándar de búsqueda
+        )
+      (ambiente-extendido-recursivo (proc-names id-lists bodies env-previo)
+        (let ((pos (buscar-posicion var proc-names)))
+          (if pos
+              ;; Si se encuentra, se crea la clausura con el ambiente actual
+              (closure (list-ref id-lists pos)
+                       (list-ref bodies pos)
+                       env) 
+              (apply-env env-previo var)))))))
+```
+
+Al utilizar `env` (el ambiente actual) dentro de la creación de la `clausura`, el procedimiento obtiene la capacidad de referenciarse a sí mismo, permitiendo la recursión.
+
+#### **Incorporación de letrec en evaluar-expresion**
+
+Para que el lenguaje soporte definiciones recursivas, se debe añadir el caso `letrec-expression` en la función `evaluar-expresion`. Esta expresión recibe los nombres de los procedimientos, las listas de argumentos, los cuerpos de los procedimientos y el cuerpo principal del `letrec`.
+
+La evaluación consiste en procesar el cuerpo del `letrec` en un nuevo `ambiente-extendido-recursivo` que vincula todos los procedimientos definidos.
+
+```racket
+;; Caso letrec en evaluar-expresion
+(define evaluar-expresion
+  (lambda (exp env)
+    (cases expression exp
+      ;; ... otros casos ...
+      (letrec-expression (proc-names id-lists bodies letrec-body)
+        (evaluar-expresion letrec-body
+                           (ambiente-extendido-recursivo proc-names id-lists bodies env))))))
+```
+
+Esta estructura permite que cualquier llamado a un procedimiento dentro del `letrec-body` tenga acceso al ambiente donde están definidos los demás procedimientos recursivos.
+
+#### **Ejemplo Práctico: Factorial con letrec**
+
+Un ejemplo de uso de esta implementación es el cálculo del factorial mediante una definición recursiva. En este escenario, el nombre `fact` se busca en el ambiente recursivo, devolviendo una clausura que se evalúa sucesivamente.
+
+**Código de ejemplo:**
+
+```racket
+letrec
+  fact(x) = if x > 0 
+            then x * (fact (sub1 x)) 
+            else 1
+in (fact 6)
+```
+
+**Resultado de ejecución:**
+- Para `(fact 6)`, el sistema retorna `720`.
+- Para `(fact 5)`, el sistema retorna `120`.
+- Para `(fact 3)`, el sistema retorna `6`.
+
+Cada llamado recursivo (por ejemplo, de `fact(6)` a `fact(5)`) genera un nuevo ambiente donde el parámetro `x` toma el nuevo valor, mientras la clausura mantiene la referencia al ambiente recursivo para poder invocar nuevamente a `fact`.
+
+#### **Diferencias entre Clausuras en Declaración y Ejecución**
+
+En los procedimientos estándar, las clausuras se crean a nivel de declaración (cuando se define un `proc`). Sin embargo, en los ambientes recursivos, la clausura se genera en el momento en que se solicita el procedimiento durante la ejecución (`apply-env`).
+
+**Análisis del flujo:**
+1. Al evaluar el `letrec`, se extiende el ambiente con la información de los procedimientos recursivos.
+2. Cuando el intérprete encuentra el símbolo `fact` en el cuerpo del `letrec`, `apply-env` detecta que está en un `ambiente-extendido-recursivo`.
+3. Se genera una clausura que captura el ambiente recursivo completo.
+4. Esto permite que el procedimiento se conozca a sí mismo y a otros procedimientos definidos en el mismo bloque.
+
+En lenguajes funcionales, este mecanismo es esencial para diferenciar la recursión. En lenguajes orientados a objetos, esta distinción suele gestionarse internamente a nivel de compilador para determinar si una función se invoca a sí misma.
+
+#### **Recursión y Generación de Ambientes**
+
+El uso de `letrec` y ambientes recursivos implica una progresión lógica en la memoria del intérprete. Al ejecutar un factorial de 6, ocurre lo siguiente:
+
+- Se genera una clausura para `fact(6)`.
+- Esta invoca a `fact(5)`, generando otra clausura y un nuevo ambiente donde `x` es 5.
+- El proceso continúa hasta alcanzar la condición de parada (`fact(0)`).
+
+Esta implementación asegura que el lenguaje sea puramente funcional y maneje el `scope` léxico correctamente, permitiendo que las funciones recursivas accedan tanto a sus propios nombres como a las variables definidas en ambientes superiores. En las sesiones sincrónicas se podrán discutir detalles adicionales sobre la implementación de las funciones de búsqueda de listas para evitar el uso de funciones auxiliares complejas.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 18. Procedimientos recursivos： segunda parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=i9J-ekNcLOQ
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

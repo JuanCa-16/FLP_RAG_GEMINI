@@ -1,0 +1,456 @@
+#### **Introducción a los lenguajes de programación**
+
+El `lenguaje` es el medio que permite la comunicación. En el contexto técnico, un `lenguaje de programación` se define como la herramienta para establecer comunicación con la máquina.
+
+La evolución del lenguaje ha transitado del habla a la escritura, y de esta última hacia los `formalismos`, que dan origen a los `lenguajes formales`. Históricamente, se han desarrollado sistemas de escritura independientes del medio, como los creados por las culturas sumeria, egipcia y maya.
+
+**Evolución de los alfabetos**
+Los sistemas de representación evolucionaron desde los `pictogramas` hasta las letras. Esta transición permitió pasar de representaciones visuales directas a sistemas simbólicos abstractos que conforman la base de los alfabetos modernos.
+
+**Descripción técnica de imagen:**
+La transición visual muestra cómo símbolos pictográficos antiguos (como representaciones de animales o herramientas) se simplificaron progresivamente a través de diversas culturas hasta convertirse en los caracteres del alfabeto inglés actual.
+
+#### **Definición y fundamentos de la programación**
+
+La `programación` se define como una actividad humana general que consiste en la acción de extender o cambiar la funcionalidad de un sistema [VanRoy]. En términos computacionales, programar es dar instrucciones a un computador o máquina sobre cómo realizar su trabajo.
+
+Esta es una actividad de amplio espectro que, en el desarrollo de sistemas de software, integra dos componentes esenciales:
+- La ciencia.
+- La tecnología.
+
+Un `lenguaje de programación` es un lenguaje artificial diseñado para expresar computaciones que pueden ser ejecutadas por una máquina. Se compone de un conjunto de símbolos y reglas tanto `sintácticas` como `semánticas`.
+
+#### **Orígenes históricos: Babbage y Lovelace**
+
+A mediados del siglo XIX, Charles Babbage diseñó la `Máquina Analítica`, y Ada Lovelace es reconocida como la primera programadora de la historia.
+
+**Contribución de Ada Lovelace**
+Lovelace escribió el primer programa diseñado para ser ejecutado por una máquina, específicamente para el cálculo de los `Números de Bernoulli`.
+
+**Descripción técnica de imagen:**
+Diagrama de flujo y tabla de operaciones para el motor analítico. El documento detalla la secuencia de operaciones aritméticas, las variables de trabajo utilizadas (V1, V2, V3...) y cómo se almacenan los resultados intermedios para procesar la fórmula matemática de Bernoulli.
+
+#### **Evolución hacia la computación moderna**
+
+Herman Hollerith desarrolló la codificación de información en `tarjetas perforadas` tras observar cómo los conductores de trenes identificaban a los pasajeros mediante orificios en sus boletos. En 1890, este sistema se utilizó para procesar los datos del censo.
+
+Hacia la década de 1920, los cálculos numéricos se basaban en el sistema decimal, pero posteriormente se comprendió que la lógica podía representarse mediante números. En 1943, se creó el sistema de codificación de la `ENIAC`, la primera computadora de propósito general.
+
+#### **Primeros lenguajes y Short Code**
+
+En 1949, John Mauchly desarrolló `Short Code` para las computadoras BINAC y UNIVAC I. Este permitía representar expresiones matemáticas. Por ejemplo, una expresión como `a = b + c * d` se computaba mediante un proceso de sustitución de variables y operadores por códigos numéricos de 12 bytes.
+
+Entre 1951 y 1953, surgieron los sistemas `A-0`, `A-1` y `A-2` para la UNIVAC. Estos permitían realizar tareas como el cálculo del factorial de un número almacenado en un registro.
+
+**Descripción técnica de imagen:**
+Representación del proceso de traducción en la UNIVAC. Se observa la sustitución de variables (b, c, y1, x1) por identificadores y operadores por códigos numéricos (03 para suma, 09 para sustitución), agrupándolos finalmente en palabras de memoria de 12 bytes.
+
+#### **Fortran (Formula Translator)**
+
+Desarrollado por John Backus en 1953, `Fortran` fue diseñado para la traducción de fórmulas matemáticas.
+
+**Ejemplo de cálculo del área de un triángulo (Fórmula de Herón) en Fortran:**
+
+```fortran
+C AREA OF A TRIANGLE - HERON'S FORMULA
+C INPUT - CARD READER UNIT 5
+C OUTPUT - LINE PRINTER UNIT 6
+      INTEGER A, B, C
+      READ (5, 501) A, B, C
+501   FORMAT (3I5)
+      IF (A.EQ.0 .OR. B.EQ.0 .OR. C.EQ.0) STOP 1
+      S = (A + B + C) / 2.0
+      AREA = SQRT(S * (S - A) * (S - B) * (S - C))
+      WRITE (6, 601) A, B, C, AREA
+601   FORMAT (4H A= , I5, 5H B= , I5, 5H C= , I5, 8H AREA= , F10.2, 13H SQUARE UNITS)
+      STOP
+      END
+```
+Este código ilustra el uso de declaraciones de tipo, lectura de datos con formato, control de flujo condicional y funciones matemáticas intrínsecas como `SQRT`.
+
+#### **LISP (List Processor)**
+
+Creado por John McCarthy en 1958, `LISP` se centra en el procesamiento de listas y es un pilar fundamental del paradigma funcional.
+
+**Ejemplo de función para calcular el promedio en LISP:**
+
+```lisp
+(defun averagenum (n1 n2 n3 n4)
+  (/ (+ n1 n2 n3 n4) 4)
+)
+(write (averagenum 10 20 30 40))
+```
+El código define la función `averagenum` que recibe cuatro parámetros, realiza la suma de estos y la divide por cuatro, demostrando la sintaxis basada en prefijos y paréntesis característica del lenguaje.
+
+#### **COBOL (Common Business Oriented Language)**
+
+Desarrollado en 1959 por Grace Hopper, `COBOL` fue diseñado para aplicaciones de negocios y gestión.
+
+**Ejemplo de multiplicación en COBOL:**
+
+```cobol
+DATA DIVISION.
+WORKING-STORAGE SECTION.
+01 Num1 PIC 9 VALUE ZEROS.
+01 Num2 PIC 9 VALUE ZEROS.
+01 Result PIC 99 VALUE ZEROS.
+
+PROCEDURE DIVISION.
+    DISPLAY "Enter first number (1 digit): " WITH NO ADVANCING.
+    ACCEPT Num1.
+    DISPLAY "Enter second number (1 digit): " WITH NO ADVANCING.
+    ACCEPT Num2.
+    MULTIPLY Num1 BY Num2 GIVING Result.
+    DISPLAY "Result is = ", Result.
+    STOP RUN.
+```
+Este fragmento muestra la estructura de divisiones de `COBOL` y su sintaxis similar al lenguaje natural para realizar operaciones aritméticas.
+
+#### **ALGOL 60 y APL**
+
+`ALGOL` (Algorithmic Language) nació en 1960 y sentó las bases para muchos lenguajes modernos por su estructura de bloques.
+
+**Ejemplo de procedimiento en ALGOL 60:**
+
+```algol
+procedure Absmax (a) Size: (n, m) Result: (y) Subscripts: (i, k);
+    value n, m; array a; integer n, m, i, k; real y;
+begin
+    integer p, q;
+    y := 0;
+    i := k := 1;
+    for p := 1 step 1 until n do
+        for q := 1 step 1 until m do
+            if abs(a[p, q]) > y then
+            begin
+                y := abs(a[p, q]);
+                i := p;
+                k := q
+            end
+end Absmax.
+```
+
+Por otro lado, `APL` (A Programming Language), creado por Kenneth Iverson en IBM, se distingue por su notación matemática concisa y el uso de caracteres especiales.
+
+#### **Simula y SNOBOL**
+
+`Simula`, desarrollado por Ole Johan Dahl y Kristen Nygaard en 1962, es reconocido como el primer lenguaje orientado a objetos. Introdujo conceptos como clases y herencia.
+
+**Ejemplo de clase en Simula:**
+
+```simula
+Begin
+    OutText("Hello, World!");
+    Outimage;
+End;
+
+Begin
+    Class Glyph;
+    Virtual: Procedure print Is Procedure print;;
+    Begin
+    End;
+End;
+```
+
+En el mismo año, los Laboratorios Bell crearon `SNOBOL` (StriNg Oriented symBOlic Language), especializado en la manipulación de cadenas de texto.
+
+#### **CPL y lenguajes de mediados de los 60 (BASIC, PL/1)**
+
+`CPL` (Combined Programming Language) surgió en 1963 basado en `ALGOL`, simplificando la computación científica. Un ejemplo de su sintaxis recursiva es:
+`rec function Fact1 [x] = (x = 0) -> 1, x * Fact1 [x - 1]`
+
+En 1964 aparecieron:
+- `BASIC` (Beginners All-purpose Symbolic Instruction Code).
+- `PL/1` (Programming Language 1) de IBM.
+
+**Ejemplo de sumatoria en BASIC:**
+
+```basic
+PROGRAM series
+LET sum = 0
+FOR n = 1 to 100
+    LET sum = sum + 1/(n * n)
+    PRINT n, sum
+NEXT n
+END
+```
+
+**Ejemplo de mensaje en PL/1:**
+
+```pl1
+Test: procedure options (main);
+    declare MyString char (20) varying initialize ('Hola, mundo!');
+    put skip list (MyString);
+end Test;
+```
+
+#### **Evolución hacia el lenguaje C y lenguajes educativos**
+
+En 1967, Martin Richards creó `BCPL`. Posteriormente, surgió `Logo`, un lenguaje estructurado diseñado para la enseñanza de programación a niños.
+
+Entre 1969 y 1973, Dennis Ritchie y Ken Thompson desarrollaron `C`, influenciados por `Algol 68` (Lenguaje A) y `BCPL` (Lenguaje B).
+
+En 1970 surgieron:
+- `Pascal` (Wirth): Caracterizado por ser estática y fuertemente tipado.
+- `Smalltalk`: Caracterizado por su enfoque en objetos y tipado dinámico.
+
+**Ejemplo de sintaxis en Pascal:**
+
+```pascal
+Program Lesson1_Program1;
+Begin
+    Write('Hello World. Prepare to learn PASCAL!!');
+    Readln;
+End.
+```
+
+#### **Programación Lógica: Prolog**
+
+`Prolog` (PROgrammation en LOGique) fue desarrollado por Colmerauer, Roussel y Kowalski en 1972. Se basa en definir una base de conocimientos y realizar consultas sobre ella.
+
+**Ejemplo de base de conocimientos y consultas:**
+
+```prolog
+% Base del conocimiento
+likes(mary, food).
+likes(mary, wine).
+likes(john, wine).
+likes(john, mary).
+
+% Consultas
+% ?- likes(mary, food). -> Yes
+% ?- likes(john, food). -> No
+% ?- likes(X, wine).    -> X = mary; X = john.
+```
+
+#### **ML (Meta Language) y Scheme**
+
+`ML`, creado por Robin Milner en 1973, introdujo sistemas de tipos avanzados y polimorfismo.
+
+**Ejemplo de funciones en ML:**
+
+```ml
+fun reverse [] = []
+  | reverse (h::t) = reverse t @ [h];
+
+fun concatspace s = s ^ " ";
+
+val _ = let
+    val args = CommandLine.arguments()
+in
+    map (print o concatspace) (reverse args);
+    print "\n"
+end;
+```
+
+En 1975 nació `Scheme` (Guy L. Steele y Gerald Jay Sussman), un dialecto de `Lisp` minimalista y potente.
+
+#### **Lenguajes de finales de los 70 y década de los 80**
+
+- 1978: `SQL` (Structured Query Language).
+- 1983: `Ada` (Jean Ichbiah et al.) y `C++` (Bjarne Stroustrup).
+- 1984: `Common Lisp`.
+
+A finales de los 80 surgieron `Eiffel`, `Erlang`, `Perl`, `Tcl` y `FL`.
+
+**Ejemplo de QuickSort en Erlang:**
+
+```erlang
+sort([Pivot | T]) ->
+    sort([X || X <- T, X < Pivot]) ++ [Pivot] ++ sort([X || X <- T, X >= Pivot]);
+sort([]) -> [].
+```
+
+#### **Haskell y lenguajes modernos**
+
+`Haskell`, nombrado en honor a Haskell Curry, apareció en 1990 como un lenguaje funcional puro.
+
+**Ejemplo de iteración en Haskell:**
+
+```haskell
+main = do
+    forM [1..3] $ \i -> do
+        print i
+    forM [7..9] $ \j -> do
+        print j
+```
+
+Durante los años 90 surgieron lenguajes como `Python`, `Lua`, `Java`, `Delphi`, `JavaScript`, `PHP` y `Visual Basic`. A partir del año 2000, aparecieron `C#`, `.NET`, `Scala` y `Factor`.
+
+#### **Paradigmas de programación: Clasificación**
+
+Un `paradigma de programación` es un estilo o enfoque para resolver problemas mediante código. Los principales paradigmas son:
+
+- `Declarativos` (Funcional, Lógico, Por Restricciones)
+- `Imperativo`
+- `Relacional`
+- `Orientado a Objetos`
+- `Concurrente`
+- `Orientado a aspectos`
+- `Orientado a agentes`
+
+#### **Paradigma Declarativo**
+
+Una operación es `declarativa` si, al ser llamada con los mismos argumentos, siempre retorna el mismo resultado. Sus características son:
+- `Independiente`: Solo depende de sus argumentos.
+- `Sin estado`: No existe memoria entre llamados distintos.
+- `Determinista`: El resultado es predecible sin importar el contexto del llamado.
+
+Ejemplos de lenguajes bajo este paradigma incluyen `HTML`, `XML`, `CSS`, `Mercury` y `Prolog`.
+
+**Ejemplo de SQL (Declarativo):**
+```sql
+SELECT * FROM Users WHERE Country='Mexico';
+```
+
+#### **Paradigma Funcional**
+
+Basado en el `cálculo lambda` (λ), este paradigma trata las funciones como ciudadanos de primera clase, lo que significa que pueden ser pasadas como parámetros o devueltas como valores.
+
+Características principales:
+- Manejo implícito de la memoria.
+- Concepto de función como unidad fundamental.
+- Un programa se define como un conjunto de funciones y su aplicación.
+
+Ejemplos destacados: `Lisp`, `Haskell`, `Scheme` y `ML`.
+
+#### **El Cálculo Lambda (λ)**
+
+El `cálculo lambda` fue diseñado para investigar la definición y aplicación de funciones, así como la recursión. Es una herramienta fundamental para definir algoritmos computables o decidibles.
+
+Cualquier función computable puede expresarse y evaluarse mediante este cálculo. Además, permite demostrar que el `problema de la parada` es indecidible. En este contexto, las funciones son tratadas como valores de tipo `procedimiento`.
+
+#### **Paradigma Lógico**
+
+Este paradigma se basa en el `cálculo de predicados` y en mecanismos de demostración automática de teoremas. Su núcleo es el concepto de `deducción lógica`.
+
+Un programa en este paradigma consiste en un conjunto de `axiomas` y un `objetivo` a alcanzar. El ejemplo más representativo es el lenguaje `Prolog`.
+
+#### **Paradigma Imperativo**
+
+El paradigma `imperativo` está orientado por la máquina. Sus elementos esenciales son la `asignación` y la `secuenciación`. La programación se describe en términos del cambio de `estado` del programa a través del tiempo.
+
+Un programa se define como una secuencia de instrucciones. Ejemplos clásicos incluyen `Fortran`, `Algol`, `Basic`, `C` y `Pascal`.
+
+#### **Paradigma Orientado a Objetos (POO)**
+
+Este paradigma representa el mundo real mediante `objetos` y sus interacciones. Se basa en los conceptos de `clase`, `herencia` y `mensajes`. Un programa es un conjunto de objetos que interactúan entre sí.
+
+Ejemplos: `Smalltalk`, `Java`, `C++`.
+
+**Ejemplo de clase en JavaScript:**
+
+```javascript
+class Number {
+    constructor(number = 0) {
+        this.number = number;
+    }
+    add(x) {
+        this.number = this.number + x;
+    }
+}
+
+const myNumber = new Number(5);
+myNumber.add(3);
+alert(myNumber.number); // Resultado: 8
+```
+
+#### **Paradigma Concurrente**
+
+Basado en la teoría de concurrencia y cálculos de procesos como el `Cálculo π`, `CCS` y `CCP`. Su elemento esencial son los mecanismos de comunicación entre procesos. Un programa es un conjunto de procesos ejecutándose simultáneamente. Este paradigma se integra eficientemente con lenguajes funcionales al no requerir sincronización mediante semáforos.
+
+Ejemplos: `PICT`, `MWB`, `Erlang`.
+
+**Ejemplo de procesos en Erlang:**
+
+```erlang
+-module(ejemploFLP).
+-export([iniciar/0, dialogo/2]).
+
+dialogo(Entrada, 0) -> done;
+dialogo(Entrada, Contador) ->
+    io:format("~p~n", [Entrada]),
+    dialogo(Entrada, Contador - 1).
+
+iniciar() ->
+    spawn(ejemploFLP, dialogo, [hola, 5]),
+    spawn(ejemploFLP, dialogo, [adios, 4]).
+```
+
+#### **Paradigma Relacional**
+
+El paradigma `relacional` permite que las funciones tengan cero, una o más salidas. Se caracteriza por:
+- Posibilidad de intercambiar los roles de entradas y salidas.
+- Selección no-determinista entre varias opciones.
+
+**Ejemplo en Prolog:**
+
+```prolog
+% Base del conocimiento
+amigo(juan, pedro).
+amigo(juan, carlos).
+amigo(pedro, maria).
+
+% Consultas
+% ?- amigo(juan, X).
+% Retorna X = pedro y X = carlos.
+```
+Este paradigma realiza búsquedas sobre conjuntos de datos, permitiendo retornar múltiples valores para una sola consulta. `SQL` es también un lenguaje relacional.
+
+#### **Paradigma de Programación con Restricciones**
+
+Basado en el concepto de `restricción` (predicado o relación lógica) y en la búsqueda en árboles mediante la `reducción de dominios` (`distribución` y `propagación`). Un programa consta de variables, restricciones y una estrategia de exploración. La búsqueda de soluciones es concurrente.
+
+Ejemplos: `CLP`, `Mozart OZ`.
+
+**Ejemplo SEND + MORE = MONEY en Mozart OZ:**
+
+```oz
+declare
+proc {Money Root}
+    local S E N D M O R Y in
+        Root = sol(s:S e:E n:N d:D m:M o:O r:R y:Y)
+        Root ::: 0#9
+        {FD.distinct Root}
+        S \=: 0
+        M \=: 0
+        1000*S + 100*E + 10*N + D + 1000*M + 100*O + 10*R + E =: 10000*M + 1000*O + 100*N + 10*E + Y
+        {FD.distribute ff Root}
+    end
+end
+{ExploreAll Money}
+```
+
+#### **Paradigma Orientado a Aspectos y Agentes**
+
+**Orientado a Aspectos**
+Busca la modularidad mediante la `separación de conceptos` transversales a la aplicación. Un `aspecto` es una funcionalidad común utilizada en múltiples módulos.
+Ejemplos: `AspectJ`, `phpAspect`.
+
+**Orientado a Agentes**
+Representa el mundo mediante `agentes` autónomos que interactúan por mensajes. Un agente tiene un hilo de ejecución independiente, conocimiento parcial del entorno, reactividad y proactividad.
+Ejemplos: `JADE`, `JASON`.
+
+#### **Tendencias actuales e importancia del estudio de lenguajes**
+
+Los enfoques modernos se centran en:
+- Programación basada en componentes.
+- Seguridad, confiabilidad y seguridad en hilos (`thread-safety`).
+- Movilidad y distribución (computación grid, cloud, `MapReduce`).
+
+**Importancia del estudio de lenguajes de programación:**
+1. Incrementa la capacidad para expresar ideas.
+2. Mejora el criterio para seleccionar el lenguaje adecuado según el problema.
+3. Facilita el aprendizaje de nuevos lenguajes y paradigmas.
+4. Permite comprender mejor cómo se implementan los lenguajes.
+5. Optimiza el uso de los lenguajes que ya se conocen.
+6. Contribuye al progreso global de las ciencias computacionales.
+
+--- METADATA ---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 0. Introduccion e historia de los lenguajes de programacion

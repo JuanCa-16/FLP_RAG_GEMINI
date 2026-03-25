@@ -1,0 +1,86 @@
+####
+**Implementación de expresiones de primitiva en el intérprete**
+
+Una vez implementadas las `var-exp` y `lit-exp` (donde una `lit-exp` representa un número), procederemos a implementar las operaciones matemáticas mediante `primapp-exp`. Esta expresión recibe una primitiva y una lista de expresiones.
+
+Para procesar la lista de expresiones que llega en sintaxis abstracta, debemos transformarla en una lista de números. Utilizaremos la función `map` para aplicar de forma recursiva la función `eval-expression` a cada elemento de la lista dentro de un ambiente determinado. Posteriormente, definiremos una función llamada `evaluar-primitiva` encargada de desglosar las primitivas y ejecutar las operaciones correspondientes.
+
+```racket
+(let ((lista-de-valores (map (lambda (x) (eval-expression x env)) lista-de-expresiones)))
+  (evaluar-primitiva primitiva lista-de-valores))
+```
+
+En este proceso, `map` toma cada expresión de la lista de sintaxis abstracta y la transforma en un valor denotado (número). Es fundamental recordar que `eval-expression` siempre debe devolver un valor expresado.
+
+####
+**Definición de la función evaluar-primitiva**
+
+La función `evaluar-primitiva` recibe una primitiva y una lista de valores numéricos. Dado que los valores denotados en este lenguaje son números, la lista procesada por `eval-expression` contendrá exclusivamente valores de este tipo.
+
+Para manejar los distintos casos de la sintaxis abstracta de las primitivas, utilizaremos la estructura `cases` aplicada a `primitiva`. Los casos a implementar son: `add-prim`, `sub-prim`, `mult-prim`, `div-prim`, `inc-prim` y `dec-prim`.
+
+Para las operaciones de incremento (`inc-prim`) y decremento (`dec-prim`), la lógica consiste en tomar únicamente el primer número de la lista (`car`) y sumarle o restarle una unidad, ignorando el resto de los elementos si los hubiera.
+
+```racket
+(define evaluar-primitiva
+  (lambda (prim l-val)
+    (cases primitiva prim
+      (add-prim () (operacion-prim l-val + 0))
+      (sub-prim () (operacion-prim l-val - 0))
+      (mult-prim () (operacion-prim l-val * 1))
+      (div-prim () (operacion-prim l-val / 1))
+      (inc-prim () (+ (car l-val) 1))
+      (dec-prim () (- (car l-val) 1)))))
+```
+
+####
+**Generalización de operaciones mediante la función operacion-prim**
+
+Para resolver las operaciones de suma, resta, multiplicación y división de forma recursiva y sucesiva (permitiendo múltiples argumentos, como `(+ 1 2 3 4)`), implementaremos la función auxiliar `operacion-prim`.
+
+Esta función recibe una lista de valores, la operación a realizar (aprovechando que en Racket las funciones son ciudadanos de primera clase) y un valor de terminación. El valor de terminación es necesario para el caso base de la recursión: para la suma y resta será 0, mientras que para la multiplicación y división será 1, de modo que no se altere el resultado final.
+
+```racket
+(define operacion-prim
+  (lambda (l-val op term)
+    (if (null? l-val)
+        term
+        (op (car l-val) (operacion-prim (cdr l-val) op term)))))
+```
+
+Si la lista de valores está vacía, la función devuelve el valor de terminación. En caso contrario, aplica la operación al primer elemento (`car`) y realiza el llamado recursivo con el resto de la lista (`cdr`).
+
+####
+**Pruebas y validación del intérprete de expresiones**
+
+Tras corregir la definición de las llamadas para incluir el tercer argumento (el valor de terminación 0 o 1), el intérprete permite ejecutar operaciones complejas y anidadas. Los resultados observados en las pruebas son:
+
+- `div-prim` con la lista `(1 2 3)` devuelve `3/2`.
+- `add-prim` con la lista `(1 2 3 4 5)` devuelve `15`.
+- `sub-prim` con la lista `(1 2 3)` realiza la operación `1 - (2 - (3 - 0))`, lo cual resulta en `2`.
+- `inc-prim` toma el primer elemento y le suma 1, ignorando el resto.
+
+Este esquema permite evaluar expresiones compuestas, por ejemplo:
+`(+ (- 1 2) (* 2 3))` que se resolvería internamente evaluando las primitivas de forma jerárquica según la estructura de la sintaxis abstracta.
+
+####
+**Progresión del diseño del intérprete**
+
+Con la implementación de las operaciones primitivas se completa la primera fase del intérprete simple. La progresión académica para las siguientes sesiones incluye:
+
+- Incorporación de condicionales para manejar flujo de control.
+- Implementación de ligaduras locales (`let`), lo que requerirá un estudio profundo sobre la estructura y gestión de los `ambientes`.
+- Creación de procedimientos (funciones), analizando sus características técnicas.
+- Implementación de procedimientos recursivos antes de finalizar el ciclo evaluativo.
+
+Este camino permitirá pasar de un evaluador de expresiones básicas a un intérprete de lenguaje de programación completo con `scope léxico` y capacidades funcionales.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 7 Interpretador simple  Parte 3： Primitivas.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=rY7EvYy-4B0
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,141 @@
+####
+**Introducción y gramática de procedimientos**
+
+Los procedimientos son una parte elemental de los lenguajes de programación, ya que permiten ejecutar código que se repite. Para implementar los procedimientos, se incluye en la gramática lo siguiente:
+
+```
+<expression> ::= "proc" "(" (separated-list <identifier> ",") ")" <expression> (proc-exp)
+<expression> ::= "(" <expression> {<expression>}* ")" (app-exp)
+```
+
+Esto permite definir la estructura para la creación de procedimientos y su posterior aplicación en el lenguaje.
+
+####
+**Ejemplo de ejecución de procedimientos**
+
+De acuerdo con la gramática definida, es posible ejecutar expresiones que utilicen procedimientos para reutilizar código mediante el envío de parámetros. A continuación, se presenta un ejemplo de uso:
+
+```racket
+let f = proc (x, y) +(x, y)
+in +((f 1 2), (f 1 3)) ; Resultado: 7
+```
+
+Este código permite definir un procedimiento `f` y llamarlo con diferentes argumentos, sumando los resultados obtenidos.
+
+####
+**El concepto de clausura (procVal)**
+
+Aunque los procedimientos permiten reutilizar código, surge un problema de consistencia con el manejo de variables y ambientes. Por ejemplo:
+
+```racket
+let f = proc (a, b) +(a, b, x)
+in let y = (f 1 2) ; +(1, 2, 1) = 4
+       x = 12
+   in (f 1 2) ; (1, 2, 12) = 15
+```
+
+Para resolver esto, se introduce el concepto de `clausura` o `procVal`. Una clausura permite representar un procedimiento como un valor que garantiza la consistencia, conteniendo:
+- Los identificadores del procedimiento.
+- El cuerpo del procedimiento.
+- El `ambiente` donde fue creado.
+
+####
+**Definición del tipo de dato procVal**
+
+La representación de los procedimientos como valores en el intérprete se realiza mediante un `define-datatype`. Esto permite almacenar la información necesaria para el `scope léxico`.
+
+```racket
+(define-datatype procVal procVal?
+  (closure
+    (lid (list-of symbol?))
+    (exp expression?)
+    (old-env environment?)
+  )
+)
+```
+
+Con esta implementación, el lenguaje expande sus capacidades de manejo de datos:
+- **Valores denotados**: Números + Booleanos + `procVal`
+- **Valores expresados**: Números + Booleanos + `procVal`
+
+####
+**Modificaciones a la gramática para procedimientos**
+
+Para soportar la creación y aplicación de procedimientos, la gramática del lenguaje se modifica de la siguiente manera:
+
+```racket
+(expression
+  ("proc" "(" (separated-list identifier ",") ")" expression)
+  proc-exp)
+
+(expression
+  ("(" expression (arbno expression) ")")
+  app-exp)
+```
+
+Estas reglas definen la sintaxis para `proc-exp` (definición) y `app-exp` (llamado o aplicación).
+
+####
+**Implementación de procedimientos en eval-expression**
+
+La lógica del intérprete en `eval-expression` debe actualizarse para procesar la creación de clausuras y la aplicación de funciones, extendiendo el ambiente adecuadamente:
+
+```racket
+(proc-exp (lid exp)
+  (closure lid exp env))
+
+(app-exp (rator rands)
+  (let ((procv (eval-expression rator env))
+        (vrands (map (lambda (x) (eval-expression x env)) rands)))
+    (if (and (procVal? procv)
+             (= (length (procVal->lid procv)) (length vrands)))
+        (cases procVal procv
+          (closure (lid exp old-env)
+            (eval-expression exp (extend-env lid vrands old-env))))
+        (eopl:error "Not a procedure or incorrect number of args"))))
+```
+
+En la `app-exp`, se evalúa el operador (`rator`) y los operandos (`rands`). Si el operador es un `procVal` válido, se evalúa el cuerpo del procedimiento en un ambiente extendido que vincula los parámetros con los valores evaluados, utilizando el ambiente guardado en la clausura (`old-env`).
+
+####
+**Ejemplo de ambiente y diagrama de clausuras**
+
+Suponiendo el ambiente del interpretador, se presenta el siguiente código que resulta en 25:
+
+```racket
+let x = 10
+    y = +(x, y)
+    z = +(z, y)
+    f = proc (a, b, c) +(a, *(b, c))
+in (f x y z)
+```
+
+El siguiente diagrama representa la estructura de los ambientes y cómo se vinculan las clausuras:
+
+```mermaid
+flowchart LR
+    E["Empty-env"]
+    B["env1\nx, y, z\n1, 2, 3"]
+    A["env0\na, b, c\n4, 5, 6"]
+    C["env2\nx, y, z, f\n10, 3, 5, closure(..., env1)"]
+    D["envf\na, b, c\n10, 3, 5"]
+    
+    E --> A
+    A --> B
+    B --> C
+    B --> D
+```
+
+Este diagrama muestra la jerarquía de ambientes, donde `env2` contiene una `clausura` que hace referencia a `env1`, asegurando que el procedimiento `f` mantenga acceso al contexto donde fue definido.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 6 Ligadura, condicionales y procedimientos_Procedimientos
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Procedimientos/

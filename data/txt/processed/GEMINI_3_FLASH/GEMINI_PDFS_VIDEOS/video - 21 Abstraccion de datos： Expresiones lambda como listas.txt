@@ -1,0 +1,134 @@
+####
+**Constructores para expresiones del cálculo lambda**
+
+Ahora vamos a ver un segundo ejemplo utilizando las expresiones del cálculo lambda, que llamamos `lc-expression`. Vamos a definir los constructores, las funciones observadoras y utilizaremos la función `occurs-free` para aplicar la receta de diseño.
+
+Primero definimos los constructores. Para el caso de `var-expression`, esta recibe un identificador y se representa como una lista. El `id` define la `var-expression`. Luego sigue `lambda-expression`, que recibe un identificador y una `lc-expression`. Finalmente, tenemos `app-expression`, que recibe dos expresiones a las que llamaremos `rator` y `rand` para poder diferenciarlas.
+
+```racket
+(define var-exp
+  (lambda (id)
+    (list 'var-exp id)))
+
+(define lambda-exp
+  (lambda (id body)
+    (list 'lambda-exp id body)))
+
+(define app-exp
+  (lambda (rator rand)
+    (list 'app-exp rator rand)))
+```
+
+####
+**Definición de expresiones de prueba**
+
+Para probar los constructores, definiremos algunas expresiones. La `expression-1` es un `var-expression` con el símbolo `x`. La `expression-2` es un `lambda-expression` que recibe un identificador `x` y cuyo cuerpo es otro `lambda-expression` que recibe `y` y contiene un `var-expression` con `x`.
+
+Estas expresiones se representan como listas debido a la implementación de los constructores.
+
+```racket
+(define expression-1 (var-exp 'x))
+
+(define expression-2 
+  (lambda-exp 'x 
+    (lambda-exp 'y 
+      (var-exp 'x))))
+
+(define expression-3 
+  (app-exp (var-exp 'x) expression-2))
+```
+
+####
+**Funciones observadoras: Predicados**
+
+Continuamos con las funciones observadoras, específicamente los predicados. Estos nos sirven para identificar si una expresión es de tipo `var-exp`, `lambda-exp` o `app-exp`. La implementación es sencilla: preguntamos si el `car` de la expresión es igual a la etiqueta o "banderita" que colocamos en el constructor (`var-exp`, `lambda-exp` o `app-exp`).
+
+```racket
+(define var-exp?
+  (lambda (exp)
+    (eqv? (car exp) 'var-exp)))
+
+(define lambda-exp?
+  (lambda (exp)
+    (eqv? (car exp) 'lambda-exp)))
+
+(define app-exp?
+  (lambda (exp)
+    (eqv? (car exp) 'app-exp)))
+```
+
+Al probar estos predicados, por ejemplo, con `expression-1`, el predicado `var-exp?` retornará `true`, mientras que `lambda-exp?` retornará `false`. En el caso de `expression-3`, el predicado `app-exp?` retornará `true`. El uso de etiquetas facilita el manejo de los tipos de datos.
+
+####
+**Funciones observadoras: Extractores**
+
+Los extractores permiten obtener los datos internos de cada expresión. Para `var-expression`, extraemos el `id`, que es el segundo elemento de la lista (`cadr`). Para `lambda-expression`, podemos extraer tanto el `id` como la `exp` (cuerpo), que corresponden al segundo y tercer elemento de la lista respectivamente. En `app-expression`, extraemos el `rator` y el `rand`, que también se encuentran en la segunda y tercera posición.
+
+```racket
+(define var-exp->id
+  (lambda (exp)
+    (cadr exp)))
+
+(define lambda-exp->id
+  (lambda (exp)
+    (cadr exp)))
+
+(define lambda-exp->body
+  (lambda (exp)
+    (caddr exp)))
+
+(define app-exp->rator
+  (lambda (exp)
+    (cadr exp)))
+
+(define app-exp->rand
+  (lambda (exp)
+    (caddr exp)))
+```
+
+####
+**Implementación de la función occurs-free**
+
+Utilizando los predicados, extractores y constructores, implementamos la función `occurs-free`. Esta función determina si una variable ocurre libre en una expresión del cálculo lambda. No nos preocupamos de que las expresiones sean listas, sino que usamos la abstracción de las funciones creadas.
+
+La lógica de `occurs-free` es:
+- Si es `var-exp`: la variable ocurre libre si es igual al identificador de la expresión.
+- Si es `lambda-exp`: la variable ocurre libre si el identificador del lambda no es igual a la variable buscada y la variable ocurre libre en la expresión interna (cuerpo).
+- Si es `app-exp`: la variable ocurre libre si ocurre libre en el `rator` o en el `rand`.
+
+```racket
+(define occurs-free
+  (lambda (var exp)
+    (cond
+      [(var-exp? exp) 
+       (eqv? (var-exp->id exp) var)]
+      [(lambda-exp? exp)
+       (and (not (eqv? (lambda-exp->id exp) var))
+            (occurs-free var (lambda-exp->body exp)))]
+      [(app-exp? exp)
+       (or (occurs-free var (app-exp->rator exp))
+           (occurs-free var (app-exp->rand exp)))]
+      [else (eopl:error "Dato no válido" exp)])))
+```
+
+####
+**Pruebas de la función occurs-free**
+
+Al ejecutar la función con los ejemplos definidos:
+- En `expression-1`, la variable `x` ocurre libre, por lo que retorna `true`.
+- En `expression-2`, aunque hay una `x` en el cuerpo, esta no ocurre libre porque está ligada al identificador del `lambda-exp` externo. Por lo tanto, el resultado es `false`.
+- En `expression-3`, que es un `app-exp`, la variable `x` ocurre libre en la primera parte de la aplicación, por lo que la función retorna `true`.
+
+Este proceso demuestra cómo construir una funcionalidad sobre el tipo de dato `lc-expression` utilizando constructores, predicados y extractores.
+
+####
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 21 Abstraccion de datos： Expresiones lambda como listas.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=DsPWtf9LUqQ
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

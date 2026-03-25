@@ -1,0 +1,105 @@
+####
+**Tuplas y Pattern Matching**
+
+Las `tuplas` permiten agrupar valores heterogéneos. Son inmutables, no recursivas y permiten el uso de `pattern matching`. Una tupla se representa, por ejemplo, como `(1, "hola", 3.14)`, cuyo tipo sería `(Int, String, Double)`.
+
+El `pattern matching` con `tuplas` permite simplificar el código anidado, evitando los `nested matches` y mejorando la legibilidad.
+
+**Ejemplo de simplificación:**
+```scala
+// Antes: código anidado complejo
+case x :: xs => v match {
+  case y :: ys => prodI(xs)(ys)(x * y + acc)
+}
+
+// Después: código limpio con tuplas
+case (x :: xs, y :: ys) => prodI(xs)(ys)(x * y + acc)
+```
+
+####
+**Parametrización de tipos y funciones genéricas**
+
+La `parametrización de tipos` permite que las funciones acepten cualquier tipo de dato, siempre y cuando se pueda operar con ellos. Esto facilita la reutilización del código con diferentes tipos.
+
+```scala
+// Permite reutilización con diferentes tipos
+def funcion[T](l: List[T]): Unit = {
+  // ...
+}
+
+funcion[Int](List(1, 2, 3))
+funcion[String](List("a", "b"))
+```
+
+####
+**Funciones de alto orden: Map y Filter**
+
+Las funciones de alto orden permiten operar sobre colecciones de manera declarativa:
+
+- `Map`: Realiza una transformación de los elementos de una lista. Cambia el tipo de los elementos pero mantiene la estructura de la lista.
+  - Ejemplo: `List(1, 2, 3).map(_ * 2)`
+  - Resultado: `List(2, 4, 6)`
+- `Filter`: Filtra los elementos de una lista basándose en un predicado booleano. Mantiene el tipo de los elementos originales.
+  - Ejemplo: `List(1, 2, 3, 4).filter(_ % 2 == 0)`
+  - Resultado: `List(2, 4)`
+
+####
+**Funciones de alto orden: Reduce y Fold**
+
+Estas funciones transforman listas en un valor único:
+
+- `Reduce`: Transforma una lista a un valor. Utiliza el mismo tipo de los elementos y no funciona con listas vacías.
+  - `ReduceLeft` (izquierda) y `ReduceRight` (derecha): Toman un elemento de la lista como acumulador inicial.
+  - Ejemplo: `List(1, 2, 3).reduce(_ + _)` retorna `6`.
+- `Fold`: Reduce una lista a un valor permitiendo establecer un acumulador inicial. Puede cambiar el tipo del resultado y funciona con listas vacías.
+  - `FoldLeft` (izquierda) y `FoldRight` (derecha): El `fold` retorna un `reduce` con el acumulador establecido.
+  - Ejemplo: `List(1, 2, 3).fold(0)(_ + _)` retorna `6`.
+
+####
+**Comparación entre Reduce y Fold**
+
+| Aspecto | `Reduce` | `Fold` |
+| :--- | :--- | :--- |
+| **Tipo de retorno** | Mismo que los elementos | Puede ser diferente |
+| **Listas vacías** | Lanza excepción | Retorna acumulador inicial |
+| **Acumulador inicial** | Primer o último elemento | Se especifica explícitamente |
+| **Asociatividad** | `Left`/`Right` es importante | `Left`/`Right` es importante |
+
+####
+**Asociatividad en operaciones de reducción**
+
+La asociatividad determina si el orden de evaluación (de izquierda a derecha o viceversa) afecta el resultado final.
+
+| Operación | Asociativa | Evaluación Left | Evaluación Right | Resultado |
+| :--- | :---: | :--- | :--- | :--- |
+| **Suma** | ✅ | (((1+2)+3)+4) = 10 | (1+(2+(3+4))) = 10 | Mismo resultado |
+| **Resta** | ❌ | (((1-2)-3)-4) = -8 | (1-(2-(3-4))) = -2 | Diferente resultado |
+
+####
+**Aplicaciones prácticas y ventajas del enfoque funcional**
+
+**Aplicaciones prácticas:**
+- `Producto punto`: Combinar elementos de listas paralelas.
+- `Concatenación tipada`: Crear tuplas de diferentes tipos.
+- `Filtrado genérico`: Aplicar predicados a cualquier tipo de dato.
+- `Reducción flexible`: Realizar sumas, multiplicaciones o concatenaciones.
+- `Transformación de tipos`: Por ejemplo, convertir una lista de `Strings` a la suma de sus longitudes.
+
+**Ventajas del enfoque:**
+- `Type safety`: El compilador detecta errores de tipos en tiempo de compilación.
+- `Reutilización`: Las funciones genéricas trabajan con múltiples tipos de datos.
+- `Expresividad`: El `pattern matching` simplifica la lógica compleja.
+- `Eficiencia`: El uso de `tail recursion` optimiza el uso de la memoria.
+- `Flexibilidad`: `Fold` permite superar las limitaciones de `reduce` al manejar listas vacías y cambios de tipo.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Resumen
+URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%207/Resumen/
