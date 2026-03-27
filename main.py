@@ -13,11 +13,18 @@ load_dotenv()
 
 MODEL_ID = "gemini-embedding-001"  # Gemini Embedding 2
 BATCH_SIZE = 100 
+API_KEYS = [
+    os.getenv("GEMINI_API_KEY"),
+    os.getenv("GEMINI_API_KEY_2"),
+]
+API_KEYS = [k for k in API_KEYS if k]
+current_key_index = 0
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 RUTA_PADRE = os.path.abspath(os.path.dirname(__file__))
 
-RUTA_CORPUS = os.path.join(RUTA_PADRE, "src", "embeddings", "new_corpus.jsonl")
-RUTA_CORPUS_EMBEDDINGS = os.path.join(RUTA_PADRE, "src", "embeddings", "new_corpus_embeddings.jsonl")
+RUTA_CORPUS = os.path.join(RUTA_PADRE, "src", "embeddings", "GEMINI_3_FLASH", "corpus.jsonl")
+RUTA_CORPUS_EMBEDDINGS = os.path.join(RUTA_PADRE, "src", "embeddings", "GEMINI_3_FLASH", "corpus_embeddings.jsonl")
+RUTA_CORPUS_EMBEDDINGS_COPY = os.path.join(RUTA_PADRE, "src", "embeddings", "GEMINI_3_FLASH", "corpus_embeddings_copy.jsonl")
 
 # ----------------------------
 # CONTROL DE RATE LIMITING
@@ -42,7 +49,7 @@ def esperar_rate_limit():
     last_request_time = time.time()
 
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+#client = genai.Client(api_key=GEMINI_API_KEY)
 
 print("=" * 70)
 print("🧠 GENERACIÓN DE EMBEDDINGS CON GEMINI EMBEDDING 2")
@@ -57,8 +64,10 @@ print("=" * 70)
 # ----------------------------------------------------------------------
 # 1. FUNCIÓN DE PROCESAMIENTO POR LOTES CON REINTENTOS
 # ----------------------------------------------------------------------
+def crear_cliente(api_key):
+    return genai.Client(api_key=api_key)
 
-def generate_batch_embeddings(client, model_id, contents, task_type, output_dim, batch_size=BATCH_SIZE, intentos=3):
+def generate_batch_embeddings(model_id, contents, task_type, output_dim, batch_size=BATCH_SIZE, intentos=3):
     """
     Genera embeddings para cada objeto en el Corpus, dividiéndolos en lotes.
     Incluye lógica de reintentos y control de rate limiting.
@@ -75,6 +84,8 @@ def generate_batch_embeddings(client, model_id, contents, task_type, output_dim,
     Returns:
         list: Lista plana de todos los embeddings generados.
     """
+    global current_key_index
+    client = crear_cliente(API_KEYS[current_key_index])
     all_embeddings = []
     total_contents = len(contents)
     total_lotes = (total_contents + batch_size - 1) // batch_size
@@ -85,6 +96,7 @@ def generate_batch_embeddings(client, model_id, contents, task_type, output_dim,
     # Calcular tiempo estimado
     tiempo_estimado = total_lotes * REQUEST_INTERVAL
     print(f"⏱️  Tiempo estimado mínimo: {tiempo_estimado/60:.1f} minutos\n")
+   
     
     # Itera sobre la lista de contenidos, tomando fragmentos del tamaño del lote
     for i in range(0, total_contents, batch_size):
@@ -92,6 +104,14 @@ def generate_batch_embeddings(client, model_id, contents, task_type, output_dim,
         numero_lote = i//batch_size + 1
         
         print(f"📦 Procesando lote {numero_lote}/{total_lotes} ({len(batch)} documentos)")
+
+        if numero_lote == 9 and current_key_index < len(API_KEYS) - 1:
+            print("🛑 Cambio preventivo de API key (límite conocido)")
+
+            current_key_index += 1
+            client = crear_cliente(API_KEYS[current_key_index])
+
+            print(f"🔄 Nueva API key (index {current_key_index})")
         
         # Intentar procesar el lote con reintentos
         lote_procesado = False
@@ -121,39 +141,50 @@ def generate_batch_embeddings(client, model_id, contents, task_type, output_dim,
                 
                 # Agregar embeddings del lote exitoso
                 all_embeddings.extend(batch_embeddings)
+                # Guardado incremental
+                temp_df = docs_df.iloc[:len(all_embeddings)].copy()
+                temp_df["embeddings"] = all_embeddings
+
+                temp_df.to_json(
+                    RUTA_CORPUS_EMBEDDINGS_COPY,
+                    orient="records",
+                    lines=True,
+                    force_ascii=False
+                )
+
+                print(f"💾 Progreso guardado ({len(all_embeddings)} embeddings)")
                 print(f"   ✅ Lote {numero_lote} procesado exitosamente")
                 lote_procesado = True
                 break  # Salir del bucle de reintentos
                 
             except APIError as e:
-                msg = str(e)
+                msg = str(e).lower()
                 
-                # Manejo de errores según el tipo
-                if any(x in msg for x in ["RESOURCE_EXHAUSTED", "UNAVAILABLE", "503", "429"]):
-                    # Error de sobrecarga o rate limit
-                    tiempo_espera = 10 * (2 ** intento)  # Backoff exponencial
-                    if "429" in msg:
-                        tiempo_espera = 20 * (2 ** intento)  # Espera más larga para rate limit
+                if any(x in msg for x in ["429", "resource_exhausted", "unavailable", "503"]):
+                    tiempo_espera = 10 * (2 ** intento)
                     
-                    print(f"      ⚠️  API sobrecargada o límite de rate (intento {intento+1}/{intentos})")
+                    if "429" in msg:
+                        tiempo_espera = 20 * (2 ** intento)
+
+                    print(f"      ⚠️  Rate limit o sobrecarga (intento {intento+1}/{intentos})")
                     
                     if intento < intentos - 1:
-                        print(f"      ⏳ Esperando {tiempo_espera}s antes de reintentar...")
+                        print(f"      ⏳ Esperando {tiempo_espera}s...")
                         time.sleep(tiempo_espera)
                     else:
-                        print(f"      ❌ Lote {numero_lote} falló después de {intentos} intentos")
+                        print(f"      ❌ Lote {numero_lote} falló tras reintentos")
                         raise e
-                        
-                elif "NOT_FOUND" in msg or "400" in msg:
-                    print(f"      ❌ Error fatal de configuración: {e}")
+                elif "not_found" in msg or "400" in msg:
+                    print(f"      ❌ Error de configuración: {e}")
                     raise e
                 else:
-                    print(f"      ❌ Error API no controlado: {e}")
+                    print(f"      ❌ Error no controlado: {e}")
+                    
                     if intento < intentos - 1:
-                        print(f"      ⏳ Reintentando en 5s...")
                         time.sleep(5)
                     else:
                         raise e
+                    #
                         
             except Exception as e:
                 print(f"      ❌ Error inesperado: {e}")
@@ -210,7 +241,7 @@ else:
     # Llama a la función de procesamiento por lotes
     try:
         all_embeddings = generate_batch_embeddings(
-            client=client, 
+            #client=client, 
             model_id=MODEL_ID, 
             contents=all_contents,
             task_type="RETRIEVAL_DOCUMENT",

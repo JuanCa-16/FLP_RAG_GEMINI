@@ -1,0 +1,281 @@
+####
+**Paso por valor**
+En el `paso por valor`, cuando evaluamos un procedimiento con variables en sus argumentos, hacemos una copia de la referencia que es independiente de la original.
+
+```racket
+let
+    f = proc(x, y)
+        begin
+            set x = +(x, 1);
+            set y = +(y, 1);
+            +(x, y)
+        end
+    a = 10
+    b = 20
+in (f a b)
+```
+
+En este caso, los valores originales se mantienen: `a` vale 10 y `b` vale 20. Dentro del procedimiento, `x` es una nueva `referencia` y `y` también lo es, operando sobre copias de los valores.
+
+```mermaid
+flowchart LR
+    E["Empty-env"]  
+    A["env0 
+        f, a, b
+        closure(...), 10, 20
+    "]
+    B["envf
+        x, y
+        10, 20   
+    "]
+    E --> A
+    E --> B
+```
+
+####
+**Paso por referencia**
+En el `paso por referencia`, al pasar las variables, estas deben cambiar si dentro del procedimiento se realizan modificaciones.
+
+```racket
+let
+    f = proc(x, y)
+        begin
+            set x = +(x, 1);
+            set y = +(y, 1);
+            +(x, y)
+        end
+    a = 10
+    b = 20
+in (f a b)
+```
+
+En este escenario, cualquier cambio realizado a los parámetros formales afecta directamente a las variables originales. Por lo tanto, el resultado es que `a` termina con el valor 11 y `b` con el valor 21.
+
+####
+**Implementación de valores y targets**
+La implementación del sistema distingue entre diferentes tipos de valores y formas de direccionamiento:
+
+- **Valores expresados**: `Numero`, `booleanos` y `procVal`.
+- **Valores denotados**: `Referencia` a un valor expresado.
+
+Existen dos tipos de blancos o `targets` fundamentales:
+- **Blanco directo**: Es una referencia normal a un valor.
+- **Blanco indirecto**: Se utiliza cuando pasamos una variable a un procedimiento para mantener la vinculación con la referencia original.
+
+####
+**Representación de targets indirectos**
+Los `targets indirectos` permiten relacionar las variables del llamado de una función con las que se evalúan dentro del procedimiento.
+
+```racket
+let
+    f = proc(x, y)
+        begin
+            set x = +(x, 1);
+            set y = +(y, 1);
+            +(x, y)
+        end
+    a = 10
+    b = 20
+in (f a b)
+```
+
+El siguiente diagrama muestra cómo se estructuran los ambientes utilizando blancos directos (`dt`) e indirectos (`id`):
+
+```mermaid
+flowchart LR
+    E["Empty-env"]  
+    A["env0 
+        f, a, b
+        dt(closure(...)), dt(10), dt(20)
+    "]
+    B["envf
+        x, y
+        id(a), id(b) 
+    "]
+    E --> A
+    E --> B
+```
+
+####
+**Evaluación de argumentos y generación de targets**
+Cuando se evalúa un procedimiento, la naturaleza del argumento determina el tipo de `target` generado:
+
+- Se genera un **Target directo** si pasamos un valor literal o una expresión (se crea una nueva referencia independiente).
+- Se genera un **Target indirecto** si pasamos una variable (se conecta con la referencia original).
+
+En el `paso por referencia`, cuando enviamos una variable, no enviamos su valor sino su `referencia`, para que cualquier efecto colateral se vea reflejado en la variable original.
+
+Ejemplo de evaluación con un valor y una expresión:
+```racket
+let
+    f = proc(x, y)
+        begin
+            set x = +(x, 1);
+            set y = +(y, 1);
+            +(x, y)
+        end
+    a = 10
+    b = 20
+in (f a +(a, b))
+```
+
+```mermaid
+flowchart LR
+    E["Empty-env"]  
+    A["env0 
+        f, a, b
+        dt(closure(...)), dt(10), dt(20)
+    "]
+    B["envf
+        x, y
+        id(a), dt(30)    
+    "]
+    E --> A
+    E --> B
+```
+
+####
+**Implementación de la función eval-rand**
+La función `eval-rand` gestiona la creación de blancos según el tipo de argumento recibido. Si recibe una variable, busca su referencia y crea un `indirect-target`. Para evitar cadenas de indirección innecesarias, si la variable ya apunta a un `indirect-target`, extrae la referencia contenida. Si el argumento no es una variable, genera un `direct-target`.
+
+```racket
+(define eval-rand
+  (lambda (rand env)
+    (cases expression rand
+      (var-exp (id)
+               (let ((ref (apply-env-ref env id)))
+                 (indirect-target
+                  (cases target (primitive-deref ref)
+                    (direct-target (e) ref)
+                    (indirect-target (ref1) ref1)))))
+      (else
+       (direct-target (eval-expression rand env))))))
+```
+
+####
+**Ejemplo de ejecución con paso por referencia**
+En este ejemplo, la variable `b` se pasa a un procedimiento que la incrementa en 10.
+
+```racket
+let
+    f = proc(x)
+        begin
+            set x = +(x, 10);
+            x
+        end
+    b = 20
+in begin
+    (f b);
+    b
+end
+```
+
+Este programa retorna 30, ya que el cambio en `x` afectó directamente a `b`.
+
+```mermaid
+flowchart LR
+    E["Empty-env"]
+    A["env0
+    f, b
+    dt(closure...), dt(20)
+    "]
+    B["envf
+    x
+    id(b)
+    "]
+    E-->A
+    E-->B
+```
+
+####
+**Análisis de cambios de estado en múltiples procedimientos**
+Análisis de la ejecución de procedimientos anidados con `paso por referencia`:
+
+```racket
+let
+    x = 10
+    y = 20
+    z = 30
+    f = proc(a, b, c)
+        begin
+            set a = +(a, 1);
+            set b = +(b, 2);
+            set c = +(c, 3);
+            +(a, b, c)
+        end
+in let
+    g = proc(m, n, o)
+        begin
+            (f m n o);
+            (f n m o);
+            (f o m n);
+            +(x, y, z)
+        end
+in (g x y z)
+```
+
+**Trazado de cambios en x, y, z:**
+1. Al inicio de `g`: `m=x`, `n=y`, `o=z`.
+2. Primer llamado `(f m n o)`:
+   - `x` incrementa en 1 (11).
+   - `y` incrementa en 2 (22).
+   - `z` incrementa en 3 (33).
+3. Segundo llamado `(f n m o)` (donde `a=n`, `b=m`, `c=o`):
+   - `y` incrementa en 1 (23).
+   - `x` incrementa en 2 (13).
+   - `z` incrementa en 3 (36).
+4. Tercer llamado `(f o m n)` (donde `a=o`, `b=m`, `c=n`):
+   - `z` incrementa en 1 (37).
+   - `x` incrementa en 2 (15).
+   - `y` incrementa en 3 (26).
+
+Resultado final de `+(x, y, z)`: 15 + 26 + 37 = 78.
+
+```mermaid
+flowchart LR
+    E["Empty-env"]
+    A["env0
+    x, y, z, f
+    dt(10->11->13->15),
+    dt(20->22->23->26),
+    dt(30->33->36->37), dt(closure...)
+    "]
+    B["env1
+    g
+    dt(closure)
+    "]
+    C["envg
+    m, n, o
+    id(x), id(y), id(z)
+    "]
+    F1["envf1
+    a, b, c
+    id(x), id(y), id(z)
+    "]
+    F2["envf2
+    a, b, c
+    id(y), id(x), id(z)
+    "]
+    F3["envf3
+    a, b, c
+    id(z), id(x), id(y)
+    "]
+    E-->A
+    A-->B
+    A-->C
+    E-->F1
+    E-->F2
+    E-->F3
+```
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Paso valor y referencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Paso%20valor%20y%20referencia/

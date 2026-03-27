@@ -2,7 +2,7 @@ import json
 import os
 
 # Ruta con el prefijo 'r' para evitar errores de Windows
-archivo_path = r'C:\Users\juanc\Desktop\TG\FLP_RAG_GEMINI\src\embeddings\new_corpus.jsonl'
+archivo_path = r'C:\Users\juanc\Desktop\TG\FLP_RAG_GEMINI\src\embeddings\GEMINI_3_FLASH\corpus.jsonl'
 archivo_temp = archivo_path + ".tmp"
 
 def modificar_jsonl_existente(ruta, ruta_temporal):
@@ -55,7 +55,7 @@ def convertir_a_diccionario_por_id(archivo_entrada, archivo_salida):
     with open(archivo_salida, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-convertir_a_diccionario_por_id(archivo_path, "datos_indexados.json")
+convertir_a_diccionario_por_id(archivo_path, "datos_indexados_front.json")
 
 
 def actualizar_embeddings_con_metadata(archivo_sin_embeddings, archivo_con_embeddings, archivo_salida=None):

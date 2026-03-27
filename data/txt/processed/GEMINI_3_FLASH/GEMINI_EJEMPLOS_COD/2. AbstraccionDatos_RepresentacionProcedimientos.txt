@@ -1,0 +1,126 @@
+####
+Implementación de procedimientos constructores para una representación procedimental de ambientes:
+
+```racket
+#lang eopl
+
+(define empty-env
+  (lambda ()
+    (lambda (signal var)
+      (cond
+        [(= signal 0) 'empty-env]
+        [(= signal 1) (eopl:error "No se encuentra el identificador" var)]
+        [else (eopl:error "Señal no válida")]
+        ))))
+
+(define extend-env
+  (lambda (var value old-env)
+    (lambda (signal fvar)
+      (cond
+        [(= signal 0) 'extend-env]
+        [(= signal 1)
+         (if (equal? var fvar)
+             value
+             (old-env 1 var))]
+        [(= signal 2) var]
+        [(= signal 3) value]
+        [(= signal 4) old-env]))))
+```
+
+**Conceptos clave**
+`constructores`, `ambientes`, `representación procedimental`, `closures`
+
+**Aplicación**
+Estos procedimientos permiten crear la estructura básica de un ambiente de evaluación. `empty-env` inicializa un ambiente vacío que lanza un error si se busca cualquier variable, mientras que `extend-env` añade un nuevo enlace de variable-valor sobre un ambiente previo, utilizando señales numéricas para determinar el comportamiento del procedimiento.
+
+####
+Definición de predicados para la identificación de tipos de ambientes en una representación procedimental:
+
+```racket
+(define empty-env?
+  (lambda (env)
+    (equal? (env 0 empty) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (env 0 empty) 'extend-env)))
+```
+
+**Conceptos clave**
+`predicados`, `señales`, `abstracción de datos`, `introspección`
+
+**Aplicación**
+Se utilizan para verificar el tipo de ambiente que se está procesando. Al enviar la señal `0` al procedimiento que representa el ambiente, este responde con un símbolo que identifica si es un ambiente vacío o una extensión, facilitando el despacho de métodos en funciones observadoras.
+
+####
+Implementación de procedimientos extractores para obtener componentes de un ambiente extendido:
+
+```racket
+(define extend-env->id
+  (lambda (e)
+    (e 2 empty)))
+
+(define extend-env->value
+  (lambda (e)
+    (e 3 empty)))
+
+(define extend-env->old-env
+  (lambda (e)
+    (e 4 empty)))
+```
+
+**Conceptos clave**
+`extractors`, `acceso a datos`, `señales`, `desencapsulamiento`
+
+**Aplicación**
+Estos extractores permiten recuperar la información almacenada en un `extend-env` sin acceder directamente a la lógica del `cond` interno. Utilizan las señales `2`, `3` y `4` para obtener respectivamente el identificador, el valor asociado y el ambiente anterior (padre).
+
+####
+Creación de una instancia de ambiente con múltiples enlaces anidados:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+```
+
+**Conceptos clave**
+`binding`, `anidamiento`, `shadowing`, `jerarquía de ambientes`
+
+**Aplicación**
+Este bloque ilustra cómo construir una jerarquía de nombres donde algunas variables pueden estar repetidas (como 'y'). En esta estructura, la búsqueda de una variable comenzará por el nivel más externo ('d') y descenderá hasta encontrar la primera ocurrencia o llegar al ambiente vacío.
+
+####
+Implementación del procedimiento observador `apply-env` y ejecución de pruebas de búsqueda:
+
+```racket
+(define apply-env
+  (lambda (e var)
+    (cond
+      [(empty-env? e) (eopl:error "La variable" var "no ha sido encontrada")]
+      [(extend-env? e)
+       (if (equal? (extend-env->id e) var)
+           (extend-env->value e)
+           (apply-env (extend-env->old-env e) var))]
+      [else (eopl:error "Estructura no válida")]
+      )))
+
+(display (apply-env e 'x))
+(display "\n")
+(display (apply-env e 'y))
+```
+
+**Conceptos clave**
+`lookup`, `recursión`, `resolución de nombres`, `búsqueda lineal`
+
+**Aplicación**
+`apply-env` es el observador principal que busca el valor de una variable en el ambiente. Si el ambiente es una extensión, compara el identificador buscado con el almacenado; si no coinciden, realiza una llamada recursiva sobre el ambiente anterior. Las pruebas finales demuestran la recuperación de valores y el manejo del `shadowing` (donde 'y' retorna el valor más reciente definido).
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionProcedimientos.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

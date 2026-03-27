@@ -9,7 +9,7 @@ import src.models
 from src.models.material_estudio import MaterialEstudio
 from src.models.documento import Documento
 
-JSONL_PATH = "src/embeddings/new_corpus_embeddings.jsonl"
+JSONL_PATH = "src/embeddings/GEMINI_3_FLASH/corpus_embeddings.jsonl"
 BATCH_SIZE = 100
 
 

@@ -1,0 +1,178 @@
+####
+**Expansión de expresiones de tipo**
+
+Para generar los tipos se crea el procedimiento `expand-type-expression`, el cual recibe una expresión de tipo y retorna un tipo interno (AST). Este proceso permite transformar las representaciones gramaticales en estructuras de datos de tipo.
+
+```racket
+;expand-type-expression: expresion de tipos -> tipo
+(define expand-type-expression
+  (lambda (texp)
+    (cases type-exp texp
+      (int-exp () int-type)
+      (bool-exp () bool-type)
+      (proc-type-exp (targs tresult)
+        (proc-type
+          (expand-type-expressions targs)
+          (expand-type-expression tresult))))))
+
+;expand-type-expressions: list of type-exp -> list of types
+(define expand-type-expressions
+  (lambda (texps)
+    (map expand-type-expression texps)))
+```
+
+Ejemplos de transformación de expresiones de tipo a estructuras de tipo:
+
+- Una expresión entera `(int-exp)` se expande a `#(struct:atomic-type int)`.
+- Una expresión booleana `(bool-exp)` se expande a su tipo atómico correspondiente.
+- Una expresión de procedimiento `(proc-type-exp (list (int-exp) (int-exp)) (bool-exp))` se transforma en:
+```racket
+#(struct:proc-type
+  (#(struct:atomic-type int) #(struct:atomic-type int))
+  #(struct:atomic-type bool))
+```
+
+####
+**Ambiente de tipos e interpretación de literales y variables**
+
+En el diseño del interpretador de chequeo de tipos, los casos de `int-type` y `bool-type` corresponden a los literales numéricos y booleanos del lenguaje. Si la expresión es una variable, se debe recuperar su tipo desde un ambiente de tipos (`tenv`).
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (lit-exp (d) int-type)
+      (true-exp () bool-type)
+      (false-exp () bool-type)
+      (var-exp (id) (deref (apply-tenv tenv id)))
+      ...)))
+
+; Ambiente de tipos inicial (init-tenv)
+(define init-tenv
+  (extend-env '(x y z)
+    (list->vector (list int-type int-type int-type))
+    (extend-env '(a b c)
+      (list->vector (list int-type int-type int-type))
+      (empty-env))))
+
+; apply-tenv: environment -> type
+(define apply-tenv
+  (lambda (env var)
+    (cases environment env
+      (empty-env () (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec ((search-var (lambda (lid lval [pos 0])
+                               (cond
+                                 [(null? lid) (apply-tenv old-env var)]
+                                 [(equal? (car lid) var) (a-ref pos vec)]
+                                 [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec))))))
+```
+
+Ejemplos de obtención de tipos:
+- La expresión `5` retorna `#(struct:atomic-type int)`.
+- Las expresiones `true` o `false` retornan `#(struct:atomic-type bool)`.
+- La variable `x` en el ambiente inicial retorna una referencia a su tipo: `#(struct:a-ref 0 #(#(struct:atomic-type int) #(struct:atomic-type int) #(struct:atomic-type int)))`.
+
+####
+**Chequeo de tipos en expresiones condicionales**
+
+La expresión `if` consta de tres partes: `test-exp`, `true-exp` y `false-exp`. Para que sea válida, el `test-exp` debe ser de tipo `bool`, y los tipos resultantes de las ramas `true-exp` y `false-exp` deben ser idénticos.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      ...
+      (if-exp (test-exp true-exp false-exp)
+        (let ((test-type (type-of-expression test-exp tenv))
+              (true-type (type-of-expression true-exp tenv))
+              (false-type (type-of-expression false-exp tenv)))
+          (begin
+            (check-equal-type! test-type bool-type test-exp)
+            (check-equal-type! true-type false-type exp)
+            true-type)))
+      ...)))
+
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'type-check "Types didn't match ~s != ~s in ~%~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2)
+                    exp)
+        t1)))
+```
+
+Si se intenta evaluar `if 3 then 1 else 2`, el sistema arrojará un error porque el `test-exp` (el literal `3`) es de tipo `int` en lugar de `bool`. Igualmente, si las ramas de resultado tienen tipos distintos, se generará una excepción de `type-check`.
+
+####
+**Representación externa de tipos y mensajes de error**
+
+Para facilitar la lectura de los errores de tipos, se utilizan procedimientos que convierten las estructuras internas de tipos en formatos legibles.
+
+```racket
+(define type-to-external-form
+  (lambda (t)
+    (cases type t
+      (atomic-type (name) name)
+      (proc-type (targs tresult)
+        (append (arg-types-to-external-form targs)
+                '(->)
+                (list (type-to-external-form tresult)))))))
+
+(define arg-types-to-external-form
+  (lambda (ty)
+    (cond
+      [(null? ty) '()]
+      [(null? (cdr ty)) (list (type-to-external-form (car ty)))]
+      [else (append (list (type-to-external-form (car ty)))
+                    (list "*")
+                    (arg-types-to-external-form (cdr ty)))])))
+```
+
+Ejemplo de mensaje de error generado:
+`type-check: Types didn't match bool != int in #(struct:if-exp #(struct:true-exp) #(struct:true-exp) #(struct:lit-exp 2))`
+
+####
+**Chequeo de tipos en procedimientos**
+
+Los procedimientos siguen la regla de tipo `t1 * t2 * ... * tn -> t`. Un `proc` recibe una lista de expresiones de tipos para sus argumentos, una lista de identificadores y un cuerpo. El proceso de chequeo consiste en expandir las expresiones de tipo de los argumentos, extender el ambiente de tipos y calcular el tipo del cuerpo bajo ese ambiente.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      ...
+      (proc-exp (targs args body)
+        (type-of-proc-exp targs args body tenv))
+      ...)))
+
+;type-of-proc-exp: list of types, list of identifier, exp, environment -> type
+(define type-of-proc-exp
+  (lambda (targs args body tenv)
+    (let* ((args-types (expand-type-expressions targs))
+           (result-type (type-of-expression body
+                          (extend-env args (list->vector args-types) tenv))))
+      (proc-type args-types result-type))))
+```
+
+Ejemplo de tipo para `proc(int x, bool y) x`:
+`#(struct:proc-type (#(struct:atomic-type int) #(struct:atomic-type bool)) #(struct:atomic-type int))`
+
+Si se tiene un `if` cuyas ramas son procedimientos con firmas distintas, como:
+`if true then proc(int x, bool y) x else proc(int x, bool y) y`
+El chequeo fallará indicando la discrepancia:
+`Types didn't match (int * bool -> int) != (int * bool -> bool)`
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo II
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20II/

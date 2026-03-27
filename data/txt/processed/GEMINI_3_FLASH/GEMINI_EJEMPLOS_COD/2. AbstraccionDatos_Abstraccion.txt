@@ -1,0 +1,72 @@
+####
+Implementación de la interfaz básica para la representación de números naturales basada en el lenguaje `eopl`:
+
+```racket
+#lang eopl
+
+(define zero 0)
+
+(define is-zero?
+   (lambda (n) (= n 0)))
+
+(define successor
+  (lambda (n) (+ n 1)))
+
+(define predecessor
+  (lambda (n) (if (is-zero? n)
+                  (eopl:error "Cero no tiene predecesor" "predecessor")
+                  (- n 1))))
+```
+
+**Conceptos clave**
+`interfaz`, `abstracción de datos`, `predicados`, `manejo de errores`
+
+**Aplicación práctica**
+Define las operaciones primitivas necesarias para manipular una representación de números naturales. Proporciona los mecanismos de construcción (`successor`), observación (`is-zero?`) y desconstrucción (`predecessor`), incluyendo una validación para evitar el cálculo del predecesor de `zero`.
+
+####
+Implementación de la operación suma (`plus`) definida en términos de la interfaz de números naturales:
+
+```racket
+(define plus
+  (lambda (a b)
+    (cond
+      [(is-zero? b) a]
+      [else
+       (plus (successor a) (predecessor b))]
+      )
+    ))
+```
+
+**Conceptos clave**
+`recursión`, `condicionales`, `sucesor`, `predecesor`
+
+**Aplicación práctica**
+Esta función permite realizar la adición de dos números mediante un algoritmo recursivo que incrementa el primer operando mientras decrementa el segundo, hasta que este último llega a `zero`. Ilustra cómo construir lógica aritmética compleja utilizando únicamente las funciones de la interfaz.
+
+####
+Implementación de la multiplicación (`mult`) mediante recursión y aplicación de la función suma:
+
+```racket
+(define mult
+  (lambda (a b)
+    (if
+     (is-zero? b)
+     zero
+     (plus a (mult a (predecessor b)))
+     )))
+
+(mult 10 2000)
+```
+
+**Conceptos clave**
+`recursión`, `composición de funciones`, `aritmética`, `caso base`
+
+**Aplicación práctica**
+Resuelve el producto de dos números naturales aplicando la suma sucesiva del multiplicando. El proceso continúa recursivamente hasta que el multiplicador alcanza el valor `zero`, momento en el que retorna el valor base de la implementación. El ejemplo `(mult 10 2000)` ejecuta esta lógica para calcular el producto de ambos números.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/Abstraccion.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

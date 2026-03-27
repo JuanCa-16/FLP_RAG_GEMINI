@@ -1,0 +1,315 @@
+####
+**Especificación léxica y gramatical del intérprete**
+
+```racket
+(define lexical
+  '((comment ("%" (arbno (not #\newline))) skip)
+    (whitespace (whitespace) skip)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (identifier (letter (arbno (or letter digit))) symbol)))
+
+(define grammar
+  '((program (expression) a-program)
+    (expression (identifier) var-exp)
+    (expression (number) lit-exp)
+    (expression ("true") true-exp)
+    (expression ("false") false-exp)
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    (expression ("if" expression "then" expression "else" expression) if-exp)
+    (expression ("let" (arbno identifier "=" expression) "in" expression) let-exp)
+    (expression ("proc" "(" (separated-list identifier ",") ")") proc-exp)
+    (expression ("letrec" (arbno identifier "(" (separated-list identifier ",") ")" "=" expression) "in" expression) letrec-exp)
+    (expression ("set" identifier "=" expression) set-exp)
+    (expression ("begin" expression (arbno ";" expression) "end") begin-exp)
+    (expression ("(" expression (arbno expression) ")") app-exp)
+    (primitive ("+") add-prim)
+    (primitive ("-") sub-prim)
+    (primitive ("*") prod-prim)
+    (primitive ("/") div-prim)
+    (primitive ("and") and-prim)
+    (primitive ("or") or-prim)
+    (primitive ("<") less-prim)
+    (primitive ("<=") lesseq-prim)
+    (primitive (">") more-prim)
+    (primitive (">=") moreeq-prim)
+    (primitive ("==") eq-prim)
+    (primitive ("!=") neq-prim)))
+
+(sllgen:make-define-datatypes lexical grammar)
+
+(define scanner
+  (lambda (program)
+    ((sllgen:make-string-scanner lexical grammar) program)))
+
+(define parser
+  (lambda (program)
+    ((sllgen:make-string-parser lexical grammar) program)))
+```
+
+Este fragmento define la estructura léxica y sintáctica necesaria para el funcionamiento del `parser` y el `scanner`. La especificación utiliza `sllgen` para automatizar la creación de los `datatypes` del Árbol de Sintaxis Abstracta (AST) y las herramientas de análisis gramatical.
+
+####
+**Definición del entorno y manejo de clausuras**
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+   (lid (list-of symbol?))
+   (lval vector?)
+   (old-env environment?))
+  (extend-recursively-env
+   (procname (list-of symbol?))
+   (argss (list-of (list-of symbol?)))
+   (bodies (list-of expression?))
+   (old-env environment?)))
+
+(define-datatype procVal procVal?
+  (closure
+   (lid (list-of symbol?))
+   (exp expression?)
+   (old-env environment?)))
+
+(define procVal->lid
+  (lambda (cls)
+    (cases procVal cls
+      (closure (lid exp old-env) lid))))
+```
+
+Se define el `environment` como una estructura de datos que soporta entornos vacíos, extensiones simples con vectores de valores y extensiones recursivas para soportar `letrec`. Además, se implementa el `procVal` para representar procedimientos mediante `closure` (clausuras) que capturan el `scope léxico`.
+
+####
+**Búsqueda de variables y referencias en el entorno**
+
+```racket
+(define apply-env
+  (lambda (env var)
+    (deref (apply-env-ref env var))))
+
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+        (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec
+          ((search-var
+            (lambda (lid lval pos)
+              (cond
+                [(null? lid) (apply-env-ref old-env var)]
+                [(equal? (car lid) var) (a-ref pos vec)]
+                [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec 0)))
+      (extend-recursively-env (procnames llargs bodies old-env)
+        (letrec
+          ((search-proc
+            (lambda (procs args bodies)
+              (cond
+                [(null? procs) (apply-env-ref old-env var)]
+                [(eqv? (car procs) var)
+                 (a-ref 0 (list->vector (list (closure (car args) (car bodies) env))))]
+                [else (search-proc (cdr procs) (cdr args) (cdr bodies))]))))
+          (search-proc procnames llargs bodies))))))
+```
+
+La función `apply-env` obtiene el valor de una variable aplicando `deref` a la referencia retornada por `apply-env-ref`. El proceso de búsqueda es recursivo sobre las capas de entornos definidos (`extend-env` y `extend-recursively-env`).
+
+####
+**Evaluación de programas y expresiones**
+
+```racket
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp)
+        (eval-expression exp init-env)))))
+
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id) (apply-env env id))
+      (lit-exp (datum) datum)
+      (true-exp () #t)
+      (false-exp () #f)
+      (prim-exp (prim lrands)
+        (let ((values (map (lambda (x) (eval-expression x env)) lrands)))
+          (apply-primitive prim values)))
+      (if-exp (cond-exp true-exp false-exp)
+        (let ((cond-value (eval-expression cond-exp env)))
+          (if (boolean? cond-value)
+              (if cond-value
+                  (eval-expression true-exp env)
+                  (eval-expression false-exp env))
+              (eopl:error "The condition must be a boolean " cond-exp))))
+      (let-exp (lid lexpr expr)
+        (let ((vexpr (map (lambda (x) (direct-target (eval-expression x env))) lexpr)))
+          (eval-expression expr (extend-env lid (list->vector vexpr) env))))
+      (proc-exp (lid exp) (closure lid exp env))
+      (app-exp (rator rands)
+        (let ((procv (eval-expression rator env))
+              (vrands (map (lambda (x) (eval-rand x env)) rands)))
+          (if (and (procVal? procv) (= (length (procVal->lid procv)) (length vrands)))
+              (cases procVal procv
+                (closure (lid exp old-env)
+                  (eval-expression exp (extend-env lid (list->vector vrands) old-env))))
+              (eopl:error "Not a procedure or incorrect number of args"))))
+      (letrec-exp (procnames llargs bodies expn)
+        (eval-expression expn (extend-recursively-env procnames llargs bodies env)))
+      (begin-exp (exp lexp)
+        (letrec
+          ((evaluation (lambda (lexp)
+                         (cond
+                           [(null? (cdr lexp)) (eval-expression (car lexp) env)]
+                           [else (begin (eval-expression (car lexp) env) (evaluation (cdr lexp)))]))))
+          (evaluation (cons exp lexp))))
+      (set-exp (id exp)
+        (begin
+          (setref! (apply-env-ref env id) (eval-expression exp env))
+          (void)))
+      (else "Not implemented yet"))))
+```
+
+Este bloque contiene el corazón del intérprete. `eval-expression` procesa cada variante del AST. Destaca el manejo de `app-exp` y `let-exp` donde se utilizan mecanismos de `target` para soportar el paso por referencia y la mutación mediante `set-exp`.
+
+####
+**Implementación de primitivas y operaciones aritmético-lógicas**
+
+```racket
+(define operation
+  (lambda (f lst acc)
+    (cond
+      [(null? lst) acc]
+      [else (operation f (cdr lst) (f (car lst) acc))])))
+
+(define apply-primitive
+  (lambda (prim values)
+    (cases primitive prim
+      (add-prim () (operation + values 0))
+      (sub-prim () (- (car values) (operation + (cdr values) 0)))
+      (prod-prim () (operation * values 1))
+      (div-prim () (/ (car values) (operation * (cdr values) 1)))
+      (and-prim () (operation (lambda (a b) (and a b)) values #t))
+      (or-prim () (operation (lambda (a b) (or a b)) values #f))
+      (less-prim () (< (car values) (cadr values)))
+      (lesseq-prim () (<= (car values) (cadr values)))
+      (more-prim () (> (car values) (cadr values)))
+      (moreeq-prim () (>= (car values) (cadr values)))
+      (eq-prim () (= (car values) (cadr values)))
+      (neq-prim () (not (= (car values) (cadr values)))))))
+```
+
+Las primitivas se ejecutan mediante una función `operation` genérica que aplica un operador de forma acumulativa sobre una lista de valores. Se incluyen operaciones para aritmética básica, comparaciones y lógica booleana.
+
+####
+**Sistema de referencias y targets para paso por referencia**
+
+```racket
+(define-datatype reference reference?
+  (a-ref
+   (position integer?)
+   (vec vector?)))
+
+(define-datatype target target?
+  (direct-target
+   (val expval?))
+  (indirect-target
+   (ref ref-to-direct-target?)))
+
+(define-datatype nulltype nulltype?
+  (void))
+
+(define expval?
+  (lambda (x)
+    (or (number? x) (boolean? x) (procVal? x))))
+
+(define ref-to-direct-target?
+  (lambda (x)
+    (and (reference? x)
+         (cases reference x
+           (a-ref (pos vec)
+             (cases target (vector-ref vec pos)
+               (direct-target (v) #t)
+               (indirect-target (v) #f)))))))
+
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec) (vector-ref vec pos)))))
+
+(define deref
+  (lambda (ref)
+    (cases target (primitive-deref ref)
+      (direct-target (val) val)
+      (indirect-target (ref1)
+        (cases target (primitive-deref ref1)
+          (direct-target (val) val)
+          (indirect-target (p) (eopl:error "Illegal reference" ref1)))))))
+```
+
+Para implementar el paso por referencia, se introducen los datatypes `reference` y `target`. Un `target` puede ser `direct-target` (un valor directo) o `indirect-target` (una referencia a otro target). La función `deref` se encarga de resolver estos niveles de indirección para obtener el valor final.
+
+####
+**Mutación y evaluación de operandos**
+
+```racket
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec) (vector-set! vec pos val)))))
+
+(define setref!
+  (lambda (ref val)
+    (let ((ref1 (cases target (primitive-deref ref)
+                  (direct-target (e) ref)
+                  (indirect-target (r) r))))
+      (primitive-setref! ref1 (direct-target val)))))
+
+(define eval-rand
+  (lambda (rand env)
+    (cases expression rand
+      (var-exp (id)
+        (let ((ref (apply-env-ref env id)))
+          (indirect-target
+           (cases target (primitive-deref ref)
+             (direct-target (e) ref)
+             (indirect-target (ref1) ref1)))))
+      (else
+       (direct-target (eval-expression rand env))))))
+```
+
+La función `setref!` permite modificar el valor contenido en una referencia. Por su parte, `eval-rand` es fundamental para el paso por referencia: si el operando es una variable (`var-exp`), crea un `indirect-target` hacia su referencia actual; de lo contrario, evalúa la expresión y crea un `direct-target`.
+
+####
+**Entorno inicial e inicio del intérprete**
+
+```racket
+(define init-env
+  (extend-env
+   '(x y z)
+   (list->vector (list (direct-target 1) (direct-target 2) (direct-target 3)))
+   (extend-env
+    '(a b c)
+    (list->vector (list (direct-target 4) (direct-target 5) (direct-target 6)))
+    (empty-env))))
+
+(define interpreter
+  (sllgen:make-rep-loop "-->" eval-program
+    (sllgen:make-stream-parser lexical grammar)))
+
+(interpreter)
+```
+
+Se inicializa un entorno con variables predefinidas (`x, y, z, a, b, c`) vinculadas a `direct-target` numéricos. Finalmente, se lanza el `read-eval-print loop` (REPL) del intérprete con el prompt `-->`.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Interprete paso por referencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Interprete%20paso%20por%20referencia/

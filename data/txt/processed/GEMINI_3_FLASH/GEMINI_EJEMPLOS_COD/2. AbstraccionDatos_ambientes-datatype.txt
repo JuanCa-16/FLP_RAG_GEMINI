@@ -1,0 +1,112 @@
+####
+Definición de la estructura de datos para ambientes utilizando la representación de `define-datatype`:
+
+```racket
+#lang eopl
+
+(define-datatype environment environment?
+  (empty-env-record)
+  (extended-env-record (syms (list-of symbol?))
+                       (vals (list-of scheme-value?))
+                       (env environment?)))
+
+(define scheme-value? (lambda (v) #t))
+```
+
+**Conceptos clave**
+`define-datatype`, `environment`, `tipos de datos inductivos`, `abstracción de datos`
+
+**Aplicación**
+Esta estructura define la base para representar el almacenamiento de variables y sus valores en un intérprete. Permite distinguir formalmente entre un ambiente vacío (`empty-env-record`) y un ambiente que contiene ligaduras de variables (`extended-env-record`).
+
+####
+Implementación de los constructores base para la gestión de ambientes:
+
+```racket
+(define empty-env
+  (lambda () (empty-env-record)))
+
+(define extend-env
+  (lambda (var val env)
+    (extended-env-record (list var) (list val) env)))
+```
+
+**Conceptos clave**
+`constructores`, `empty-env`, `extend-env`, `ligaduras`
+
+**Aplicación**
+Se utiliza para la creación inicial de un ambiente sin asociaciones mediante `empty-env` y para la generación de nuevos alcances o extensiones de variables mediante `extend-env`, facilitando el crecimiento dinámico del ambiente.
+
+####
+Procedimiento para la búsqueda de valores en un ambiente mediante el uso de `apply-env`:
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+                        (eopl:error 'apply-env "No binding for ~s" sym))
+      (extended-env-record (syms vals env)
+                           (let ((pos (list-find-position sym syms)))
+                             (if (number? pos)
+                                 (list-ref vals pos)
+                                 (apply-env env sym)))))))
+```
+
+**Conceptos clave**
+`cases`, `búsqueda recursiva`, `manejo de errores`, `pattern matching`
+
+**Aplicación**
+Permite recuperar el valor asociado a un símbolo recorriendo la jerarquía de ambientes. Si el símbolo no se encuentra en el registro actual, la función se llama recursivamente sobre el ambiente anterior hasta encontrar la ligadura o lanzar un error si llega al ambiente vacío.
+
+####
+Funciones auxiliares para la localización de índices y búsqueda en listas:
+
+```racket
+(define list-find-position
+  (lambda (sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym)) los)))
+
+(define list-index
+  (lambda (pred ls)
+    (cond
+      ((null? ls) #f)
+      ((pred (car ls)) 0)
+      (else (let ((list-index-r (list-index pred (cdr ls))))
+              (if (number? list-index-r)
+                  (+ list-index-r 1)
+                  #f))))))
+```
+
+**Conceptos clave**
+`recursión`, `predicados`, `list-index`, `funciones de orden superior`
+
+**Aplicación**
+Estas funciones proporcionan la lógica necesaria para identificar la posición numérica de un símbolo dentro de una lista. `list-find-position` utiliza un predicado de igualdad para que `apply-env` pueda extraer el valor correspondiente en la misma posición de la lista de valores.
+
+####
+Demostración práctica de creación y consulta de ambientes anidados:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+(apply-env e 'd)
+(apply-env e 'y)
+```
+
+**Conceptos clave**
+`ambientes anidados`, `shadowing`, `evaluación`, `referencias`
+
+**Aplicación**
+Ilustra cómo se encadenan múltiples extensiones para construir un ambiente complejo. El ejemplo demuestra cómo el sistema maneja el enmascaramiento de variables (cuando `y` aparece dos veces) y cómo se recuperan los valores según la precedencia en la estructura.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-datatype.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

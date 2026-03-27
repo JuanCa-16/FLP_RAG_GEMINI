@@ -11,13 +11,12 @@ ID_GENERATOR = count(1)
 
 # CONFIGURACIÓN
 
-RUTA_PADRE = os.path.abspath(os.path.dirname(__file__)) #src
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # root
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # root
 
-ARCHIVO_SALIDA = os.path.join(RUTA_PADRE, "embeddings", "new_corpus.jsonl")
-CARPETA_ENTRADA_GEMINI = os.path.join(BASE_DIR, "NEW_TXT_GEMINI")
-CARPETA_EJEMPLOS = os.path.join(BASE_DIR, "NEW_TXT_EJEMPLOS")
-CARPETA_GIT_FLP = os.path.join(BASE_DIR, "NEW_GIT_FLP_GEMINI")
+ARCHIVO_SALIDA = os.path.join(BASE_DIR, "src", "embeddings", "GEMINI_3_FLASH", "corpus.jsonl")
+CARPETA_ENTRADA_GEMINI = os.path.join(BASE_DIR, "data", "txt", "processed", "GEMINI_3_FLASH", "GEMINI_PDFS_VIDEOS")
+CARPETA_EJEMPLOS = os.path.join(BASE_DIR, "data", "txt", "processed", "GEMINI_3_FLASH", "GEMINI_EJEMPLOS_COD")
+CARPETA_GIT_FLP = os.path.join(BASE_DIR, "data", "txt", "processed", "GEMINI_3_FLASH", "GEMINI_GIT")
 ARCHIVO_CONSOLIDADO = os.path.join(BASE_DIR, "txt_global.txt")
 
 # STOPWORDS
@@ -131,6 +130,12 @@ def dividir_por_fragmentos(contenido: str) -> List[str]:
             
             # Reiniciar acumulador (no incluir la línea ####)
             acumulado = []
+
+             # capturar contenido en la misma línea (pertenece al siguiente)
+            posible_contenido = linea_limpia[4:].strip()
+            if posible_contenido:
+                acumulado.append(posible_contenido)
+
         else:
             # Agregar línea al fragmento actual
             if linea_limpia:  # Solo agregar líneas no vacías

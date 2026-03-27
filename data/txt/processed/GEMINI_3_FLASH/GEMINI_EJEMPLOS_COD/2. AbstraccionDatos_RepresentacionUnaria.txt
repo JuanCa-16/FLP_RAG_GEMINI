@@ -1,0 +1,97 @@
+####
+Implementación de la base de un sistema de numeración unario mediante listas y predicados:
+
+```racket
+#lang eopl
+(define zero '())
+(define successor
+  (lambda (n)
+    (cons #t n)))
+(define is-zero?
+  (lambda (n)
+    (null? n)))
+```
+
+**Conceptos clave**
+`representación de datos`, `constructores`, `predicados`, `listas`
+
+**Aplicación**
+Define los cimientos de un tipo de dato abstracto para números naturales, donde el cero se representa como una lista vacía y cada sucesor añade un elemento a la lista.
+
+####
+Implementación de la función predecesor con control de errores para el sistema numérico:
+
+```racket
+(define predecessor
+  (lambda (n)
+    (if (is-zero? n)
+        (eopl:error "No se puede tener predecesor 0")
+        (cdr n))))
+```
+
+**Conceptos clave**
+`manejo de errores`, `selectores`, `condicionales`, `abstracción de datos`
+
+**Aplicación**
+Permite obtener el valor anterior de un número unario, validando que la operación no se realice sobre el elemento base `zero`, lo que resultaría en un error de ejecución.
+
+####
+Definición de la suma aritmética mediante recursión y las interfaces del tipo de dato:
+
+```racket
+(define plus
+  (lambda (a b)
+    (cond
+      [(is-zero? b) a]
+      [else
+       (plus (successor a) (predecessor b))]
+      )
+    ))
+```
+
+**Conceptos clave**
+`recursión`, `aritmética abstracta`, `condicionales`, `iteración`
+
+**Aplicación**
+Realiza la adición de dos números incrementando el primer operando mientras decrementa el segundo, hasta que este último alcanza el estado `is-zero?`.
+
+####
+Implementación de la multiplicación basada en sumas sucesivas y recursión:
+
+```racket
+(define mult
+  (lambda (a b)
+    (if
+     (is-zero? b)
+     zero
+     (plus a (mult a (predecessor b)))
+     )))
+```
+
+**Conceptos clave**
+`recursión`, `composición de funciones`, `operaciones aritméticas`, `clausura`
+
+**Aplicación**
+Calcula el producto de dos números mediante la aplicación repetida de la función `plus`, siguiendo la definición recursiva clásica de la multiplicación.
+
+####
+Definición de constantes numéricas y ejecución de cálculos:
+
+```racket
+(define ten (list #t #t #t #t #t #t #t #t #t #t))
+(define five (list #t #t #t #t #t))
+
+(display (mult ten five))
+```
+
+**Conceptos clave**
+`instanciación`, `evaluación`, `entrada/salida`, `estructuras de datos`
+
+**Aplicación**
+Demuestra el funcionamiento del sistema unario al multiplicar dos constantes representadas manualmente como listas de valores booleanos, imprimiendo el resultado en la consola.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionUnaria.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

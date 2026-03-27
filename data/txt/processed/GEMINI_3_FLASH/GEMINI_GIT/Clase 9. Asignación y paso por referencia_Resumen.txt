@@ -1,0 +1,106 @@
+####
+**Introducción a tuplas y funciones de alto orden**
+
+Se exploran los conceptos fundamentales de `tuplas`, `parametrización de tipos` y `funciones de alto orden`. La `parametrización de tipos` permite que las funciones acepten cualquier tipo de dato, siempre que la operación solicitada sea compatible. Dentro de las `funciones de alto orden` para el manejo de listas, se destacan:
+
+- `Map`: Realiza la transformación de los elementos de una lista.
+- `Filter`: Permite el filtrado de elementos basado en un predicado.
+- `Reduce`: Transforma una lista en un único valor. Incluye variaciones como `ReduceLeft` (asociatividad por la izquierda) y `ReduceRight` (asociatividad por la derecha), los cuales toman un elemento de la lista como acumulador inicial.
+- `Fold`: Similar a `Reduce`, pero permite establecer un acumulador inicial de forma explícita. `FoldLeft` y `FoldRight` retornan un proceso de reducción con dicho acumulador.
+
+####
+**Tabla comparativa de operaciones sobre listas**
+
+| Concepto | Propósito | Características | Ejemplo | Resultado |
+| :--- | :--- | :--- | :--- | :--- |
+| `Tuplas` | Agrupar valores heterogéneos | Inmutables, no recursivas, `pattern matching` | `(1, "hola", 3.14)` | `(Int, String, Double)` |
+| `Pattern Matching` con Tuplas | Simplificar código anidado | Evita `nested matches`, aumenta legibilidad | `(u,v) match { case (x::xs, y::ys) => ... }` | Código más limpio |
+| `Map` | Transformar elementos | Cambia tipo, mantiene estructura | `List(1,2,3).map(_ * 2)` | `List(2,4,6)` |
+| `Filter` | Filtrar elementos | Predicado booleano, mantiene tipo | `List(1,2,3,4).filter(_ % 2 == 0)` | `List(2,4)` |
+| `Reduce` | Reducir lista a valor | Mismo tipo, no funciona con vacías | `List(1,2,3).reduce(_ + _)` | `6` |
+| `Fold` | Reducir con acumulador | Cambia tipo, funciona con vacías | `List(1,2,3).fold(0)(_ + _)` | `6` |
+
+####
+**Diferencias clave entre Reduce y Fold**
+
+El comportamiento de las operaciones de reducción varía según el uso de `Reduce` o `Fold`:
+
+- **Tipo de retorno**: En `Reduce` el tipo de retorno debe ser el mismo que el de los elementos; en `Fold` el tipo puede ser diferente.
+- **Listas vacías**: `Reduce` lanza una excepción si la lista está vacía, mientras que `Fold` retorna el acumulador inicial.
+- **Acumulador inicial**: En `Reduce` se utiliza el primer o último elemento según la dirección; en `Fold` el acumulador se especifica explícitamente.
+- **Asociatividad**: En ambos casos, la dirección (`Left` o `Right`) es importante para el resultado final de la operación.
+
+####
+**Asociatividad en operaciones de reducción**
+
+La asociatividad determina cómo se agrupan las operaciones en una lista. Dependiendo de la operación, el resultado puede variar:
+
+| Operación | Asociativa | Left (Izquierda) | Right (Derecha) | Resultado |
+| :--- | :---: | :--- | :--- | :--- |
+| **Suma** | ✅ | `(((1+2)+3)+4) = 10` | `(1+(2+(3+4))) = 10` | Mismo resultado |
+| **Resta** | ❌ | `(((1-2)-3)-4) = -8` | `(1-(2-(3-4))) = -2` | Diferente resultado |
+
+####
+**Implementación de Producto Punto con Tuplas**
+
+El uso de `tuplas` en el `pattern matching` permite simplificar la lógica de funciones que procesan múltiples listas simultáneamente, evitando el uso de coincidencias anidadas (`nested matches`).
+
+**Antes: Código anidado complejo**
+```scala
+case x :: xs => v match {
+  case y :: ys => prodI(xs)(ys)(x * y + acc)
+}
+```
+
+**Después: Código limpio con tuplas**
+```scala
+case (x :: xs, y :: ys) => prodI(xs)(ys)(x * y + acc)
+```
+
+Esta técnica mejora la legibilidad y reduce la complejidad sintáctica al tratar los elementos de ambas listas como un único par coincidente.
+
+####
+**Implementación de funciones genéricas**
+
+La `parametrización de tipos` permite la reutilización de código con diferentes tipos de datos mediante el uso de tipos genéricos (representados comúnmente como `[T]`).
+
+```scala
+// Permite reutilización con diferentes tipos
+def funcion[T](l: List[T]): Unit = {
+    // ... implementación
+}
+
+funcion[Int](List(1, 2, 3))
+funcion[String](List("a", "b"))
+```
+
+Este enfoque garantiza que la función sea aplicable a diversas estructuras de datos manteniendo la seguridad de tipos.
+
+####
+**Aplicaciones prácticas y ventajas del enfoque funcional**
+
+**Aplicaciones prácticas:**
+- `Producto punto`: Combinar elementos de listas paralelas.
+- `Concatenación tipada`: Creación de tuplas con diferentes tipos de datos.
+- `Filtrado genérico`: Aplicación de predicados a cualquier tipo de dato.
+- `Reducción flexible`: Operaciones de suma, multiplicación o concatenación.
+- `Transformación de tipos`: Por ejemplo, convertir una lista de strings en la suma de sus longitudes.
+
+**Ventajas del enfoque:**
+- `Type safety`: El compilador de Scala detecta errores de tipos en tiempo de compilación.
+- `Reutilización`: Las funciones genéricas permiten trabajar con múltiples tipos de datos.
+- `Expresividad`: El `pattern matching` simplifica la lógica compleja del programa.
+- `Eficiencia`: El uso de `tail recursion` (recursión de cola) optimiza el uso de la memoria.
+- `Flexibilidad`: La función `Fold` supera las limitaciones de `Reduce` al manejar casos de listas vacías y cambios de tipo.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 9. Asignación y paso por referencia_Resumen
+URL: https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%207/Resumen/

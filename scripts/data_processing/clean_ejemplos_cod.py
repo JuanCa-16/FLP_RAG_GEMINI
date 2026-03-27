@@ -19,7 +19,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CARPETA_ENTRADA = os.path.join(BASE_DIR, "data", "txt", "raw", "NEW")
-CARPETA_SALIDA = os.path.join(BASE_DIR,  "data", "txt", "processed", "GEMINI_3_FLASH","GEMINI_EJEMPLO_COD")
+CARPETA_SALIDA = os.path.join(BASE_DIR,  "data", "txt", "processed", "GEMINI_3_FLASH","GEMINI_EJEMPLOS_COD")
 os.makedirs(CARPETA_SALIDA, exist_ok=True)
 
 

@@ -1,0 +1,142 @@
+####
+**Sintaxis de la programación orientada a objetos II: Herencia y el uso de super**
+
+La herencia permite tomar clases existentes y definir nuevas a partir de ellas. Es fundamental que las clases hijas ejecuten el método `initialize` de su padre mediante un llamado `super`. Este mecanismo consiste en que una clase hija invoca métodos definidos en su clase superior.
+
+Cuando el método `initialize` no asigna valores a los campos, estos toman el valor `0` por defecto. En una jerarquía de clases, si una clase hija no posee un campo específico, las operaciones se realizan sobre el campo de la clase padre; sin embargo, si la hija define un campo con el mismo nombre, las operaciones afectarán al campo de la clase hija.
+
+```racket
+;; Clase padre con campos x e y
+class c1 extends object
+  field x
+  field y
+  method initialize () 1
+  method setx1 (a) set x = a
+  method sety1 (a) set y = a
+  method getx1 () x
+  method gety1 () y
+
+;; Clase hija que hereda de c1 y define su propio campo y
+class c2 extends c1
+  field y
+  method initialize () super initialize()
+  method sety2 (a) set y = a
+  method getx2 () x
+  method gety2 () y
+```
+
+Este código define una clase `c1` con dos campos y una clase `c2` que extiende a `c1` agregando un campo `y` adicional. El método `initialize` de `c2` utiliza `super` para garantizar la inicialización de la clase base.
+
+####
+**Ejemplo de uso de herencia y manipulación de campos**
+
+En el siguiente ejemplo se instancia la clase padre `c1` y la clase hija `c2`. Se observa cómo los métodos afectan a los campos dependiendo de dónde fueron definidos. En `c2`, al establecer `x`, se modifica el campo de `c1` (ya que `c2` no tiene `x`), pero al establecer `y` a través de `sety2`, se modifica el campo propio de `c2`.
+
+```racket
+let o1 = new c1() ;; Instancia de la clase padre
+    o2 = new c2() ;; Instancia de la clase hija
+in begin
+  send o1 setx1 (30);      ;; Establece x de o1 a 30
+  send o1 sety1 (200);     ;; Establece y de o1 a 200
+  send o2 setx1 (100);     ;; x de c1 en o2 vale 100
+  send o2 sety1 (20);      ;; y de c1 en o2 vale 20
+  send o2 sety2 (30);      ;; y de c2 en o2 vale 30
+  list(
+    send o1 getx1 (),      ;; Retorna 30
+    send o1 gety1 (),      ;; Retorna 200
+    send o2 getx1 (),      ;; Retorna 100
+    send o2 gety1 (),      ;; Retorna 20
+    send o2 getx2 (),      ;; Retorna 100
+    send o2 gety2 ()       ;; Retorna 30
+  )
+end
+```
+
+Este bloque demuestra la independencia entre las instancias `o1` y `o2`, y cómo la clase hija `c2` gestiona tanto sus campos propios como los heredados.
+
+####
+**Variable de instancia de objeto: self y despacho dinámico**
+
+Los métodos poseen un parámetro implícito llamado `self` que contiene la instancia actual del objeto. Este parámetro permite invocar métodos dentro del mismo objeto, facilitando que una clase padre llame a métodos que pueden estar sobrescritos en las clases hijas.
+
+```racket
+;; Declaración de clase padre
+class c1 extends object
+  method initialize () 1
+  method m1 () 1
+  method m2 () 2
+  method m3 () send self m2() ;; Uso de self para llamar m2
+
+;; Clase hija que sobrescribe el método m2
+class c2 extends c1
+  method initialize () 1
+  method m2 () 3
+
+;; Ejemplo de uso con self
+let o1 = new c1() ;; Instancia de clase padre
+    o2 = new c2() ;; Instancia de clase hija
+in list (
+  send o1 m1 (), ;; Retorna 1
+  send o1 m2 (), ;; Retorna 2
+  send o1 m3 (), ;; Retorna 2
+  send o2 m1 (), ;; Retorna 1
+  send o2 m2 (), ;; Retorna 3
+  send o2 m3 ()  ;; Retorna 3
+)
+```
+
+El uso de `self` habilita el `despacho dinámico de métodos`. En el caso de `o1`, `send self m2()` invoca la versión en `c1`. En el caso de `o2`, el mismo llamado `send self m2()` invoca la versión sobrescrita en `c2`. El comportamiento se adapta al tipo real del objeto instanciado.
+
+####
+**Conceptos avanzados de programación orientada a objetos**
+
+En la programación orientada a objetos existen conceptos fundamentales para la estructuración de clases:
+
+- **Shadowing de campos**: Ocurre cuando una clase hija define un campo con el mismo nombre que uno en la clase padre, ocultando al original.
+- **Llamada a super**: Permite acceder a métodos de la clase padre desde la clase hija para mantener y extender la funcionalidad base.
+- **Referencia self**: Es esencial para el `polimorfismo`, permitiendo que los métodos llamen a otros métodos del mismo objeto sin conocer su tipo específico en tiempo de compilación.
+- **Encadenamiento de constructores**: Práctica recomendada donde los constructores de las clases hijas llaman al constructor del padre para garantizar una inicialización completa.
+
+####
+**Resumen de conceptos avanzados de POO**
+
+| Concepto | Definición | Ejemplo |
+| :--- | :--- | :--- |
+| `Herencia` | Mecanismo para crear clases basadas en existentes | `class c2 extends c1` |
+| `Super llamado` | Invocación de métodos de la clase padre | `super initialize()` |
+| `Shadowing` | Ocultamiento de campos/métodos de la clase padre | `field y` en `c2` oculta `field y` en `c1` |
+| `Self` | Referencia implícita a la instancia actual | `send self m2()` |
+| `Despacho dinámico` | Selección de método basada en tipo real del objeto | `send o2 m3()` ejecuta `m2` de `c2` |
+| `Jerarquía de campos` | Acceso a campos heredados vs. propios | `send o2 gety1()` vs `send o2 gety2()` |
+| `Inicialización` | Proceso de preparación de objetos | `method initialize()` |
+| `Encadenamiento` | Llamadas secuenciales entre métodos | `m3()` llama a `m2()` vía `self` |
+| `Polimorfismo` | Capacidad de responder al mismo mensaje de forma diferente | `m3()` produce resultados según la instancia |
+
+####
+**Consideraciones de diseño en sistemas de clases**
+
+Al diseñar jerarquías de herencia y comportamiento de objetos, se deben considerar los siguientes puntos técnicos:
+
+- El `shadowing` de campos puede causar confusión y debe usarse con precaución.
+- La llamada a `super` en constructores es esencial para garantizar la inicialización completa.
+- La referencia `self` es fundamental para implementar el `polimorfismo` en tiempo de ejecución.
+- El `despacho dinámico` permite que el comportamiento se adapte al tipo real del objeto.
+- La herencia múltiple no está soportada en este esquema de clases simple.
+- Los métodos privados pueden implementarse mediante convenciones de nomenclatura.
+- La composición a menudo es preferible a la herencia para reducir el acoplamiento.
+- El `Principio de Sustitución de Liskov` debe guiar el diseño de jerarquías de herencia.
+- La inicialización por defecto de campos a `0` puede causar errores si no se maneja adecuadamente.
+- El uso de `self` permite implementar patrones como el `Template Method`.
+- La sobreescritura de métodos debe mantener la semántica esperada por la clase padre.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Sintaxis de la programación orientada a objeto II
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objeto%20II/

@@ -1,0 +1,286 @@
+####
+Definición de la especificación léxica para un interpretador basado en `eopl`:
+
+```racket
+#lang eopl
+(define especificacion-lexica
+  '(
+    (espacio-blanco (whitespace) skip)
+    (comentario ("%" (arbno (not #\newline))) skip)
+    (identificador (letter (arbno (or letter digit "?" "$"))) symbol)
+    (numero (digit (arbno digit)) number)
+    (numero ("-" digit (arbno digit)) number)
+    (numero (digit (arbno digit)"." digit (arbno digit)) number)
+    (numero ("-" digit (arbno digit)"." digit (arbno digit)) number)
+    )
+  )
+```
+
+**Conceptos clave**
+`especificación léxica`, `tokens`, `expresiones regulares`, `escaneo`
+
+**Aplicación práctica**
+Se utiliza para definir los componentes básicos (tokens) del lenguaje, como identificadores, números (enteros y decimales, positivos y negativos) y comentarios, permitiendo que el analizador léxico ignore espacios en blanco.
+
+####
+Definición de la especificación gramatical para un lenguaje con soporte de condicionales, ligaduras locales y procedimientos:
+
+```racket
+(define especificacion-gramatical
+  '(
+    (programa (expresion) a-program)
+    (expresion (numero) lit-exp)
+    (expresion (identificador) var-exp)
+    (expresion ("true") true-exp)
+    (expresion ("false") false-exp)
+    (expresion ("if" expresion "then" expresion "else" expresion) if-exp)
+    (expresion ("let" (arbno identificador "=" expresion) "in" expresion) let-exp)
+    (expresion ("proc" "(" (separated-list identificador ",") ")" expresion) proc-exp)
+    (expresion ("(" expresion (arbno expresion) ")") app-exp)
+    (expresion (primitiva "(" (separated-list expresion ",") ")") prim-exp)
+    (primitiva ("+") sum-prim)
+    (primitiva ("-") minus-prim)
+    (primitiva ("*") mult-prim)
+    (primitiva ("/") div-prim)
+    (primitiva ("add1") add-prim)
+    (primitiva ("sub1") sub-prim)
+    (primitiva (">") mayor-prim)
+    (primitiva (">=") mayorigual-prim)
+    (primitiva ("<") menor-prim)
+    (primitiva ("<=") menorigual-prim)
+    (primitiva ("==") igual-prim)
+    )
+  )
+
+(sllgen:make-define-datatypes especificacion-lexica especificacion-gramatical)
+```
+
+**Conceptos clave**
+`gramática formal`, `sintaxis concreta`, `producciones`, `árbol de sintaxis abstracta`
+
+**Aplicación práctica**
+Establece las reglas estructurales del lenguaje, definiendo cómo se construyen las expresiones, desde literales simples hasta estructuras complejas como `if`, `let` y `procedimientos`. La función `sllgen:make-define-datatypes` genera automáticamente los tipos de datos necesarios para representar estos elementos en el interpretador.
+
+####
+Implementación de la infraestructura de ambientes y búsqueda de variables:
+
+```racket
+(define-datatype ambiente ambiente?
+  (ambiente-vacio)
+  (ambiente-extendido
+   (lids (list-of symbol?))
+   (lvalue (list-of value?))
+   (old-env ambiente?)))
+
+(define value?
+  (lambda (v)
+    #true))
+
+(define apply-env
+  (lambda (env var)
+    (cases ambiente env
+      (ambiente-vacio () (eopl:error "No se encuentra la variable " var))
+      (ambiente-extendido (lid lval old-env)
+                          (letrec
+                              (
+                               (buscar-variable (lambda (lid lval old-env)
+                                                  (cond
+                                                    [(null? lid) (apply-env old-env var)]
+                                                    [(equal? (car lid) var) (car lval)]
+                                                    [else
+                                                     (buscar-variable (cdr lid) (cdr lval) old-env)]
+                                                    )
+                                                  )
+                                                )
+                               )
+                            (buscar-variable lid lval old-env)
+                            )
+                          )
+      )
+    )
+  )
+
+(define ambiente-inicial
+  (ambiente-extendido '(x y z) '(4 2 5)
+                      (ambiente-extendido '(a b c) '(4 5 6)
+                                          (ambiente-vacio))))
+```
+
+**Conceptos clave**
+`ambientes`, `binding`, `scope`, `recursión mutua`
+
+**Aplicación práctica**
+Permite gestionar el almacenamiento y recuperación de valores asociados a identificadores durante la ejecución. El `ambiente-inicial` proporciona constantes predefinidas para el usuario.
+
+####
+Evaluación de expresiones fundamentales, booleanos y estructuras de control:
+
+```racket
+(define evaluar-programa
+  (lambda (pgm)
+    (cases programa pgm
+      (a-program (exp) (evaluar-expresion exp ambiente-inicial))
+      ))
+  )
+
+(define evaluar-expresion
+  (lambda (exp amb)
+    (cases expresion exp
+      (lit-exp (dato) dato)
+      (var-exp (id) (apply-env amb id))
+      (true-exp () #true)
+      (false-exp () #false)
+      (if-exp (condicion hace-verdadero hace-falso)
+              (if
+               (evaluar-expresion condicion amb)
+               (evaluar-expresion hace-verdadero amb)
+               (evaluar-expresion hace-falso amb)
+               )
+              )
+      (prim-exp (prim args)
+                (let
+                    (
+                     (lista-numeros (map (lambda (x) (evaluar-expresion x amb)) args))
+                     )
+                  (evaluar-primitiva prim lista-numeros)
+                  )
+                )
+      ;; Se omiten let-exp y proc-exp para fragmentos específicos
+      (else (eopl:error "Expresión no implementada o inválida"))
+      )
+    )
+  )
+```
+
+**Conceptos clave**
+`evaluación`, `expresiones condicionales`, `literales`, `predicados`
+
+**Aplicación práctica**
+Constituye el núcleo del interpretador, donde se despachan las acciones según el tipo de expresión encontrada en el árbol de sintaxis abstracta, permitiendo resolver valores numéricos, lógicos y decisiones mediante el `if-exp`.
+
+####
+Implementación de ligaduras locales mediante la estructura `let`:
+
+```racket
+;; Dentro de evaluar-expresion:
+(let-exp (ids rands body)
+         (let
+             (
+              (lvalues (map (lambda (x) (evaluar-expresion x amb)) rands))
+              )
+           (evaluar-expresion body (ambiente-extendido ids lvalues amb))
+           )
+         )
+```
+
+**Conceptos clave**
+`ligaduras locales`, `let`, `extensión de ambientes`, `scope léxico`
+
+**Aplicación práctica**
+Resuelve la asignación temporal de valores a variables. Primero evalúa todos los operandos (`rands`) en el ambiente actual y luego evalúa el cuerpo (`body`) en un nuevo ambiente que contiene estas nuevas asociaciones.
+
+####
+Implementación de procedimientos de primera clase y su aplicación:
+
+```racket
+(define-datatype procval procval?
+  (closure (lid (list-of symbol?))
+           (body expresion?)
+           (amb-creation ambiente?)))
+
+;; Dentro de evaluar-expresion:
+(proc-exp (ids body)
+          (closure ids body amb))
+
+(app-exp (rator rands)
+         (let
+             (
+              (lrands (map (lambda (x) (evaluar-expresion x amb)) rands))
+              (procV (evaluar-expresion rator amb))
+              )
+           (if
+            (procval? procV)
+            (cases procval procV
+              (closure (lid body old-env)
+                       (if (= (length lid) (length lrands))
+                           (evaluar-expresion body
+                                          (ambiente-extendido lid lrands old-env))
+                           (eopl:error "El número de argumentos no es correcto"))
+                       ))
+            (eopl:error "No es un procedimiento" procV) 
+            )
+           )
+         )
+```
+
+**Conceptos clave**
+`procedimientos`, `closures`, `aplicación de funciones`, `parámetros formales`
+
+**Aplicación práctica**
+Permite la creación de funciones anónimas y su posterior invocación. El `closure` captura el ambiente de creación para garantizar el alcance léxico correcto cuando la función es aplicada a un conjunto de argumentos.
+
+####
+Manejo de operaciones primitivas aritméticas y lógicas:
+
+```racket
+(define evaluar-primitiva
+  (lambda (prim lval)
+    (cases primitiva prim
+      (sum-prim () (operacion-prim lval + 0))
+      (minus-prim () (- (car lval) (operacion-prim (cdr lval) + 0)))
+      (mult-prim () (operacion-prim lval * 1))
+      (div-prim () (/ (car lval) (operacion-prim (cdr lval) * 1)))
+      (add-prim () (+ (car lval) 1))
+      (sub-prim () (- (car lval) 1))
+      (mayor-prim () (> (car lval) (cadr lval)))
+      (mayorigual-prim () (>= (car lval) (cadr lval)))
+      (menor-prim () (< (car lval) (cadr lval)))
+      (menorigual-prim () (<= (car lval) (cadr lval)))
+      (igual-prim () (= (car lval) (cadr lval)))
+      )
+    )
+  )
+
+(define operacion-prim
+  (lambda (lval op term)
+    (cond
+      [(null? lval) term]
+      [else
+       (op
+        (car lval)
+        (operacion-prim (cdr lval) op term))
+       ]
+      )
+    )
+  )
+```
+
+**Conceptos clave**
+`primitivas`, `operadores aritméticos`, `operadores relacionales`, `recursión sobre listas`
+
+**Aplicación práctica**
+Abstrae la ejecución de funciones básicas del lenguaje sobre una lista de valores evaluados. La función `operacion-prim` actúa como un acumulador genérico para procesar listas de argumentos con diferentes operadores.
+
+####
+Creación del bucle de interacción (REPL) del interpretador:
+
+```racket
+(define interpretador
+  (sllgen:make-rep-loop "-->" evaluar-programa
+                        (sllgen:make-stream-parser
+                         especificacion-lexica especificacion-gramatical)))
+
+(interpretador)
+```
+
+**Conceptos clave**
+`REPL`, `stream parser`, `loop de interacción`, `evaluación interactiva`
+
+**Aplicación práctica**
+Inicia la interfaz de línea de comandos que permite al usuario ingresar código de forma interactiva, el cual es analizado, transformado en AST y evaluado secuencialmente.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 5. SemanticaProcedimientos/3.InterpretadorProcedimientos.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

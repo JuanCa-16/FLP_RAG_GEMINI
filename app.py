@@ -52,7 +52,7 @@ except Exception as e:
 MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
 MODELS_PRIORITY = ["gemini-2.5-flash", "gemini-3-flash-preview"]
-RUTA_EMBEDDINGS = "src/embeddings/new_corpus_embeddings.jsonl"
+RUTA_EMBEDDINGS = "src/embeddings/GEMINI_3_FLASH/corpus_embeddings.jsonl"
 
 docs_df_todo = None
 docs_df_pdf = None

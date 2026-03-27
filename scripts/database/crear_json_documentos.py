@@ -11,13 +11,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
-
+JSONL_PATH = "src/embeddings/GEMINI_3_FLASH/corpus_embeddings.jsonl"
 
 def cargar_mapping_tematicas():
     """
     Carga el archivo tematicas.json para obtener el mapeo de números a temáticas.
     """
-    ruta_json = Path(__file__).parent.parent.parent  / 'tematicas.json'
+    ruta_json = Path(__file__).parent.parent.parent / 'data' / 'metadata' / 'tematicas.json'
     
     with open(ruta_json, 'r', encoding='utf-8') as f:
         data = json.load(f)

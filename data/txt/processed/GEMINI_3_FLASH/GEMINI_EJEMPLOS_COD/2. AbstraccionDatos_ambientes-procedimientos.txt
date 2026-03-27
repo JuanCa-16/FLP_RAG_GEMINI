@@ -1,0 +1,74 @@
+####
+Definición del ambiente vacío mediante la representación basada en procedimientos:
+
+```racket
+(define empty-env
+  (lambda ()
+    (lambda (search-var)
+      (eopl:error 'apply-env "No binding for ~s" search-var))))
+```
+
+**Conceptos clave**
+`empty-env`, `procedimientos`, `eopl:error`, `interfaz de ambientes`
+
+**Aplicación**
+Representa el estado inicial de un sistema de resolución de nombres donde no existen ligaduras. Se utiliza como el caso base para la construcción de ambientes complejos y lanza un error de ejecución si la búsqueda de una variable alcanza este nivel, indicando que la variable no está definida.
+
+####
+Extensión de un ambiente utilizando la representación procedimental:
+
+```racket
+(define extend-env
+  (lambda (saved-var saved-val saved-env)
+    (lambda (search-var)
+      (if (eqv? search-var saved-var)
+          saved-val
+          (apply-env saved-env search-var)))))
+```
+
+**Conceptos clave**
+`extend-env`, `ligaduras`, `recursión`, `closures`, `scope`
+
+**Aplicación**
+Permite crear un nuevo ambiente que añade una ligadura de variable y valor sobre un ambiente previo. Implementa la lógica de búsqueda de forma que, si la variable consultada no es la que se acaba de añadir, se delega la búsqueda recursivamente al ambiente anterior mediante `apply-env`.
+
+####
+Interfaz para la búsqueda de variables en un ambiente:
+
+```racket
+(define apply-env
+  (lambda (env search-var)
+    (env search-var)))
+```
+
+**Conceptos clave**
+`apply-env`, `abstracción de datos`, `invocación`, `búsqueda de símbolos`
+
+**Aplicación**
+Funciona como el mediador para consultar valores dentro de un ambiente. Debido a que en esta implementación los ambientes son procedimientos, `apply-env` simplemente ejecuta el ambiente pasando la variable buscada como argumento para obtener el valor asociado.
+
+####
+Ejemplos de construcción y consulta de ambientes anidados:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+(apply-env e 'd)
+```
+
+**Conceptos clave**
+`anidamiento`, `shadowing`, `jerarquía de memoria`, `evaluación`
+
+**Aplicación**
+Ilustra cómo se encadenan múltiples llamadas a `extend-env` para construir un contexto de ejecución. En este ejemplo, el ambiente `e` contiene definiciones para 'd', 'y', 'x' y otra instancia de 'y'. La consulta `(apply-env e 'd)` demuestra la recuperación exitosa de un valor en una estructura de datos de ambiente procedimental.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-procedimientos.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

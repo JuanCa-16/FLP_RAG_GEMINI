@@ -1,0 +1,53 @@
+####
+Definición de la representación básica de números naturales y sus operaciones primitivas:
+
+```racket
+#lang eopl
+(define zero 0)
+
+(define zero?
+  (lambda (n)
+    (= n 0)))
+
+(define succ
+  (lambda (n) 
+    (+ n 1)))
+
+(define pred
+  (lambda (n)
+    (if (zero? n)
+        (eopl:error "El número no puede ser cero")
+        (- n 1))))
+```
+
+**Conceptos clave**
+`abstracción de datos`, `predicados`, `manejo de errores`, `operaciones primitivas`
+
+**Aplicación**
+Estas funciones establecen la base para trabajar con una representación de números naturales, permitiendo identificar el elemento base `zero`, avanzar al siguiente número mediante `succ` u obtener el anterior con `pred`, integrando una validación de error para el caso del número cero.
+
+####
+Implementación recursiva de la operación de suma basada en sucesores y predecesores:
+
+```racket
+#lang eopl
+(define plus
+  (lambda (x y)
+    (if (zero? y)
+        x
+        (succ (plus x (pred y))))))
+
+(display (plus 3 4))
+```
+
+**Conceptos clave**
+`recursión`, `aritmética inductiva`, `predicado de parada`, `evaluación`
+
+**Aplicación**
+La función `plus` ilustra cómo realizar adiciones mediante la aplicación sucesiva de incrementos y decrementos. Utiliza el predicado `zero?` como condición de parada para retornar el resultado acumulado, procesando el segundo operando de forma inductiva hasta agotar sus unidades.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/2.RepresentacionScheme.rkt
+LENGUAJE: racket
+FUENTE: CODIGO
