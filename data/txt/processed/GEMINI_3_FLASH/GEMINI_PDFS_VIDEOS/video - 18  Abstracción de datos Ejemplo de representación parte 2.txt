@@ -1,0 +1,94 @@
+####
+**Representación Bignum**
+
+La `representación Bignum` consiste en definir una estructura para manejar números en una `base` determinada utilizando listas. Por ejemplo, si la `base` es 16 y tenemos la lista `(1 2)`, la interpretación matemática sería:
+
+1 * 16^0 + 2 * 16^1
+
+Si tenemos la lista `(2 0 1)`, la representación sería:
+
+2 * 16^0 + 0 * 16^1 + 1 * 16^2
+
+A pesar de utilizar esta representación basada en listas, las funciones diseñadas para operar con números deben comportarse de la misma manera que en otras representaciones, manteniendo la independencia de la implementación.
+
+####
+**Definición de Cero y Sucesor en Racket**
+
+Para implementar la `representación Bignum` en `base 16`, definiremos las operaciones básicas. El `cero` se representa como una lista vacía y la verificación de si un número es cero se realiza mediante la función `null?`.
+
+**Función Sucesor**
+
+Al calcular el `sucesor` de un número en esta representación, debemos considerar el acarreo según la `base`. Por ejemplo, el sucesor de `(1 2)` es `(2 2)`. Sin embargo, si un elemento alcanza el valor de `base - 1` (en este caso 15), debe evolucionar a 0 y generar un acarreo al resto de la lista. Por ejemplo, el sucesor de `(15)` en base 16 sería `(0 1)`.
+
+```racket
+(define base 16)
+
+(define (successor n)
+  (cond
+    [(null? n) (list 1)]
+    [(= (car n) (- base 1)) (cons 0 (successor (cdr n)))]
+    [else (cons (+ (car n) 1) (cdr n))]))
+```
+
+Ejemplos de funcionamiento:
+- El `sucesor` de `(1)` es `(2)`.
+- El `sucesor` de `(15)` es `(0 1)`.
+- El `sucesor` de `(15 15 15 1)` es `(0 0 0 2)`.
+- El `sucesor` de `(15 15 15)` es `(0 0 0 1)`.
+
+####
+**Implementación del Predecesor**
+
+La función `predecesor` debe realizar la operación inversa al sucesor, manejando los casos donde se requiere "pedir prestado" de la cifra siguiente cuando el valor actual es 0.
+
+**Lógica del Predecesor**
+
+- Si el número es `( )` (cero), el `predecesor` no existe.
+- Si el número es el sucesor de cero (es decir, la lista `(1)`), su predecesor es la lista vacía `( )`.
+- Si el primer elemento (`car`) es 0, se reemplaza por `base - 1` (15) y se llama recursivamente al `predecesor` del resto de la lista (`cdr`).
+- En cualquier otro caso, simplemente se resta 1 al primer elemento.
+
+```racket
+(define (predecessor n)
+  (cond
+    [(null? n) (error "El predecesor de 0 no existe")]
+    [(equal? n (successor '())) '() ]
+    [(= (car n) 0) (cons (- base 1) (predecessor (cdr n)))]
+    [else (cons (- (car n) 1) (cdr n))]))
+```
+
+Ejemplos de funcionamiento:
+- El `predecesor` de `(1)` es `()`.
+- El `predecesor` de `(15 15 15)` es `(14 15 15)`.
+- El `predecesor` de `(0 15 15)` es `(15 14 15)`.
+- El `predecesor` de `(0 0 0 1)` es `(15 15 15)`.
+
+####
+**Suma e Independencia de la Representación**
+
+La función de suma (`plus`) puede definirse de forma recursiva utilizando exclusivamente las funciones `successor` y `predecessor`. Esto demuestra que la lógica de las operaciones aritméticas es independiente de cómo se representen internamente los números.
+
+```racket
+(define (plus n m)
+  (if (null? n)
+      m
+      (successor (plus (predecessor n) m))))
+```
+
+Al probar la función con la `representación Bignum`:
+- Sumar `(4)` y `(3)` resulta en `(7)`.
+- Sumar `(15)` y `(1)` resulta en `(0 1)`, que es 16 en base 10.
+- Sumar 16 (`(0 1)`) y 16 (`(0 1)`) resulta en `(0 2)`, que representa 32 (2 * 16^1).
+- Sumar 26 y 17 resulta en 43. En la representación, esto se visualiza como `(11 2)`, donde 11 * 16^0 + 2 * 16^1 = 11 + 32 = 43.
+
+En conclusión, no importa cómo se representen los números (ya sea mediante símbolos o listas), las funciones que definen el comportamiento matemático conservarán sus propiedades, garantizando que el sistema sea independiente de la representación.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 18  Abstracción de datos Ejemplo de representación parte 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=z_uAWdqChmk
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,57 @@
+####
+**Introducción a la Programación Orientada a Objetos**
+
+La `programación orientada a objetos` es uno de los pilares fundamentales de la formación en computación. La habilidad en este tipo de programación ayuda a resolver la mayoría de los problemas encontrados en la vida profesional. En este curso se manejarán dos implementaciones: una implementación simple, similar a la utilizada por `C++`, y una de objetos planos, que es la que utiliza `Java` internamente.
+
+Los objetos son abstracciones del mundo real. Por ejemplo, un animal como un gato o un perro tiene características como edad, color, número de dientes y peso. Estos atributos corresponden al `estado` actual del objeto. Si se comparan dos objetos, estos pueden diferenciarse en su `estado`; por ejemplo, un perro puede tener ocho años mientras que otro puede tener apenas dos años.
+
+Además del `estado`, los objetos tienen un `comportamiento`. Un gato puede emitir un sonido (maullar) o correr, mientras que un perro puede ladrar o morder. A través de estos objetos y sus interacciones, se realiza la abstracción hacia el mundo de la computación.
+
+####
+**Comunicación entre objetos y paso de mensajes**
+
+Un programa orientado a objetos consiste, fundamentalmente, en un conjunto de objetos que se comunican entre sí a través de mensajes. Un objeto se compone de `campos` (donde se almacena la información) y `métodos` para poder acceder y manejar esa información.
+
+En este paradigma, una operación denominada `método` es vista como el envío del nombre del método y sus argumentos a manera de `mensaje`. La comunicación con los objetos se realiza exclusivamente a través de los mensajes que se les envían mediante sus `métodos`.
+
+####
+**Clases y Objetos**
+
+Cuando se trabaja con objetos que poseen comportamientos similares, como un gato y un perro que comparten atributos como color, peso y edad, es posible agruparlos bajo una entidad común denominada `animal`. Esta especie de plantilla es conocida como `clase`.
+
+La `clase` es fundamentalmente una plantilla de la cual se derivan los objetos. La diferencia principal radica en que la `clase` solo define qué atributos y qué métodos tendrá la estructura, mientras que el `objeto` es una `instancia` de esa clase donde se asignan valores específicos a los atributos. Por ejemplo, en el atributo edad, un gato puede tener dos años y un perro cinco años.
+
+####
+**Herencia**
+
+La `herencia` ocurre cuando es necesario definir una nueva clase que solo requiere pequeñas modificaciones respecto a una ya existente. Por ejemplo, a partir de la clase `animal`, se pueden crear las clases `mamífero`, `reptil` y `ave`.
+
+Estas tres clases comparten características similares heredadas de `animal` (como color, edad o peso), pero poseen atributos propios. Un `ave` puede tener un atributo de velocidad en el aire, característica que no poseen los reptiles ni los mamíferos. Un `mamífero` puede tener un atributo para el número de crías por parto, que no aplica para aves o reptiles. En esta relación, se dice que una clase hereda o extiende a una clase existente.
+
+####
+**Polimorfismo**
+
+El `polimorfismo` es una característica que permite que un mismo tipo de mensaje pueda ser enviado a objetos de diferentes clases. Tiene varias formas de manifestarse:
+
+- **Modificación del comportamiento en herencia:** En el caso de la herencia, es posible modificar el comportamiento de ciertos métodos de acuerdo a la clase. Por ejemplo, un método de suma podría tener una implementación binaria en un caso y una implementación decimal en otro.
+- **Cambio de comportamiento según los datos:** El comportamiento de un método puede variar según los datos que recibe. El ejemplo clásico es el operador `+`: si se envían dos números, realiza una suma; pero si se envían dos `strings`, realiza una operación de concatenación. El método es `polimórfico` porque emite una respuesta u otra dependiendo de los datos enviados.
+
+####
+**Características generales de los lenguajes orientados a objetos**
+
+Las características principales de un lenguaje orientado a objetos son las siguientes:
+
+- **Encapsulamiento:** Los objetos encapsulan el comportamiento y el `estado` almacenado en los `campos`. El objeto actúa como una caja que protege el `estado`, permitiendo modificar o conocer los datos únicamente a través de los `métodos`.
+- **Clases:** Agrupan objetos que solo difieren en su `estado`.
+- **Herencia:** Permite que nuevas clases sean derivadas de clases existentes.
+- **Polimorfismo:** Permite que un mismo mensaje sea enviado a objetos de diferentes clases con resultados específicos para cada una.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 45 Objetos Introducción.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=yCXq0NCG00o
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

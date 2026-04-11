@@ -1,0 +1,47 @@
+#### **Estructura del árbol binario**
+
+Un `árbol binario` se define como una lista que contiene dos recursos. La gramática establece que un árbol puede ser un `entero` o un `símbolo` seguido de dos `árboles binarios`. La representación se realiza mediante una lista simbólica donde:
+
+- El `car` es el `símbolo`.
+- El `cadr` es el primer `árbol binario` (hijo izquierdo).
+- El `caddr` es el segundo `árbol binario` (hijo derecho).
+
+#### **Lógica de la función de suma y condición de parada**
+
+Al diseñar una función para sumar los elementos de un `árbol binario`, la primera consideración debe ser la `condición de parada`. Se debe verificar si el dato recibido es un `número`. Si la función recibe un `número` directamente, este se devuelve como respuesta, ya que no hay más operaciones que realizar. Según la gramática definida, un `número entero` es, por sí mismo, un `árbol binario`.
+
+#### **Recursión doble en el procesamiento de árboles**
+
+Cuando el árbol no es un número sino un `símbolo` seguido de subárboles, es necesario realizar dos llamados recursivos con la función: uno para explorar el hijo izquierdo y otro para el hijo derecho. Este proceso es computacionalmente costoso porque los árboles pueden tener niveles de profundidad desconocidos, lo que provoca que la pila de llamados crezca significativamente. El procedimiento de suma se rige bajo la siguiente lógica:
+
+- Si es un `número`, se devuelve el `número`.
+- En cualquier otro caso, se solicita la suma del `árbol izquierdo` y la suma del `árbol derecho` para obtener el total.
+
+#### **Validación gramatical de las entradas**
+
+El algoritmo depende de que el `árbol binario` esté bien estructurado y respete la gramática definida. El árbol solo tiene dos opciones: es un `número` o es un `símbolo` seguido de `árbol binario` y `árbol binario`. Si los datos de entrada están mal estructurados y no cumplen con esta jerarquía, el algoritmo no funcionará. La estructura debe ser:
+
+```racket
+<árbol-binario> ::= <entero>
+                | (<símbolo> <árbol-binario> <árbol-binario>)
+```
+
+#### **Flujo de ejecución de la recursión en árboles**
+
+En una recursión doble, se debe realizar el nuevo llamado recursivo con el `cadr` y el `caddr`, que representan el segundo y tercer elemento de la lista. El flujo de ejecución resuelve primero todos los llamados por la rama izquierda y, posteriormente, comienza a resolver los llamados por la rama derecha. Por ejemplo, en un árbol donde solo las hojas son números y los nodos internos son símbolos, la resolución se descompone de la siguiente forma:
+
+```racket
+(+ (suma hijo-izquierdo) (suma hijo-derecho))
+```
+
+Si la gramática especifica que el nodo debe ser un `símbolo`, el uso de un número en esa posición provocaría un error, ya que no se ajusta a la estructura esperada para un nodo interno.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 9 Especificación recursiva de programas II.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=OyhD6yR9vmY
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

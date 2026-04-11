@@ -1,0 +1,49 @@
+####
+
+Para definir estructuras de datos recursivas, se utiliza una gramática formal compuesta por símbolos y reglas de producción. Los `símbolos no terminales` son aquellos que permiten la recursión, facilitando el tránsito entre reglas o el retorno a la misma regla. Por otro lado, los `símbolos terminales` representan elementos básicos del alfabeto, como números o caracteres específicos, donde la descomposición de la estructura finaliza.
+
+Las reglas de producción definen la estructura. En este contexto, se emplean la `cerradura de Kleene` (que permite 0 o más repeticiones) y la `cerradura positiva` (1 o más repeticiones). Un ejemplo clásico es la definición de una lista de números:
+
+- Una lista puede ser una lista vacía (símbolo terminal).
+- Una lista puede consistir en un entero seguido de otra lista de enteros (regla recursiva).
+
+La recursión requiere siempre una condición de terminación para evitar ciclos infinitos o errores de memoria.
+
+####
+
+Las estructuras recursivas, como las listas, pueden conceptualizarse mediante la analogía de la `matrioska` o muñeca rusa: una estructura que contiene dentro de sí otra estructura del mismo tipo. En una lista, esto es evidente: un elemento contiene el primer componente (`car`) y el resto de la lista (`cdr`). La terminación de esta recursión es la lista vacía.
+
+Si no se define un caso base (la lista vacía), el sistema entraría en un bucle infinito. La estructura abstracta de la lista asegura que, tras procesar cada elemento, el tamaño del problema se reduce hasta alcanzar la base, permitiendo que la función recursiva opere de manera predecible sobre el conjunto de datos.
+
+####
+
+Un `árbol binario` es una estructura recursiva que comparte naturaleza con las listas, pero con una diferencia fundamental en la cantidad de llamados recursivos. Mientras que una lista posee una sola recursión, un árbol binario gestiona dos llamados recursivos simultáneos, correspondientes a sus subárboles izquierdo y derecho.
+
+La gramática de un árbol binario se define típicamente así:
+1. Un `símbolo terminal` (por ejemplo, un número o una hoja).
+2. Una producción que involucra un nodo y dos árboles (subárbol izquierdo y subárbol derecho).
+
+De forma análoga a la `matrioska`, en un árbol binario cada nodo contiene dentro de sí dos estructuras del mismo tipo. Esta lógica se extiende a árboles ternarios o n-arios, donde la cantidad de llamados recursivos aumenta proporcionalmente al número de hijos permitidos por nodo.
+
+####
+
+Al procesar árboles mediante funciones recursivas, es indispensable realizar llamadas recursivas sobre todos los subárboles involucrados. A diferencia de las listas, donde se procesa el `car` y se invoca recursivamente al `cdr`, en los árboles se requiere invocar la función sobre cada rama (por ejemplo, el hijo izquierdo y el hijo derecho).
+
+Es fundamental mantener la coherencia en el contrato de la función:
+- Se espera que la función reciba el tipo de dato correcto (el árbol o la subestructura correspondiente).
+- El valor de retorno debe ser consistente en todos los casos, independientemente del nivel de profundidad en el que se encuentre la recursión.
+
+Si un árbol requiere representar nodos vacíos (nulos), la gramática debe incluir explícitamente una opción de "vacío" o "null" para permitir la construcción completa de la estructura, ya que de lo contrario, la gramática solo permitiría nodos definidos.
+
+####
+
+En el contexto del `cálculo lambda`, una `expresión lambda` se construye a partir de reglas gramaticales básicas. Un componente esencial es el `identificador`, que puede ser cualquier variable (como `x`, `y`, `foo`) sin espacios, el cual permite nombrar los datos y gestionar las variables dentro de las funciones. Este formalismo constituye la base para la construcción de lenguajes de programación más complejos, permitiendo la manipulación de variables y la definición de abstracciones mediante funciones.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=JPRyWqSGR_k
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

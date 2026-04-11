@@ -1,0 +1,38 @@
+Para implementar las operaciones matemáticas, se trabajará sobre la variante `prim-expression`, que recibe una primitiva y una lista de expresiones. El desafío principal consiste en que la lista de expresiones llega en formato de sintaxis abstracta y debe ser transformada en una lista de números para poder operar sobre ella. Este proceso se dividirá en dos partes: primero, evaluar cada expresión de la lista y, segundo, aplicar la operación primitiva correspondiente a la lista de valores resultante.
+
+####
+
+El primer paso dentro de la implementación de `prim-expression` es convertir la lista de expresiones de sintaxis abstracta en una lista de valores numéricos. Para ello, se utiliza la función `map`, que aplica una función dada a cada elemento de una lista. En este caso, se aplicará la función `eval-expression` a cada elemento de la lista de expresiones de entrada. El resultado de esta operación será una lista de números, que se almacenará en una variable local utilizando una construcción `let`. Una vez obtenida esta lista de valores, se pasará, junto con la primitiva original, a una función auxiliar encargada de ejecutar la operación matemática.
+
+####
+
+Se define una función auxiliar, `evaluar-primitiva`, que recibe como argumentos una primitiva y una lista de valores ya evaluados (números). Esta función utiliza una estructura `case` para desglosar el tipo de primitiva y ejecutar la lógica correspondiente a cada operación. La función `evaluar-primitiva` es el núcleo que gestiona las distintas operaciones aritméticas definidas en el lenguaje.
+
+####
+
+Las operaciones de incremento (`inc1-prim`) y decremento (`sub1-prim`) se manejan de forma directa. Por diseño, estas operaciones solo consideran el primer número de la lista de valores proporcionada, ignorando cualquier argumento adicional. La implementación consiste en tomar el primer elemento de la lista de valores (`car`) y sumarle o restarle uno, según corresponda. Si se deseara un comportamiento más estricto que valide la cantidad de argumentos, sería necesario modificar la gramática del lenguaje.
+
+####
+
+Para las operaciones que admiten un número variable de argumentos, como la suma, resta, multiplicación y división, se crea una función recursiva genérica llamada `operacion-primitivas`. Esta función recibe tres argumentos: la lista de valores numéricos, la operación a aplicar (una función como `+` o `*`) y un valor de terminación. La recursión se basa en aplicar la operación entre el primer elemento de la lista (`car`) y el resultado del llamado recursivo sobre el resto de la lista (`cdr`).
+
+####
+
+El "valor de terminación" en la función recursiva `operacion-primitivas` es un concepto crucial que corresponde al elemento neutro de la operación. Cuando la lista de valores se vacía, la recursión termina y devuelve este valor. Para la suma y la resta, el elemento neutro es 0, ya que sumar o restar cero no altera el resultado. Para la multiplicación y la división, el elemento neutro es 1, porque multiplicar o dividir por uno tampoco afecta al resultado. Este parámetro asegura la correcta computación de la operación sobre la secuencia de valores.
+
+####
+
+La implementación final dentro de `evaluar-primitiva` invoca a la función genérica `operacion-primitivas` para cada operación aritmética. Para la suma (`sum-prim`), se pasa la operación `+` y el valor de terminación 0. Para la resta (`minus-prim`), se pasa la operación `-` y el valor 0. Para la multiplicación (`mult-prim`), se pasa `*` y el valor 1. Finalmente, para la división (`div-prim`), se pasa `/` y el valor 1. Este diseño aprovecha el concepto de funciones como ciudadanos de primera clase, permitiendo pasar las operaciones como argumentos. Con esta estructura, el intérprete puede manejar expresiones anidadas, como `(+ (- 1 2) (* 2 3))`.
+
+####
+
+Una vez implementadas las operaciones primitivas, la evolución del intérprete seguirá una secuencia de adición de nuevas características. Los próximos pasos en el curso incluyen: la incorporación de estructuras condicionales, seguida de la introducción de ligaduras locales (`let`), lo que requerirá la gestión de ambientes para asociar variables a valores. Posteriormente, se implementarán procedimientos (funciones definidas por el usuario) y, finalmente, se añadirá la capacidad de definir procedimientos recursivos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=rY7EvYy-4B0
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

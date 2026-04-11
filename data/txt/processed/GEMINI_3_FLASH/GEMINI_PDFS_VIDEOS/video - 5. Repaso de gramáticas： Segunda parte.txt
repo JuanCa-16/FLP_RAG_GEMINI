@@ -1,0 +1,91 @@
+####
+**Introducción a la Forma Backus-Naur (BNF)**
+
+La `Forma Backus-Naur (BNF)` es una notación que permite especificar las reglas sintácticas de los lenguajes de programación de manera formal. En esta notación, los elementos no terminales se representan entre paréntesis angulares `< >`. Una regla define cómo se transforma o se compone un elemento del lenguaje. Por ejemplo, una `<lista>` puede definirse mediante reglas específicas que determinan su estructura y contenido.
+
+####
+**Gramática para un entero con signo en BNF**
+
+Para representar un entero con signo en `BNF`, se establecen reglas que combinan signos y dígitos de forma recursiva. La estructura se define de la siguiente manera:
+
+- **Signo**: Puede ser un símbolo `+` o `-`.
+- **Entero**: Puede ser un único `<dígito>` o un `<dígito>` seguido de otro `<entero>`.
+
+**Ejemplo de derivación**:
+Para formar el número `+560`, se siguen estos pasos:
+1. Se aplica la regla del signo: `+`.
+2. Se aplica la regla del entero: un `<dígito>` (5) seguido de otro `<entero>`.
+3. Se repite la regla para el siguiente `<entero>`: un `<dígito>` (6) seguido de otro `<entero>`.
+4. Se finaliza la recursión con el último `<dígito>` (0).
+
+####
+**Estructuras recursivas: Listas y Árboles Binarios**
+
+Las gramáticas en `BNF` permiten definir estructuras de datos fundamentales como listas y árboles utilizando recursividad y el operador de elección `|` (que significa "o").
+
+- **Lista de números**: Se define como una estructura que puede ser vacía o un número seguido de una `<lista-de-números>`. Esta definición es la base de las operaciones `car` (cabeza) y `cdr` (cola) en lenguajes funcionales.
+- **Árbol binario**: Se define como un número o un símbolo seguido de dos árboles binarios.
+
+Esta representación mediante listas facilita el manejo de estructuras complejas en el diseño de lenguajes de programación.
+
+####
+**Especificaciones gramaticales en lenguajes de programación**
+
+Cada lenguaje de programación posee una especificación gramatical que define su sintaxis válida. 
+
+- **Java**: Su gramática incluye definiciones para la `<unidad-de-compilación>`, que consiste en una `<declaración-de-paquete>`, seguida de `<declaraciones-de-importación>` y `<declaraciones-de-tipo>`. Por ejemplo, la declaración de una clase incluye modificadores como `public` o `final`, seguidos del nombre de la clase, interfaces implementadas y el cuerpo de la clase encerrado entre llaves `{ }`.
+- **Python**: Utiliza una especificación gramatical completa. Aunque actualmente emplea una forma llamada `PEG` (Parsing Expression Grammar), el principio de definir lo que es válido dentro del lenguaje es similar a la `Extended Backus-Naur Form (EBNF)`.
+- **Otros lenguajes**: Lenguajes como `C++` y `Scala` también cuentan con sus propias reglas gramaticales detalladas para especificar cómo deben escribirse los programas.
+
+####
+**Definición y validación de un Árbol Ternario**
+
+Un árbol ternario es una estructura donde cada nodo puede ser un número o un símbolo seguido de tres árboles ternarios.
+
+**Gramática**:
+```bnf
+<árbol-ternario> ::= <número> | (<símbolo> <árbol-ternario> <árbol-ternario> <árbol-ternario>)
+```
+
+**Ejemplos de validez**:
+- El valor `4` es un árbol válido por ser un `<número>`.
+- La expresión `(K 4 2 3)` es válida porque `K` es el `<símbolo>` y los valores `4`, `2` y `3` son árboles ternarios válidos.
+- La expresión `(P (T 1 2 3) (O 1 2 3) 3)` es válida. Representa un nodo raíz `P` cuyos hijos son otros árboles ternarios.
+- La expresión `(1 2 3 4)` no es válida bajo esta regla, ya que el primer elemento después del paréntesis debe ser un `<símbolo>` y no un número.
+
+####
+**Gramática para una Lista de Parejas**
+
+Una lista de parejas se especifica como una estructura recursiva que puede ser una lista vacía o una pareja seguida de otra lista de parejas.
+
+**Gramática**:
+```bnf
+<lista-parejas> ::= () | (<pareja> <lista-parejas>)
+<pareja> ::= (<entero> <entero>)
+```
+
+**Ejemplos válidos**:
+- `((1 2) (2 3))`
+- `((1 4) (1 3) (1 2) (1 8))`
+
+En esta estructura, la lista se forma "pegando" elementos de tipo `<pareja>`. Para que la lista esté bien formada, debe finalizar eventualmente con la lista vacía `()`.
+
+####
+**Diferencia entre Listas y Árboles en Gramáticas**
+
+La diferencia fundamental entre una lista y un árbol en términos de gramáticas radica en el número de llamados recursivos:
+
+- **Lista**: Posee un único llamado recursivo a la misma regla gramatical. Esto genera una estructura de datos lineal.
+- **Árbol**: Posee más de un llamado recursivo a la misma regla (por ejemplo, dos llamados para un árbol binario o tres para un árbol ternario). 
+
+Cuando se incluyen múltiples referencias recursivas en una sola producción, la estructura se ramifica, permitiendo representar jerarquías complejas en lugar de secuencias simples.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 5. Repaso de gramáticas： Segunda parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=r_4ZQqPVoRU
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: VIDEO

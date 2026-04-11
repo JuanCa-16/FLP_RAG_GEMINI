@@ -1,0 +1,76 @@
+#### **Transición entre sintaxis concreta y sintaxis abstracta**
+
+Debido a que trabajamos con `sintaxis abstracta`, no podemos manipularla o "tocarla" directamente de forma sencilla, ya que las estructuras resultantes pueden ser difíciles de entender o no proporcionan una idea clara de qué acciones podemos realizar con ellas. La idea fundamental es disponer de funciones que permitan traspasar la información de un lenguaje que entiende el programador a un `árbol de sintaxis abstracta` (AST), que es lo que procesa el interpretador o el compilador. Asimismo, es necesario realizar el proceso inverso: pasar del `árbol de sintaxis abstracta` hacia la representación que entiende el programador.
+
+#### **Definición de parser y unparser**
+
+Existen procesos específicos para la traducción entre tipos de sintaxis:
+
+- **Unparser**: Es una función que toma un `árbol de sintaxis abstracta` y lo convierte en `sintaxis concreta`. Esta sintaxis concreta puede estar orientada a procedimientos, basada en listas o código fuente.
+- **Parsing**: Es el proceso encargado de llevar el código que escribe el programador hacia un `árbol de sintaxis abstracta`. En el desarrollo de un interpretador, tomamos el código escrito en `sintaxis concreta` y lo convertimos en un AST. Si el `árbol de sintaxis abstracta` se puede construir correctamente, significa que el código está bien escrito.
+
+#### **Representación de datos en sintaxis concreta**
+
+Para construir un lenguaje de programación, necesitamos definir cómo se ve la entrada en `sintaxis concreta`. Utilizando una representación basada en listas (una lista simbólica), podemos definir ejemplos de un tipo de dato de árbol binario:
+
+```racket
+; Definición de árbol 1 en sintaxis concreta
+(define arbol1c '(leaf 5))
+
+; Definición de árbol 2 en sintaxis concreta
+(define arbol2c 
+  '(node j 
+         (node p (leaf 5) (leaf 7)) 
+         (node j (leaf 4) (leaf 7))))
+```
+
+Esta representación es similar a la que se utiliza en la programación basada en listas, permitiendo omitir constructores complejos mediante el uso de símbolos.
+
+#### **Implementación de una función parse-expression**
+
+La función `parse-expression` toma la representación en `sintaxis concreta` y construye los tipos correspondientes utilizando las funciones constructoras provistas por el `data-type`. 
+
+A continuación, se presenta un ejemplo de un `parser` para la estructura de árbol mencionada anteriormente:
+
+```racket
+(define parse-expression
+  (lambda (exp)
+    (cond
+      [(eqv? (car exp) 'leaf) 
+       (leaf (cadr exp))]
+      [(eqv? (car exp) 'node)
+       (node (cadr exp)
+             (parse-expression (caddr exp))
+             (parse-expression (cadddr exp)))]
+      [else (eopl:error "Expresión no válida")])))
+```
+
+Al ejecutar `(parse-expression arbol1c)` o `(parse-expression arbol2c)`, el sistema construye la estructura del `árbol de sintaxis abstracta`. Con esto, pasamos de la sintaxis que escribimos nosotros a un lenguaje de AST.
+
+#### **Implementación de una función unparse-expression**
+
+Ahora veremos cómo pasar del `árbol de sintaxis abstracta` al lenguaje concreto. La función `unparse-expression` recibe un AST y devuelve su representación en listas:
+
+```racket
+(define unparse-expression
+  (lambda (exp)
+    (cases tree exp
+      (leaf (n) 
+            (list 'leaf n))
+      (node (k l r) 
+            (list 'node k 
+                  (unparse-expression l) 
+                  (unparse-expression r))))))
+```
+
+Por ejemplo, al aplicar `unparse-expression` a un objeto de tipo `tree`, obtendremos una `sintaxis concreta` equivalente a la que el programador escribiría manualmente. Este ciclo de transformar de `sintaxis concreta` a `sintaxis abstracta` y viceversa es un proceso constante en el diseño de lenguajes.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 29  Abstracción de datos parser y unparser.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=CWw4bitbiNE
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

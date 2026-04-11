@@ -1,0 +1,34 @@
+###
+Gramaticas
+Vamos a utilizar gramáticas regulares. Los términales están por la izquierda, por ejemplo
+
+###
+Considera el siguiente ejemplo de terminales, que podrían producir un conflicto porque inician igual:
+var
+x
+=
+10
+var
+y
+
+###
+Las gramáticas también se pueden expresar en forma BNC. Por ejemplo, una lista puede definirse de forma recursiva como:
+<lista> ::= <empty>
+        ::= <int> <lista>
+
+###
+Otras formas de expresar la definición de una lista utilizando notación abreviada son:
+<lista> ::= <int>*
+<lista> ::= <int>+
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 2 Especificación recursiva de datos y programas_Repso Gramaticas
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

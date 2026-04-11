@@ -1,0 +1,120 @@
+#### **Modificación de apply-env para el manejo de referencias**
+
+En este punto, realizaremos la modificación de las funciones de búsqueda en el ambiente para adaptarlas a un sistema de referencias. La función `apply-env-ref` nos permitirá retornar una referencia del ambiente. Dado que trabajamos con referencias, cada vez que se realiza una consulta, el sistema debe construir la referencia. Esto posibilita que los cambios realizados durante la ejecución se visualicen correctamente.
+
+Bajo este esquema, la función `apply-env` será simplemente un `deref` del resultado obtenido por `apply-env-ref`.
+
+```racket
+(define apply-env
+  (lambda (env var)
+    (deref (apply-env-ref env var))))
+```
+
+La función `apply-env-ref` funciona de forma similar a las implementaciones anteriores: si encuentra un ambiente vacío, retorna un error; si es un ambiente extendido, realiza la búsqueda. El cambio fundamental ocurre cuando encuentra la variable: en lugar de devolver el valor directamente, devuelve una referencia.
+
+#### **Implementación de búsqueda en ambientes con vectores**
+
+Para la implementación de `apply-env-ref`, consideraremos que los valores se almacenan en un `vector`. En lugar de avanzar utilizando `cdr` sobre una lista de valores, utilizaremos una posición que indica la ubicación de la variable en el vector.
+
+Cada vez que se realiza un llamado recursivo, se incrementa la posición en lugar de reducir la lista. Al encontrar la variable buscada, se construye la referencia utilizando el constructor `ref` (provisto por el `data-type`), enviando el vector y la posición actual.
+
+```racket
+(define apply-env-ref
+  (lambda (env var)
+    (cases environment env
+      (empty-env-record ()
+        (eopl:error 'apply-env-ref "No binding for ~s" var))
+      (extended-env-record (syms vals old-env)
+        (let ((pos (rib-find-position var syms)))
+          (if (number? pos)
+              (ref vals pos)
+              (apply-env-ref old-env var)))))))
+```
+
+Es necesario asegurar que el retorno de esta función sea consecuente con la estructura de referencias para evitar errores de tipo durante la ejecución.
+
+#### **Implementación de secuencias con begin-expression**
+
+Para implementar la estructura `begin`, evaluaremos una lista de expresiones de forma secuencial. Si la lista contiene una sola expresión, simplemente se evalúa dicha expresión en el ambiente actual. Si contiene múltiples expresiones, debemos recorrer la lista y evaluarlas una a una.
+
+Para esto, definimos una función recursiva `evaluar-begin` que procesa la lista de expresiones (`L-exprs`). El caso base ocurre cuando el `cdr` de la lista es `null`, momento en el que se evalúa y retorna el valor de la última expresión. En los demás casos, se evalúa la expresión actual y se procede recursivamente con el resto de la lista.
+
+```racket
+(begin-expression (l-exprs)
+  (letrec
+    ((evaluar-begin
+       (lambda (lds)
+         (if (null? (cdr lds))
+             (eval-expression (car lds) env)
+             (begin
+               (eval-expression (car lds) env)
+               (evaluar-begin (cdr lds)))))))
+    (evaluar-begin l-exprs)))
+```
+
+#### **Implementación de la asignación con set-expression**
+
+La asignación se implementa mediante la estructura `set-expression`, la cual recibe un identificador (`id`) y una expresión. El proceso consiste en obtener primero la referencia de la variable en el ambiente utilizando `apply-env-ref` y, posteriormente, evaluar la expresión para obtener el nuevo valor.
+
+Finalmente, se utiliza `setref!` para actualizar el contenido de la referencia con el nuevo valor evaluado. Por convención, esta operación puede devolver un valor como `1` para indicar una ejecución exitosa.
+
+```racket
+(set-expression (id rhs-exp)
+  (let ((ref (apply-env-ref env id)))
+    (let ((val (eval-expression rhs-exp env)))
+      (begin
+        (setref! ref val)
+        1))))
+```
+
+Es importante notar que `apply-env-ref` debe recibir los argumentos en el orden correcto: primero el ambiente y luego el identificador, para evitar errores en el flujo del interpretador.
+
+#### **Pruebas de ejecución y persistencia de cambios**
+
+Una característica de este interpretador es que, aunque el ambiente inicial se resetea en cada ejecución independiente, los cambios realizados mediante `set` son permanentes dentro del flujo de una misma ejecución de código.
+
+Podemos verificar el funcionamiento con un ejemplo que involucre procedimientos y mutación:
+
+```racket
+let x = 4 in
+  let f = proc (a) x in
+    begin
+      set x = 9;
+      (f 10)
+    end
+```
+
+En este caso, aunque `f` fue definida cuando `x` valía `4`, al invocarla después del `set`, devolverá `9` debido a que la referencia a `x` ha sido actualizada en el ambiente que el procedimiento capturó.
+
+#### **Ejemplo complejo: Factorial y mutación de funciones**
+
+El uso de `letrec` permite definir funciones recursivas como el factorial. Además, podemos observar cómo una variable que originalmente contenía un procedimiento puede ser reasignada a un valor escalar.
+
+```racket
+letrec f(x) = if x > 0 
+              then x * (f (x - 1)) 
+              else 1
+in let j = (f 6)
+   in begin
+     set f = 6;
+     j + f
+   end
+```
+
+En este ejemplo:
+1. Se define la función `f` para calcular el factorial.
+2. `j` almacena el resultado de `(f 6)`, que es `720`.
+3. `set f = 6` cambia el valor asociado al nombre `f`, que deja de ser un procedimiento y pasa a ser el entero `6`.
+4. La suma `j + f` resulta en `726`.
+
+Esto demuestra que el interpretador maneja correctamente tanto la recursión mediante `letrec` como la asignación de nuevos valores a identificadores existentes.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 25. Asignación： cuarta parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=-qYggrtY6bQ
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

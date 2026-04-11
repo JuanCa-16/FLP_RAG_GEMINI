@@ -1,0 +1,102 @@
+####
+**Introducción a los tipos en la programación**
+
+El concepto de `tipos` es fundamental en los lenguajes de programación. Los `tipos` definen las estructuras de almacenamiento disponibles para representar la información y permiten administrar adecuadamente la memoria.
+
+El compilador utiliza los tipos para interpretar cómo se almacenará y manejará la información en la memoria. Por ejemplo:
+- Un `entero` en lenguajes como Java o C++ utiliza 32 bits.
+- Un `double` utiliza 64 bits.
+- Un `float` utiliza 32 bits.
+
+Existen dos implementaciones principales que se estudiarán: el `chequeo de tipos` y la `inferencia de tipos`.
+
+####
+**Errores de tipo y clasificación de lenguajes**
+
+Un `error de tipo` se produce cuando se aplica una operación a un dato con características diferentes a las esperadas, como intentar multiplicar un `string` con un número o concatenar dos `enteros`. Estos comportamientos pueden ser controlados agregando características de tipado al interpretador.
+
+Los lenguajes se clasifican según su manejo de tipos:
+- **Lenguajes fuertemente tipados**: Requieren definiciones de tipos y no permiten errores de tipo durante la ejecución. Ejemplos: Pascal, C++ y Java.
+- **Lenguajes débilmente tipados**: Poseen mayor flexibilidad pero permiten errores de tipos. Si ocurre un error de tipo suave, el lenguaje puede manejarlo; por ejemplo, si se intentan sumar dos `strings`, el lenguaje podría aplicar automáticamente una operación de concatenación en lugar de emitir un error.
+
+####
+**Análisis de tipos y solidez del sistema**
+
+El `análisis de tipos` es un paso en el procesamiento de un lenguaje de programación que ocurre después del análisis sintáctico. Su objetivo principal es evitar la aparición de errores de tipo en tiempo de ejecución.
+
+En un sistema de tipos:
+- Todo valor expresado `v` tiene un tipo asociado `t`.
+- Si llega un 5, se asocia al tipo `entero`.
+- Si llega un `true`, se asocia al tipo `booleano`.
+- Si llega un procedimiento, se asocia al tipo `valor procedimiento`.
+- Si llega una cadena de texto, se asocia al tipo `string`.
+
+Si a una expresión `e` se le asigna un tipo `t`, cada vez que sea interpretada, su valor será del tipo `t`. Esta propiedad asegura que el sistema de tipos sea adecuado, es decir, que tenga `solidez`.
+
+####
+**Inspección de operaciones y manejo de errores**
+
+El analizador debe inspeccionar cada invocación de una operación en el programa. Por ejemplo:
+- En una suma, se espera que los argumentos sean números.
+- En una operación lógica como `or`, se espera que los argumentos sean `booleanos`.
+
+Si no se puede determinar un tipo apropiado (por ejemplo, al sumar un `string` con un número), el sistema genera un mensaje de `error de tipo`. El comportamiento ante este error depende del lenguaje:
+- En lenguajes `fuertemente tipados`, el sistema puede rehusarse a ejecutar el programa.
+- En lenguajes `débilmente tipados`, se pueden tomar medidas correctivas o transformaciones automáticas, como convertir un número a `string` para realizar una concatenación.
+
+####
+**Tipado dinámico y etiquetas en tiempo de ejecución**
+
+El `tipado dinámico` ocurre cuando los valores incluyen una etiqueta para indicar su tipo en cada ejecución. En estos lenguajes, no es necesario declarar el tipo de una variable al inicio; la etiqueta se asigna y puede cambiar durante la ejecución mediante la reasignación del contenedor en memoria.
+
+Python es un ejemplo de lenguaje con `tipado dinámico`:
+
+```python
+a = 3
+print(a)
+print(type(a))
+
+a = "hola"
+print(a)
+print(type(a))
+
+a = [1, 2, 3]
+print(type(a))
+```
+
+En este ejemplo, la variable `a` pasa de ser un `entero` a un `string` y finalmente a una `lista`. Esta flexibilidad es característica del tipado dinámico.
+
+####
+**Racket y lenguajes de ejecución no tipados**
+
+Racket es un lenguaje de `tipado dinámico`. Al usar `define`, no se especifica explícitamente el tipo del dato:
+
+```racket
+(define a 8)
+```
+
+Mediante `set!`, es posible cambiar el valor en tiempo de ejecución. Sin embargo, una desventaja de este enfoque es que no permite realizar `abstracción de datos` de la misma forma que en otros sistemas, pues los tipos se definen directamente en el núcleo del lenguaje.
+
+Por otro lado, existen lenguajes de `ejecución no tipado` que no detectan operaciones inapropiadas. Un ejemplo es el lenguaje `ensamblador`, donde es posible sumar la representación en bytes de un `entero` con la de un `string`. El resultado será simplemente lo que el hardware procese con esos valores, un comportamiento conocido como `diseño político`.
+
+####
+**Chequeo de tipos estáticos**
+
+El `chequeo de tipos estáticos` evita dificultades analizando el programa antes de su ejecución. Se utiliza en lenguajes como Java o C++, donde los tipos se declaran explícitamente.
+
+Cuando el analizador detecta una inconsistencia, puede:
+- Producir una advertencia (`warning`), como en el caso de ciertas divisiones de punto flotante.
+- Insertar código de revisión.
+- Rechazar el programa, impidiendo la compilación hasta que el error sea corregido.
+
+Este proceso es la base para modificar el interpretador de asignación y añadirle soporte de tipos.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 35 Chequeo de tipos Introducción.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=m_Th0xGC8oo
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

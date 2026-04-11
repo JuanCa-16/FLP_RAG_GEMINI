@@ -1,0 +1,88 @@
+####
+**Valores expresados y denotados en la implementación de paso por referencia**
+
+Para implementar el paso por referencia, es necesario realizar modificaciones en el interpretador. En este punto del desarrollo, es fundamental recordar la distinción entre los tipos de valores manejados:
+
+- **Valores expresados**: Son aquellos que se muestran en el lenguaje y que el programador maneja directamente. En este caso, se incluyen `números`, `booleanos` y `proc-vals` (que corresponden a las clausuras).
+- **Valores denotados**: Son los valores que están almacenados en las variables.
+
+Al implementar el llamado por referencia, el enfoque cambia dependiendo de qué se está pasando como argumento. En un llamado por valor convencional, como `f(4)`, se envía un valor expresado de forma inmediata. Sin embargo, el cambio fundamental ocurre cuando se evalúa un procedimiento pasando una variable como argumento. En este último escenario es donde se aplica la nueva lógica de paso por referencia.
+
+####
+**Concepto de blancos (targets) directos e indirectos**
+
+Para soportar el paso por referencia, se implementa un nuevo tipo de dato denominado `target` (blanco). Este permite diferenciar cómo se accede a la información:
+
+- **Blanco directo (direct-target)**: Se utiliza cuando se realiza un paso a un procedimiento con un valor expresado. En este caso, se pasa el valor directamente. El comportamiento es equivalente al paso por valor y no requiere modificaciones sustanciales en la lógica existente.
+- **Blanco indirecto (indirect-target)**: Corresponde al nuevo comportamiento para el paso por referencia. Se utiliza cuando se pasa una variable a un procedimiento. En lugar de enviar el valor contenido en la variable, se envía su ubicación (referencia).
+
+Internamente, un `indirect-target` actúa como un conector que apunta directamente a la variable original. Esto permite que cualquier modificación realizada sobre la variable dentro del procedimiento afecte directamente a la variable que fue enviada como argumento en el paso de parámetros.
+
+####
+**Definición del tipo de dato target**
+
+La estructura para representar los blancos se define mediante un nuevo tipo de dato denominado `target`. Este consta de dos variantes: `direct-target`, que almacena un valor expresado, e `indirect-target`, que almacena una referencia a un blanco directo.
+
+```racket
+;; Implementación del tipo de dato target para paso por referencia
+(define-datatype target target?
+  (direct-target
+   (expval sval?))
+  (indirect-target
+   (ref ref-to-direct-target?)))
+```
+
+Para que esta definición sea funcional, es necesario implementar los predicados `sval?` (que verifica si una entrada es un valor expresado) y `ref-to-direct-target?` (que verifica si la entrada es una referencia válida hacia un blanco directo).
+
+####
+**Implementación de predicados para el tipo target**
+
+Los predicados `sval?` y `ref-to-direct-target?` definen la validez de los datos contenidos en los blancos:
+
+- **sval?**: Retorna verdadero si la entrada es un valor expresado, considerando en esta implementación `números`, `booleanos` y `procedimientos` (`proc-val`).
+- **ref-to-direct-target?**: Retorna verdadero si la entrada es una referencia que apunta a un blanco directo.
+
+```racket
+;; Predicado para valores expresados
+(define sval?
+  (lambda (x)
+    (or (number? x)
+        (boolean? x)
+        (proc-val? x))))
+
+;; Predicado para referencias a blancos directos
+(define ref-to-direct-target?
+  (lambda (x)
+    (if (reference? x)
+        (cases reference x
+          (a-ref (pos vec)
+                 (let ((val (vector-ref vec pos)))
+                   (cases target val
+                     (direct-target (v) #t)
+                     (indirect-target (v) #f)))))
+        #f)))
+```
+
+En la lógica de `ref-to-direct-target?`, se extrae el contenido de la referencia (ubicada en un vector y una posición) y se verifica que sea un `direct-target`. No tiene sentido que una referencia guarde un `indirect-target`; cada referencia debe apuntar a un blanco directo que contiene el valor real.
+
+####
+**Dinámica de funcionamiento de targets en el intérprete**
+
+La interacción entre blancos directos e indirectos permite la persistencia de los cambios en el paso por referencia. Se puede ilustrar con el siguiente flujo lógico:
+
+1. Cuando se declara una variable, por ejemplo `let a = 5`, se crea un `direct-target` que se almacena en el vector de memoria. Este blanco directo contiene el valor `5`.
+2. Si existe un procedimiento definido como `p = proc(x) { ... }` y se invoca mediante `p(a)`, el parámetro formal `x` se convierte en un `indirect-target`.
+3. Este `indirect-target` de `x` apunta internamente al `direct-target` de `a`.
+4. Al procesar el `indirect-target`, el intérprete llega directamente al valor o ubicación de la variable original.
+
+De esta manera, la variable dentro del procedimiento queda vinculada a la ubicación de memoria de la variable enviada como argumento, permitiendo el comportamiento esperado del paso por referencia.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 29. implementación de paso por referencia： primera parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=JdPQtJ7O5Z4
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

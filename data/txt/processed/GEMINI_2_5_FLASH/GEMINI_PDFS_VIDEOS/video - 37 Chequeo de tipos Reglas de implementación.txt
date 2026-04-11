@@ -1,0 +1,36 @@
+El lenguaje a implementar será fuerte y estáticamente tipado. Un sistema de tipos fuerte no tolera errores de tipo; si se detecta una incompatibilidad, la ejecución se detiene y se reporta un error al programador. Un sistema estáticamente tipado requiere que los tipos de todas las variables sean especificados y verificados antes de la ejecución del programa. Ejemplos de errores de tipo incluyen aplicar una primitiva que espera un entero a un valor no entero, o usar un valor no booleano como la condición en una expresión condicional. Errores como la división por cero no se consideran errores de tipo, sino errores de uso de tipos.
+
+####
+Para gestionar la verificación de tipos, se define un procedimiento denominado `type_of_expression`. Este procedimiento toma dos argumentos: una expresión `s` y un ambiente de tipos `tm`. El ambiente de tipos es una estructura de datos que asocia cada identificador de variable con su tipo correspondiente. La función de `type_of_expression` es asignar un tipo `t` a una expresión, garantizando que si dicha expresión se ejecuta en un ambiente donde cada variable tiene el tipo especificado en `tm`, el valor resultante de la expresión será de tipo `t`. El principio fundamental de este análisis es que, si se conocen los tipos de los valores de cada variable en una expresión, se puede deducir el tipo del valor de la expresión completa.
+
+####
+El procedimiento `type_of_expression` se define mediante reglas para cada tipo de expresión. Para los casos base, las reglas son las siguientes:
+1.  Si la expresión es un número, su tipo es `integer`.
+2.  Si la expresión es un literal booleano (`true` o `false`), su tipo es `boolean`.
+3.  Si la expresión es una variable (un identificador), su tipo es el que está especificado para esa variable en el ambiente de tipos `tm`. Esto se logra buscando el identificador en el ambiente de tipos y devolviendo el tipo asociado.
+
+####
+La estrategia para determinar los tipos de expresiones compuestas se basa en reglas de tipamiento. Una regla de tipamiento es una estructura lógica con la forma: "Si se cumplen la `condición 1` y la `condición 2` ... y la `condición n`, entonces se puede concluir una `consecuencia` sobre el tipo de una expresión". Estas reglas permiten inferir el tipo de construcciones complejas a partir de los tipos de sus componentes más simples.
+
+####
+La regla de tipamiento para la aplicación de procedimientos (expresiones de la forma `(operador operando1 operando2 ... operando_n)`) establece varias condiciones. Primero, el tipo del operador debe ser un tipo procedimiento, que se representa como `(t1 * t2 * ... * tn -> t)`, donde `t1` a `tn` son los tipos de los argumentos y `t` es el tipo del valor de retorno. Segundo, el número de operandos proporcionados debe ser exactamente `n`, coincidiendo con el número de tipos de argumento en la firma del procedimiento. Tercero, el tipo de cada `operando_i` debe coincidir con el tipo `ti` correspondiente. Si todas estas condiciones se cumplen, se concluye que el tipo de la expresión de aplicación completa es `t`, el tipo de retorno del procedimiento.
+
+####
+La regla de tipamiento para expresiones condicionales (de la forma `if test-expr then-expr else-expr`) requiere el cumplimiento de dos condiciones. En primer lugar, la expresión de prueba (`test-expr`) debe evaluarse a un valor de tipo `boolean`. En segundo lugar, tanto la expresión de la rama "then" (`then-expr`) como la de la rama "else" (`else-expr`) deben tener el mismo tipo, digamos `t`. Si ambas condiciones se satisfacen, el tipo de la expresión condicional completa es `t`.
+
+####
+La regla de tipamiento para la creación de procedimientos (expresiones `proc (x1, x2, ..., xn) body`) define cómo se asigna un tipo a un nuevo procedimiento. Se asume que cada parámetro formal `xi` tiene un tipo `ti`. Bajo esta suposición, se analiza el cuerpo (`body`) del procedimiento. Si el análisis concluye que el cuerpo tiene un tipo `t`, entonces se determina que el tipo del procedimiento completo es `(t1 * t2 * ... * tn -> t)`. Este tipo captura los tipos de sus parámetros de entrada y el tipo de su valor de retorno.
+
+####
+La regla de tipamiento para procedimientos presenta un problema práctico: no especifica cómo determinar los tipos de los parámetros `x1, ..., xn` ni el tipo de retorno `t` del cuerpo. Con la información disponible en una expresión como `proc (x, y) ...`, es imposible saber qué tipos se esperan para `x` e `y`. Para resolver esto, se emplean dos estrategias principales:
+1.  **Chequeo de tipos estático:** Se requiere que el programador anote explícitamente los tipos de los parámetros y el tipo de retorno en la definición del procedimiento. Por ejemplo: `proc (int x, int y) -> boolean ...`.
+2.  **Inferencia de tipos:** El analizador infiere los tipos de los parámetros y del retorno analizando cómo se utilizan dentro del cuerpo del procedimiento. Este es un proceso más complejo que puede tener limitaciones, ya que no todos los tipos se pueden inferir de forma unívoca en todos los casos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=KS3IishsjUM
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

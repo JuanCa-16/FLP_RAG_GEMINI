@@ -1,0 +1,102 @@
+#### **Implementación de ambientes con define-datatype**
+
+Para la implementación de ambientes, requerimos la construcción de tipos de datos que representen el estado de las variables. Los ambientes se definen mediante un `define-datatype` que contempla dos variantes: `ambiente-vacio`, que no contiene información, y `ambiente-extendido`, que permite almacenar identificadores y sus respectivos valores.
+
+Un `ambiente-extendido` posee una lista de identificadores (`list-of symbol`), una lista de valores y el ambiente previo desde el cual se extiende. En este contexto, un valor puede ser cualquier dato aceptado por el lenguaje base.
+
+```racket
+(define-datatype ambiente ambiente?
+  (ambiente-vacio)
+  (ambiente-extendido
+   (ids (list-of symbol?))
+   (vals (list-of scheme-value?))
+   (env ambiente?)))
+
+(define scheme-value?
+  (lambda (v) #t))
+```
+
+#### **Función apply-env y búsqueda recursiva de símbolos**
+
+La función `apply-env` permite buscar el valor asociado a un símbolo dentro de un ambiente. Esta función discrimina el tipo de ambiente utilizando `cases`. Si el ambiente es `ambiente-vacio`, se genera un error indicando que la variable no se encuentra. Si el ambiente es `ambiente-extendido`, se realiza una búsqueda en la lista de identificadores.
+
+Para facilitar este proceso, se utiliza una función auxiliar `buscar-simbolo` que recorre recursivamente las listas de identificadores y valores. Si el símbolo coincide con el `car` de la lista de identificadores, se retorna el valor correspondiente. En caso contrario, la búsqueda continúa con el `cdr` de las listas o, si no se encuentra en el nivel actual, se invoca recursivamente a `apply-env` sobre el ambiente extendido.
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cases ambiente env
+      (ambiente-vacio ()
+        (eopl:error 'apply-env "No se encuentra la variable: ~s" sym))
+      (ambiente-extendido (ids vals env-previo)
+        (let ((pos (buscar-simbolo ids vals sym)))
+          (if pos
+              pos
+              (apply-env env-previo sym)))))))
+
+(define buscar-simbolo
+  (lambda (ids vals sym)
+    (cond
+      ((null? ids) #f)
+      ((eqv? (car ids) sym) (car vals))
+      (else (buscar-simbolo (cdr ids) (cdr vals) sym)))))
+```
+
+#### **Definición de un ambiente inicial para pruebas**
+
+El `ambiente-inicial` consiste en un conjunto de variables predefinidas que existen por defecto en el sistema. Este se construye como un `ambiente-extendido` que contiene identificadores como `x`, `y`, `z`, `a`, `b` y `c`, asociados a valores numéricos específicos. El último eslabón de esta cadena de ambientes es el `ambiente-vacio`.
+
+Este ambiente permite verificar el correcto funcionamiento de la búsqueda de variables antes de integrar la lógica completa en el interpretador.
+
+```racket
+(define ambiente-inicial
+  (ambiente-extendido '(x y z) '(1 2 3)
+    (ambiente-extendido '(a b c) '(4 5 6)
+      (ambiente-vacio))))
+```
+
+#### **Evaluación de programas y expresiones básicas**
+
+La evaluación de un programa inicia con la función `evaluar-programa`, la cual recibe una estructura de tipo `a-program`. Esta función extrae la expresión contenida e invoca a `evaluar-expresion`, pasando como argumentos dicha expresión y el `ambiente-inicial`.
+
+La función `evaluar-expresion` procesa los diferentes tipos de variantes de la gramática. En esta etapa inicial, se implementan dos casos fundamentales:
+- `literal-exp`: Representa un número literal. La evaluación retorna directamente el valor numérico.
+- `var-exp`: Representa una variable. La evaluación utiliza `apply-env` para buscar el identificador en el ambiente actual.
+
+```racket
+(define evaluar-programa
+  (lambda (pgm)
+    (cases programa pgm
+      (a-program (exp)
+        (evaluar-expresion exp ambiente-inicial)))))
+
+(define evaluar-expresion
+  (lambda (exp env)
+    (cases expresion exp
+      (literal-expression (dato) dato)
+      (var-expression (id) (apply-env env id))
+      (else (eopl:error 'evaluar-expresion "Expresión no implementada")))))
+```
+
+#### **Pruebas de ejecución y semántica de variables**
+
+Una vez implementados el manejo de números y la búsqueda en ambientes, el interpretador puede procesar expresiones literales y variables de forma efectiva. Al evaluar un número como `5.3` o `-4.5`, el sistema retorna el valor directamente. Al evaluar una variable como `x`, el sistema busca en el `ambiente-inicial` y retorna su valor asociado (por ejemplo, `1`). 
+
+Si se busca una variable inexistente, el sistema lanza un error de ejecución indicando que la variable no se encuentra. Este comportamiento establece la base para implementar posteriormente operaciones matemáticas y lógica más compleja en la semántica del lenguaje de programación.
+
+```racket
+; Ejemplo de uso en el interpretador:
+; (evaluar-expresion (literal-expression 5.3) ambiente-inicial) -> 5.3
+; (evaluar-expresion (var-expression 'b) ambiente-inicial) -> 5
+; (evaluar-expresion (var-expression 'w) ambiente-inicial) -> error: variable no encontrada
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 6 Interpretador simple  Parte 2： Literales y variables.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=3p-1ft_KNbs
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,68 @@
+#### **Ambientes y configuración inicial en el paso por referencia**
+
+En este punto, analizaremos cómo trabajar expresiones utilizando `paso por referencia` a través del siguiente ejemplo, cuyo resultado final es 103. El proceso comienza con la creación de una jerarquía de ambientes:
+
+1.  **Ambiente vacío**: Es el punto de partida de la evaluación.
+2.  **Ambiente M0**: Contiene las definiciones de `A` y `B`. Como son declaraciones de un `let`, se asocian a `direct targets` que apuntan a sus respectivas `clausuras`, las cuales referencian al `ambiente vacío`.
+3.  **Ambiente M1**: Contiene a `K` y `M`. `K` es un `direct target` hacia el valor 3 y `M` es un `direct target` hacia el valor 4.
+4.  **Ambiente M2R**: Se crea mediante un `letrec` para la función `T`. Este ambiente tiene la característica de que las `clausuras` (en este caso la de `T`) contienen al mismo ambiente `M2R`. `T` es un `direct target` hacia dicha `clausura`.
+5.  **Ambiente M3**: Contiene a `F`, que es un `direct target` hacia una `clausura` que extiende de `M2R`.
+
+Sobre esta estructura se evaluará la expresión `(t (f k) k)`.
+
+#### **Evaluación de argumentos y manejo de indirect targets**
+
+Para resolver la expresión `(t (f k) k)`, se deben evaluar los `rands` de izquierda a derecha. Primero evaluamos `(f k)`:
+
+Al invocar a `F` pasando la variable `K`, se aplica la regla de `paso por referencia`. El parámetro formal `X` de la función `F` se convierte en un `indirect target` que apunta al target de `K`. La función `F` ejecuta la suma de los resultados de llamar a `a(X)` y `b(X)`.
+
+**Evaluación de a(X):**
+Al llamar a la función `a` pasando `X` (que ya es un `indirect target` a `K`), el parámetro interno también se convierte en un `indirect target` hacia `K`. La función realiza la operación `set x = x + 1`. Debido al `paso por referencia`, esto modifica directamente el valor de `K`, que pasa de 3 a 4. La función devuelve este nuevo valor: 4.
+
+**Evaluación de b(X):**
+Posteriormente se llama a `b(X)`. En este momento, `K` ya vale 4. El parámetro de `b` actúa como un `indirect target` hacia `K`. La función ejecuta `set y = y + 3`, actualizando `K` a 7. Luego, devuelve el resultado de `y + 2`, es decir, 7 + 2 = 9.
+
+El resultado de la expresión `(f k)` es la suma de los retornos de `a` (4) y `b` (9), lo que resulta en 13.
+
+#### **Evaluación recursiva y cálculo del resultado final**
+
+Tras evaluar el primer argumento como 13, se procede a ejecutar el procedimiento `T` con los argumentos 13 y la variable `K`.
+
+```racket
+;; Estructura lógica del procedimiento T
+(letrec ([t (lambda (x y)
+              (if (> x 0)
+                  (+ y (t (- x 1) y))
+                  (b y)))])
+  ...)
+```
+
+En el primer ambiente de activación de `T` (`T1`), `X` es un `direct target` con el valor 13 y `Y` es un `indirect target` hacia `K`. La función se llama recursivamente reduciendo `X` en cada paso:
+
+- Mientras `X > 0`, se consulta el valor de `Y`. Como `Y` referencia a `K` (cuyo valor actual es 7), se suma 7 en cada iteración.
+- Este proceso se repite 13 veces (desde `X=13` hasta `X=1`), acumulando 91 (13 * 7).
+- Al llegar a `X = 0`, se ejecuta el caso base: un llamado a `b(Y)`.
+
+En este último llamado a `b`, se pasa nuevamente un `indirect target` hacia `K`. La función `b` le suma 3 a `K` (que pasa de 7 a 10) y devuelve `K + 2`, resultando en 12.
+
+La suma final es 91 + 12 = 103.
+
+#### **Verificación de estados y regla de persistencia**
+
+Al ejecutar el código en el interpretador, se confirma que el resultado es 103. Podemos observar el estado final de las variables en los ambientes para verificar los efectos colaterales del `paso por referencia`:
+
+- `M` mantiene su valor original de 4, ya que nunca fue alterada.
+- `K` termina con un valor de 10, reflejando todas las mutaciones realizadas a través de los `indirect targets` en las funciones `a` y `b`.
+
+**Conclusión técnica sobre el paso por referencia:**
+Es fundamental tener en cuenta que, en el paso de procedimientos, si estos comparten un `indirect target`, se transfiere el target interno. Esto permite que los cambios realizados sobre las variables se preserven y afecten a todas las referencias vinculadas al mismo target original. Este comportamiento es lo que define la semántica del `paso por referencia`. Una vez comprendido este mecanismo, el siguiente tema de estudio serán los `tipos`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 34 Paso por referencia Ejemplo 3.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=jWgdJYlW6KA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

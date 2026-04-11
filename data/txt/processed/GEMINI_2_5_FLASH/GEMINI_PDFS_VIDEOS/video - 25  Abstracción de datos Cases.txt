@@ -1,0 +1,26 @@
+Para trabajar con tipos de datos definidos (data types), se utiliza la construcción `cases`. Esta estructura permite analizar y deconstruir un valor de un tipo de dato específico, extrayendo su información para poder manejarla. Su uso es fundamental en la construcción de intérpretes.
+
+####
+
+La sintaxis de la construcción `cases` se estructura de la siguiente manera: se inicia con la palabra clave `cases`, seguida del nombre del tipo de dato y la expresión a evaluar. A continuación, se definen cláusulas para cada variante del tipo de dato. Cada cláusula especifica el nombre de la variante, los nombres de las variables que capturarán sus campos, y la expresión a ejecutar si esa variante coincide. Adicionalmente, se puede incluir una cláusula `else` para manejar de forma predeterminada todas las variantes que no fueron explícitamente listadas.
+
+####
+
+El proceso de evaluación de una expresión `cases` funciona de la siguiente forma: primero, se evalúa la expresión de entrada, resultando en un valor `b` que pertenece a un tipo de dato específico. El sistema verifica si el valor `b` corresponde a alguna de las variantes listadas en las cláusulas. Si se encuentra una coincidencia con una variante, los valores de los campos de `b` se asocian a las variables locales definidas en esa cláusula. Finalmente, se evalúa la expresión consecuente de dicha cláusula y su resultado es el valor retornado por toda la construcción `cases`.
+
+####
+
+Un ejemplo de aplicación de `cases` es el manejo de un tipo de dato para representar expresiones del cálculo lambda, como `ls-expression`. Este tipo puede tener variantes como `var-expression` (con un solo campo), `lambda-expression` (con dos campos: `var` y `body`) y `app-expression` (con dos campos). Mediante `cases`, se puede inspeccionar una expresión de tipo `ls-expression` y, dependiendo de si es una variable, una abstracción o una aplicación, extraer los campos correspondientes para procesarlos.
+
+####
+
+Otro ejemplo práctico es el procesamiento de un árbol binario. Este tipo de dato puede tener una variante `leaf` con un solo campo (el valor) y una variante `node` con tres campos (`key`, `left`, `right`). Al usar `cases` sobre un valor de tipo árbol, se puede diferenciar si se está ante una hoja o un nodo. Si es un nodo, se pueden extraer de forma separada la clave, el subárbol izquierdo y el subárbol derecho para realizar operaciones recursivas.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=-axhDvoZYQ0
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

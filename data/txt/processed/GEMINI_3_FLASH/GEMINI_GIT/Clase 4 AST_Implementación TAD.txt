@@ -1,0 +1,277 @@
+####
+**Metodología de implementación de Tipos Abstractos de Datos**
+
+La idea es separar la implementación de la programación; a través de la interfaz se proveen métodos para el uso de los `TAD`. Para esto se utiliza una metodología que consiste en implementar los `TAD` de la siguiente forma:
+
+1. Realizar los procedimientos `constructores`: Instanciar un tipo de dato perteneciente al `TAD`.
+2. Realizar los procedimientos `observadores`:
+    - `Predicados`: Es una función que permite saber si un dato pertenece a una variante del `TAD`.
+    - `Extractores`: Extraen las partes que componen un `TAD`.
+
+####
+**Visualización de estructura de árbol y algoritmos de recorrido**
+
+```mermaid
+graph TD
+    a --> b
+    a --> c
+    b --> d
+    b --> e
+    c --> f
+    c --> g
+    d --> h
+    d --> i
+    e --> 1
+    e --> 2
+    f --> 3
+    f --> 4
+    g --> 5
+    g --> 6
+    h --> 7
+    h --> 8
+    i --> 9
+    i --> 10
+```
+
+Funciones para realizar recorridos sobre la estructura:
+- `Recorrido preorden` (R-I-D): a b d h 7 8 i 9 10 e 1 2 c f 3 4 g 5 6
+- `Recorrido inorden` (I-R-D): 7 h 8 d 9 i 10 b 1 e 2 a 3 f 4 c 5 g 6
+- `Recorrido posorden` (I-D-R): 7 8 h 9 10 i d 1 2 e b 3 4 f 5 6 g c a
+
+####
+**Implementación de Árbol Binario basada en listas**
+
+Esta implementación utiliza la estructura de listas de `Racket` para representar el `TAD`. La gramática definida es:
+`<tree> ::= <int> leaf(datum) | <symbol> <tree> <tree> node(key, left, right)`
+
+```racket
+#lang eopl
+
+;; Constructores
+(define leaf
+  (lambda (datum)
+    (list 'leaf datum)))
+
+(define node
+  (lambda (key left right)
+    (list 'node key left right)))
+
+;; Observadores - Predicados
+(define leaf?
+  (lambda (tree)
+    (equal? (car tree) 'leaf)))
+
+(define node?
+  (lambda (tree)
+    (equal? (car tree) 'node)))
+
+;; Observadores - Extractores
+(define leaf->datum
+  (lambda (tree)
+    (cadr tree)))
+
+(define node->key
+  (lambda (tree)
+    (cadr tree)))
+
+(define node->left
+  (lambda (tree)
+    (caddr tree)))
+
+(define node->right
+  (lambda (tree)
+    (cadddr tree)))
+```
+
+####
+**Uso de la interfaz del TAD y algoritmos de recorrido (Representación de Listas)**
+
+Ejemplo de definición de un árbol y funciones de procesamiento utilizando únicamente la interfaz del `TAD` definida mediante listas:
+
+```racket
+;; Area del programador
+(define treeA
+  (node 'a
+        (node 'b
+              (node 'd
+                    (node 'h (leaf 7) (leaf 8))
+                    (node 'i (leaf 9) (leaf 10)))
+              (node 'e (leaf 1) (leaf 2)))
+        (node 'c
+              (node 'f (leaf 3) (leaf 4))
+              (node 'g (leaf 5) (leaf 6)))))
+
+;; preorder: tree -> lista
+(define preorder
+  (lambda (tree)
+    (cond
+      [(leaf? tree) (list (leaf->datum tree))]
+      [(node? tree)
+       (append (list (node->key tree))
+               (preorder (node->left tree))
+               (preorder (node->right tree)))]
+      [else (eopl:error "No es un árbol")])))
+
+(display (preorder treeA))
+(display "\n")
+
+(define inorder
+  (lambda (tree)
+    (cond
+      [(leaf? tree) (list (leaf->datum tree))]
+      [(node? tree)
+       (append (inorder (node->left tree))
+               (list (node->key tree))
+               (inorder (node->right tree)))]
+      [else (eopl:error "No es un árbol")])))
+
+(display (inorder treeA))
+(display "\n")
+
+(define posorder
+  (lambda (tree)
+    (cond
+      [(leaf? tree) (list (leaf->datum tree))]
+      [(node? tree)
+       (append (posorder (node->left tree))
+               (posorder (node->right tree))
+               (list (node->key tree)))]
+      [else (eopl:error "No es un árbol")])))
+
+(display (posorder treeA))
+(display "\n")
+```
+
+####
+**Implementación de Árbol Binario basada en procedimientos**
+
+En esta implementación, el `TAD` se representa mediante clausuras o procedimientos. Los datos se recuperan enviando un selector numérico al procedimiento que representa el nodo o la hoja.
+
+```racket
+#lang eopl
+
+;; Constructores
+(define leaf
+  (lambda (datum)
+    (lambda (s)
+      (cond
+        [(= s 0) 'leaf]
+        [(= s 1) datum]
+        [else (eopl:error "Error en leaf")]))))
+
+(define node
+  (lambda (key left right)
+    (lambda (s)
+      (cond
+        [(= s 0) 'node]
+        [(= s 1) key]
+        [(= s 2) left]
+        [(= s 3) right]
+        [else (eopl:error "Error en node")]))))
+
+;; Observadores - Predicados
+(define leaf?
+  (lambda (tree)
+    (equal? (tree 0) 'leaf)))
+
+(define node?
+  (lambda (tree)
+    (equal? (tree 0) 'node)))
+
+;; Observadores - Extractores
+(define leaf->datum
+  (lambda (tree)
+    (tree 1)))
+
+(define node->key
+  (lambda (tree)
+    (tree 1)))
+
+(define node->left
+  (lambda (tree)
+    (tree 2)))
+
+(define node->right
+  (lambda (tree)
+    (tree 3)))
+```
+
+####
+**Procesamiento de árboles con representación procedimental**
+
+Aunque la representación interna cambie a procedimientos, el código del programador para realizar recorridos permanece idéntico debido a la abstracción:
+
+```racket
+;; Area del programador
+(define treeA
+  (node 'a
+        (node 'b
+              (node 'd
+                    (node 'h (leaf 7) (leaf 8))
+                    (node 'i (leaf 9) (leaf 10)))
+              (node 'e (leaf 1) (leaf 2)))
+        (node 'c
+              (node 'f (leaf 3) (leaf 4))
+              (node 'g (leaf 5) (leaf 6)))))
+
+(define preorder
+  (lambda (tree)
+    (cond
+      [(leaf? tree) (list (leaf->datum tree))]
+      [(node? tree)
+       (append (list (node->key tree))
+               (preorder (node->left tree))
+               (preorder (node->right tree)))]
+      [else (eopl:error "No es un árbol")])))
+
+(display (preorder treeA))
+(display "\n")
+
+(define inorder
+  (lambda (tree)
+    (cond
+      [(leaf? tree) (list (leaf->datum tree))]
+      [(node? tree)
+       (append (inorder (node->left tree))
+               (list (node->key tree))
+               (inorder (node->right tree)))]
+      [else (eopl:error "No es un árbol")])))
+
+(display (inorder treeA))
+(display "\n")
+
+(define posorder
+  (lambda (tree)
+    (cond
+      [(leaf? tree) (list (leaf->datum tree))]
+      [(node? tree)
+       (append (posorder (node->left tree))
+               (posorder (node->right tree))
+               (list (node->key tree)))]
+      [else (eopl:error "No es un árbol")])))
+
+(display (posorder treeA))
+(display "\n")
+```
+
+####
+**Resumen para el diseño de Tipos Abstractos de Datos**
+
+Para diseñar exitosamente `Tipos Abstractos de Datos` (TAD), se deben seguir estos pasos fundamentales:
+
+1. Desarrollar los `constructores` para cada variante del `TAD` (por ejemplo, `leaf` y `node`).
+2. Desarrollar los `observadores`:
+    - `Predicados` (`leaf?`, `node?`): permiten identificar a qué variante pertenece una instancia del `TAD`.
+    - `Extractores` (`leaf->datum`, `node->key`, `node->left`, `node->right`): permiten obtener los datos o sub-estructuras contenidos en el `TAD`.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_Implementación TAD
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Implementaci%C3%B3n%20TAD/

@@ -1,0 +1,118 @@
+####
+Definición de la base numérica y representación del valor cero para un sistema de aritmética de precisión arbitraria (`BigNum`):
+
+```racket
+#lang eopl
+(define base 16)
+
+(define zero '())
+(define is-zero? null?)
+```
+
+**Subtítulos de sección**
+**Conceptos clave**
+`base numérica`, `representación de datos`, `predicados`, `BigNum`
+
+**Aplicación práctica**
+Establece los cimientos para un sistema numérico posicional donde los números se representan como listas de dígitos. En este caso, se utiliza `base 16` y se define una lista vacía como la representación del valor cero.
+
+####
+Implementación de la función sucesor para números en base 16:
+
+```racket
+(define successor
+  (lambda (n)
+    (cond
+      [(is-zero? n) (cons 1 empty)]
+      [(= (car n) (- base 1))
+       (cons 0 (successor (cdr n)))]
+      [else
+       (cons (+ (car n) 1) (cdr n))])))
+```
+
+**Subtítulos de sección**
+**Conceptos clave**
+`recursión`, `acarreo`, `aritmética posicional`, `listas`
+
+**Aplicación práctica**
+Esta función incrementa en una unidad un número representado en forma de lista. Gestiona el acarreo de forma recursiva cuando un dígito alcanza el valor máximo permitido por la `base` (15 en base 16).
+
+####
+Implementación de la función predecesor con manejo de errores y préstamos:
+
+```racket
+(define predecessor
+  (lambda (n)
+    (cond
+      [(is-zero? n) (eopl:error "No puede manejar predecesor de cero")]
+      [(equal? n (cons 1 empty)) '()]
+      [(= (car n) 0)
+       (cons (- base 1) (predecessor (cdr n)))]
+      [else (cons (- (car n) 1) (cdr n))])))
+```
+
+**Subtítulos de sección**
+**Conceptos clave**
+`manejo de errores`, `decremento`, `préstamo en base n`, `condicionales`
+
+**Aplicación práctica**
+Permite obtener el valor anterior a un número dado. Incluye una validación para evitar el cálculo del predecesor de cero y gestiona la reducción de magnitud de los dígitos superiores cuando ocurre un préstamo (cuando un dígito es 0).
+
+####
+Implementación de la operación de suma mediante recursión de primitivas:
+
+```racket
+(define plus
+  (lambda (a b)
+    (cond
+      [(is-zero? b) a]
+      [else
+       (plus (successor a) (predecessor b))])))
+```
+
+**Subtítulos de sección**
+**Conceptos clave**
+`recursión`, `abstracción de funciones`, `aritmética funcional`
+
+**Aplicación práctica**
+Resuelve la suma de dos números `BigNum` transformando la operación en incrementos sucesivos del primer sumando y decrementos del segundo, hasta que este último llega a cero.
+
+####
+Implementación de la multiplicación basada en sumas sucesivas:
+
+```racket
+(define mult
+  (lambda (a b)
+    (if
+     (is-zero? b)
+     zero
+     (plus a (mult a (predecessor b))))))
+```
+
+**Subtítulos de sección**
+**Conceptos clave**
+`multiplicación recursiva`, `composición de funciones`, `BigNum`
+
+**Aplicación práctica**
+Calcula el producto de dos números mediante la aplicación repetida de la función `plus`. Es un ejemplo de cómo construir operaciones complejas a partir de funciones aritméticas más simples en un entorno de lenguajes de programación.
+
+####
+Ejecución y visualización de resultados para operaciones `BigNum`:
+
+```racket
+;; El resultado esperado para la operación es 230688
+(display (mult '(0 2 1) '(1 2 3)))
+```
+
+**Subtítulos de sección**
+**Conceptos clave**
+`evaluación`, `salida de datos`, `representación de listas`
+
+**Aplicación práctica**
+Se utiliza para verificar la corrección del sistema de multiplicación. En este ejemplo, las listas `(0 2 1)` y `(1 2 3)` representan números en base 16 que son procesados por la función `mult` para producir el resultado final.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepBigNum.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

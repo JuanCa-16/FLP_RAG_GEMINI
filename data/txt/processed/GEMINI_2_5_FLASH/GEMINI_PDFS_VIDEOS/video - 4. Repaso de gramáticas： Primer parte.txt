@@ -1,0 +1,67 @@
+Un alfabeto, denotado comúnmente como Σ, es un conjunto finito y no vacío de elementos denominados símbolos. Por ejemplo, el alfabeto binario es Σ = {0, 1}. Una cadena o palabra es una secuencia finita y ordenada de símbolos pertenecientes a un alfabeto. El orden de los símbolos es fundamental; por ejemplo, la cadena "roma" es distinta de "mora". El conjunto de todas las cadenas posibles que se pueden formar con un alfabeto Σ se denota como Σ*. Este conjunto incluye la cadena vacía, denotada como ε, que es la única cadena de longitud cero.
+
+####
+
+Un lenguaje es un subconjunto de todas las posibles cadenas que se pueden formar sobre un alfabeto dado (es decir, L ⊆ Σ*). Un lenguaje puede ser definido por un conjunto de reglas. Existen diferentes tipos de lenguajes:
+1.  El lenguaje vacío, denotado como ∅, es un lenguaje que no contiene ninguna cadena.
+2.  Un lenguaje finito contiene un número específico de cadenas, como L = {'a', 'ab', 'b'}.
+3.  Un lenguaje infinito se define mediante una regla o patrón, como el lenguaje de todas las cadenas que consisten en una o más 'a's, formalizado como L = {aⁿ | n ≥ 1}. La notación aⁿ indica que el símbolo 'a' se concatena n veces (ej. a³ = 'aaa').
+
+####
+
+La potencia de un lenguaje L, denotada como Lⁿ, es la concatenación del lenguaje consigo mismo n veces. Las propiedades de la potencia de un lenguaje son:
+-   L⁰ se define como el lenguaje que contiene únicamente la cadena vacía: L⁰ = {ε}.
+-   L¹ es el propio lenguaje: L¹ = L.
+-   L² es el conjunto de todas las cadenas formadas al concatenar una cadena de L con otra cadena de L. Por ejemplo, si L = {'a', 'b'}, entonces L² = {'aa', 'ab', 'ba', 'bb'}.
+-   En general, Lⁿ = { w₁w₂...wₙ | wᵢ ∈ L para todo i }.
+
+####
+
+La cerradura de Kleene (o clausura de Kleene), denotada con un asterisco (*), representa la repetición de los elementos de un lenguaje cero o más veces. Formalmente, es la unión de todas las potencias del lenguaje, desde cero hasta infinito: L* = L⁰ ∪ L¹ ∪ L² ∪ ... . El uso del asterisco significa que la cadena vacía (ε) siempre está incluida. Por otro lado, la cerradura positiva (o clausura positiva), denotada con un signo más (+), representa la repetición de los elementos una o más veces. Formalmente: L⁺ = L¹ ∪ L² ∪ L³ ∪ ... . Esta cerradura no incluye la cadena vacía, a menos que ya estuviera presente en el lenguaje original L.
+
+####
+
+Las expresiones regulares son una notación formal para describir lenguajes regulares. Las operaciones básicas que definen una expresión regular son:
+-   El lenguaje vacío (∅) y el lenguaje que contiene solo la cadena vacía ({ε}) son lenguajes regulares.
+-   La unión de dos lenguajes regulares (R₁ ∪ R₂) es un lenguaje regular.
+-   La concatenación de dos lenguajes regulares (R₁R₂) es un lenguaje regular.
+-   La cerradura de Kleene (R*) y la cerradura positiva (R⁺) de un lenguaje regular también son lenguajes regulares.
+
+####
+
+A continuación se presentan ejemplos de expresiones regulares y los lenguajes que describen:
+-   `aa b*`: Describe cadenas que comienzan con `aa`, seguidas de cero o más `b`s. Ejemplos: "aa", "aab", "aabbb".
+-   `a b+`: Describe cadenas que inician con una `a`, seguida de una o más `b`s. Ejemplos: "ab", "abb", "abbb".
+-   `(ab a*)+`: Esta expresión describe la concatenación de una o más cadenas que siguen el patrón `ab a*`. Una cadena básica de este patrón es `ab` seguido de cero o más `a`s (ej. "ab", "aba", "abaa"). La cerradura positiva `+` indica que se deben concatenar una o más de estas cadenas válidas. La palabra mínima es "ab". Otra palabra válida sería "ababaa", formada por la concatenación de "ab" y "abaa". Cada sub-palabra concatenada debe cumplir con la estructura interna del paréntesis.
+
+####
+
+Las expresiones regulares son herramientas poderosas para definir patrones complejos en cadenas de texto. Por ejemplo:
+-   `a (a|b)* a`: Esta expresión representa el lenguaje de todas las cadenas sobre el alfabeto {a, b} que comienzan y terminan con el símbolo 'a'. Entre la 'a' inicial y final puede haber cualquier secuencia de 'a's y 'b's, incluyendo la secuencia vacía, lo que permite la cadena "aa".
+-   `((a|b)(a|b))*`: Esta expresión describe el lenguaje de todas las cadenas de longitud par sobre el alfabeto {a, b}. El grupo `(a|b)(a|b)` genera todas las cadenas de longitud 2. Al aplicar la cerradura de Kleene, se concatenan cero o más de estos pares, garantizando que la longitud total sea siempre un múltiplo de 2 (es decir, par).
+
+####
+
+La jerarquía de Chomsky clasifica las gramáticas formales en cuatro tipos, de menor a mayor poder expresivo: regulares, libres de contexto, sensibles al contexto y de estructura de frase. Los lenguajes de programación y las expresiones regulares se centran principalmente en las gramáticas regulares y libres de contexto. Una gramática regular tiene reglas de producción de la forma `A -> aB` o `A -> a`, donde `A` y `B` son símbolos no terminales y `a` es un símbolo terminal. La característica principal es que el no terminal, si existe, aparece al final (a la derecha).
+
+####
+
+Una limitación práctica de las gramáticas regulares y los parsers sencillos que las implementan (como el de la librería EOPL en Racket) es que no pueden existir dos reglas de producción que comiencen con el mismo símbolo terminal. Por ejemplo, si se intentan definir dos reglas separadas para la declaración de variables, una como `var ID;` y otra como `var ID = expresion;`, el parser generaría un conflicto. Al leer la palabra clave `var`, no sabría cuál de las dos reglas aplicar, ya que ambas comienzan igual. La solución consiste en fusionar estas variantes en una única regla que maneje la parte opcional (`= expresion`) en lugar de tener dos reglas distintas con un prefijo común.
+
+####
+
+Una gramática formal se utiliza para generar las cadenas que pertenecen a un lenguaje. Las reglas de producción indican cómo transformar símbolos no terminales en secuencias de terminales y/o no terminales. Por ejemplo, con la gramática que tiene las reglas `S -> aS | bS | ε`, se puede generar cualquier secuencia de 'a's y 'b's. Para generar la palabra "aab", se aplicaría la siguiente derivación:
+1.  Se parte del símbolo inicial `S`.
+2.  Se aplica la regla `S -> aS`, resultando en `aS`.
+3.  Se aplica nuevamente `S -> aS` sobre la `S` restante, obteniendo `aaS`.
+4.  Se aplica la regla `S -> bS`, resultando en `aabS`.
+5.  Finalmente, se aplica la regla de terminación `S -> ε` (cadena vacía), obteniendo la palabra final "aab".
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=-xmyQ9vPPmw
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,64 @@
+####
+
+**Evaluación conceptual de letrec y ambientes**
+
+Para realizar la evaluación conceptual del funcionamiento de un `letrec`, partiremos de un ambiente inicial vacío (`empty-env`). Al encontrar una expresión `letrec`, se crea un ambiente extendido recursivo, que denominaremos `mr`. Este ambiente se maneja de forma distinta a los ambientes usuales, pues contiene una lista de identificadores, una lista que a su vez contiene las listas de identificadores de los parámetros de las funciones y los cuerpos de los procedimientos. Este ambiente `mr` guarda la referencia al ambiente que extiende y es donde se evaluará el cuerpo del procedimiento.
+
+####
+
+**Evaluación de la función fat(6)**
+
+Al evaluar la llamada `fat(6)`, se genera un `closure` que se ejecuta sobre el ambiente `mr`. La gran diferencia en este modelo es que la clausura extiende directamente el ambiente extendido recursivo. A partir de aquí, se crea un ambiente `f1` donde el identificador `x` toma el valor 6. El intérprete evalúa la condición `x > 0`; al ser verdadera, se procede a ejecutar la operación `x * fat(sub1 x)`. En este punto, `x` vale 6 y se genera un nuevo llamado a `fat` con el valor 5.
+
+####
+
+**Generación de ambientes en la recursión**
+
+Cada vez que se invoca una función dentro de un ambiente extendido recursivo, se genera una clausura y un nuevo ambiente de evaluación. En el caso de `fat(6)`, se produce una secuencia de ambientes sucesivos:
+- Un ambiente donde `x = 5` llama a `fat(4)`.
+- Un ambiente donde `x = 4` llama a `fat(3)`.
+- Un ambiente donde `x = 3` llama a `fat(2)`.
+- Un ambiente donde `x = 2` llama a `fat(1)`.
+- Un ambiente donde `x = 1` llama a `fat(0)`.
+
+Es fundamental que la función recursiva cuente con una condición de parada. De lo contrario, el sistema continuará generando ambientes de forma indefinida hasta agotar la memoria disponible. En este ejemplo, la condición de parada se alcanza cuando `x = 0`.
+
+####
+
+**Resolución de valores en la pila de recursión**
+
+Una vez alcanzada la condición de parada, comenzamos a resolver los valores de retorno para completar las multiplicaciones pendientes:
+- `fat(0)` retorna 1.
+- `fat(1)` realiza `1 * fat(0)`, resultando en `1 * 1 = 1`.
+- `fat(2)` realiza `2 * fat(1)`, resultando en `2 * 1 = 2`.
+- `fat(3)` realiza `3 * fat(2)`, resultando en `3 * 2 = 6`.
+- `fat(4)` realiza `4 * fat(3)`, resultando en `4 * 6 = 24`.
+- `fat(5)` realiza `5 * fat(4)`, resultando en `5 * 24 = 120`.
+- `fat(6)` realiza `6 * fat(5)`, resultando en `6 * 120 = 720`.
+
+####
+
+**Verificación en el intérprete**
+
+Podemos verificar la lógica anterior utilizando el código del interpretador para la función factorial definida mediante un `letrec`. La sintaxis empleada permite confirmar que los resultados conceptuales coinciden con la ejecución técnica.
+
+```racket
+(letrec
+    ((fat (lambda (x)
+            (if (zero? x)
+                1
+                (* x (fat (- x 1)))))))
+  (fat 6))
+```
+
+Al ejecutar `fat(4)` el resultado es 24, y al ejecutar `fat(6)` el interpretador devuelve 720, validando así el proceso de extensión de ambientes recursivos.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 19. Procedimientos recursivos： ejemplo 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=T-h2Q-EtcNc
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

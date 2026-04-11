@@ -1,0 +1,510 @@
+Lenguaje implica comunicación. Un lenguaje de programación es un medio de comunicación con la máquina. Existen el lenguaje hablado y el lenguaje escrito. El lenguaje escrito conduce a formalismos, que a su vez dan lugar a los lenguajes formales.
+
+Sistemas de escrituras independientes del medio:
+- Sumerios
+- Egipcios
+- Mayas
+
+La evolución de los alfabetos ha sido desde pictogramas hasta letras.
+
+####
+
+La programación se define como una actividad general del hombre, que significa la acción de extender o cambiar la funcionalidad de un sistema. Programar es decirle a un computador (o a alguna máquina) cómo realizar su trabajo. La programación es una actividad de amplio espectro. La programación de sistemas de software consta de dos partes esenciales: la ciencia y la tecnología.
+
+####
+
+Un lenguaje de programación es un lenguaje artificial diseñado para expresar computaciones que pueden ser llevadas a cabo por una máquina. Se compone de un conjunto de símbolos y reglas sintácticas y semánticas.
+
+####
+
+A mediados del siglo XIX, Charles Babbage diseñó la Máquina Analítica y Ada Lovelace es reconocida como la primera programadora. Lovelace escribió un programa para la Máquina Analítica con el fin de calcular los números de Bernoulli.
+
+<IMG_BLOCK>
+Diagrama del programa de Ada Lovelace para calcular los números de Bernoulli con la Máquina Analítica.
+</IMG_BLOCK>
+
+####
+
+Herman Hollerith se percató de que podía codificar la información en tarjetas perforadas cuando observó a los conductores de trenes que identificaban a los pasajeros según el orificio que hacían en su respectivo tique. En 1890, Hollerith codificó los datos del censo en tarjetas perforadas. En la década de 1920, los cálculos numéricos estaban basados en los números decimales. Con el paso del tiempo, se tomó conciencia de que la lógica podía ser representada con números, no solo con palabras.
+
+####
+
+En 1943 se creó el sistema de codificación de ENIAC, la primera computadora de propósito general. Posteriormente, aparecieron los primeros lenguajes de programación, como el Short Code de John Mauchly en 1949, utilizado en BINAC y UNIVAC I.
+
+<CODIGO_BLOCK>
+El Short Code fue uno de los primeros lenguajes de alto nivel. Por ejemplo, una expresión como `a = b * c` se representaba mediante una serie de códigos. Entre 1951 y 1953, para la UNIVAC, se desarrollaron los compiladores A-0, A-1 y A-2, que permitían escribir programas de forma más abstracta, como uno para calcular el factorial de un número almacenado en un registro.
+</CODIGO_BLOCK>
+
+Puede encontrarse más información en el Museo de Informática de la UPV (http://museo.inf.upv.es/en/univac/), así como un simulador disponible en: http://www.historicsimulations.com/univac.html.
+
+####
+
+En 1953, John Backus y su equipo desarrollaron Fortran (FORmula TRANslator), un lenguaje de alto nivel orientado al cálculo numérico y científico.
+
+<CODIGO_BLOCK>
+```fortran
+C AREA OF A TRIANGLE - HERON'S FORMULA
+C INPUT - CARD READER UNIT
+INTEGER INPUT
+C OUTPUT - LINE PRINTER UNIT
+REAL OUTPUT
+C INPUT ERROR DISPLAY ERROR OUTPUT CODE 1 IN JOB CONTROL LISTING
+      INTEGER A,B,C
+      READ (5,501) A,B,C
+501   FORMAT (3I5)
+      IF (A.EQ.0 .OR. B.EQ.0 .OR. C.EQ.0) STOP 1
+      S = (A + B + C) / 2.0
+      AREA = SQRT(S * (S - A) * (S - B) * (S - C))
+      WRITE (6,601) A,B,C,AREA
+601   FORMAT (4H A= ,I5, 5H B= ,I5, 5H C= ,I5, 8H AREA= ,F10.2,
+     $ 13H SQUARE UNITS)
+      STOP
+      END
+```
+Este es un ejemplo de un programa en Fortran que calcula el área de un triángulo usando la fórmula de Herón. Define variables, lee datos de entrada, realiza cálculos y escribe el resultado en la salida.
+</CODIGO_BLOCK>
+
+####
+
+En 1958, John McCarthy et al. crearon LISP (LISt Processor), un lenguaje pionero en la programación funcional y el procesamiento de listas, con una sintaxis homoicónica distintiva (el código se representa como listas).
+
+<CODIGO_BLOCK>
+```racket
+; Definición de una función en sintaxis de Racket (un dialecto de Lisp).
+(define (averagenum n1 n2 n3 n4)
+  (/ (+ n1 n2 n3 n4) 4))
+
+; Invocación de la función.
+(averagenum 10 20 30 40)
+```
+Este código define una función `averagenum` que calcula el promedio de cuatro números. El original estaba en una sintaxis de Lisp temprano; se ha normalizado a Racket moderno.
+</CODIGO_BLOCK>
+
+####
+
+COBOL (COmmon Business Oriented Language) fue desarrollado en 1959 por un comité que incluía a Grace Hopper. Fue diseñado para aplicaciones de negocios y gestión, con una sintaxis verbosa que pretendía ser similar al inglés.
+
+<CODIGO_BLOCK>
+```cobol
+IDENTIFICATION DIVISION.
+PROGRAM-ID. MultiplyExample.
+DATA DIVISION.
+WORKING-STORAGE SECTION.
+01 Num1 PIC 9 VALUE ZEROS.
+01 Num2 PIC 9 VALUE ZEROS.
+01 Result PIC 99 VALUE ZEROS.
+PROCEDURE DIVISION.
+    DISPLAY "Enter first number (1 digit): " WITH NO ADVANCING.
+    ACCEPT Num1.
+    DISPLAY "Enter second number (1 digit): " WITH NO ADVANCING.
+    ACCEPT Num2.
+    MULTIPLY Num1 BY Num2 GIVING Result.
+    DISPLAY "Result is = ", Result.
+    STOP RUN.
+```
+Ejemplo de un programa en COBOL que solicita dos números de un dígito, los multiplica y muestra el resultado.
+</CODIGO_BLOCK>
+
+####
+
+En 1960 se definió ALGOL 60 (ALGOrithmic Language), un lenguaje influyente que introdujo conceptos como la estructura de bloques (con `begin` y `end`), la recursividad y la notación BNF para la sintaxis.
+
+<CODIGO_BLOCK>
+```algol
+procedure Absmax(a) Size:(n, m) Result:(y) Subscripts:(i, k);
+    value n, m;
+    array a;
+    integer n, m, i, k;
+    real y;
+begin
+    integer p, q;
+    y := 0;
+    i := k := 1;
+    for p := 1 until n do
+        for q := 1 until m do
+            if abs(a[p, q]) > y then
+            begin
+                y := abs(a[p, q]);
+                i := p;
+                k := q
+            end
+end Absmax
+```
+Este procedimiento en ALGOL 60 encuentra el valor absoluto máximo en una matriz bidimensional `a` de tamaño `n` por `m`.
+</CODIGO_BLOCK>
+
+####
+
+En la década de 1960 surgieron varios lenguajes influyentes. En 1962, Kenneth Iverson desarrolló APL (A Programming Language), conocido por su uso de un conjunto de caracteres especiales para operar sobre arreglos. En el mismo año, Ole-Johan Dahl y Kristen Nygaard crearon Simula, el primer lenguaje orientado a objetos, y los Laboratorios Bell desarrollaron SNOBOL (StriNg Oriented symBOlic Language) para el procesamiento de cadenas de texto. CPL (Combined Programming Language) apareció en 1963, basado en Algol y enfocado en la computación científica.
+
+<CODIGO_BLOCK>
+```simula
+Begin
+    OutText("Hello, World!");
+    Outimage;
+End;
+```
+Este es un ejemplo de "Hola, Mundo" en Simula, que muestra su sintaxis similar a ALGOL. Simula introdujo conceptos clave de la orientación a objetos como clases y herencia virtual.
+
+```cpl
+rec function Fact1[x] = (x = 0) -> 1, x * Fact1[x-1]
+```
+Ejemplo de una función factorial recursiva en CPL, destacando su sintaxis funcional.
+</CODIGO_BLOCK>
+
+####
+
+En 1964, se crearon BASIC (Beginners All-purpose Symbolic Instruction Code) por Kurtz y Kemeny, diseñado para ser fácil de aprender, y PL/1 (Programming Language 1) por IBM, un lenguaje que intentaba combinar las capacidades científicas de Fortran con las de negocio de COBOL.
+
+<CODIGO_BLOCK>
+```basic
+REM First terms of a simple series
+LET sum = 0
+FOR n = 1 TO 10
+    LET sum = sum + 1 / (n * n)
+    PRINT n, sum
+NEXT n
+END
+```
+Ejemplo en BASIC que calcula e imprime los primeros términos de una serie matemática.
+
+```pl1
+Test: procedure options(main);
+    declare MyString char(20) varying initial('Hola, mundo!');
+    put list(MyString);
+end Test;
+```
+Ejemplo en PL/1 que declara una cadena de caracteres y la imprime en la salida estándar.
+</CODIGO_BLOCK>
+
+####
+
+A finales de los 60 y principios de los 70 se consolidaron lenguajes fundamentales. En 1967, Martin Richards desarrolló BCPL (Basic Combined Programming Language), precursor del lenguaje B y, posteriormente, de C. En 1968, se definió ALGOL 68. Ese mismo año, Danny Bobrow, Wally Feurzeig y Seymour Papert crearon Logo, un lenguaje funcional y estructurado para la enseñanza de la programación a niños. Entre 1969 y 1973, Dennis Ritchie y Ken Thompson desarrollaron C en los Laboratorios Bell. En 1970, Niklaus Wirth creó Pascal, un lenguaje fuertemente tipado para la enseñanza, y Alan Kay lideró el desarrollo de Smalltalk, un lenguaje puramente orientado a objetos y de tipado dinámico.
+
+####
+
+En 1972, Alain Colmerauer, Philippe Roussel y Robert Kowalski crearon Prolog (PROgrammation en LOGique), el principal lenguaje del paradigma de programación lógica.
+
+<CODIGO_BLOCK>
+```prolog
+% Base del conocimiento: hechos sobre a quién le gusta qué.
+likes(mary, food).
+likes(mary, wine).
+likes(john, wine).
+likes(john, mary).
+
+% Consultas posibles sobre la base del conocimiento:
+% ?- likes(mary, food).   % Retorna true.
+% ?- likes(john, food).   % Retorna false.
+% ?- likes(X, wine).      % Retorna X = mary; X = john.
+```
+Este código Prolog define una base de conocimiento con hechos y muestra cómo se pueden realizar consultas para deducir nueva información.
+</CODIGO_BLOCK>
+
+####
+
+En 1973, Robin Milner y su equipo desarrollaron ML (Meta Language), un lenguaje funcional con tipado estático e inferencia de tipos, muy influyente en lenguajes posteriores como Haskell y OCaml.
+
+<CODIGO_BLOCK>
+```sml
+fun reverse [] = []
+  | reverse (h::t) = (reverse t) @ [h];
+
+val args = CommandLine.arguments();
+
+fun concat_space s = s ^ " ";
+
+val _ = app (print o concat_space) (reverse args);
+```
+Este código en ML (Standard ML) define una función para invertir una lista y luego la usa para imprimir los argumentos de la línea de comandos en orden inverso, separados por espacios.
+</CODIGO_BLOCK>
+
+####
+
+La segunda mitad de la década de los 70 y los 80 vieron la aparición de lenguajes que se convertirían en estándares de la industria y la academia. En 1975, Guy L. Steele y Gerald Jay Sussman crearon Scheme, un dialecto de Lisp con un diseño minimalista. SQL (Structured Query Language) fue estandarizado en 1978 para la gestión de bases de datos relacionales. En 1983, Jean Ichbiah y su equipo desarrollaron Ada, un lenguaje fuertemente tipado para sistemas de alta integridad, y Bjarne Stroustrup creó C++, una extensión orientada a objetos de C. Finalmente, en 1984 se estandarizó Common Lisp.
+
+####
+
+A finales de los 80 y durante los 90, la diversidad de lenguajes y paradigmas se expandió enormemente. Aparecieron Eiffel, Erlang, Perl y Tcl. En 1990 se lanzó Haskell, un lenguaje funcional puro con evaluación perezosa. Durante los 90 surgieron Python, Lua, Java, Delphi, JavaScript, PHP, Rebol y Visual Basic, entre otros. A partir del año 2000, continuó la innovación con C#, la plataforma .NET, Scala y Factor.
+
+<CODIGO_BLOCK>
+```erlang
+% Ejemplo de quicksort en Erlang.
+sort([Pivot | T]) ->
+    sort([X || X <- T, X < Pivot]) ++ [Pivot] ++ sort([X || X <- T, X >= Pivot]);
+sort([]) -> [].
+```
+Este código Erlang implementa el algoritmo de ordenación `quicksort` de forma funcional y concisa, aprovechando las listas por comprensión.
+
+```haskell
+-- Ejemplo de control de flujo avanzado en Haskell.
+main = do
+  runContT (callCC (\break -> forM_ [1..] (\i -> do
+    liftIO $ putStrLn "loop"
+    break ()))) return
+```
+Este ejemplo en Haskell muestra un uso más complejo del lenguaje, utilizando mónadas de continuación para salir de un bucle infinito.
+</CODIGO_BLOCK>
+
+####
+
+Los principales paradigmas de programación son:
+- Declarativos (Funcional, Lógico, Por Restricciones)
+- Imperativo
+- Relacional
+- Orientado a Objetos
+- Concurrente
+- Orientado a aspectos
+- Orientado a agentes
+
+####
+
+Una operación es declarativa si siempre que es llamada con los mismos argumentos, retorna el mismo resultado. Una operación declarativa es:
+- **Independiente**: depende solo de sus argumentos.
+- **Sin estado**: no hay memoria entre distintos llamados.
+- **Determinista**: un llamado con los mismos argumentos da siempre el mismo resultado, sin importar desde el lugar que se haga.
+
+<CODIGO_BLOCK>
+```html
+<!-- Ejemplo de HTML, un lenguaje de marcado declarativo -->
+<img src="./image.jpg" />
+
+<article>
+  <header>
+    <title>Programación declarativa</title>
+    <text>Solo escribe sin preocuparte de más :)</text>
+  </header>
+</article>
+```
+```sql
+-- Ejemplo de SQL, un lenguaje de consulta declarativo
+SELECT * FROM Users WHERE Country='Mexico';
+```
+Ejemplos de lenguajes declarativos, donde se especifica "qué" se quiere lograr, no "cómo". Otros ejemplos incluyen XML, CSS, Mercury y Prolog.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma funcional está basado en el cálculo λ. Se caracteriza por el manejo implícito de la memoria y el concepto fundamental de función. En este paradigma, las funciones son ciudadanos de primera clase, lo que significa que pueden ser pasadas como parámetros o devueltas como valores de retorno de otras funciones. Un programa consiste en un conjunto de funciones y su aplicación.
+
+<CODIGO_BLOCK>
+```racket
+; Ejemplos de lenguajes funcionales: Lisp, Haskell, Scheme, ML.
+
+; En Racket, las funciones son ciudadanos de primera clase.
+(define (operar op n1 n2)
+  (op n1 n2))
+
+(operar + 5 3) ; Devuelve 8
+(operar * 5 3) ; Devuelve 15
+```
+El código muestra cómo la función `operar` recibe otra función `op` como argumento, una característica central de la programación funcional.
+</CODIGO_BLOCK>
+
+####
+
+El cálculo λ, diseñado por Alonzo Church, es un sistema formal para investigar la definición de función, la noción de aplicación de funciones y la recursión. Se utiliza para definir formalmente qué algoritmos son computables o decidibles. Ha sido fundamental para demostrar que problemas como el problema de la parada son indecidibles. Cualquier función computable puede ser expresada y evaluada a través de este cálculo, donde las funciones son consideradas un valor de tipo procedimiento.
+
+####
+
+El paradigma lógico está basado en el cálculo de predicados y utiliza mecanismos de demostración automática de teoremas. Su concepto esencial es la deducción lógica. Un programa en este paradigma consiste en un conjunto de axiomas (hechos y reglas) y un objetivo (una consulta).
+
+<CODIGO_BLOCK>
+```prolog
+% El principal ejemplo de lenguaje lógico es Prolog.
+
+% axioma (regla): X es mortal si X es humano.
+mortal(X) :- humano(X).
+
+% axioma (hecho): socrates es humano.
+humano(socrates).
+
+% objetivo (consulta): ¿es socrates mortal?
+% ?- mortal(socrates).
+% Retorna: true.
+```
+Este es un ejemplo canónico en Prolog que ilustra cómo se utiliza la deducción lógica para responder a una consulta a partir de un conjunto de axiomas.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma imperativo está orientado por la arquitectura de la máquina. Aunque es de alto nivel, sus conceptos esenciales son la asignación (cambio de estado de las variables) y la secuenciación de instrucciones. La programación está dada en términos del estado del programa, y un programa es una secuencia de instrucciones que modifican dicho estado.
+
+<CODIGO_BLOCK>
+```c
+// Ejemplos: Fortran, Algol, Basic, C, Pascal.
+
+// Ejemplo en C que modifica el estado de una variable.
+int x = 5; // Estado inicial
+x = x + 3; // Instrucción de asignación que modifica el estado
+// Ahora, el estado de x es 8.
+```
+El código C muestra una asignación, la operación fundamental del paradigma imperativo, donde el valor de una variable se modifica explícitamente.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma orientado a objetos representa el mundo real mediante objetos y sus interacciones. Está basado en el concepto computacional de objeto. Sus conceptos esenciales son el propio objeto (que encapsula estado y comportamiento), la herencia y el envío de mensajes. Un programa consiste en un conjunto de objetos y sus interacciones.
+
+<CODIGO_BLOCK>
+```javascript
+// Ejemplos: Smalltalk, Java, C++, Obliq, etc.
+class Number {
+  constructor(number = 0) {
+    this.number = number;
+  }
+  add(x) {
+    this.number = this.number + x;
+  }
+}
+const myNumber = new Number(5);
+myNumber.add(3);
+// alert(myNumber.number); // Muestra 8
+```
+Este ejemplo en JavaScript define una clase `Number` que encapsula un valor numérico (estado) y un método para modificarlo (comportamiento).
+</CODIGO_BLOCK>
+
+####
+
+El paradigma concurrente está basado en la teoría de concurrencia y cálculos de procesos, como el Cálculo π. Su concepto esencial son los mecanismos de comunicación y sincronización entre procesos. Un programa consiste en un conjunto de procesos que se ejecutan de forma simultánea o superpuesta en el tiempo.
+
+<CODIGO_BLOCK>
+```erlang
+% Ejemplos: PICT, MWB, Erlang.
+% Este paradigma funciona bien en lenguajes funcionales, ya que
+% la ausencia de estado compartido elimina la necesidad de
+% mecanismos de sincronización complejos como los semáforos.
+
+-module(ejemploFLP).
+-export([iniciar/0, dialogo/2]).
+
+dialogo(_, 0) ->
+    done;
+dialogo(Entrada, Contador) ->
+    io:format("~p~n", [Entrada]),
+    dialogo(Entrada, Contador - 1).
+
+iniciar() ->
+    spawn(ejemploFLP, dialogo, [hola, 5]),
+    spawn(ejemploFLP, dialogo, [adios, 4]).
+```
+Este código Erlang crea dos procesos concurrentes (`spawn`) que ejecutan la función `dialogo`. La concurrencia es una característica central de Erlang.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma relacional se caracteriza porque las funciones pueden tener cero, una o más salidas, a diferencia de las funciones matemáticas tradicionales. Además, el rol de las entradas y salidas puede ser intercambiable, y permite la selección no determinista de una opción entre varias posibles.
+
+<CODIGO_BLOCK>
+```prolog
+% Ejemplo de paradigma relacional con Prolog.
+% Base de conocimiento
+amigo(juan, pedro).
+amigo(juan, carlos).
+amigo(pedro, maria).
+
+% Consultas
+% ?- amigo(juan, pedro).     % Retorna true.
+% ?- amigo(juan, X).         % Retorna X = pedro; X = carlos.
+```
+El paradigma relacional se basa en buscar soluciones en un conjunto de datos (relaciones). Se retornan cero o más valores en una consulta. Prolog y SQL son ejemplos de lenguajes relacionales.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma de programación por restricciones se basa en el concepto de restricción (un predicado o relación lógica). Sus conceptos esenciales son la consecuencia lógica y la búsqueda en árboles con reducción de dominios (distribución y propagación). Un programa consiste en un conjunto de variables con sus dominios, un conjunto de restricciones entre esas variables y una estrategia de exploración para encontrar soluciones. La búsqueda de soluciones puede ser concurrente.
+
+<CODIGO_BLOCK>
+```oz
+// Ejemplos: CLP, Mozart/Oz.
+// Problema criptoaritmético: SEND + MORE = MONEY.
+proc {Money Root}
+   local S E N D M O R Y in
+      Root = sol(s:S e:E n:N d:D m:M o:O r:R y:Y)
+      Root ::: 0..9 % Dominio de las variables
+
+      {FD.distinct Root} % Todas las letras son dígitos distintos
+
+      S \=: 0 % Restricciones adicionales
+      M \=: 0
+
+      % Restricción principal de la suma
+         1000*S + 100*E + 10*N + D
+      +  1000*M + 100*O + 10*R + E
+      =: 10000*M + 1000*O + 100*N + 10*E + Y
+
+      {FD.distribute ff Root} % Estrategia de búsqueda
+   end
+end
+```
+Ejemplo en Mozart/Oz que resuelve un puzle de restricciones. El programador define las variables y las relaciones entre ellas, y el sistema se encarga de buscar las soluciones.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma orientado a aspectos busca mejorar la modularidad de las aplicaciones mediante la separación de conceptos, especialmente aquellos que son técnicos y comunes a toda la aplicación (transversales), como el logging, la seguridad o la gestión de transacciones. Separa las funcionalidades comunes de las funcionalidades propias de cada módulo. Su concepto esencial es el "aspecto", que encapsula una funcionalidad transversal.
+
+<CODIGO_BLOCK>
+// Ejemplos de lenguajes o extensiones que soportan este paradigma:
+// AspectJ (para Java), AspectC++, phpAspect, Aspyct (para Python).
+
+// En AspectJ, se podría definir un aspecto para medir el tiempo
+// de ejecución de ciertos métodos sin modificar el código de esos métodos.
+aspect Timing {
+  pointcut methodsToTime(): execution(* com.example.MyClass.*(..));
+
+  around(): methodsToTime() {
+    long start = System.currentTimeMillis();
+    proceed(); // Ejecuta el método original
+    long end = System.currentTimeMillis();
+    System.out.println("Execution time: " + (end - start) + "ms");
+  }
+}
+```
+Este pseudo-código de AspectJ define un aspecto que se "entreteje" en los métodos de `MyClass` para añadirles la funcionalidad de cronometraje.
+</CODIGO_BLOCK>
+
+####
+
+El paradigma orientado a agentes representa el mundo real mediante agentes y sus interacciones a través de mensajes. Se basa en el concepto de agente: una entidad computacional situada en algún entorno y que es capaz de ejecutar acciones autónomas en dicho entorno con el fin de cumplir sus objetivos de diseño. Un agente tiene un hilo de ejecución independiente, se comunica por paso de mensajes, tiene conocimiento parcial del entorno, un mecanismo de toma de decisiones y exhibe reactividad, proactividad y habilidad social. Un programa consiste en un conjunto de agentes y sus interacciones.
+
+<CODIGO_BLOCK>
+// Ejemplos de plataformas para desarrollar sistemas multiagente: JADE, JASON.
+
+// Un agente en un lenguaje como JASON podría tener un plan como este:
+// +!comprar(Producto) : stock(Producto, N) & N > 0 <-
+//   .print("Comprando ", Producto);
+//   !actualizar_stock(Producto, N-1).
+
+// Este plan se activa cuando el agente tiene el objetivo de comprar un producto.
+// Si hay stock, imprime un mensaje y actualiza su creencia sobre el stock.
+```
+Este es un ejemplo conceptual de la lógica interna de un agente, que reacciona a objetivos (`!comprar`) y actúa sobre su base de creencias (`stock`).
+</CODIGO_BLOCK>
+
+####
+
+Las tendencias actuales en lenguajes de programación incluyen enfoques basados en componentes, mecanismos avanzados de seguridad y de confiabilidad (como la seguridad en hilos de ejecución), y un fuerte énfasis en la movilidad y la distribución. Estos enfoques se apoyan en paradigmas y tecnologías actuales como la computación en grid y en la nube (cloud), y modelos de procesamiento distribuido como MapReduce.
+
+####
+
+Estudiar los fundamentos de los lenguajes de programación aporta múltiples beneficios:
+- **Incrementa la capacidad para expresar ideas**: Conocer diferentes paradigmas permite abordar problemas desde ángulos distintos y más efectivos.
+- **Amplía el espectro de conocimientos para seleccionar un lenguaje**: Permite tomar decisiones informadas sobre qué lenguaje es más adecuado para un proyecto específico.
+- **Incrementa la habilidad para aprender nuevos lenguajes y paradigmas**: Facilita la asimilación de nuevas herramientas, ya que los conceptos fundamentales suelen ser recurrentes.
+
+####
+
+El estudio de los lenguajes de programación también proporciona:
+- **Mejor entendimiento de cómo están implementados**: Ayuda a comprender qué ocurre "bajo el capó" en compiladores e intérpretes, lo que permite escribir código más eficiente.
+- **Mejor uso de los lenguajes que ya se conocen**: Revela matices y características avanzadas que permiten aprovechar al máximo las herramientas que ya se dominan.
+- **Progreso global de las ciencias computacionales**: La investigación y el desarrollo de nuevos lenguajes y paradigmas impulsan la innovación en toda la disciplina.
+
+--- METADATA ---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 0. Introduccion e historia de los lenguajes de programacion

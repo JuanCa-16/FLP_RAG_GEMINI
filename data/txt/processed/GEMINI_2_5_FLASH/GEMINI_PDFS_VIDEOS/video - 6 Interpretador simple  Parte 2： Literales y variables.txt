@@ -1,0 +1,38 @@
+Para implementar las expresiones de literales y variables (`literal_expression` y `var_expression`), es fundamental manejar el concepto de ambientes. Una `literal_expression` representa un valor numérico directo, mientras que una `var_expression` requiere la búsqueda del valor de una variable dentro de un ambiente, que es la estructura de datos donde se almacenan las variables y sus valores correspondientes.
+
+####
+
+La estructura de datos para los ambientes se define con dos variantes: el ambiente vacío y el ambiente extendido. El ambiente vacío (`empty-env`) no contiene ninguna información. El ambiente extendido (`extended-env`) se construye a partir de un ambiente previo y añade nuevas vinculaciones. Específicamente, un ambiente extendido contiene una lista de identificadores (símbolos), una lista de sus valores correspondientes y una referencia al ambiente que extiende (el ambiente "padre").
+
+####
+
+La función `apply-env` se encarga de buscar el valor de un símbolo (una variable) dentro de un ambiente determinado. Esta función opera de forma recursiva. El caso base ocurre cuando se busca en un ambiente vacío (`empty-env`); si se llega a este punto, significa que la variable no fue encontrada en toda la cadena de ambientes, y se debe reportar un error.
+
+####
+
+Cuando `apply-env` opera sobre un ambiente extendido (`extended-env`), primero busca la variable en la lista de identificadores locales de ese ambiente. Para ello, se puede utilizar una función auxiliar que recorra la lista de identificadores y la lista de valores en paralelo. Si encuentra el identificador, devuelve su valor asociado. Si el identificador no se encuentra en la lista local, la búsqueda continúa de manera recursiva en el ambiente padre, que es el ambiente que este ambiente extendido extiende.
+
+####
+
+Para que un programa pueda ejecutarse, necesita un punto de partida con variables predefinidas. Esto se logra mediante un ambiente inicial (`initial-env`). Este ambiente se define como un ambiente extendido que contiene un conjunto de variables y valores por defecto (por ejemplo, `x=1`, `y=2`, `a=4`, etc.) y que extiende directamente del ambiente vacío. Este ambiente inicial se pasa a la función principal de evaluación del programa.
+
+####
+
+La función principal `eval-program` toma el programa completo y lo procesa. El único caso de programa es `a-program`, que contiene una única expresión. La tarea de `eval-program` es invocar a la función `eval-expression`, pasándole la expresión contenida en el programa y el ambiente inicial (`initial-env`) para comenzar la evaluación.
+
+####
+
+La función `eval-expression` es el núcleo del intérprete y utiliza una estructura de casos para diferenciar los tipos de expresión. Para el caso de una `literal_expression`, que contiene un dato numérico, la evaluación es simple: se devuelve el número directamente. No se requiere ninguna operación adicional ni el uso del ambiente.
+
+####
+
+Para evaluar una `var_expression`, que contiene un identificador de variable, la función `eval-expression` debe encontrar el valor asociado a ese identificador. Para ello, invoca a la función `apply-env`, pasándole el ambiente actual y el identificador de la variable. `apply-env` se encargará de realizar la búsqueda a través de la cadena de ambientes y devolver el valor correspondiente o señalar un error si la variable no se encuentra.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=3p-1ft_KNbs
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

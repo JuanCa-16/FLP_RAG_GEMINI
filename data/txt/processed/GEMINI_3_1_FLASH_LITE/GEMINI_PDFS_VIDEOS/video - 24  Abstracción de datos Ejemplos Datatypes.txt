@@ -1,0 +1,39 @@
+#### **Definición de un tipo de dato árbol binario**
+
+Para definir un tipo de dato que represente un árbol binario en `Racket`, utilizamos la forma `define-datatype`. Esta estructura permite especificar el nombre del tipo de dato, el predicado asociado y las variantes que lo componen.
+
+En el siguiente ejemplo, definimos `arbol-b` con su predicado `arbol-b?`. Se establecen dos variantes: `leaf`, que contiene un número, y `node`, que contiene una clave (`symbol`), un hijo izquierdo y un hijo derecho, ambos de tipo `arbol-b`.
+
+```racket
+(define-datatype arbol-b arbol-b?
+  (leaf (num number?))
+  (node (key symbol?)
+        (left arbol-b?)
+        (right arbol-b?)))
+```
+
+#### **Construcción de instancias del árbol**
+
+Una vez definido el `datatype`, los constructores quedan disponibles automáticamente para crear instancias del árbol. A continuación, se muestran ejemplos de cómo instanciar un árbol compuesto únicamente por una hoja y un árbol más complejo con nodos internos:
+
+```racket
+; Árbol compuesto solo por una hoja
+(define arbol-1 (leaf 5))
+
+; Árbol complejo con nodos y hojas
+(define arbol-2 
+  (node 'K 
+        (node 'P (leaf 3) (leaf 5)) 
+        (node 'J (leaf 4) (leaf 7))))
+```
+
+Al evaluar estas expresiones, el sistema devuelve estructuras (`struct`) que representan el `árbol de sintaxis abstracto`. El uso de `define-datatype` simplifica el proceso de desarrollo, ya que genera automáticamente los constructores, observadores y predicados necesarios, evitando la implementación manual de cada uno de ellos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=hwvWxpp6TXo
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

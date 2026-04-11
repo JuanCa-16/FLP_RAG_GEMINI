@@ -52,7 +52,7 @@ except Exception as e:
 MODEL_ID = "gemini-embedding-001"
 GENERATIVE_MODEL = "gemini-2.5-flash"
 MODELS_PRIORITY = ["gemini-2.5-flash", "gemini-3-flash-preview"]
-RUTA_EMBEDDINGS = "src/embeddings/new_corpus_embeddings.jsonl"
+RUTA_EMBEDDINGS = "src/embeddings/GEMINI_3_FLASH/corpus_embeddings.jsonl"
 
 docs_df_todo = None
 docs_df_pdf = None
@@ -404,20 +404,30 @@ async def contextualizar_pregunta(pregunta_usuario: str, historial: list[Mensaje
     chat_history_str = "\n".join([f"{m.role}: {m.content}" for m in historial])
     
     prompt = f"""
-    Eres un experto en recuperación de información. Tu tarea es decidir si una "Pregunta de Usuario" necesita contexto del historial para ser entendida por un buscador.
+    [CONTEXTO]
+    Eres un experto en recuperación de información y procesamiento de lenguaje natural. Tu tarea es actuar como un filtro de pre-procesamiento para un buscador semántico que utiliza un sistema RAG.
 
-    REGLAS:
-    1. Si la pregunta es general, teórica o ya incluye sus propios sujetos (ej. "¿Cómo es la interfaz de datos recursivos?"), DEVUÉLVELA EXACTAMENTE IGUAL.
-    2. Si la pregunta usa pronombres o referencias ambiguas (ej. "¿Cómo funciona eso?", "Dame otro ejemplo", "¿Quién lo creó?"), REFORMÚLALA usando el historial.
-    3. NO añadas temas del historial si la pregunta del usuario ya es una consulta técnica completa por sí misma.
-    4. La salida debe ser SOLO la pregunta, sin explicaciones.
+    [ACCIÓN]
+    Analiza la "PREGUNTA DEL USUARIO" y decide si requiere información del "HISTORIAL" para ser comprendida. Si es necesario, reformúlala para que sea una consulta independiente y clara.
+
+    [REGLAS]
+
+    1. Fidelidad: Si la pregunta es técnica, teórica o incluye sus sujetos (ej. "¿Cómo es la interfaz de datos recursivos?"), devuélvela EXACTAMENTE IGUAL.
+    2. Resolución de Correferencias: Si la pregunta usa pronombres o referencias ambiguas (ej. "¿Cómo funciona eso?", "Dame otro ejemplo"), REFORMÚLALA integrando el sujeto del historial.
+    3. No Sobre-contextualizar: NO añadas temas del historial si la pregunta ya es una consulta completa por sí misma.
+    4. Formato de Salida: Devuelve ÚNICAMENTE el texto de la pregunta final, sin introducciones ni explicaciones.
+
+    [EJEMPLOS]
+
+    Historial: "Explicación de Lambda". Usuario: "¿Dame un ejemplo?". Salida: "Dame un ejemplo de funciones Lambda en Racket".
+
+    Historial: "Clase de ayer". Usuario: "¿Qué es un cierre léxico?". Salida: "¿Qué es un cierre léxico?".
 
     HISTORIAL:
     {chat_history_str}
 
     PREGUNTA DEL USUARIO: {pregunta_usuario}
-
-    PREGUNTA PARA EL BUSCADOR:"""
+    """
 
     # Bucle de rotación de modelos
     for model_name in MODELS_PRIORITY:

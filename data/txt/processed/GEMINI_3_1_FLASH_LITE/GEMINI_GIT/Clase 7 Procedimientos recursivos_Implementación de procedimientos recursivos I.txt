@@ -1,0 +1,72 @@
+####
+**Modificación a la estructura de ambientes**
+
+Para implementar ambientes recursivos, es necesario modificar la noción de `ambiente` incluyendo un caso específico que permita definir procedimientos. Se añade el constructor `extend-recursively-env` al `datatype` de ambientes:
+
+```racket
+(extend-recursively-env
+ (procname (list-of symbol?))
+ (argss (list-of (list-of symbol?)))
+ (bodies (list-of expression?))
+ (old-env environment?))
+```
+
+Los campos del constructor representan:
+- `procname`: Lista de los nombres de los procedimientos.
+- `argss`: Lista de listas de los argumentos formales.
+- `bodies`: Cuerpos de los procedimientos.
+- `old-env`: Ambiente que se extiende.
+
+####
+**Implementación de `apply-env` para ambientes recursivos**
+
+La modificación en `apply-env` para el caso `extend-recursively-env` utiliza una función auxiliar `search-proc` para recorrer las listas de definiciones:
+
+```racket
+(extend-recursively-env (procnames llargs bodies old-env)
+  (letrec
+    ((search-proc
+       (lambda (procs args bodies)
+         (cond
+           [(null? procs)
+            (apply-env old-env var)]
+           [(eqv? (car procs) var)
+            (closure (car args) (car bodies) env)]
+           [else
+            (search-proc (cdr procs) (cdr args) (cdr bodies))]))))
+    (search-proc procnames llargs bodies)))
+```
+
+La función `search-proc` realiza una búsqueda lineal a través de las listas paralelas `procnames`, `llargs` y `bodies`.
+
+####
+**Funcionamiento de la búsqueda y recursión**
+
+La clave fundamental del mecanismo radica en la creación de la `closure` cuando se encuentra el procedimiento solicitado:
+
+```racket
+(closure (car args) (car bodies) env)
+```
+
+En este punto, `env` se refiere al ambiente que se está construyendo actualmente y no al `old-env`. Esto es lo que posibilita la `recursión mutua`, permitiendo que los procedimientos se autorreferencien dentro del mismo ámbito.
+
+####
+**Garantía de consistencia en definiciones recursivas**
+
+El mecanismo implementado asegura la integridad del sistema mediante tres pilares:
+
+- **No hay ligaduras duplicadas**: El ambiente extendido recursivo se especializa únicamente en el almacenamiento de definiciones de procedimientos.
+- **Autorreferencia**: Al referenciar un procedimiento dentro del mismo grupo recursivo, la búsqueda localiza la definición en el ambiente actual (`env`), permitiendo que el procedimiento se llame a sí mismo o a otros del mismo grupo.
+- **Encapsulación**: Las definiciones recursivas permanecen contenidas en su propio `scope` o ámbito, evitando la contaminación del `ambiente exterior`.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 7 Procedimientos recursivos_Implementación de procedimientos recursivos I
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20I/

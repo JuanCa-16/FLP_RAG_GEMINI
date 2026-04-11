@@ -1,0 +1,254 @@
+####
+Interfaz y operaciones básicas para la representación de números naturales:
+
+```racket
+; Interfaz
+(define zero '())
+(define iszero? null?)
+(define succ (lambda (rep_n) (cons #t rep_n)))
+(define pred cdr)
+
+; Implementación para manejo de base 16
+(lambda (list-16)
+  (if (null? list-16)
+      (list 1)
+      (if (= 16 (+ 1 (car list-16)))
+          (cons 0 (succ (cdr list-16)))
+          (cons (+ 1 (car list-16)) (cdr list-16)))))
+
+; Aplicación de operaciones
+(define plus
+  (lambda (x y)
+    (if (iszero? x)
+        y
+        (succ (plus (pred x) y)))))
+
+(define prod
+  (lambda (x y)
+    (if (iszero? x)
+        zero
+        (if (eqv? x (succ zero))
+            y
+            (plus y (prod (pred x) y))))))
+```
+
+**Conceptos clave**
+`interfaz`, `recursión`, `números naturales`, `representación de datos`
+
+**Aplicación**
+Define una abstracción para números naturales donde se implementan las operaciones de suma (`plus`) y multiplicación (`prod`) mediante el uso de sucesores y predecesores, permitiendo operar independientemente de la representación interna.
+
+####
+Representación y conteo de nodos en árboles binarios mediante listas:
+
+```racket
+; Gramática en BNF:
+; <arbin> ::= <numero>
+; <arbin> ::= (<simbolo> <arbin> <arbin>)
+
+; Ejemplos de árboles:
+(define tree-1 2) ; una hoja
+(define tree-2 3) ; otra hoja 
+(define tree-3 (list 'a 1 5)) ; un nodo con dos hojas
+(define tree-4 (list 'b tree-3 tree-2))
+
+; Función para contar nodos
+(define cuantos
+  (lambda (arbin)
+    (if (number? arbin)
+        1
+        (+ 1 (cuantos (cadr arbin)) (cuantos (caddr arbin))))))
+```
+
+**Conceptos clave**
+`árbol binario`, `gramática BNF`, `recursión`, `nodos`
+
+**Aplicación**
+Se utiliza para procesar estructuras jerárquicas definidas por una gramática simple, permitiendo calcular el tamaño total del árbol (número de nodos) recorriendo recursivamente sus ramas izquierda y derecha.
+
+####
+Procesamiento de listas de símbolos (`s-lists`) y sustitución de elementos:
+
+```racket
+; Gramática en BNF:
+; <listas>           ::= ()
+;                    ::= (<expresion-simbolo> . <listas>)
+; <expresion-simbolo>::= <simbolo> | <listas>
+
+(define subst
+  (lambda (listas old new)
+    (if (null? listas)
+        '()
+        (cons (subst-exp-sim (car listas) old new) 
+              (subst (cdr listas) old new)))))
+
+(define subst-exp-sim
+  (lambda (exp-sim old new)
+    (if (symbol? exp-sim)
+        (if (eqv? exp-sim old) new exp-sim)
+        (subst exp-sim old new))))
+```
+
+**Conceptos clave**
+`s-lists`, `substitución`, `recursión mutua`, `expresiones simbólicas`
+
+**Aplicación**
+Esta implementación resuelve el problema de reemplazar todas las ocurrencias de un símbolo `old` por uno `new` dentro de una estructura de listas anidadas, demostrando el uso de recursión mutua para manejar la estructura definida en la gramática.
+
+####
+Definición de tipos de datos abstractos para árboles binarios:
+
+```racket
+(define-datatype arbin arbin?
+  (hoja (n number?))
+  (nodo
+   (letra symbol?)
+   (izq arbin?)
+   (der arbin?)))
+
+; Ejemplos de uso de la interfaz:
+(define arbin1 (hoja 1))
+(define arbin2 (hoja 3))
+(define arbin3 (nodo 'a (hoja 2) (hoja 5)))
+(define arbin4 (nodo 'b arbin2 arbin3))
+
+; Verificación de tipos:
+(arbin? (list 'a 2 3)) ; Retorna #f
+(arbin? arbin1)        ; Retorna #t
+```
+
+**Conceptos clave**
+`define-datatype`, `tipos de datos abstractos`, `constructores`, `predicados`
+
+**Aplicación**
+Se utiliza para crear una interfaz robusta de tipos de datos que garantiza que los árboles binarios sigan una estructura específica, proporcionando automáticamente constructores (`hoja`, `nodo`) y un predicado de tipo (`arbin?`).
+
+####
+Modelado de listas simbólicas mediante tipos de datos definidos:
+
+```racket
+(define-datatype s-list s-list?
+  (empty-s-list)
+  (non-empty-s-list
+   (first symbol-exp?)
+   (rest s-list?)))
+
+(define-datatype symbol-exp symbol-exp?
+  (symbol-symbol-exp (data symbol?))
+  (s-list-symbol-exp (data s-list?)))
+```
+
+**Conceptos clave**
+`s-list`, `tipos de datos`, `recursión mutua`, `abstracción`
+
+**Aplicación**
+Permite representar la estructura de las `s-lists` de forma abstracta, separando la definición de una lista vacía de una no vacía y permitiendo que los elementos de la lista sean, a su vez, símbolos o nuevas listas.
+
+####
+Procesamiento de tipos de datos con la estructura `cases`:
+
+```racket
+; La estructura general es:
+; (cases nombre-tipo expresión                     
+;   {(nombre-variante ({nombre-campo } ) consecuente )}
+;   (else por-defecto ))
+
+(define cuantos-cases
+  (lambda (un-arbin)
+    (cases arbin un-arbin
+      (hoja (n) 1)
+      (nodo (le izq der) 
+            (+ 1 (cuantos-cases izq) (cuantos-cases der))))))
+```
+
+**Conceptos clave**
+`cases`, `pattern matching`, `descomposición`, `recursión`
+
+**Aplicación**
+Se aplica para realizar el análisis por casos de un tipo de dato definido con `define-datatype`. Facilita la extracción de valores internos de las variantes (como los hijos de un nodo) para realizar operaciones recursivas de manera clara y segura.
+
+####
+Definición y procesamiento de la sintaxis abstracta del cálculo lambda:
+
+```racket
+; Gramática:
+; <expresion> ::= <identificador> 
+;            ::= (lambda (<identificador>) <expresion>)
+;            ::= (<expresion> <expresion>)
+
+(define-datatype expression expression? 
+  (var-exp
+    (id symbol?))
+  (lambda-exp
+    (id symbol?)
+    (body expression?))
+  (app-exp
+    (rator expression?)
+    (rand expression?)))
+
+(define occurs-free?
+  (lambda (var exp)
+    (cases expression exp
+      (var-exp (id) (eqv? id var))
+      (lambda-exp (id body)
+        (and (not (eqv? id var))
+             (occurs-free? var body)))
+      (app-exp (rator rand)
+        (or (occurs-free? var rator)
+            (occurs-free? var rand))))))
+```
+
+**Conceptos clave**
+`cálculo lambda`, `sintaxis abstracta`, `variables libres`, `expresiones`
+
+**Aplicación**
+Este fragmento implementa la estructura fundamental para un intérprete o analizador de lenguajes, permitiendo determinar si una variable ocurre libremente dentro de una expresión lambda siguiendo las reglas de alcance léxico.
+
+####
+Transformación entre sintaxis concreta y abstracta (Parsing y Unparsing):
+
+```racket
+(define unparse-expression
+  (lambda (exp)
+    (cases expression exp
+      (var-exp (id) id)
+      (lambda-exp (id body) 
+        (list 'lambda (list id)
+          (unparse-expression body)))
+      (app-exp (rator rand)
+        (list (unparse-expression rator)
+              (unparse-expression rand))))))
+
+(define parse-expression
+  (lambda (datum)
+    (cond
+      ((symbol? datum) (var-exp datum))
+      ((pair? datum)
+       (if (eqv? (car datum) 'lambda)
+         (lambda-exp (caadr datum)
+           (parse-expression (caddr datum)))
+         (app-exp
+           (parse-expression (car datum))
+           (parse-expression (cadr datum)))))
+      (else (eopl:error 'parse-expression
+              "Invalid concrete syntax ~s" datum)))))
+
+; Ejemplos de construcción:
+(define exp1 (var-exp 'x))
+(define exp2 (var-exp 'f))
+(define exp3 (app-exp exp2 exp1))
+(define exp4 (app-exp exp2 exp3))
+(define exp5 (lambda-exp 'x exp4))
+```
+
+**Conceptos clave**
+`parsing`, `unparsing`, `sintaxis concreta`, `sintaxis abstracta`
+
+**Aplicación**
+Se utiliza para convertir representaciones de datos legibles por humanos (listas de Scheme) en estructuras de datos abstractas procesables por el sistema (`parse-expression`) y viceversa (`unparse-expression`). Es un componente esencial en la fase de front-end de un lenguaje de programación.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ejemplosAbstraccion.scm
+LENGUAJE: scheme
+FUENTE: CODIGO

@@ -1,0 +1,43 @@
+####
+Para abordar el funcionamiento de las expresiones mediante `paso por referencia`, analizaremos un ejemplo cuya evaluación resulta en 103. El proceso de evaluación se estructura mediante la creación de ambientes sucesivos. Inicialmente, se parte de un `ambiente vacío`. Luego, se define un ambiente `M0` que contiene las variables `a` y `b`, las cuales actúan como `direct targets` hacia sus respectivas `clausuras`, manteniendo una referencia al `ambiente vacío`. Posteriormente, en un `ambiente 1`, se declaran `K` y `M`, también como `direct targets` hacia los valores 3 y 4, respectivamente.
+
+####
+El siguiente nivel de evaluación introduce un `letrec` que genera un ambiente extendido `en2R`. En este, se declara `T` como un `direct target` hacia una `clausura` que contiene la referencia al propio ambiente `en2R`. Finalmente, se define el último `let` que contiene a `F`, un `direct target` hacia una `clausura` cuyo ambiente es `en2R`. Sobre este último ambiente, `en3`, evaluaremos la expresión `T(F(K), K)`. Para ello, se deben evaluar primero los `rands` de izquierda a derecha.
+
+####
+Al evaluar `F(K)`, se extiende el ambiente `en2R` para crear `enF`. Aquí, el parámetro `X` se vincula mediante un `indirect target` hacia `K`, dado que estamos pasando una variable por referencia. Al invocar `F`, se ejecutan las funciones `a` y `b` declaradas en el nivel superior, las cuales extienden del `ambiente vacío`. 
+
+Al procesar la función `a(X)`, como `X` es un `indirect target` hacia `K`, cualquier modificación sobre `X` afectará directamente a `K`. Si se realiza la operación `X = X + 1`, el valor original de `K` (que era 3) se convierte en un `direct target` hacia 4. Al devolver el valor resultante, obtenemos 4. Posteriormente, al evaluar `b(X)`, donde `y` es un `indirect target` hacia `K`, se aplica `y = y + 3`, convirtiendo el valor en 7, y se retorna `y + 2`, resultando en 9.
+
+####
+Tras evaluar los argumentos, se procede a llamar al procedimiento `T`. Este crea un ambiente extendido `enT1` con los parámetros `X` e `Y`. El parámetro `X` recibe el valor directo 13, mientras que `Y` se mantiene como un `indirect target` hacia `K`. El procedimiento incluye una estructura de control que se ejecuta mientras `X > 0`, reduciendo `X` en 1 en cada iteración y sumando el valor de `Y`. Como `Y` apunta al mismo `indirect target` que `K`, cada consulta refleja el valor actual de `K`.
+
+####
+En la última iteración, cuando `X` llega a 0, se ejecuta una llamada final a `b(Y)`. Dado que `b` opera sobre el `indirect target` compartido, se le suma 3 al valor acumulado en `K` (que tras las iteraciones previas ha sido modificado), resultando en 10. Finalmente, la función devuelve `10 + 2`, es decir, 12. Sumando los resultados parciales de las iteraciones de `T` y el valor final, obtenemos un total de 103.
+
+####
+Al verificar el código en el intérprete, el resultado es efectivamente 103. Observamos el estado de las variables tras la ejecución:
+
+```racket
+(let ((a (lambda (x) (set! x (+ x 1)) x))
+      (b (lambda (y) (set! y (+ y 3)) (+ y 2))))
+  (letrec ((k 3)
+           (m 4)
+           (t (lambda (x y)
+                (if (= x 0)
+                    (b y)
+                    (+ y (t (- x 1) y))))))
+    (let ((f (lambda (x) (a x))))
+      (t (f k) k))))
+```
+
+Como nota final, es fundamental considerar que cuando los procedimientos comparten un `indirect target`, se transmite el `target` interno. Esto provoca que los efectos de las modificaciones sobre las variables sean persistentes y visibles en los distintos ámbitos de evaluación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=jWgdJYlW6KA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

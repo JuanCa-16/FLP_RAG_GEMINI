@@ -1,0 +1,137 @@
+####
+Definición de la gramática y el tipo de dato abstracto para un árbol binario (`arbol-b`) utilizando la interfaz de tipos de `EOPL`:
+
+La estructura gramatical se define de la siguiente manera:
+- `<arbol-b> ::= <numero>` (representado por la variante `leaf`)
+- `<arbol-b> ::= <simbolo> <arbol-b> <arbol-b>` (representado por la variante `node`)
+
+```racket
+#lang eopl
+
+(define-datatype arbol-b arbol-b?
+  (leaf (num number?))
+  (node (key symbol?)
+        (left arbol-b?)
+        (right arbol-b?)))
+```
+
+**Conceptos clave**
+`define-datatype`, `variantes`, `predicados`, `recursividad estructural`
+
+**Aplicación**
+Este tipo de dato se utiliza para representar estructuras jerárquicas en la implementación de lenguajes de programación, permitiendo definir de forma rigurosa la sintaxis abstracta de un árbol donde las hojas contienen datos numéricos y los nodos internos contienen una clave simbólica y dos subárboles.
+
+####
+Instanciación de objetos de tipo `arbol-b` utilizando los constructores `leaf` y `node`:
+
+```racket
+(define arbol1
+  (leaf 5))
+
+(define arbol2
+  (node 'k (node 'p (leaf 5) (leaf 7))
+        (node 'j (leaf 4) (leaf 7))))
+```
+
+**Conceptos clave**
+`instanciación`, `constructores`, `leaf`, `node`
+
+**Aplicación**
+Se emplea para crear representaciones concretas de la estructura definida previamente. Estas instancias sirven como casos de prueba para validar las funciones de procesamiento de árboles y para modelar datos jerárquicos en memoria.
+
+####
+Función recursiva para calcular la suma de los valores contenidos en las hojas de un `arbol-b`:
+
+```racket
+(define sumar-arbol
+  (lambda (arb)
+    (cases arbol-b arb
+      (leaf (num) num)
+      (node (k l r)
+            (+
+             (sumar-arbol l)
+             (sumar-arbol r))))))
+```
+
+**Conceptos clave**
+`cases`, `recursión`, `recorrido de árboles`, `sumarización`
+
+**Aplicación**
+Esta función demuestra cómo procesar una estructura de datos recursiva mediante la evaluación de casos. Es un patrón fundamental para implementar analizadores y evaluadores que deben recorrer un árbol de sintaxis abstracta (AST) para producir un resultado numérico o acumulado.
+
+####
+Extracción de las claves simbólicas de un `arbol-b` para generar una lista de símbolos:
+
+```racket
+(define arbol-b->listS
+  (lambda (arb)
+    (cases arbol-b arb
+      (leaf (num) '())
+      (node (k l r)
+            (append
+             (list k)
+             (arbol-b->listS l)
+             (arbol-b->listS r))))))
+```
+
+**Conceptos clave**
+`append`, `extracción de datos`, `lista de símbolos`, `procesamiento de nodos`
+
+**Aplicación**
+Se utiliza para recolectar información específica (claves) de los nodos internos de un árbol, omitiendo los valores de las hojas. Es útil en tareas de análisis donde se requiere listar identificadores o etiquetas presentes en una estructura jerárquica.
+
+####
+Definición de sintaxis concreta y función de `parse` para transformar listas en tipos de datos `arbol-b`:
+
+```racket
+;; Sintaxis concreta
+(define arbol1C '(leaf 5))
+(define arbol2C '(node k
+                      (node p (leaf 5) (leaf 7))
+                      (node j (leaf 4) (leaf 7))))
+
+(define parse
+  (lambda (exp)
+    (cond
+      [(eqv? (car exp) 'leaf)
+       (leaf (cadr exp))]
+      [else
+       (node
+        (cadr exp)
+        (parse (caddr exp))
+        (parse (cadddr exp)))])))
+```
+
+**Conceptos clave**
+`sintaxis concreta`, `parsing`, `cond`, `abstracción de datos`
+
+**Aplicación**
+El `parse` permite convertir una representación externa y legible (como una lista de Racket que representa la sintaxis concreta) en una representación interna (sintaxis abstracta) basada en `define-datatype`. Es el primer paso en la construcción de intérpretes y compiladores.
+
+####
+Función de `unparse` para convertir una estructura `arbol-b` de vuelta a su sintaxis concreta:
+
+```racket
+(define unparse
+  (lambda (exp)
+    (cases arbol-b exp
+      (leaf (num) (list 'leaf num))
+      (node (k l r)
+            (list
+             'node
+             'k
+             (unparse l)
+             (unparse r))))))
+```
+
+**Conceptos clave**
+`unparse`, `serialización`, `cases`, `sintaxis concreta`
+
+**Aplicación**
+El `unparse` realiza la operación inversa al `parse`, transformando la representación interna de la sintaxis abstracta en una estructura de listas o texto. Es fundamental para tareas de depuración, visualización de resultados o almacenamiento de datos procesados en formatos legibles.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/8.Datatypes.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

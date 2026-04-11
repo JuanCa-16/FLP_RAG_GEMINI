@@ -1,0 +1,22 @@
+Se analiza el comportamiento de una función recursiva `f` definida en un ambiente inicial. Esta función se representa como una clausura que captura su propio ambiente de definición, lo cual permite la autorreferencia necesaria para la recursión. En esta implementación, se utiliza un ambiente extendido estándar, no un ambiente especializado para funciones recursivas. La clausura se almacena en una estructura de datos tipo vector.
+
+####
+Dentro de un bloque `let`, se define la variable `j` como el resultado de la llamada a `f(6)`. Esta invocación desencadena una secuencia de llamadas recursivas, generando una cadena de siete ambientes extendidos. En cada nuevo ambiente, el parámetro `x` se enlaza sucesivamente a los valores 6, 5, 4, 3, 2, 1 y 0. La computación de esta secuencia corresponde al cálculo del factorial de 6, cuyo resultado es 720. Este valor es finalmente asignado a la variable `j`.
+
+####
+Posteriormente a la asignación de `j`, se ejecuta la operación `(set! f 6)`. Esta instrucción busca el enlace del símbolo `f` en el ambiente actual y lo modifica. La `f` que se encuentra es la clausura definida previamente. La operación `set!` reemplaza este valor de procedimiento por el valor numérico 6. A partir de este punto, dentro del alcance actual, el identificador `f` ya no se refiere a la función, sino al entero 6.
+
+####
+La expresión final a evaluar es `(+ j f)`. Durante la evaluación, el intérprete busca el valor de `j`, que es 720. A continuación, busca el valor asociado a `f`. Debido a la operación `set!` ejecutada previamente, el valor que se recupera para `f` es el entero 6, no la clausura original. En consecuencia, la operación resulta en la suma de 720 más 6, dando un total de 726.
+
+####
+Este ejemplo ilustra cómo el alcance de una asignación `set!` afecta a las variables. Cuando una operación como `(set! x ...)` se ejecuta dentro del cuerpo de una función, modifica el enlace del parámetro `x` en el ambiente local de esa llamada. El comportamiento sería diferente si se intentara modificar una variable externa, ya que el resultado dependería del mecanismo de paso de parámetros, ya sea por valor o por referencia. La distinción entre estos dos mecanismos es fundamental para predecir el comportamiento del programa en presencia de efectos secundarios como la asignación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=gGiwIY4jviU
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

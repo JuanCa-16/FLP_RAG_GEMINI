@@ -1,0 +1,152 @@
+####
+Una computación puede producir un valor o generar efectos. Mientras que la producción de un valor es local a la expresión, un efecto es global y afecta a toda la computación, como ocurre con la lectura, impresión o alteración de la memoria. En este contexto, nos enfocamos principalmente en la asignación de ubicaciones en memoria.
+
+**Diferencias entre ligadura y asignación**
+- **Ligadura:** Es una acción local que crea una nueva asociación entre un nombre y un valor.
+- **Asignación:** Es una acción potencialmente global que modifica el valor de una ligadura existente, permitiendo el compartimiento de valores entre diferentes procedimientos.
+
+Para permitir la asignación de variables, es necesario extender el lenguaje con ejecución secuencial, utilizando expresiones `begin ...; ... end` y `set ... = ...`.
+
+####
+El lenguaje se extiende mediante la siguiente gramática:
+
+```racket
+(expression
+  ("begin"
+    expression
+    (arbno ";" expression)
+  "end")
+  begin-exp)
+
+(expression
+  ("set" identifier "=" expression)
+  set-exp)
+```
+
+**Valores expresados y denotados**
+- **Valor expresado:** `Número` + `Booleano` + `ProcVal`
+- **Valor denotado:** `Ref(Valor Expresado)`
+
+La evaluación de `begin` evalúa cada expresión en orden; si hay múltiples, retorna el valor de la última. Por su parte, la asignación `set` evalúa la expresión de la derecha y modifica la ubicación en memoria asociada al identificador en la izquierda. Esta última no produce un valor (es un efecto).
+
+####
+Al incluir procedimientos y asignación, surge un problema de alcance: cuando un procedimiento se define, captura el ambiente actual. Si las variables en ese ambiente se modifican mediante `set` después de la definición, el procedimiento no detecta el cambio, ya que opera sobre el ambiente almacenado originalmente.
+
+Para solucionar esto, cada identificador debe denotar la dirección de una ubicación en memoria, llamada `referencia` o `store`.
+- **L-valores:** Referencias asociadas a variables en el lado izquierdo de una asignación.
+- **R-valores:** Valores expresados asociados a variables en el lado derecho.
+
+La interfaz del tipo de dato `reference` utiliza un constructor y dos observadores:
+- `a-ref (n v)`: Crea una referencia.
+- `deref (r)`: Retorna el valor en la referencia.
+- `setref!(r v)`: Cambia el valor en la referencia.
+
+####
+Definición de la interfaz del tipo de dato `reference`:
+
+```racket
+(define-datatype reference reference?
+  (a-ref (position integer?)
+         (vec vector?)))
+
+(define deref
+  (lambda (ref)
+    (primitive-deref ref)))
+
+(define primitive-deref
+  (lambda (ref)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-ref vec pos)))))
+
+(define setref!
+  (lambda (ref val)
+    (primitive-setref! ref val)))
+
+(define primitive-setref!
+  (lambda (ref val)
+    (cases reference ref
+      (a-ref (pos vec)
+             (vector-set! vec pos val)))))
+```
+
+####
+Para implementar la asignación, el ambiente debe gestionar las referencias. El tipo de dato `environment` se define así:
+
+```racket
+(define-datatype environment environment?
+  (empty-env-record)
+  (extended-env-record (syms (list-of symbol?))
+                       (vec vector?)
+                       (env environment?)))
+```
+
+Se introduce la operación `apply-env-ref`, que retorna la referencia en lugar de su valor, reescribiendo `apply-env` en términos de esta y `deref`:
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (deref (apply-env-ref env sym))))
+
+(define apply-env-ref
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+        (eopl:error 'apply-env-ref "No binding for ~s" sym))
+      (extended-env-record (syms vals env)
+        (let ((pos (rib-find-position sym syms)))
+          (if (number? pos)
+              (a-ref pos vals)
+              (apply-env-ref env sym)))))))
+```
+
+####
+El comportamiento de las expresiones de asignación y ejecución secuencial se integra en `eval-expression`:
+
+```racket
+(varassign-exp (id rhs-exp)
+  (begin
+    (setref! (apply-env-ref env id)
+             (eval-expression rhs-exp env))
+    1))
+
+(begin-exp (exp exps)
+  (let loop ((acc (eval-expression exp env))
+             (exps exps))
+    (if (null? exps)
+        acc
+        (loop (eval-expression (car exps) env)
+              (cdr exps)))))
+```
+
+Este modelo sigue una política de **llamado por valor**, donde en cada llamado a un procedimiento se crea una nueva referencia para cada parámetro formal. Por tanto, las asignaciones a parámetros formales dentro de un procedimiento son locales y no afectan las variables externas.
+
+####
+El **llamado por referencia** permite que un procedimiento modifique las variables del llamador. En este modelo, no se crea una nueva ubicación para la variable si esta ya es una referencia; se pasa la referencia existente.
+
+Para gestionar esto, se introduce el tipo de dato `target`, que distingue entre valores directos (`direct-target`) y referencias a otras referencias (`indirect-target`):
+
+```racket
+(define-datatype target target?
+  (direct-target (expval expval?))
+  (indirect-target (ref reference-to-direct-target?)))
+```
+
+Las implementaciones de `deref` y `setref!` se actualizan para inspeccionar el tipo de `target`. Si el blanco es indirecto, `deref` busca el valor de la referencia interna; si es directo, retorna el valor almacenado.
+
+####
+La implementación de `setref!` y la aplicación de procedimientos bajo el modelo de paso por referencia se ajustan de la siguiente manera:
+
+- `setref!` modifica el valor contenido en la referencia. Si el blanco es indirecto, accede a la referencia interna y actualiza su contenido como un `direct-target`.
+- En la aplicación de procedimientos (`apply-procedure`), se evalúa el operando: si es una variable, se retorna un `indirect-target` que apunta a la ubicación original; si no es variable, se crea una nueva ubicación como `direct-target`.
+
+Esto garantiza que si se pasa una variable a un procedimiento, cualquier `set` realizado sobre el parámetro formal dentro del cuerpo del procedimiento afectará directamente la ubicación original de la variable en el ambiente del llamador.
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 7. Asignacion y paso de parametros

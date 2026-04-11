@@ -1,0 +1,144 @@
+####
+**Modificaciones al lenguaje para programación orientada a objetos**
+Se va a modificar el lenguaje para manejar los siguientes tipos de valores:
+-   **Valores denotados**: `ref(valor expresado)`
+-   **Valores expresados**: Número, booleano, `procVal` y objeto
+
+####
+**Definición de una clase en el lenguaje orientado a objetos**
+```racket
+class c1 extends object
+  field i
+  field j
+  
+  method initialize (x)
+    begin
+      set i = x;
+      set j = -(0, x)
+    end
+    
+  method countup (d)
+    begin
+      set i = +(i, d);
+      set j = -(j, d)
+    end
+    
+  method getstate ()
+    list(i, j)
+```
+En este punto declaramos una clase llamada `c1` que hereda de `object` y tiene los campos `i` e `j`. Cuando se instancia, `i` toma el valor de `x`, y `j` toma el valor de `-x` a través del método `initialize`. La clase cuenta con dos métodos llamados `countup` y `getstate`.
+
+####
+**Ejemplo de uso de la clase c1**
+```racket
+let t1 = 0
+    t2 = 0
+    o1 = new c1(3)
+in begin
+    set t1 = send o1 getstate();  % Obtiene estado inicial: list(3,-3)
+    send o1 countup(2);           % Modifica el estado: incrementa i en 2, decrementa j en 2
+    set t2 = send o1 getstate();  % Obtiene estado modificado: list(5,-5)
+    list(t1, t2)                  % Retorna lista con ambos estados
+end
+```
+Cuando se inicializa `o1` con el valor 3, los valores de `i` y `j` son 3 y -3 respectivamente. Al ejecutar `send o1 getstate()` se obtiene `list(3, -3)`. Al ejecutar `send o1 countup(2)`, el valor de `i` pasa a ser 5 y el de `j` pasa a ser -5; en consecuencia, `t2` vale `list(5, -5)`. El valor de retorno final es `list(list(3, -3), list(5, -5))`.
+
+####
+**Definición de una estructura de árbol usando programación orientada a objetos**
+```racket
+class node extends object
+  field left
+  field right
+  field val
+  
+  method initialize (l, r, v)
+    begin
+      set left = l;
+      set right = r;
+      set val = v
+    end
+    
+  method sum ()
+    +(send left sum(),
+      send right sum(),
+      val)
+
+class leaf extends object
+  field val
+  
+  method initialize (v)
+    begin
+      set val = v
+    end
+    
+  method sum ()
+    val
+```
+Se definen dos clases para representar la estructura de un árbol: `node` para los nodos internos y `leaf` para las hojas. La clase `node` contiene referencias a sus hijos izquierdo y derecho, además de un valor. El método `sum` en `node` realiza una suma recursiva de los subárboles y el valor del nodo actual, mientras que en `leaf` simplemente retorna su valor.
+
+####
+**Construcción y procesamiento de un árbol de ejemplo**
+```racket
+let tree = new node(
+              new node(
+                  new leaf(3),
+                  new leaf(5),
+                  3
+              ),
+              new node(
+                  new node(
+                      new leaf(4),
+                      new leaf(3),
+                      10
+                  ),
+                  new leaf(20),
+                  19
+              ),
+              14
+          )
+in send tree sum()
+```
+Al ejecutar el método `sum` sobre la instancia `tree`, este puede ejecutarse en un objeto de tipo `node` o un objeto de tipo `leaf`, pero el sistema no lo sabe de antemano. A esto se le conoce como `despacho dinámico de métodos` porque el comportamiento específico se determina en tiempo de ejecución según el tipo real del objeto.
+
+####
+**Conceptos teóricos de la programación orientada a objetos**
+-   **Despacho dinámico**: Permite que el método a ejecutar se determine en tiempo de ejecución basado en el tipo real del objeto, no en el tipo declarado. Esto es fundamental para el `polimorfismo`.
+-   **Jerarquía de clases**: Las clases pueden organizarse en jerarquías donde las clases hijas heredan y extienden el comportamiento de las clases padre.
+-   **Mensajes y métodos**:
+    -   `Mensaje`: La solicitud enviada a un objeto para ejecutar una operación.
+    -   `Método`: La implementación específica que responde a un mensaje.
+
+####
+**Tabla de resumen de conceptos de sintaxis POO**
+-   `Clase`: Plantilla para crear objetos. Ejemplo: `class c1 extends object`
+-   `Campo`: Variable de instancia del objeto. Ejemplo: `field i`
+-   `Método`: Función asociada a un objeto. Ejemplo: `method sum() val`
+-   `Constructor`: Método que inicializa el objeto. Ejemplo: `method initialize(x)`
+-   `Instanciación`: Creación de un objeto a partir de una clase. Ejemplo: `new c1(3)`
+-   `Envío de mensaje`: Invocación de un método en un objeto. Ejemplo: `send o1 getstate()`
+-   `Herencia`: Relación entre clases padre e hijas. Ejemplo: `extends object`
+-   `Despacho dinámico`: Selección del método en tiempo de ejecución. Ejemplo: `send left sum()`
+-   `Composición`: Objetos que contienen otros objetos. Ejemplo: Nodos que contienen hojas.
+
+####
+**Comentarios adicionales sobre el paradigma orientado a objetos**
+-   El `despacho dinámico` es esencial para implementar `polimorfismo`.
+-   La `herencia` permite reutilizar código y establecer relaciones de tipo entre clases.
+-   Los `constructores` son responsables de inicializar el estado interno de los objetos.
+-   La `composición` de objetos permite construir estructuras complejas como árboles.
+-   El `envío de mensajes` es el mecanismo fundamental para la comunicación entre objetos.
+-   La `encapsulación` protege el estado interno de los objetos mediante campos privados.
+-   La `sobreescritura de métodos` permite que las clases hijas proporcionen implementaciones específicas.
+-   La `recursión` en métodos es común cuando se trabaja con estructuras de datos jerárquicas.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Sintaxis de la programación orientada a objetos I
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objetos%20I/

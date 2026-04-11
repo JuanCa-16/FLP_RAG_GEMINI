@@ -1,0 +1,365 @@
+####
+Al escribir un procedimiento, se debe definir qué clase de valores se espera como entrada y como salida.
+
+**Definición de funciones y recursión**
+
+La función `suma` tiene como entrada dos números naturales y tiene como salida un número natural. Los datos en las funciones recursivas pueden tener también definiciones recursivas que faciliten la programación.
+
+####
+**Técnicas para la definición recursiva de datos**
+
+Existen dos técnicas para la definición recursiva de datos:
+1. Especificación inductiva.
+2. Especificación mediante gramáticas.
+
+**Especificación inductiva**
+
+Se define un conjunto `S`, el cual es el conjunto más pequeño que satisface las siguientes dos propiedades:
+1. Algunos valores específicos que deben estar en `S`.
+2. Si algunos valores están en `S`, entonces otros valores también están en `S`.
+
+####
+**Ejemplos de especificación inductiva**
+
+**Números pares**
+1. Si `n = 2` entonces `n` es par.
+2. Si `n` es par, entonces `n + 2` también es par.
+
+**Lista de números**
+1. `empty` es una lista de números.
+2. Si `n` es un número y `l` es una lista, entonces `(n l)` es una lista de números.
+
+####
+**Especificación formal de conjuntos**
+
+La especificación formal de los conjuntos presentados anteriormente se define de la siguiente manera:
+
+**Números pares**
+1. 2 ∈ S
+2. Si n ∈ S, entonces (n + 2) ∈ S
+
+**Lista de números**
+1. () ∈ S
+2. Si l ∈ S y n ∈ N, entonces (n l) ∈ S
+
+####
+**Demostración de pertenencia a un conjunto**
+
+Para demostrar que un elemento pertenece a un conjunto definido inductivamente, se debe descomponer hasta llegar al caso base.
+
+**Ejemplo**
+Demuestre que `(1(2(3())))` es una lista de números.
+
+**Solución**
+1. 1 ∈ N, (2(3())) ∈ S
+2. (1(2(3()))) ∈ S
+Se puede seguir el procedimiento de forma recursiva hasta llegar al caso fundamental: () ∈ S.
+
+####
+**Especificación inductiva de listas y múltiplos**
+
+**Lista de números pares**
+Para definir un conjunto `P` de números pares y un conjunto `S` de listas de números pares:
+1. 2 ∈ P
+2. Si n ∈ P, entonces (n + 2) ∈ P
+3. () ∈ S
+4. Si l ∈ S y x ∈ P, entonces (x l) ∈ S
+
+**Múltiplos de 5**
+1. 5 ∈ S
+2. Si n ∈ S, entonces (n + 5) ∈ S
+
+####
+**Ejercicios de definición de conjuntos**
+
+Indique qué tipo de conjuntos están definidos por las siguientes reglas y proporcione dos ejemplos numéricos para cada uno:
+
+1. (0, 1) ∈ S; si (n, k) ∈ S, entonces (n + 1, k + 7) ∈ S.
+2. (0, 1) ∈ S; si (n, k) ∈ S, entonces (n + 1, 2k) ∈ S.
+3. (0, 1, 5) ∈ S; si (i, j, k) ∈ S, entonces (i + 1, j + 2, i + j) ∈ S.
+
+####
+**Especificación de datos mediante gramáticas**
+
+Una forma sencilla de especificar datos recursivos es mediante gramáticas en forma `Backus-Naur` (BNF). Las gramáticas se componen de:
+
+1. **Símbolos no terminales**: Aquellos que se componen de otros símbolos, conocidos como categorías sintácticas.
+2. **Símbolos terminales**: Corresponden a elementos del alfabeto.
+3. **Reglas de producción**: Definen la construcción de las estructuras.
+
+####
+**Conceptos de gramáticas y alfabetos**
+
+Para la construcción de lenguajes se utilizan los siguientes conceptos:
+- **Alfabeto**: Conjunto de símbolos, por ejemplo P = {a, b, c, ...}.
+- **Cerradura de Kleene**: {a}* = {ε, {a}, {a, a}, {a, a, a}, ...}. Representa cero o más repeticiones.
+- **Cerradura positiva**: {b}+ = {{b}, {b, b}, {b, b, b}, ...}. Representa una o más repeticiones.
+
+####
+**Ejemplos de gramáticas en BNF**
+
+**Lista de números enteros**
+```bnf
+<lista-de-enteros> ::= ()
+                   | (<int> <lista-de-enteros>)
+```
+O de forma simplificada:
+```bnf
+<lista-de-enteros> ::= (<int>)*
+```
+
+**Árbol Binario**
+```bnf
+<arbol-binario> ::= <int>
+                | (<simbolo> <arbol-binario> <arbol-binario>)
+```
+Ejemplos de árboles binarios siguiendo esta gramática:
+1. `1`
+2. `(foo 1 2)`
+3. `(foo 1 (bar 2 3) 3)`
+
+####
+**Gramática del Cálculo Lambda**
+
+La sintaxis para las expresiones del `cálculo λ` se define mediante la siguiente gramática:
+
+```bnf
+<lambda-exp> ::= <identificador>
+               | (lambda (<identificador>) <lambda-exp>)
+               | (<lambda-exp> <lambda-exp>)
+
+<identificador> ::= <letra>+
+```
+
+Ejemplos de expresiones válidas:
+- `x`
+- `(x y)`
+- `(lambda (x) (x y))`
+- `((lambda (y) (z y)) x)`
+
+####
+**Relación entre la estructura de datos y los programas**
+
+La definición inductiva o mediante gramáticas de los conjuntos de datos sirve de guía para desarrollar procedimientos que operan sobre dichos datos. La estructura de los programas debe seguir la estructura de los datos. Para esto, realizamos una especificación recursiva de programas basada en el principio del subproblema más pequeño.
+
+**Ejemplo: Función list-length**
+La función estándar de DrRacket `list-length` retorna el tamaño de una lista. Para su diseño, se utiliza la especificación recursiva de las listas:
+`<Lista> ::= () | (numero <Lista>)`
+
+El caso base es la lista vacía `()`, en el cual se retorna 0.
+
+####
+**Implementación de list-length en Racket**
+
+De acuerdo con la especificación recursiva, el diseño de `list-length` identifica si la lista es vacía para retornar 0, de lo contrario, suma 1 al resultado de la llamada recursiva con el resto de la lista.
+
+```racket
+;; list-length : lista -> numero
+;; Retorna la longitud de una lista mediante recursión
+(define list-length
+  (lambda (lst)
+    (if (null? lst)
+        0
+        (+ 1 (list-length (cdr lst))))))
+```
+
+####
+**Representación de Árboles Binarios en DrRacket**
+
+De acuerdo con la gramática de árboles binarios:
+`<arbol-binario> ::= <int> | (<simbolo> <arbol-binario> <arbol-binario>)`
+
+En DrRacket, el operador quote `'` genera una lista donde las palabras se convierten en símbolos.
+
+**Ejemplo de representación:**
+```racket
+(define arbolA '(k (h 5 3) (t (s 10 11) 12)))
+(define arbolB 2)
+```
+
+####
+**Procedimiento sum-arbol**
+
+Este procedimiento suma todos los valores enteros contenidos en un árbol binario siguiendo su estructura recursiva.
+
+```racket
+;; sum-arbol : arbol-binario -> numero
+;; Suma los nodos de un árbol binario
+(define sum-arbol
+  (lambda (arbol)
+    (if (number? arbol)
+        arbol
+        (+ (sum-arbol (cadr arbol))
+           (sum-arbol (caddr arbol))))))
+```
+
+####
+**Conversión de Árbol a Lista**
+
+Procedimiento para generar una lista de números a partir de un árbol binario.
+
+**Gramáticas involucradas:**
+- Entrada: `<arbol-binario> ::= <int> | <simbolo> <arbol-binario> <arbol-binario>`
+- Salida: `<lista-numeros> ::= () | <int> <lista-numeros>`
+
+```racket
+;; arbol->lista : arbol-binario -> lista-numeros
+;; Extrae los números de un árbol y los coloca en una lista
+(define arbol->lista
+  (lambda (l)
+    (if (number? l)
+        (cons l '())
+        (append (arbol->lista (cadr l))
+                (arbol->lista (caddr l))))))
+```
+
+####
+**Resumen del diseño de programas para datos recursivos**
+
+En el diseño de programas para datos recursivos se debe tener en cuenta:
+1. Identificar el caso terminal (base) donde termina la especificación recursiva.
+2. La idea es pasar de estados no terminales a uno terminal.
+3. La estrategia es llamar recursivamente la función desde un estado no terminal para llegar a uno terminal.
+
+**Ejercicio**
+Diseñe las siguientes funciones tomando en cuenta que `<Lista> ::= () | (numero <Lista>)`:
+1. `nth-element`: `(nth-element '(4 5 6) 2)` retorna 5.
+2. `remove-first`: `(remove-first '(1 2 3))` retorna `(2 3)`.
+
+####
+**Concepto de Variables en Lenguajes de Programación**
+
+El concepto de variable es fundamental. Una variable puede ser declarada y posteriormente ligada o referenciada.
+
+**Declaración:**
+Ocurre en estructuras como `lambda` o `let`.
+```racket
+(lambda (x) ...)
+(let ((x ...)) ...)
+```
+
+**Referencia:**
+Uso de la variable como valor o en una aplicación.
+```racket
+x ;; Como valor
+(f x y) ;; Como valor en un procedimiento
+```
+
+####
+**Ligadura y Alcance (Scope)**
+
+Una variable está ligada al lugar donde se declara. El valor ligado o referenciado por la variable es su `denotación`. Cada lenguaje tiene reglas de ligadura que determinan a qué declaración hace referencia cada variable.
+
+- **Alcance estático**: Las reglas se aplican antes de la ejecución (en tiempo de compilación/análisis).
+- **Alcance dinámico**: Las reglas se aplican durante la ejecución.
+
+####
+**Variables Libres**
+
+Se definen las ocurrencias libres de una variable `x` en una expresión `e` bajo las siguientes reglas:
+1. Si `e` es una variable, `x` ocurre libre si y solo si `x` es igual a `e`.
+2. Si `e` es de la forma `(lambda (y) e')`, `x` ocurre libre si y solo si `y` es distinto de `x` y `x` ocurre libre en `e'`.
+3. Si `e` es de la forma `(e1 e2)`, `x` ocurre libre si y solo si `x` ocurre libre en `e1` o en `e2`.
+
+####
+**Ejercicios de Variables Libres**
+
+Indique si `x` ocurre libre en las siguientes expresiones:
+1. `(lambda (x) (lambda (y) x))`
+2. `((lambda (z) (lambda (y) x)) x)`
+3. `((lambda (y) (lambda (y) x)) ((lambda (z) x) x))`
+
+####
+**Implementación del verificador de variables libres**
+
+Para diseñar un procedimiento que evalúe si `var` ocurre libre en `exp`, se considera la gramática del cálculo lambda:
+`<lambda-exp> ::= <identificador> | (lambda (<identificador>) <lambda-exp>) | (<lambda-exp> <lambda-exp>)`
+
+```racket
+;; occurs-free? : simbolo lambda-exp -> booleano
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp)
+       (eqv? var exp))
+      ((eqv? (car exp) 'lambda)
+       (and (not (eqv? (caadr exp) var))
+            (occurs-free? var (caddr exp))))
+      (else
+       (or (occurs-free? var (car exp))
+           (occurs-free? var (cadr exp)))))))
+```
+
+####
+**Alcance de una Variable**
+
+El alcance de una variable se define como la región dentro del programa en la cual ocurren todas las referencias a dicha variable.
+
+```racket
+(define x ; Variable x1
+  (lambda (x) ; Variable x2
+    (map (lambda (x) ; Variable x3
+           (+ x 1)) ; Referencia a x3
+         x))) ; Referencia a x2
+(x '(1 2 3)) ; Referencia a x1
+```
+
+####
+**Análisis de ligaduras en expresiones Lambda**
+
+En expresiones complejas, las variables se ligan según su declaración más cercana en el entorno léxico.
+
+**Ejemplo de estructura de ligaduras:**
+```racket
+(lambda (z)
+  ((lambda (a b c)
+     (a (lambda (a) (+ a c))
+        b))
+   (lambda (f x)
+     (f (z x)))))
+```
+**Descripción técnica del flujo de ligaduras:**
+- La variable `z` declarada en el primer `lambda` es referenciada en la expresión final `(z x)`.
+- El parámetro `c` del segundo `lambda` es referenciado en la suma `(+ a c)`.
+- La variable `a` dentro de `(+ a c)` hace referencia al `lambda (a)` más interno, sombreando (shadowing) la `a` declarada anteriormente.
+
+####
+**Ejercicios de evaluación con let**
+
+Determine el valor de las siguientes expresiones considerando las reglas de alcance:
+
+**Ejercicio 1**
+```racket
+(let ((x 3) (y 4))
+  (+ (let ((x (+ y 5)))
+       (* x y))
+     x))
+```
+
+**Ejercicio 2**
+```racket
+(let ((x 6) (y 7))
+  (* (let ((y 8))
+       (+ (let ((x 6) (y x))
+            (+ x (let ((y 3) (x y)) 
+                   (+ x (+ 2 y)))))
+          y))
+     (let ((x 4)) (- y x))))
+```
+
+**Ejercicio 3**
+```racket
+(let ((x 6) (y 7))
+  (+ (let ((x (- y 6)))
+       (* x y))
+     x))
+```
+
+--- METADATA ---
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 1. La relacion entre la induccion y recursion Especificacion de datos

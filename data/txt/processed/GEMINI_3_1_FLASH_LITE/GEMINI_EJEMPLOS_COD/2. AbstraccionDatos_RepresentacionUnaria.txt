@@ -1,0 +1,98 @@
+####
+Representación de números naturales mediante listas de `booleanos` en el lenguaje `eopl`:
+
+```racket
+#lang eopl
+(define zero '())
+
+(define successor
+  (lambda (n)
+    (cons #t n)))
+
+(define is-zero?
+  (lambda (n)
+    (null? n)))
+```
+
+**Conceptos clave**
+`listas`, `predicados`, `constructores`, `abstracción de datos`, `representación unaria`
+
+**Aplicación**
+Esta implementación define los cimientos de la aritmética de números naturales, donde `zero` es la lista vacía y `successor` incrementa un valor añadiendo un elemento a la lista, permitiendo representar cualquier número natural como una cadena de `#t`.
+
+####
+Implementación de la operación predecesor para números naturales:
+
+```racket
+(define predecessor
+  (lambda (n)
+    (if (is-zero? n)
+        (eopl:error "No se puede tener predecesor 0")
+        (cdr n))))
+```
+
+**Conceptos clave**
+`manejo de errores`, `estructuras de datos`, `condicionales`, `listas enlazadas`
+
+**Aplicación**
+Permite decrementar un número natural. Utiliza `cdr` para eliminar un elemento de la estructura de lista, incluyendo una validación mediante `is-zero?` para evitar operaciones inválidas en el conjunto de los números naturales.
+
+####
+Definición de la función `plus` para sumar dos números naturales:
+
+```racket
+(define plus
+  (lambda (a b)
+    (cond
+      [(is-zero? b) a]
+      [else
+       (plus (successor a) (predecessor b))]
+      )))
+```
+
+**Conceptos clave**
+`recursión`, `cond`, `acumuladores`, `operaciones aritméticas`
+
+**Aplicación**
+La función resuelve la suma mediante recursión, transfiriendo incrementos desde el operando `b` hacia el operando `a` hasta que `b` llega a cero. Es un ejemplo clásico de manipulación recursiva de estructuras de datos.
+
+####
+Definición de la función `mult` para multiplicar números naturales:
+
+```racket
+(define mult
+  (lambda (a b)
+    (if
+     (is-zero? b)
+     zero
+     (plus a (mult a (predecessor b)))
+     )))
+```
+
+**Conceptos clave**
+`recursión`, `funciones anidadas`, `lógica aritmética`, `casos base`
+
+**Aplicación**
+Esta función implementa la multiplicación mediante la suma iterativa. Utiliza la función `plus` previamente definida y reduce el multiplicador `b` en cada paso recursivo hasta alcanzar el caso base en `zero`.
+
+####
+Definición de constantes y ejecución de operaciones:
+
+```racket
+(define ten (list #t #t #t #t #t #t #t #t #t #t))
+(define five (list #t #t #t #t #t))
+
+(display (mult ten five))
+```
+
+**Conceptos clave**
+`instanciación`, `listas`, `salida de datos`, `constantes`
+
+**Aplicación**
+Se ejemplifica la creación de números naturales mediante la construcción manual de listas de longitud definida (diez y cinco respectivamente) y su posterior procesamiento a través de la función `mult` para demostrar la lógica aritmética implementada.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionUnaria.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

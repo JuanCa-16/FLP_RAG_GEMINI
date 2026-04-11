@@ -1,0 +1,67 @@
+Hasta ahora, el ambiente se ha manejado como un tipo de dato que asocia variables a valores, implementado como una lista de identificadores, una lista de valores y un ambiente ascendente. Sin embargo, la introducción de la asignación (`set`) genera un conflicto con el funcionamiento de los procedimientos y las clausuras. El problema radica en que una clausura guarda una copia del ambiente en el momento de su creación para mantener la consistencia. Si una variable de ese ambiente es modificada posteriormente mediante asignación, la copia dentro de la clausura no reflejará dicho cambio, llevando a resultados inesperados.
+
+####
+El conflicto entre la asignación y las clausuras se puede observar en el siguiente ejemplo: `let z = 0 in let f = proc(x) z in begin set z = 1; f(2) end`. En este caso, la clausura `f` captura el ambiente donde `z` es 0. Luego, la instrucción `set z = 1` modifica el valor de `z` en el ambiente principal. Intuitivamente, la llamada `f(2)` debería devolver 1, pero debido a que la clausura opera sobre su copia del ambiente original, devuelve 0. Para resolver esta inconsistencia y asegurar que los cambios por asignación se propaguen a todas las partes del programa que comparten el mismo estado, se introduce el concepto de referencias.
+
+####
+La solución al problema de la asignación en clausuras es modificar cómo se almacenan los valores. En lugar de que una variable se asocie directamente a su valor, se asociará a una **referencia** o **ubicación** en memoria que contiene el valor. De este modo, tanto el ambiente principal como la copia del ambiente guardada en una clausura apuntarán a la misma ubicación de memoria. Cualquier modificación realizada a través de la asignación cambiará el valor en esa ubicación compartida, garantizando que el cambio sea visible para todos.
+
+####
+El concepto de referencia está ligado a los términos L-valor y R-valor. Un **L-valor** se asocia con la ubicación o dirección de memoria de una variable, típicamente la que aparece al lado izquierdo de una asignación. Un **R-valor** es el valor concreto que está almacenado en esa ubicación. La referencia actúa como el conector entre ambos. Una analogía útil es la dirección de una casa: la dirección en sí misma es el L-valor (la ubicación), mientras que la casa que se encuentra en esa dirección es el R-valor (el contenido).
+
+####
+Para implementar las referencias en el intérprete, se propone un nuevo tipo de dato. Una referencia (`reference`) contendrá dos campos: un entero que indica la posición dentro de un vector y el vector mismo, que almacena los valores. La interfaz para manejar estas referencias constará de dos procedimientos observadores:
+1.  `deRef(ref)`: Permite obtener el valor asociado a una referencia.
+2.  `setRef(ref, val)`: Permite cambiar el valor asociado a una referencia, actualizándolo con un nuevo valor.
+
+####
+El funcionamiento práctico de las referencias es el siguiente: cuando se declara una variable, por ejemplo `let x = 4`, en lugar de ligar `x` al valor `4`, se le asigna una referencia que apunta a una posición en un vector de valores. Por ejemplo, `x` podría ser una referencia a la posición 0 del vector `#(7 8 9 6)`. Cuando se ejecuta una asignación como `set x = 9`, no se cambia la variable `x`, sino que se modifica el contenido de la posición 0 del vector, que ahora será `#(9 8 9 6)`. Cualquier acceso posterior a `x` generará una nueva referencia, pero apuntará al mismo vector actualizado, devolviendo así el valor `9`. Esto asegura que el estado sea consistente y compartido.
+
+####
+La implementación de las referencias en el intérprete comienza con la definición del tipo de dato y el procedimiento para obtener su valor. Primero, se define el tipo de dato `referencia`, que tiene una única variante `aRef` con dos campos: una posición (número) y un vector.
+
+```scheme
+(define-datatype referencia
+  (aRef
+    (pos number?)
+    (vec vector?)))
+```
+
+Luego, se implementa `deRef`, que extrae el valor de una referencia. Este procedimiento utiliza una primitiva que recibe la referencia, la descompone en su posición y vector, y utiliza la función `vector-ref` para devolver el elemento del vector en la posición indicada.
+
+```scheme
+(define deRef
+  (lambda (ref)
+    (primitive-de-ref ref)))
+
+(define primitive-de-ref
+  (lambda (ref)
+    (cases referencia ref
+      (aRef (pos vec)
+        (vector-ref vec pos)))))
+```
+
+####
+Para completar la interfaz de referencias, se implementa el procedimiento `setRef`, encargado de modificar el valor al que apunta una referencia. Este procedimiento recibe una referencia y el nuevo valor a asignar. Su primitiva interna descompone la referencia en su posición y vector, y luego utiliza la función `vector-set!`, que modifica el vector en la posición dada, asignándole el nuevo valor.
+
+```scheme
+(define setRef
+  (lambda (ref val)
+    (primitive-set-ref ref val)))
+
+(define primitive-set-ref
+  (lambda (ref val)
+    (cases referencia ref
+      (aRef (pos vec)
+        (vector-set! vec pos val)))))
+```
+Con esta interfaz implementada, el siguiente paso es integrar el manejo de referencias en los ambientes y en el resto del intérprete.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=BZ6YfPlSitA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

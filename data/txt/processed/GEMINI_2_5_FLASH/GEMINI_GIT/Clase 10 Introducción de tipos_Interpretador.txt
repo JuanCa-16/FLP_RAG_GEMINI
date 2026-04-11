@@ -1,0 +1,87 @@
+Las expresiones de tipo indican el tipo de una variable, no su representación en memoria. Por ejemplo, en `int a = 3`, `int` es una expresión de tipo.
+
+La gramática para las expresiones de tipo es la siguiente:
+<tipo-exp> ::= int
+            int-type-exp()
+           ::= bool
+            bool-type-exp()
+           ::= (<tipo-exp>*(,) -> <tipo-exp>)
+            proc-type-exp(targs result-type)
+
+###
+A continuación, se presentan ejemplos de expresiones tipadas:
+proc (int a, int b) + (a,b) ; (int * int) -> int
+5 ; int
+true ; bool
+
+Ejemplos de tipos de procedimientos:
+even? (x) ; int -> bool
++ ; int * int -> int
+(lambda (x) (lambda (y) (+ x y))) ; int -> (int -> int)
+(lambda (f x) (zero? (f (+ x 1)))) ; ((int -> int) * int) -> bool
+
+###
+A modo de ejercicio de inferencia de tipos, considere las siguientes expresiones:
+- (32, 26) ; int
+proc (x) (x 26) ; (int -> t) -> t
+proc (x) if x then 1 else 3 ; bool -> int
+proc (f, x) if (f x) then 1 else 2 ; (tx -> bool) * tx -> int
+proc (x) proc (y) if y then x else 3 ; int -> (bool -> int)
+
+Cuando un tipo no se puede determinar unívocamente, se conoce como tipo polimórfico.
+
+###
+El lenguaje será fuertemente y estáticamente tipado. Se emitirán errores de tipo cuando:
+*   Se intente aplicar algo distinto a un `procVal` (evaluación de no-procedimiento)
+*   Se envíe un número incorrecto de argumentos a un procedimiento
+*   Se aplique un argumento de tipo incorrecto a una primitiva (ej: booleano en suma)
+*   Se use algo diferente a un booleano en la condición de un condicional
+
+No se consideran errores de tipo las divisiones por cero (son errores semánticos).
+
+###
+Para implementar el verificador de tipos, se definirá un procedimiento `type-of-expression` que recibe una expresión y un ambiente de tipos, y asigna un tipo a la expresión.
+El ambiente inicial de tipos contendrá los tipos de los valores primitivos del ambiente inicial.
+
+###
+El comportamiento de `type-of-expression` para diferentes construcciones es:
+*   **Número**: retorna `int`
+*   **Booleano**: retorna `bool`
+*   **Variable**: busca la ligadura en el ambiente de tipos
+*   **Condicional** (`if`):
+    *   La condición debe ser de tipo `bool`
+    *   Las expresiones `then` y `else` deben tener el mismo tipo
+    *   Retorna el tipo común de `then` y `else`
+
+###
+Continuando con el comportamiento de `type-of-expression`:
+*   **Procedimiento** (`proc`): retorna `(t₁ × t₂ × … × tₙ) → t` donde `tᵢ` son los tipos de los parámetros y `t` es el tipo del cuerpo.
+*   **Aplicación** (llamada a procedimiento): para `(rator rand₁ ... randₙ)`
+    *   `rator` debe tener tipo `(t₁ × t₂ × … × tₙ) → t`
+    *   Cada `randᵢ` debe tener tipo `tᵢ`
+    *   Retorna tipo `t`
+
+###
+Existe una limitación del sistema al evaluar una aplicación de procedimiento:
+Necesitamos contrastar el tipo de `rator` (que es `(t₁ × t₂ × … × tₙ) → t`) con los tipos de los `rands` (que son `t₁, t₂, …, tₙ`). El problema surge cuando no tenemos forma de determinar directamente los tipos de los parámetros del `rator`, como en el siguiente ejemplo:
+let f = proc (x, y) ... in (f 1 2)
+
+Una de las estrategias de solución es el chequeo de tipos explícito, que consiste en colocar anotaciones de tipo en los procedimientos:
+let f = proc (int x, int y) ... in (f 1 2)
+
+###
+Otra estrategia de solución es la inferencia de tipos. Esta utiliza reglas de tipado junto con un mecanismo de inferencia lógica, permitiendo que los tipos se determinen automáticamente:
+let f = proc (? x, ? y) ... in (f 1 2)
+La inferencia de tipos utiliza un sistema de ecuaciones de tipos y unificación para determinar los tipos de manera automática basándose en el contexto de uso.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 10 Introducción de tipos_Interpretador
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/

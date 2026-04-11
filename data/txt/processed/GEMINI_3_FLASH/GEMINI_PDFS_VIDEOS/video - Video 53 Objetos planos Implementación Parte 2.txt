@@ -1,0 +1,92 @@
+####
+
+**Manejo de métodos y ejecución de `apply-method`**
+
+Para el manejo de métodos en el interpretador, el procedimiento `find-method-and-apply` no presenta cambios, ya que trabaja con la representación del objeto a partir de las declaraciones. Sin embargo, `apply-method` se redefine para manejar el vector de campos. 
+
+En `apply-method` se dispone del cuerpo del método, el nombre de la clase padre (`super-name`) y los identificadores de campos (`field-ids`). La ejecución consiste en evaluar la expresión del cuerpo en un ambiente extendido que contiene:
+- El `super-name`.
+- El objeto actual (`self`).
+- Un ambiente extendido con el vector de campos.
+
+La diferencia fundamental radica en que `field-ids` y `fields` representan la extracción de ese vector. Se construye un ambiente que contiene toda la información necesaria, facilitando la ejecución al integrar el ambiente del método con un ambiente extendido que posee dicho vector.
+
+####
+
+**Lógica de `rollup-field-ids` y jerarquía de clases**
+
+El procedimiento `rollup-field-ids` se encarga de construir una lista de identificadores. Esta lista tiene el mismo tamaño que el vector de campos de la clase cuando la clase huésped (donde está definido el método) y la clase de `self` son la misma. 
+
+En casos de herencia, si la clase huésped está más arriba en la cadena de jerarquía que la clase de `self`, el vector de `self` tendrá más elementos que los identificadores procesados por el método. Por ejemplo:
+- `self` es de clase `C3` (que posee 5 campos).
+- El método que se ejecuta pertenece a `C1` (que solo posee 2 campos).
+
+Aunque el vector sea más grande, la función `find-position` (o `last-position`) permite ubicar el segmento correspondiente dentro del vector. Se utilizan índices o banderas para determinar el rango exacto del vector con el que se debe trabajar. La función `rollup-field-ids` realiza una búsqueda de los campos y crea una lista unificada; por ejemplo, si `C1` tiene `x, y`, `C2` tiene `x` y `C3` tiene `x, z`, se construye la lista de identificadores respetando la cadena de herencia.
+
+####
+
+**Optimización mediante representación estática de métodos**
+
+Para evitar el costo computacional de llamar a `rollup-field-ids` en cada invocación de un método, se opta por almacenar esta información de forma estática. Dado que los índices y la jerarquía de campos no cambian tras la declaración de la clase, esta información se guarda directamente en la representación del método.
+
+Se define un `data-type` para los métodos que incluye:
+- La declaración original del método.
+- El nombre de la superclase.
+- La lista de símbolos (identificadores de campos) necesaria para su ejecución.
+
+Almacenar esto durante la fase de declaración evita recalcular la lista de símbolos e índices en cada llamado, mejorando la eficiencia del interpretador.
+
+```racket
+(define-datatype method method?
+  (a-method
+    (vars (list-of symbol?))
+    (body expression?)
+    (super-name symbol?)
+    (field-ids (list-of symbol?))))
+```
+
+####
+
+**Representación estática de clases y ambientes de métodos**
+
+La información de las clases, como los campos y métodos, es estática y no depende de los valores expresados o denotados durante la ejecución. Para optimizar el acceso, las clases se representan mediante una estructura que contiene la información precalculada de la jerarquía de herencia.
+
+Una clase se define con los siguientes atributos:
+- `class-name`: Nombre de la clase.
+- `super-name`: Nombre de la clase padre.
+- `field-size`: Un entero que indica la cantidad total de campos (incluyendo heredados).
+- `field-ids`: Lista de símbolos con los identificadores de todos los campos accesibles.
+- `methods`: Un `method-environment` que consiste en una lista de métodos con su información procesada.
+
+Esta representación permite que, una vez declarada la clase, se generen estructuras que contienen toda la información necesaria para la ejecución, evitando búsquedas repetitivas en la cadena de herencia. Por ejemplo, si la clase `C1` tiene tamaño 2, la clase `C2` (hija de `C1`) tendrá tamaño 3, y la clase `C3` (hija de `C2`) tendrá tamaño 5, integrando los campos de sus ancestros.
+
+####
+
+**Elaboración de declaraciones de clase**
+
+La construcción de las clases en el interpretador se realiza redefiniendo el procedimiento `elaborate-class-declarations`. Este proceso inicializa el ambiente de clases procesando cada declaración de la siguiente manera:
+
+1. Se crea la representación de la clase incluyendo `class-name`, `super-name` y el cálculo del tamaño e identificadores de campos.
+2. Se procesan los métodos de la clase mediante `rollup-method-declarations` para generar la lista de métodos optimizada.
+3. Esta representación completa se agrega al `class-environment`.
+
+A diferencia de enfoques previos donde se guardaban las declaraciones crudas, ahora se almacenan estas estructuras procesadas. Esto garantiza que el interpretador no tenga que recalcular tamaños de campos o resoluciones de métodos durante la fase de ejecución de expresiones, ya que los datos están disponibles directamente en el ambiente de clases.
+
+```racket
+(define-datatype class class?
+  (a-class
+    (super-name (maybe symbol?))
+    (field-size integer?)
+    (field-ids (list-of symbol?))
+    (methods method-environment?)))
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - Video 53 Objetos planos Implementación Parte 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=9kgBLpcG2x8
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

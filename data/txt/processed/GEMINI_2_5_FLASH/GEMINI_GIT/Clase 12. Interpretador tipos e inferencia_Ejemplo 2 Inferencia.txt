@@ -1,0 +1,145 @@
+El siguiente es el programa de ejemplo para el cual se realizará la inferencia de tipos:
+
+let f = proc(? x, ? y, ? z)
+  if (x y) then *(z,2)
+  else z
+in
+let g = proc(? m)
+  if m then true else false
+  k = 5
+in
+(f g true k)
+
+###
+1. Variables de tipos
+Se asignan variables de tipo a las expresiones y variables del programa:
+
+Variable expresion Tipo
+t0 let ... in int
+tf proc(? x ...) bool->bool*bool*int -> int
+tx x bool->bool
+ty y bool
+tz z int
+t1 (x y) bool
+t2 *(z,2) int
+tg proc(? m) ... bool -> bool
+tk 5 int
+t3 (f g true k) int
+tm m bool
+
+###
+Para resolver el sistema de tipos, primero se establecen las igualdades basadas en las declaraciones de funciones y la expresión principal:
+
+t0 = t3
+tf = tx*ty*tz -> t2
+tf = tx*ty*tz -> tz
+tg = tm -> bool
+
+###
+Se procede a las evaluaciones. Para la función `f`, el condicional `if (x y)` y sus ramas implican las siguientes resoluciones:
+
+tx*ty -> t1
+t1 = bool
+t2 = tz
+tz*int -> t2
+tz = int
+t2 = int
+
+###
+Para la función `g`, la evaluación del condicional `if m` y sus ramas implica:
+
+tm = bool
+tg = bool -> bool
+
+###
+Al considerar la aplicación `(f g true k)`, se resuelven los tipos finales:
+
+tf = tg*bool*int -> t3
+tg = tx
+ty = bool
+tz = int
+t2 = tz = t3
+
+###
+La siguiente expresión en Racket se utiliza para comprobar el tipo de la expresión completa, `res`. La salida esperada para esta expresión es `int`:
+
+(type-to-external-form
+ (type-of-expression
+  (cases
+   program
+   (scan&parse
+    " let
+f = proc(? x, ? y, ? z)
+if (x y) then *(z,2)
+else z
+in
+let
+g = proc(? m)
+if m then true else false
+k = 5
+in let
+res = (f g true k) in res"
+    )
+   (a-program (exp) exp)))
+ (empty-tenv)))
+int
+
+###
+Aquí se comprueba el tipo de la función `f` utilizando el sistema de tipos Racket. La salida esperada es `((bool -> bool) * bool * int -> int)`:
+
+(type-to-external-form
+ (type-of-expression
+  (cases
+   program
+   (scan&parse
+    " let
+f = proc(? x, ? y, ? z)
+if (x y) then *(z,2)
+else z
+in
+let
+g = proc(? m)
+if m then true else false
+k = 5
+in let
+res = (f g true k) in f"
+    )
+   (a-program (exp) exp)))
+ (empty-tenv)))
+((bool -> bool) * bool * int -> int)
+
+###
+Aquí se comprueba el tipo de la función `g` utilizando el sistema de tipos Racket. La salida esperada es `(bool -> bool)`:
+
+(type-to-external-form
+ (type-of-expression
+  (cases
+   program
+   (scan&parse
+    " let
+f = proc(? x, ? y, ? z)
+if (x y) then *(z,2)
+else z
+in
+let
+g = proc(? m)
+if m then true else false
+k = 5
+in let
+res = (f g true k) in g"
+    )
+   (a-program (exp) exp)))
+ (empty-tenv)))
+(bool -> bool)
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Ejemplo 2 Inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%202%20Inferencia/

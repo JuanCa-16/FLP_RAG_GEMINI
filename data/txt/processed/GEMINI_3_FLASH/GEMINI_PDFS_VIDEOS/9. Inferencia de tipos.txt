@@ -1,0 +1,287 @@
+####
+Algunos lenguajes de programación dejan que el compilador averigüe los tipos de todas las variables. Esto es llevado a cabo mediante la observación de cómo son usadas las variables y utilizando ayudas que el programador pueda aportar. Esta estrategia es llamada `inferencia de tipos`. Para el lenguaje en desarrollo, todas las expresiones de tipo son opcionales, y en donde no se coloquen, se pondrá el símbolo `?`.
+
+De esta manera, un programa puede verse como el siguiente ejemplo, donde los tres símbolos de interrogación indican el lugar donde un tipo debe ser inferido:
+
+```racket
+letrec
+  ? even(? odd, int x) = if zero?(x) then 1 else (odd sub1(x))
+in
+  letrec
+    bool odd(? x) = if zero?(x) then 0 else (even odd sub1(x))
+  in
+    (odd 13)
+```
+
+####
+Se agregan las siguientes reglas de producción a la gramática para soportar expresiones de tipo opcionales:
+
+- `tipo-exp-opcional` ::= `tipo-exp` (`a-type-exp (texp)`)
+- `tipo-exp-opcional` ::= `?` (`no-type-exp ()`)
+
+Para usar las expresiones de tipo opcionales en expresiones normales, se deben cambiar las reglas de producción para `proc-exp` y `letrec-exp`:
+
+- `expresión` ::= `proc` "(" {`tipo-exp-opcional` `identificador`}* (",") ")" `expresión` (`proc-exp (optional-arg-texps ids body)`)
+- `expresión` ::= `letrec` {`tipo-exp-opcional` `identificador` "(" {`tipo-exp-opcional` `identificador`}* (",") ")" "=" `expresión`}* `in` `expresión` (`letrec-exp (optional-result-texps proc-names optional-arg-texpss idss bodies letrec-body)`)
+
+####
+Se deben añadir las siguientes producciones a la especificación de la gramática para el procesamiento de procedimientos y recursión:
+
+```racket
+(expression
+  ("proc" "(" (separated-list tipo-exp-opcional identifier ",") ")" expression)
+  proc-exp)
+
+(expression
+  ("letrec"
+    (arbno tipo-exp-opcional identifier "(" (separated-list tipo-exp-opcional identifier ",") ")" "=" expression)
+    "in" expression)
+  letrec-exp)
+
+(tipo-exp-opcional
+  (tipo-exp)
+  a-type-exp)
+
+(tipo-exp-opcional
+  ("?")
+  no-type-exp)
+```
+
+####
+Para operar con tipos desconocidos (expresados con los símbolos `?`), se agregará una nueva clase de tipo llamada `variable de tipo`. Cada variable de tipo constará de un único número serial que lo identifica y un contenedor, el cual será un vector de tamaño 1.
+
+Una variable de tipo puede estar:
+- **Vacía**: Si almacena un `()`, lo que significa que no se conoce nada del tipo.
+- **Llena**: Almacena un tipo. Cuando una variable de tipo está llena, su contenido nunca cambia. Dicha variable de tipo es llamada de `asignación simple` o de `única escritura`.
+
+El tipo de dato `type` es modificado agregándole una nueva variante para las variables de tipo:
+
+```racket
+(define-datatype type type?
+  (atomic-type
+    (name symbol?))
+  (proc-type
+    (arg-types (list-of type?))
+    (result-type type?))
+  (tvar-type
+    (serial-number integer?)
+    (container vector?)))
+```
+
+####
+Se define el procedimiento `fresh-tvar`, que crea una variable de tipo con un valor único global para su contador y con su vector inicializado en `()`.
+
+```racket
+(define fresh-tvar
+  (let ((serial-number 0))
+    (lambda ()
+      (set! serial-number (+ 1 serial-number))
+      (tvar-type serial-number (vector '())))))
+```
+
+####
+El procedimiento `expand-optional-type-expression` recibe una expresión de tipo opcional y un ambiente de tipos (`tenv`). Se deben cambiar los llamados al procedimiento `expand-type-expression` por este nuevo procedimiento para estar acorde con los cambios en la gramática. Su comportamiento es el siguiente:
+
+1. Si encuentra una expresión de tipo (variante `a-type-exp`), llama a `expand-type-expression`.
+2. Si se trata de una expresión de tipo opcional (denotada por `?`), emite una variable de tipo.
+
+```racket
+(define expand-optional-type-expression
+  (lambda (otexp tenv)
+    (cases optional-type-exp otexp
+      (no-type-exp ()
+        (fresh-tvar))
+      (a-type-exp (texp)
+        (expand-type-expression texp tenv)))))
+```
+
+####
+Para cada expresión posible en el lenguaje, se obtienen ecuaciones entre tipos y variables de tipo siguiendo estas reglas:
+
+**Expresión condicional**
+Cuando se escribe una expresión `if e0 then e1 else e2` en `tenv`:
+- (type-of-expression e0 tenv) = `bool`
+- (type-of-expression e1 tenv) = (type-of-expression e2 tenv) = (type-of-expression if e0 then e1 else e2 tenv)
+
+**Aplicación de procedimientos**
+Para las expresiones de aplicación `(rator rand1 ... randn)` en `tenv`:
+- (type-of-expression rator tenv) = ((type-of-expression rand1 tenv) * ... * (type-of-expression randn tenv) -> (type-of-expression (rator rand1 ... randn) tenv))
+Esto significa que el operador debe ser un procedimiento que mapea los tipos de los operandos al tipo de la aplicación entera.
+
+**Expresiones de procedimiento**
+Cuando se escribe `proc (x1 ... xn) exp` en `tenv`:
+- (type-of-expression proc (x1 ... xn) exp tenv) = ((type-of-expression x1 tenv-body) * ... * (type-of-expression xn tenv-body) -> (type-of-expression exp tenv-body))
+donde `tenv-body` es el ambiente de tipo en el cual el cuerpo `exp` será tipado.
+
+Para deducir el tipo de una expresión, se introduce una variable de tipo para cada variable ligada y cada aplicación, y se escribe una ecuación para cada componente de la expresión usando las reglas anteriores.
+
+####
+**Ejemplo de inferencia de tipos**
+
+Considere la expresión `proc(f,x) (f +(1,x) zero?(x))`. Primero se asigna una variable de tipo a cada componente:
+
+- `f`: `tf`
+- `x`: `tx`
+- `(f +(1,x) zero?(x))`: `t1`
+- `+(1,x)`: `t2`
+- `zero?(x)`: `t3`
+- `proc(f,x) (f +(1,x) zero?(x))`: `tp`
+
+Por la regla de los procedimientos, el tipo de toda la expresión `tp` es `(tf * tx -> t1)`. Las ecuaciones de tipo para los componentes son:
+
+1. `(f +(1,x) zero?(x))`: `tf = (t2 * t3 -> t1)`
+2. `+(1,x)`: `(int * int -> int) = (int * tx -> t2)`
+3. `zero?(x)`: `(int -> bool) = (tx -> t3)`
+
+Mediante un proceso de `unificación` (inspección y sustitución), se deduce de la segunda ecuación que `tx = int` y `t2 = int`. Sustituyendo en la tercera ecuación, `(int -> bool) = (int -> t3)`, por lo que `t3 = bool`. Finalmente, sustituyendo en la primera, `tf = (int * bool -> t1)`.
+
+El tipo de la expresión completa es `((int * bool -> t1) * int -> t1)` para cualquier `t1`. Se dice que la expresión es `polimórfica` en `t1`.
+
+####
+**Ejemplo de error de tipos en inferencia**
+
+Considere la expresión `proc(f,x) (f cons(1,x) zero?(x))`. Las ecuaciones de tipo serían:
+
+1. `(f cons(1,x) zero?(x))`: `tf = (t2 * t3 -> t1)`
+2. `cons(1,x)`: `(int * (list int) -> (list int)) = (int * tx -> t2)`
+3. `zero?(x)`: `(int -> bool) = (tx -> t3)`
+
+De la segunda ecuación se deduce que `tx = (list int)` y `t2 = (list int)`. Al sustituir `tx` en la tercera ecuación, obtenemos:
+`(int -> bool) = ((list int) -> t3)`
+
+No existe ningún valor para `t3` que satisfaga esta igualdad, ya que requeriría que `int = (list int)`, lo cual es falso. Por lo tanto, la expresión es rechazada con un error de tipos.
+
+####
+La inferencia de tipos es realizada por el procedimiento `check-equal-type!`, el cual toma dos tipos `t1` y `t2` y revisa si pueden ser el mismo. Si lo son, ajusta el contenido de las variables de tipo para igualarlos. El proceso sigue estos pasos:
+
+1. Determina si `t1` y `t2` son el mismo valor en Scheme. Si lo son, tiene éxito.
+2. Si `t1` es una variable de tipo, llama a `check-tvar-equal-type!`. De igual forma si `t2` lo es.
+3. Si `t1` y `t2` son tipos atómicos, deben tener el mismo nombre; si no, reporta error.
+4. Si `t1` y `t2` son procedimientos de tipo, deben tener el mismo número de argumentos. Se llama recursivamente con cada argumento y el tipo resultado.
+5. De lo contrario, reporta un error.
+
+```racket
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (cond
+      ((eqv? t1 t2))
+      ((tvar-type? t1)
+       (check-tvar-equal-type! t1 t2 exp))
+      ((tvar-type? t2)
+       (check-tvar-equal-type! t2 t1 exp))
+      ((and (atomic-type? t1) (atomic-type? t2))
+       (if (not (eqv? (atomic-type->name t1) (atomic-type->name t2)))
+           (raise-type-error t1 t2 exp)))
+      ((and (proc-type? t1) (proc-type? t2))
+       (let ((arg-types1 (proc-type->arg-types t1))
+             (arg-types2 (proc-type->arg-types t2))
+             (result-type1 (proc-type->result-type t1))
+             (result-type2 (proc-type->result-type t2)))
+         (if (not (= (length arg-types1) (length arg-types2)))
+             (raise-wrong-number-of-arguments t1 t2 exp)
+             (begin
+               (for-each (lambda (t1 t2) (check-equal-type! t1 t2 exp))
+                         arg-types1 arg-types2)
+               (check-equal-type! result-type1 result-type2 exp)))))
+      (else (raise-type-error t1 t2 exp)))))
+```
+
+####
+**Ejemplo: Identidad con tipos opcionales**
+
+Considere la expresión `let f = proc (? x) x in f`. Se utilizan las siguientes variables de tipo:
+
+- `f`: `tf`
+- `x`: `tx`
+- `let f = proc (? x) x in f`: `t1`
+
+Ecuaciones de tipo:
+- `tf = (tx -> tx)`
+- `t1 = tf`
+
+Dado que `f` es un procedimiento, su tipo está determinado por sus parámetros y su resultado. El tipo de la expresión `let` corresponde al tipo de su cuerpo (`f`). Por tanto, el tipo final es `(tx -> tx)` para cualquier tipo `tx`.
+
+####
+**Ejemplo: Inferencia con aplicación de función**
+
+Considere la expresión `let f = proc (? x) x in let y = (f 5) in f`. Variables de tipo:
+
+- `f`: `tf`
+- `x`: `tx`
+- `y`: `ty`
+- `(f 5)`: `t2`
+- `let f = proc (? x) x in y = (f 5) in f`: `t1`
+
+Ecuaciones de tipo:
+- `tf = (tx -> tx)`
+- `tf = (int -> t2)`
+- `t1 = tf`
+
+De la segunda ecuación se infiere que `tx = int` y `t2 = tx`. Por lo tanto, el tipo de `f` y del `let` es `(int -> int)`.
+
+####
+**Ejemplo: Error por conflicto de tipos**
+
+Considere la expresión `let f = proc (? x) x in let y = (f 5) in let z = (f true) in f`. Variables de tipo:
+
+- `f`: `tf`, `x`: `tx`, `y`: `ty`, `(f 5)`: `t2`, `(f true)`: `t3`
+- Expresión completa: `t1`
+
+Ecuaciones:
+- `tf = (tx -> tx)`
+- `tf = (int -> t2)`
+- `tf = (bool -> t3)`
+- `t1 = tf`
+
+De la segunda y tercera ecuación se infiere que `tx = int = bool`. Esto resulta en un error de tipo, dado que una variable de tipo no puede corresponder a dos tipos diferentes (`int` y `bool`) simultáneamente.
+
+####
+**Ejercicio de inferencia compleja**
+
+Considere la expresión para inferir su tipo:
+
+```racket
+let
+  f = proc (? x, int y)
+    if x
+    then +(y, 1)
+    else =(y, 1)
+in
+  let
+    g = proc (? m, int n)
+      (m true n)
+  in
+    let
+      h = (g f 5)
+    in
+      g
+```
+
+####
+**Ejercicio de inferencia con múltiples parámetros**
+
+Considere la expresión para inferir su tipo:
+
+```racket
+let
+  f = proc (? x, ? y, ? z)
+    if (x y)
+    then *(z, 2)
+    else z
+in
+  let
+    g = proc (? m)
+      if m then true else false
+    k = 5
+  in
+    (f g true k)
+```
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 9. Inferencia de tipos

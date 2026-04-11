@@ -1,0 +1,72 @@
+####
+
+**Evaluación de ambientes y procedimientos**
+
+En los sistemas de evaluación de lenguajes de programación, cuando no se especifica un ambiente inicial, se asume el `ambiente vacío`. Los procedimientos se definen como `clausuras` (closures) que encapsulan los parámetros y el ambiente en el cual fueron definidos.
+
+Es fundamental distinguir entre la **declaración** de un procedimiento y su **llamado**:
+- Las declaraciones simplemente crean la `clausura` en el ambiente actual.
+- Los llamados son los que generan nuevos ambientes de ejecución. 
+
+Un error frecuente es suponer que declarar una variable o procedimiento crea automáticamente un nuevo ambiente, cuando en realidad esto ocurre exclusivamente durante la aplicación de funciones o `procedimientos`.
+
+####
+
+**Evaluación de clausuras y aplicación de funciones**
+
+Consideremos un conjunto de `clausuras` `f` y `g` definidas en un `ambiente vacío`. Si evaluamos una expresión como `f(x, g(x, x))` sobre este ambiente, el sistema procede de la siguiente manera:
+
+1. Se crea un nuevo ambiente `G1` para el llamado a `g`, vinculando sus parámetros locales.
+2. El resultado del llamado a `g` se utiliza como argumento para `f`.
+3. Se crea un segundo ambiente `GF1` para la ejecución de `f`.
+
+Cada llamado a un procedimiento es una entidad independiente que extiende el ambiente en el que el procedimiento fue definido originalmente, preservando así el `scope léxico` de la clausura.
+
+####
+
+**Recursión y ambientes extendidos**
+
+El uso de `letrec` permite la creación de un ambiente extendido recursivo, lo cual es necesario para definir procedimientos que se llaman a sí mismos. En este contexto, un procedimiento `j(q, r)` con una condición de parada (por ejemplo, `q > 0`) realiza llamadas sucesivas donde el ambiente se extiende en cada iteración.
+
+Ejemplo de flujo recursivo:
+```racket
+(letrec ((j (lambda (q r)
+              (if (> q 0)
+                  (+ r (j (- q 1) (+ r 2)))
+                  (h q r)))))
+  (j 5 80))
+```
+
+En este caso, la recursión acumula llamadas. Cada paso de la recursión genera un nuevo ambiente de activación, y la evaluación de la suma se resuelve conforme la pila de llamadas retorna los valores hacia la condición base.
+
+####
+
+**Análisis del procedimiento h**
+
+El procedimiento `h` recibe los parámetros acumulados y ejecuta una lógica compuesta. Al evaluar `h(i, x, y)`, se observa cómo las variables `m` y `n` toman los valores resultantes de las operaciones previas. 
+
+La evaluación sigue un orden riguroso:
+1. Resolución de sub-expresiones (ej. `g(op1, op2)`).
+2. Apertura del ambiente de `h`.
+3. Aplicación de los cuerpos del procedimiento.
+
+Es vital realizar el seguimiento de los valores de las variables en cada `ambiente` creado, ya que una pequeña omisión en la suma de los resultados parciales durante la recursión o en el paso final puede alterar el resultado total del programa.
+
+####
+
+**Verificación de resultados**
+
+Al verificar la lógica de ejecución, es posible confirmar el resultado matemático mediante la suma de los valores acumulados. En el ejemplo trabajado:
+- Los resultados de la recursión `j` generan una serie: `80 + 82 + 84 + 86 + 88 + 90`.
+- Al sumar estos valores y combinarlos con la evaluación final de `h`, obtenemos el resultado numérico total.
+
+Este proceso de trazado es la herramienta principal para comprender el ciclo de vida de las variables y el manejo de la memoria en los lenguajes de programación basados en `procedimientos` y `recursión`. La práctica constante permite evitar errores comunes en la gestión de `ambientes` y asegurar que la evaluación respete la semántica del lenguaje.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Qs9Mx82uQrE
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

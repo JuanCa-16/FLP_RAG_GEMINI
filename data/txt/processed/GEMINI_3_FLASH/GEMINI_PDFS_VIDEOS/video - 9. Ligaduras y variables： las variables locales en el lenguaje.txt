@@ -1,0 +1,78 @@
+####
+**Implementación de ligaduras locales**
+
+Las `ligaduras locales` permiten crear nuevos nombres de variables que posibilitan el cambio de valores dentro de un contexto específico. En el intérprete, partimos de un `ambiente inicial` fijo (por ejemplo, con las variables `x`, `y`, `z` y `a`, `b`, `c`).
+
+Para integrar estas ligaduras, se debe modificar la especificación gramatical del lenguaje en DrRacket. La gramática para una `let-expression` se define de la siguiente manera:
+
+`expression ::= let {identificador = expression}* in expression`
+
+Esto permite definir estructuras como `let x = 1 y = 2 in expression`. En la implementación, esta estructura se identifica como `let-expression`.
+
+####
+**Funcionamiento de los ambientes en el let**
+
+El estudio de las `ligaduras locales` requiere comprender cómo se gestionan los ambientes. Un `let` se divide conceptualmente en dos partes:
+
+1. **Declaraciones**: Es la sección donde se crean las variables. Estas declaraciones se evalúan sobre el `ambiente anterior` (el ambiente actual antes de entrar al `let`).
+2. **Cuerpo (in expression)**: Es la expresión que se evalúa utilizando un nuevo ambiente generado a partir de las declaraciones previas.
+
+Estructuralmente, siempre existe un `ambiente vacío` inicial, el cual está contenido dentro de un `ambiente 1` que posee las listas de nombres y valores predefinidos. Al ejecutar un `let`, se crea un nuevo `ambiente extendido` que hereda del ambiente donde fue definida la expresión.
+
+####
+**Ejemplo de evaluación con ambientes anidados**
+
+Consideremos un ambiente inicial con los valores `x=4, y=2, z=5`. Si evaluamos la siguiente expresión:
+
+```racket
+let x = -(y, 1) in 
+  let x = +(x, 2) in 
+    add1(x)
+```
+
+El proceso de evaluación sigue estos pasos:
+
+1. El primer `let` evalúa su declaración `x = y - 1`. Como `y` vale 2 en el ambiente inicial (`ambiente 0`), el nuevo valor de `x` es 1. Se crea el `ambiente 1` donde `x=1`.
+2. El segundo `let` se evalúa sobre el `ambiente 1`. Su declaración es `x = x + 2`. Aquí, `x` toma el valor del ambiente anterior (`ambiente 1`), por lo que `x = 1 + 2 = 3`. Se crea el `ambiente 2` donde `x=3`.
+3. Finalmente, el cuerpo `add1(x)` se evalúa sobre el `ambiente 2`. Como en este ambiente `x` vale 3, el resultado final es 4.
+
+####
+**Implementación de let-expression en evaluar-expresion**
+
+Para implementar la lógica de las `ligaduras locales` en la función `evaluar-expresion`, debemos procesar los identificadores (`ids`), los argumentos (`rands`) y el cuerpo (`body`) de la expresión.
+
+Dado que los `rands` son expresiones en sintaxis abstracta, deben ser procesados con `evaluar-expresion` para obtener sus valores numéricos o booleanos antes de extender el ambiente. La implementación sigue esta lógica:
+
+```racket
+;; Caso para let-expression en evaluar-expresion
+(let-expression (ids rands body)
+  (let ((eval-rands (map (lambda (x) (evaluar-expresion x env)) rands)))
+    (evaluar-expresion body (ambiente-extendido ids eval-rands env))))
+```
+
+En este fragmento:
+- Se utiliza `map` para aplicar `evaluar-expresion` a cada elemento de la lista `rands` dentro del ambiente actual `env`.
+- Se evalúa el `body` en un `ambiente-extendido` que vincula los `ids` con los valores ya evaluados (`eval-rands`), extendiendo el ambiente original.
+
+####
+**Prueba del intérprete con ligaduras locales**
+
+Para verificar la implementación, se ajusta el ambiente inicial del intérprete con los valores `x=4, y=2, z=5` y se ejecuta una prueba de código:
+
+```racket
+let x = -(y, 1) 
+in let x = +(x, 2) 
+   in add1(x)
+```
+
+Al ejecutar esta expresión en el interpretador, el resultado obtenido es `4`. Con esto se confirma que la `ligadura local` y la gestión de ambientes extendidos funcionan correctamente. Los diagramas de ambientes son herramientas fundamentales para analizar estas transiciones de alcance y valor en el curso.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 9. Ligaduras y variables： las variables locales en el lenguaje.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=YcFm8jqUHYA
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

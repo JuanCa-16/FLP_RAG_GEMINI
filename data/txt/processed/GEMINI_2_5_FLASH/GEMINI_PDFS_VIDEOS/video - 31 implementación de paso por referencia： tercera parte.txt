@@ -1,0 +1,51 @@
+Para manejar el paso por referencia, es necesario modificar el interpretador. Previamente, se implementó la infraestructura para crear targets con `define-data` y para consultar y modificar referencias con `deref` y `setref`. La tarea actual consiste en integrar en el evaluador de expresiones la creación de targets directos e indirectos según el contexto de la evaluación.
+
+####
+
+La función `apply-primitive` no requiere modificaciones. Las operaciones primitivas no interactúan con el sistema de referencias y targets directos o indirectos, por lo que su comportamiento actual dentro del evaluador de expresiones permanece sin cambios.
+
+####
+
+La expresión `let` se utiliza para crear enlaces de variables a valores evaluados. En el contexto del paso por referencia, cada una de estas vinculaciones se implementará como un `direct-target`. Cuando se evalúa una expresión como `(let ([a 5] [b 8]) ...)` , se crearán nuevos `direct-target` en el entorno para las variables `a` y `b`, conteniendo los valores `5` y `8` respectivamente. El `let` siempre genera targets directos porque vincula nombres a valores explícitamente calculados.
+
+####
+
+La aplicación de procedimientos es el punto central de la modificación para implementar el paso por referencia. Se debe distinguir cómo se manejan los operandos (argumentos) pasados a un procedimiento:
+1.  Si el operando no es una variable (por ejemplo, un valor literal como en `(f 5)`), se evalúa la expresión y se crea una nueva ubicación de memoria que contiene un `direct-target` con el valor resultante.
+2.  Si el operando es una variable (por ejemplo, en `(f x)`), se debe generar un `indirect-target`. Este target no contendrá el valor de la variable `x`, sino una referencia a la ubicación de memoria de `x`. Esto permite que el procedimiento modifique la variable original.
+3.  Si la variable que se pasa ya está asociada a un `indirect-target`, no se crea una referencia a otra referencia. En su lugar, se "aplana" la referencia: el nuevo `indirect-target` apuntará directamente a la ubicación final a la que apuntaba la referencia original. Esto evita cadenas de indirección (`ref -> ref -> value`) y asegura que siempre haya un solo nivel de indirección.
+
+####
+
+Para implementar el manejo de operandos en la aplicación de procedimientos, se introduce una nueva función auxiliar, `evalran`. Esta función se encarga de evaluar cada argumento de una llamada a procedimiento y determinar si debe crear un target directo o indirecto.
+-   **Si la expresión del operando es una variable (`var-expression`)**:
+    1.  Se busca la referencia de la variable en el entorno (`apply-env`).
+    2.  Se inspecciona el tipo de target al que apunta esta referencia.
+    3.  Si es un `direct-target`, se crea un nuevo `indirect-target` que contiene la referencia a esa ubicación.
+    4.  Si ya es un `indirect-target`, se extrae la referencia interna de este y se utiliza para crear el nuevo `indirect-target`, evitando así la anidación de referencias.
+-   **Para cualquier otro tipo de expresión**:
+    1.  Se evalúa la expresión de la forma habitual.
+    2.  El resultado se almacena en un nuevo `direct-target`.
+
+####
+
+El siguiente código ejemplifica el funcionamiento del paso por referencia implementado. Se define un procedimiento `p` que modifica su argumento `x`. Luego, se declara una variable `a` con valor `3` y se invoca el procedimiento `p` pasándole `a`.
+
+```scheme
+(let ([p (proc (x) (set! x 4))])
+  (let ([a 3])
+    (begin
+      (p a)
+      a)))
+```
+
+Al ejecutar `(p a)`, no se pasa el valor `3`, sino una referencia a la variable `a`. Dentro del procedimiento, la expresión `(set! x 4)` utiliza esta referencia para modificar la ubicación de memoria original de `a`. Como resultado, después de la llamada, el valor de `a` es `4`, lo que demuestra que la modificación dentro del procedimiento afectó a la variable externa.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=NdSjy4I5B-8
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

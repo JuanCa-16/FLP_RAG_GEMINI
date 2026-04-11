@@ -1,0 +1,35 @@
+####
+**Paso por valor**
+
+En el paso de parámetros de funciones, lo que hemos realizado hasta el momento al invocar una función, como `f(x)` o `f(5)`, consiste en que, cuando `f` recibe un argumento (por ejemplo, `f` definida como un `proc` de `a`), se genera una nueva variable `a` que contiene una copia del valor de la expresión evaluada. Al realizar la expansión de la `closure` en la `app-expression` para ejecutar el procedimiento, creamos una nueva variable en un ambiente nuevo extendido.
+
+Esta nueva variable representa una referencia totalmente independiente de las demás. Este mecanismo es conocido como `paso por valor`.
+
+####
+**Ejemplo de paso por valor**
+
+Consideremos el siguiente ejemplo:
+```racket
+let p = proc(x) set x = 4
+in let a = 3
+in begin
+    p(a)
+    a
+end
+```
+
+Al ejecutar este código, primero generamos el ambiente con `p`, el cual contiene una `closure` (un vector que permite mutaciones) que tiene a `x` y guarda el ambiente vacío. Posteriormente, generamos el ambiente con `a = 3`. Al ejecutar `p(a)`, se genera un nuevo ambiente para `p` donde `x` toma el valor de `a` (en este caso, 3). Cuando se ejecuta `set x = 4` dentro del procedimiento, el valor de `x` cambia a 4, pero al finalizar el procedimiento, la variable `a` original conserva su valor de 3. Esto ocurre porque `x` es una referencia nueva que no tiene relación con `a`.
+
+####
+**Concepto de paso por referencia**
+
+En el `paso por referencia`, conectamos la variable pasada como argumento con la variable del procedimiento. Si el procedimiento modifica el valor de su parámetro, esa modificación afectará directamente a la variable original. En lugar de pasar el contenido de la variable, pasamos su dirección o ubicación en memoria. De esta manera, al crear el nuevo ambiente, no se crea una copia independiente, sino que se vincula la ubicación de la variable del procedimiento con la ubicación de la variable pasada, permitiendo que cualquier cambio en `x` dentro del procedimiento se vea reflejado en la variable externa.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=gswgFVuh48Q
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

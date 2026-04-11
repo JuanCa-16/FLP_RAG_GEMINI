@@ -1,0 +1,804 @@
+{
+  "0": {
+    "tematica": "Repaso",
+    "videos": [
+      {
+        "id": "79",
+        "nombre": "video - 5. Repaso de gramáticas： Segunda parte.txt",
+        "url": "https://www.youtube.com/watch?v=r_4ZQqPVoRU"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "1",
+        "nombre": "0. Introduccion e historia de los lenguajes de programacion",
+        "url": ""
+      },
+      {
+        "id": "2",
+        "nombre": "0.1. Repaso gramaticas I",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "111",
+        "nombre": "Clase 1 Clase de repaso_Repaso de Racket",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Racket/"
+      },
+      {
+        "id": "112",
+        "nombre": "Clase 1 Clase de repaso_Repso Gramaticas",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/"
+      }
+    ]
+  },
+  "1": {
+    "tematica": "Especificación recursiva de datos",
+    "videos": [
+      {
+        "id": "14",
+        "nombre": "video - 10 Ejemplo especificación funciones para árbol.txt",
+        "url": "https://www.youtube.com/watch?v=Vglvl_buuZE"
+      },
+      {
+        "id": "16",
+        "nombre": "video - 11 Alcance y ligadura de variables I.txt",
+        "url": "https://www.youtube.com/watch?v=zj2QEeqNyLo"
+      },
+      {
+        "id": "18",
+        "nombre": "video - 12 Alcance y ligadura de variables II.txt",
+        "url": "https://www.youtube.com/watch?v=KEyfWgouql0"
+      },
+      {
+        "id": "20",
+        "nombre": "video - 13 Ejemplo alcance variables.txt",
+        "url": "https://www.youtube.com/watch?v=dIhRmt4Khgw"
+      },
+      {
+        "id": "22",
+        "nombre": "video - 14 Ejemplo alcance de variables.txt",
+        "url": "https://www.youtube.com/watch?v=e_DfC91mtas"
+      },
+      {
+        "id": "67",
+        "nombre": "video - 4. Repaso de gramáticas： Primer parte.txt",
+        "url": "https://www.youtube.com/watch?v=-xmyQ9vPPmw"
+      },
+      {
+        "id": "83",
+        "nombre": "video - 7 Especificación mediante gramáticas.txt",
+        "url": "https://www.youtube.com/watch?v=JPRyWqSGR_k"
+      },
+      {
+        "id": "85",
+        "nombre": "video - 8 Especificación recursiva de programas I.txt",
+        "url": "https://www.youtube.com/watch?v=VpJGNtKpskI"
+      },
+      {
+        "id": "87",
+        "nombre": "video - 9 Especificación recursiva de programas II.txt",
+        "url": "https://www.youtube.com/watch?v=OyhD6yR9vmY"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "3",
+        "nombre": "1. La relacion entre la induccion y recursion Especificacion de datos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "130",
+        "nombre": "Clase 2 Especificación recursiva de datos y programas_Repaso de Racket",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Racket/"
+      },
+      {
+        "id": "131",
+        "nombre": "Clase 2 Especificación recursiva de datos y programas_Repso Gramaticas",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/"
+      }
+    ]
+  },
+  "2": {
+    "tematica": "Estrategias para representar datos",
+    "videos": [
+      {
+        "id": "24",
+        "nombre": "video - 15 Abstracción de datos introduccion.txt",
+        "url": "https://www.youtube.com/watch?v=oXmddkgASKY"
+      },
+      {
+        "id": "26",
+        "nombre": "video - 16  Abstracción de datos Estrategias de representacion.txt",
+        "url": "https://www.youtube.com/watch?v=oq0ZwXqmJT0"
+      },
+      {
+        "id": "28",
+        "nombre": "video - 17  Abstracción de datos Ejemplo de representación parte 1.txt",
+        "url": "https://www.youtube.com/watch?v=Wiqa0Xnq_k0"
+      },
+      {
+        "id": "30",
+        "nombre": "video - 18  Abstracción de datos Ejemplo de representación parte 2.txt",
+        "url": "https://www.youtube.com/watch?v=z_uAWdqChmk"
+      },
+      {
+        "id": "32",
+        "nombre": "video - 19 Abstracción de datos： Ambientes como listas.txt",
+        "url": "https://www.youtube.com/watch?v=hsHRvKwYGU8"
+      },
+      {
+        "id": "35",
+        "nombre": "video - 20 Abstracción de datos： Ambientes como procedimientos.txt",
+        "url": "https://www.youtube.com/watch?v=5ymi1j8FQuI"
+      },
+      {
+        "id": "37",
+        "nombre": "video - 21 Abstraccion de datos： Expresiones lambda como listas.txt",
+        "url": "https://www.youtube.com/watch?v=DsPWtf9LUqQ"
+      },
+      {
+        "id": "39",
+        "nombre": "video - 22  Abstracción de datos： Ambientes como procedimientos.txt",
+        "url": "https://www.youtube.com/watch?v=UykkUdFKMNg"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "5",
+        "nombre": "2. Estrategias para representar datos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "132",
+        "nombre": "Clase 3 Representación abstracta de datos (TAD)_Ambientes",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/Ambientes/"
+      },
+      {
+        "id": "133",
+        "nombre": "Clase 3 Representación abstracta de datos (TAD)_Estrategias de representacion TAD",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/Estrategias%20de%20representacion%20TAD/"
+      },
+      {
+        "id": "134",
+        "nombre": "Clase 3 Representación abstracta de datos (TAD)_Tipo abstracto de datos (TAD)",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/TAD/"
+      }
+    ]
+  },
+  "3": {
+    "tematica": "Sintaxis y árboles de sintaxis abstracta",
+    "videos": [
+      {
+        "id": "41",
+        "nombre": "video - 23  Abstracción de datos Datatypes.txt",
+        "url": "https://www.youtube.com/watch?v=wGuA726RKUM"
+      },
+      {
+        "id": "43",
+        "nombre": "video - 24  Abstracción de datos Ejemplos Datatypes.txt",
+        "url": "https://www.youtube.com/watch?v=hwvWxpp6TXo"
+      },
+      {
+        "id": "45",
+        "nombre": "video - 25  Abstracción de datos Cases.txt",
+        "url": "https://www.youtube.com/watch?v=-axhDvoZYQ0"
+      },
+      {
+        "id": "47",
+        "nombre": "video - 26  Abstracción de datos Ejemplos Cases.txt",
+        "url": "https://www.youtube.com/watch?v=Wec_PIRX7tY"
+      },
+      {
+        "id": "49",
+        "nombre": "video - 27  Abstracción de datos Arboles de Sintaxis abstracta.txt",
+        "url": "https://www.youtube.com/watch?v=E_IR22Uw7_o"
+      },
+      {
+        "id": "51",
+        "nombre": "video - 28  Abstracción de datos Ejemplos sintaxis abstracta.txt",
+        "url": "https://www.youtube.com/watch?v=tkfnonZyeZ0"
+      },
+      {
+        "id": "53",
+        "nombre": "video - 29  Abstracción de datos parser y unparser.txt",
+        "url": "https://www.youtube.com/watch?v=CWw4bitbiNE"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "6",
+        "nombre": "3. Datatype y arboles de sintaxis abstracta",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "135",
+        "nombre": "Clase 4 AST_AST Introducción",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/AST%20Introducci%C3%B3n/"
+      },
+      {
+        "id": "136",
+        "nombre": "Clase 4 AST_Definicion de TAD define-datatype",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Definicion%20de%20TAD/"
+      },
+      {
+        "id": "137",
+        "nombre": "Clase 4 AST_Ejemplo 1",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Ejemplo%201/"
+      },
+      {
+        "id": "138",
+        "nombre": "Clase 4 AST_Ejemplo 2",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Ejemplo%202/"
+      },
+      {
+        "id": "139",
+        "nombre": "Clase 4 AST_Implementación TAD",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Implementaci%C3%B3n%20TAD/"
+      }
+    ]
+  },
+  "4": {
+    "tematica": "Interpretación y compilación",
+    "videos": [
+      {
+        "id": "13",
+        "nombre": "video - 1. Semántica de lenguajes de programación： Introducción a la interpretación y compilación.txt",
+        "url": "https://www.youtube.com/watch?v=zL0zWJgVB2E"
+      },
+      {
+        "id": "34",
+        "nombre": "video - 2 Semántica de lenguajes de programación： Scanner y parser.txt",
+        "url": "https://www.youtube.com/watch?v=npoh_p9PFlw"
+      },
+      {
+        "id": "55",
+        "nombre": "video - 3 Librería SLLGEN, una herramienta para crear lenguajes.txt",
+        "url": "https://www.youtube.com/watch?v=vNQauK4mMHA"
+      },
+      {
+        "id": "66",
+        "nombre": "video - 4 Un primer lenguaje.txt",
+        "url": "https://www.youtube.com/watch?v=RmcKbgU1rbM"
+      },
+      {
+        "id": "78",
+        "nombre": "video - 5 Interpretador simple  Parte 1： Especificación léxica y gramatical.txt",
+        "url": "https://www.youtube.com/watch?v=f45S2x0W9Wk"
+      },
+      {
+        "id": "82",
+        "nombre": "video - 6 Interpretador simple  Parte 2： Literales y variables.txt",
+        "url": "https://www.youtube.com/watch?v=3p-1ft_KNbs"
+      },
+      {
+        "id": "84",
+        "nombre": "video - 7 Interpretador simple  Parte 3： Primitivas.txt",
+        "url": "https://www.youtube.com/watch?v=rY7EvYy-4B0"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "7",
+        "nombre": "4. Semantica de los lenguajes de programacion",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "140",
+        "nombre": "Clase 5 Semantica de LP Interprete simple_Intepretador II",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Intepretador%20II/"
+      },
+      {
+        "id": "141",
+        "nombre": "Clase 5 Semantica de LP Interprete simple_Interpretador I",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/"
+      },
+      {
+        "id": "142",
+        "nombre": "Clase 5 Semantica de LP Interprete simple_Introducción al Interpretador",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Introduccion%20Interpretador/"
+      },
+      {
+        "id": "143",
+        "nombre": "Clase 5 Semantica de LP Interprete simple_Lenguajes interpretado vs compilados",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Lenguajes%20interpretado%20vs%20compilados/"
+      }
+    ]
+  },
+  "5": {
+    "tematica": "Condicionales, ligaduras y procedimientos",
+    "videos": [
+      {
+        "id": "15",
+        "nombre": "video - 10. Condicionales y ligaduras： ejemplo 1.txt",
+        "url": "https://www.youtube.com/watch?v=3MmHqa7Qm3I"
+      },
+      {
+        "id": "17",
+        "nombre": "video - 11 Condicionales y ligaduras： ejemplo 2.txt",
+        "url": "https://www.youtube.com/watch?v=oKIbrtKiCx8"
+      },
+      {
+        "id": "19",
+        "nombre": "video - 12. Implementación de procedimientos： Primera parte.txt",
+        "url": "https://www.youtube.com/watch?v=nbjdT8UYKAc"
+      },
+      {
+        "id": "21",
+        "nombre": "video - 13. Implementación de procedimientos： Segunda parte.txt",
+        "url": "https://www.youtube.com/watch?v=VeDViGXrwrQ"
+      },
+      {
+        "id": "23",
+        "nombre": "video - 14. Procedimientos Ejemplo 1.txt",
+        "url": "https://www.youtube.com/watch?v=91lReaV1wcU"
+      },
+      {
+        "id": "25",
+        "nombre": "video - 15. ProcedimientosEjemplo 2.txt",
+        "url": "https://www.youtube.com/watch?v=2Dnxwstls1c"
+      },
+      {
+        "id": "27",
+        "nombre": "video - 16. ProcedimientosEjemplo 3.txt",
+        "url": "https://www.youtube.com/watch?v=JJcxJbQPn_U"
+      },
+      {
+        "id": "86",
+        "nombre": "video - 8. Condicionales： su implementación en lenguajes.txt",
+        "url": "https://www.youtube.com/watch?v=WCkgIVxDA1U"
+      },
+      {
+        "id": "88",
+        "nombre": "video - 9. Ligaduras y variables： las variables locales en el lenguaje.txt",
+        "url": "https://www.youtube.com/watch?v=YcFm8jqUHYA"
+      }
+    ],
+    "pdfs": [],
+    "git": [
+      {
+        "id": "144",
+        "nombre": "Clase 6 Ligadura, condicionales y procedimientos_Condicionales",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Condicionales/"
+      },
+      {
+        "id": "145",
+        "nombre": "Clase 6 Ligadura, condicionales y procedimientos_Ligaduras locales",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Ligaduras%20locales/"
+      },
+      {
+        "id": "146",
+        "nombre": "Clase 6 Ligadura, condicionales y procedimientos_Procedimientos",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Procedimientos/"
+      }
+    ]
+  },
+  "6": {
+    "tematica": "Procedimientos y procedimientos recursivos",
+    "videos": [
+      {
+        "id": "29",
+        "nombre": "video - 17. Procedimientos recursivos： primera parte.txt",
+        "url": "https://www.youtube.com/watch?v=ojG64qQkdZo"
+      },
+      {
+        "id": "31",
+        "nombre": "video - 18. Procedimientos recursivos： segunda parte.txt",
+        "url": "https://www.youtube.com/watch?v=i9J-ekNcLOQ"
+      },
+      {
+        "id": "33",
+        "nombre": "video - 19. Procedimientos recursivos： ejemplo 1.txt",
+        "url": "https://www.youtube.com/watch?v=T-h2Q-EtcNc"
+      },
+      {
+        "id": "36",
+        "nombre": "video - 20. Procedimientos recursivos： ejemplo 2.txt",
+        "url": "https://www.youtube.com/watch?v=XhQKzTxORlo"
+      },
+      {
+        "id": "38",
+        "nombre": "video - 21. Procedimientos recursivos： ejemplo 3.txt",
+        "url": "https://www.youtube.com/watch?v=Qs9Mx82uQrE"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "8",
+        "nombre": "6. Procedimientos y procedimientos recursivos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "147",
+        "nombre": "Clase 7 Procedimientos recursivos_Ejercicio",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%2012/Ejercicio/"
+      },
+      {
+        "id": "148",
+        "nombre": "Clase 7 Procedimientos recursivos_Evaluación procedimiento recursivos",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Evaluaci%C3%B3n%20procedimiento%20recursivos/"
+      },
+      {
+        "id": "149",
+        "nombre": "Clase 7 Procedimientos recursivos_Implementación de procedimientos recursivos I",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20I/"
+      },
+      {
+        "id": "150",
+        "nombre": "Clase 7 Procedimientos recursivos_Implementación de procedimientos recursivos II",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%207/Implementaci%C3%B3n%20de%20procedimientos%20recursivos%20II/"
+      },
+      {
+        "id": "151",
+        "nombre": "Clase 7 Procedimientos recursivos_Resumen",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%207/Resumen/"
+      }
+    ]
+  },
+  "7": {
+    "tematica": "Asignación y paso por referencia",
+    "videos": [
+      {
+        "id": "40",
+        "nombre": "video - 22. Asignación： primera parte.txt",
+        "url": "https://www.youtube.com/watch?v=glGvOtFAldY"
+      },
+      {
+        "id": "42",
+        "nombre": "video - 23. Asignación： segunda parte.txt",
+        "url": "https://www.youtube.com/watch?v=BZ6YfPlSitA"
+      },
+      {
+        "id": "44",
+        "nombre": "video - 24. Asignación： tercera parte.txt",
+        "url": "https://www.youtube.com/watch?v=dVERIOle5zA"
+      },
+      {
+        "id": "46",
+        "nombre": "video - 25. Asignación： cuarta parte.txt",
+        "url": "https://www.youtube.com/watch?v=-qYggrtY6bQ"
+      },
+      {
+        "id": "48",
+        "nombre": "video - 26 Asignación： Ejemplo 1.txt",
+        "url": "https://www.youtube.com/watch?v=m2bDVFw5KXc"
+      },
+      {
+        "id": "50",
+        "nombre": "video - 27. Asignación： Ejemplo 2.txt",
+        "url": "https://www.youtube.com/watch?v=gGiwIY4jviU"
+      },
+      {
+        "id": "52",
+        "nombre": "video - 28. Paso por valor y referencia.txt",
+        "url": "https://www.youtube.com/watch?v=gswgFVuh48Q"
+      },
+      {
+        "id": "54",
+        "nombre": "video - 29. implementación de paso por referencia： primera parte.txt",
+        "url": "https://www.youtube.com/watch?v=JdPQtJ7O5Z4"
+      },
+      {
+        "id": "56",
+        "nombre": "video - 30. implementación de paso por referencia： segunda parte.txt",
+        "url": "https://www.youtube.com/watch?v=WtgIKHO4FcM"
+      },
+      {
+        "id": "57",
+        "nombre": "video - 31 implementación de paso por referencia： tercera parte.txt",
+        "url": "https://www.youtube.com/watch?v=NdSjy4I5B-8"
+      },
+      {
+        "id": "58",
+        "nombre": "video - 32. Paso por referencia： Ejemplo 1.txt",
+        "url": "https://www.youtube.com/watch?v=Rdvff81e2IY"
+      },
+      {
+        "id": "59",
+        "nombre": "video - 33. Paso por referencia： Ejemplo 2.txt",
+        "url": "https://www.youtube.com/watch?v=ShlhAy8owxI"
+      },
+      {
+        "id": "60",
+        "nombre": "video - 34 Paso por referencia Ejemplo 3.txt",
+        "url": "https://www.youtube.com/watch?v=jWgdJYlW6KA"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "9",
+        "nombre": "7. Asignacion y paso de parametros",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "152",
+        "nombre": "Clase 9. Asignación y paso por referencia_Ambientes recursivos",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Ambientes%20recursivos/"
+      },
+      {
+        "id": "153",
+        "nombre": "Clase 9. Asignación y paso por referencia_Asignación",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Asignaci%C3%B3n/"
+      },
+      {
+        "id": "154",
+        "nombre": "Clase 9. Asignación y paso por referencia_Implementacion referencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Implementacion%20referencia/"
+      },
+      {
+        "id": "155",
+        "nombre": "Clase 9. Asignación y paso por referencia_Implementación del set",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Implementaci%C3%B3n%20del%20set/"
+      },
+      {
+        "id": "156",
+        "nombre": "Clase 9. Asignación y paso por referencia_Interprete asignación",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Interprete%20asignaci%C3%B3n/"
+      },
+      {
+        "id": "157",
+        "nombre": "Clase 9. Asignación y paso por referencia_Interprete paso por referencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Interprete%20paso%20por%20referencia/"
+      },
+      {
+        "id": "158",
+        "nombre": "Clase 9. Asignación y paso por referencia_Paso valor y referencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%209/Paso%20valor%20y%20referencia/"
+      },
+      {
+        "id": "159",
+        "nombre": "Clase 9. Asignación y paso por referencia_Resumen",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/PFC/G51/Clase%207/Resumen/"
+      }
+    ]
+  },
+  "8": {
+    "tematica": "Tipos: conceptos y chequeo",
+    "videos": [
+      {
+        "id": "61",
+        "nombre": "video - 35 Chequeo de tipos Introducción.txt",
+        "url": "https://www.youtube.com/watch?v=m_Th0xGC8oo"
+      },
+      {
+        "id": "62",
+        "nombre": "video - 36 Chequeo de tipos Aspectos de implementación.txt",
+        "url": "https://www.youtube.com/watch?v=GxyNVcOdTQE"
+      },
+      {
+        "id": "63",
+        "nombre": "video - 37 Chequeo de tipos Reglas de implementación.txt",
+        "url": "https://www.youtube.com/watch?v=KS3IishsjUM"
+      },
+      {
+        "id": "64",
+        "nombre": "video - 38 Chequeo de tipos Implementación Parte 1.txt",
+        "url": "https://www.youtube.com/watch?v=J8kdPqy64gc"
+      },
+      {
+        "id": "65",
+        "nombre": "video - 39 Chequeo de tipos Implementación Parte 2.txt",
+        "url": "https://www.youtube.com/watch?v=KCAnqIIBwMY"
+      },
+      {
+        "id": "68",
+        "nombre": "video - 40 Chequeo de tipos Implementación Parte 3.txt",
+        "url": "https://www.youtube.com/watch?v=tTJVA-uCnWw"
+      },
+      {
+        "id": "69",
+        "nombre": "video - 41 Chequeo de tipos Implementación Parte 4.txt",
+        "url": "https://www.youtube.com/watch?v=ukFGcDhW2xc"
+      },
+      {
+        "id": "70",
+        "nombre": "video - 42 Chequeo de tipos Implementación Parte 5.txt",
+        "url": "https://www.youtube.com/watch?v=rZR5WOfo5T0"
+      },
+      {
+        "id": "71",
+        "nombre": "video - 43 Chequeo de tipos Ejemplo 1.txt",
+        "url": "https://www.youtube.com/watch?v=a58oyy--My8"
+      },
+      {
+        "id": "72",
+        "nombre": "video - 44 Chequeo de tipos Ejemplo 2.txt",
+        "url": "https://www.youtube.com/watch?v=yKNOAasafJI"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "10",
+        "nombre": "8. Chequeo de tipos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "113",
+        "nombre": "Clase 10 Introducción de tipos_Interpretador",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Interpretador/"
+      },
+      {
+        "id": "114",
+        "nombre": "Clase 10 Introducción de tipos_Introducción a los tipos",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2010/Introducci%C3%B3n%20a%20los%20tipos/"
+      },
+      {
+        "id": "115",
+        "nombre": "Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo I",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20I/"
+      },
+      {
+        "id": "116",
+        "nombre": "Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo II",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20II/"
+      },
+      {
+        "id": "117",
+        "nombre": "Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo III",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20III/"
+      },
+      {
+        "id": "118",
+        "nombre": "Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo IV",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20IV/"
+      },
+      {
+        "id": "119",
+        "nombre": "Clase 11 Implementacion del interpretador de tipos_Interprete chequeo parte 1",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interprete%20chequeo%20parte%201/"
+      }
+    ]
+  },
+  "9": {
+    "tematica": "Inferencia de tipos",
+    "videos": [],
+    "pdfs": [
+      {
+        "id": "11",
+        "nombre": "9. Inferencia de tipos",
+        "url": ""
+      },
+      {
+        "id": "12",
+        "nombre": "9.1. Ejemplos inferencia de tipos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "120",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Ejemplo 1 Inferencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%201%20Inferencia/"
+      },
+      {
+        "id": "121",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Ejemplo 2 Inferencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%202%20Inferencia/"
+      },
+      {
+        "id": "122",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Interpretador inferencia",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interpretador%20inferencia/"
+      },
+      {
+        "id": "123",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Interprete de chequeo (terminado)",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo/"
+      },
+      {
+        "id": "124",
+        "nombre": "Clase 12. Interpretador tipos e inferencia_Interprete de chequeo V",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interprete%20de%20chequeo%20V/"
+      }
+    ]
+  },
+  "10": {
+    "tematica": "Objetos",
+    "videos": [
+      {
+        "id": "73",
+        "nombre": "video - 45 Objetos Introducción.txt",
+        "url": "https://www.youtube.com/watch?v=yCXq0NCG00o"
+      },
+      {
+        "id": "74",
+        "nombre": "video - 46 Objetos Sintaxis.txt",
+        "url": "https://www.youtube.com/watch?v=PFEp6jFmshw"
+      },
+      {
+        "id": "75",
+        "nombre": "video - 47 Objetos Aspectos de implementación.txt",
+        "url": "https://www.youtube.com/watch?v=ZqTptDxsXCs"
+      },
+      {
+        "id": "76",
+        "nombre": "video - 48 Objetos simples Parte 1.txt",
+        "url": "https://www.youtube.com/watch?v=fbWUE8jvebo"
+      },
+      {
+        "id": "77",
+        "nombre": "video - 49 Objetos simples Parte 2.txt",
+        "url": "https://www.youtube.com/watch?v=yXIqoR2-FL0"
+      },
+      {
+        "id": "80",
+        "nombre": "video - 50 Objetos simples Parte 3.txt",
+        "url": "https://www.youtube.com/watch?v=nJ5ANKnZpfU"
+      },
+      {
+        "id": "81",
+        "nombre": "video - 51 Objetos simples Ejemplos.txt",
+        "url": "https://www.youtube.com/watch?v=LpBRO1CbfZA"
+      },
+      {
+        "id": "89",
+        "nombre": "video - Video 52 Objetos planos Implementación Parte 1.txt",
+        "url": "https://www.youtube.com/watch?v=Dn_pnE-UGm8"
+      },
+      {
+        "id": "90",
+        "nombre": "video - Video 53 Objetos planos Implementación Parte 2.txt",
+        "url": "https://www.youtube.com/watch?v=9kgBLpcG2x8"
+      },
+      {
+        "id": "91",
+        "nombre": "video - Video 54 Objetos planos Implementación Parte 3.txt",
+        "url": "https://www.youtube.com/watch?v=rabG7CAMFOk"
+      },
+      {
+        "id": "92",
+        "nombre": "video - Video 55 Objetos planos Ejemplos.txt",
+        "url": "https://www.youtube.com/watch?v=nL5i_K0OV_4"
+      }
+    ],
+    "pdfs": [
+      {
+        "id": "4",
+        "nombre": "10. Objetos",
+        "url": ""
+      }
+    ],
+    "git": [
+      {
+        "id": "125",
+        "nombre": "Clase 13 Objetos_Conceptos básicos de programación orientada a objetos",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Conceptos%20b%C3%A1sicos%20de%20programaci%C3%B3n%20orientada%20a%20objetos/"
+      },
+      {
+        "id": "126",
+        "nombre": "Clase 13 Objetos_Objetos planos",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Objetos%20planos/"
+      },
+      {
+        "id": "127",
+        "nombre": "Clase 13 Objetos_Objetos simples",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Objetos%20simples/"
+      },
+      {
+        "id": "128",
+        "nombre": "Clase 13 Objetos_Sintaxis de la programación orientada a objeto II",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objeto%20II/"
+      },
+      {
+        "id": "129",
+        "nombre": "Clase 13 Objetos_Sintaxis de la programación orientada a objetos I",
+        "url": "https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objetos%20I/"
+      }
+    ]
+  }
+}

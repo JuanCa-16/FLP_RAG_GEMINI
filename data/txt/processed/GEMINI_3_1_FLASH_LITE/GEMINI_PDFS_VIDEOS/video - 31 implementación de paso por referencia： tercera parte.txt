@@ -1,0 +1,35 @@
+####
+Para manejar `targets` en el interpretador, es necesario integrar la infraestructura creada previamente, que incluye el `define-data`, las funciones observadoras, `deref` (para consultar referencias) y `setref` (para modificar referencias). El objetivo es implementar la creación de `direct targets` e `indirect targets` durante la evaluación. En `apply-primitive`, no se requieren cambios, ya que las primitivas operan sobre los valores resultantes de `evaluar-expresión` y no les afecta el mecanismo de paso de parámetros.
+
+####
+En el caso de la expresión `let`, se generan `direct targets`. Cuando se define un `let`, como en `let a = 5 in ...`, cada variable se almacena como un `direct target`. Dado que el `let` maneja valores expresados, estos se comportan naturalmente como `direct targets` y no requieren modificaciones adicionales en la lógica de evaluación del `let`.
+
+####
+En la aplicación de procedimientos, es necesario modificar `eval-rand` (la función encargada de evaluar los argumentos). Si el operando es una variable, se debe crear un `indirect target` que almacene la referencia a dicha variable. Si la variable ya contiene un `direct target`, se retorna la referencia a la ubicación. Si la variable ya está ligada a otra referencia, se retorna dicha referencia original. Para implementar esto, definimos `eval-rand`:
+
+```racket
+(define eval-rand
+  (lambda (exp env)
+    (cond
+      ((bar-expression? exp)
+       (let ((ref (apply-env env (bar-expression-id exp))))
+         (let ((target (deref ref)))
+           (if (direct-target? target)
+               ref
+               (indirect-target-ref target)))))
+      (else
+       (direct-target (evaluar-expresión exp env))))))
+```
+Esta función asegura que no se aniden `indirect targets` dentro de otros, manteniendo una referencia directa al valor original.
+
+####
+Al depurar la implementación de paso por referencia, si se presenta un error al acceder a una referencia, se debe verificar el orden de los argumentos en las funciones de acceso, como `vector-ref`. Por ejemplo, la función que accede a una referencia debe recibir correctamente la posición y el vector. Si el código falla con un error de tipo al esperar un vector, se debe asegurar que el orden sea `(vector-ref vector posición)`. Corregido el orden, el sistema permite que una variable `a` definida con valor `3` pueda ser modificada a `4` dentro de un procedimiento mediante paso por referencia.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=NdSjy4I5B-8
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

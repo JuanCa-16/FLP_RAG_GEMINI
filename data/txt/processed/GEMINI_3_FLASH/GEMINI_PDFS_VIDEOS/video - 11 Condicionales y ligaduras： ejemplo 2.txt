@@ -1,0 +1,90 @@
+####
+**Introducción a la diagramación de ambientes**
+
+Para realizar la evaluación de un código de mayor complejidad, es fundamental seguir el proceso de diagramación de ambientes. Se recomienda practicar la interpretación de ambientes, ya que este concepto es esencial para comprender los temas posteriores del curso. Para este ejercicio, se trabajará con un `ambiente inicial` `env0` que contiene los valores `x = 3`, `y = 7` y `z = 1`. Todo proceso de evaluación comienza siempre con la definición de un `ambiente vacío`.
+
+####
+**Evaluación del primer ambiente y definición de variables**
+
+En el primer bloque de código se crea el ambiente `env1` para las variables `y` y `m`. El valor de `y` se define directamente como 5. Sin embargo, para la variable `m`, existe un `let` interno que define a `t`.
+
+**Cálculo de la variable m**
+Para calcular `m`, se evalúa la expresión `t = sub1(y)`. En este punto, el valor de `y` se busca en el ambiente anterior (`env0`), donde `y = 7`. Por lo tanto:
+- `t = 7 - 1 = 6`
+- `m = t * x`
+- `m = 6 * 3 = 18`
+
+Al finalizar este bloque, el ambiente `env1` contiene las ligaduras para `y = 5` y `m = 18`.
+
+```racket
+(let ([y 5]
+      [m (let ([t (sub1 y)]) (* t x))])
+  ...)
+```
+
+####
+**Comportamiento de las estructuras de control en los ambientes**
+
+Es importante notar que el uso de un `if` no crea por sí mismo un ambiente nuevo, a menos que contenga un `let` en su interior. El `if` es una estructura de control que decide qué rama de código ejecutar. En una ejecución, solo se procesa el código de la rama verdadera o de la rama falsa, según corresponda la condición; el resto del código debe ignorarse.
+
+**Evaluación de la condición if**
+Se define un nuevo ambiente `env2` para una nueva variable `y` basada en la siguiente condición:
+`if y > 3`
+
+Esta evaluación utiliza el valor de `y` del ambiente anterior (`env1`), donde `y = 5`. Como 5 es mayor que 3, se ejecuta la rama verdadera:
+- `y = add1(y) + m`
+- `y = (5 + 1) + 18`
+- `y = 6 + 18 = 24`
+
+Por lo tanto, en el ambiente `env2`, la variable `y` toma el valor de 24.
+
+####
+**Cálculo final y resultado de la evaluación**
+
+Tras definir `y = 24`, se crea el ambiente `env3` con la variable `t`, definida como la resta entre `y` y `m`.
+- `t = y - m`
+- `y` (del ambiente `env2`) es 24.
+- `m` (del ambiente `env1`) es 18.
+- `t = 24 - 18 = 6`
+
+**Evaluación de la expresión final**
+La expresión final se evalúa sobre el último ambiente creado (`env3`):
+`+ t (+ y (- z 3))`
+
+1. Se busca `t` en `env3`, resultando en 6.
+2. Se busca `y` en el ambiente más cercano (`env2`), resultando en 24.
+3. Se busca `z`. Al no estar en `env3`, `env2` ni `env1`, se encuentra en `env0` con el valor 1.
+4. Operación: `6 + (24 + (1 - 3))`
+5. Operación: `6 + (24 + (-2))`
+6. Operación: `6 + 22 = 28`
+
+El resultado final de la evaluación del código es 28.
+
+####
+**Verificación del código y próximos temas**
+
+Para verificar la exactitud de la diagramación de ambientes, se puede ejecutar el código completo definiendo el ambiente inicial. Es fundamental fortalecer el análisis de ambientes para facilitar la evaluación de procedimientos y funciones recursivas que se verán en las próximas clases.
+
+**Código completo para verificación**
+```racket
+(let ([x 3] [y 7] [z 1])
+  (let ([y 5]
+        [m (let ([t (sub1 y)]) (* t x))])
+    (let ([y (if (> y 3)
+                 (+ (add1 y) m)
+                 (sub1 (+ y m)))])
+      (let ([t (- y m)])
+        (+ t (+ y (- z 3)))))))
+```
+
+Este código, al ser ejecutado siguiendo la jerarquía de ambientes descrita, retorna el valor de 28. En las próximas sesiones se abordarán los procedimientos y procedimientos recursivos, cuya comprensión depende totalmente de la claridad en el manejo de ambientes.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 11 Condicionales y ligaduras： ejemplo 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=oKIbrtKiCx8
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

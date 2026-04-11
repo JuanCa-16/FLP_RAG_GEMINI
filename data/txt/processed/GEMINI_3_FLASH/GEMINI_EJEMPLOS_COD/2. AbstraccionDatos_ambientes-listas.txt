@@ -1,0 +1,79 @@
+####
+Representación de un ambiente vacío mediante listas:
+
+```racket
+(define empty-env
+  (lambda () (list 'empty-env)))
+```
+
+**Conceptos clave**
+`ambientes`, `constructores`, `listas`, `empty-env`
+
+**Aplicación**
+Se utiliza como el caso base o estructura inicial para la creación de ambientes, indicando que no existen ligaduras entre variables y valores.
+
+####
+Extensión de ambientes para la creación de nuevas ligaduras:
+
+```racket
+(define extend-env
+  (lambda (var val env)
+    (list 'extend-env var val env)))
+```
+
+**Conceptos clave**
+`extend-env`, `ligaduras`, `binding`, `scope`
+
+**Aplicación**
+Esta función permite añadir un nuevo par de variable y valor a un ambiente existente, retornando una nueva estructura de lista que representa el ambiente extendido.
+
+####
+Búsqueda de valores en ambientes representados como listas:
+
+```racket
+(define apply-env
+  (lambda (env search-var)
+    (cond ((eqv? (car env) 'empty-env)
+           (eopl:error 'apply-env "No binding for ~s" search-var))
+          ((eqv? (car env) 'extend-env)
+           (let ((saved-var (cadr env))
+                 (saved-val (caddr env))
+                 (saved-env (cadddr env)))
+             (if (eqv? search-var saved-var)
+                 saved-val
+                 (apply-env saved-env search-var))))
+          (else (eopl:error 'apply-env "Expecting an environment, given ~s" env)))))
+```
+
+**Conceptos clave**
+`recursión`, `búsqueda de símbolos`, `manejo de errores`, `apply-env`
+
+**Aplicación**
+Se emplea para recuperar el valor asociado a una variable específica. Si el ambiente es una extensión, compara la variable buscada con la guardada; si no coincide, realiza una llamada recursiva sobre el ambiente anterior. Lanza un error si alcanza un ambiente vacío o una estructura inválida.
+
+####
+Ejemplificación de la construcción y consulta de un ambiente:
+
+```racket
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+(apply-env e 'd)
+(apply-env e 'y)
+```
+
+**Conceptos clave**
+`shadowing`, `encadenamiento de ambientes`, `resolución de nombres`
+
+**Aplicación**
+Ilustra cómo se genera una jerarquía de ligaduras donde la función `apply-env` encontrará el valor más reciente asociado a un nombre (resolviendo el `shadowing` de la variable `y`). En este caso, al buscar `y` se obtendrá `8`, ya que es la ligadura más externa.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-listas.scm
+LENGUAJE: scheme
+FUENTE: CODIGO

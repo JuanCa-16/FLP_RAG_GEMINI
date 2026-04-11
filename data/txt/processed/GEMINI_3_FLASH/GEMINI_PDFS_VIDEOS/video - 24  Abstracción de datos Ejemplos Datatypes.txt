@@ -1,0 +1,46 @@
+#### **Definición de un datatype para árboles binarios**
+
+Para construir un `datatype` que represente un árbol binario, se utiliza la expresión `define-datatype`. En este caso, el nombre del tipo de dato es `arbol-b` y el nombre del predicado es `arbol-b?`. Al definirlo, es necesario especificar el nombre de las variantes y los datos que recibe cada una.
+
+La variante `leaf` representa una hoja y recibe únicamente un dato `num` de tipo numérico. La segunda variante, denominada `node`, recibe tres elementos: un `key` que es un `symbol`, un `left` que es un `arbol-b` y un `right` que también es un `arbol-b`. Se observa que los campos de los hijos se relacionan directamente con el predicado del tipo de dato.
+
+```racket
+(define-datatype arbol-b arbol-b?
+  (leaf (num number?))
+  (node (key symbol?)
+        (left arbol-b?)
+        (right arbol-b?)))
+```
+
+#### **Construcción de instancias de árboles binarios**
+
+La construcción de un árbol se realiza utilizando los constructores provistos por la definición del `datatype`. Por ejemplo, se puede definir un `arbol-1` que consista únicamente en una hoja con el valor 5. Asimismo, es posible definir un `arbol-2` que sea un nodo cuya llave es el símbolo `k`, con un hijo izquierdo que contiene otro nodo con llave `p` y hojas con valores 5 y 7, y un hijo derecho que es un nodo con llave `j` y hojas con valores 4 y 7.
+
+```racket
+(define arbol-1 (leaf 5))
+
+(define arbol-2 
+  (node 'k 
+        (node 'p (leaf 5) (leaf 7)) 
+        (node 'j (leaf 4) (leaf 7))))
+```
+
+#### **Ventajas de define-datatype y Árboles de Sintaxis Abstracta**
+
+Al ejecutar las definiciones de los árboles, el sistema devuelve una estructura (`struct`), lo cual indica que se está construyendo un `árbol de sintaxis abstracta` (`AST`). El uso de `define-datatype` permite automatizar la creación de constructores, observadores y predicados en un solo paso. Esto evita la necesidad de definirlos manualmente y facilita la extracción y administración de información dentro de las funciones.
+
+```racket
+; Al evaluar las variables se obtienen las estructuras correspondientes:
+arbol-1 ; Devuelve: (leaf 5)
+arbol-2 ; Devuelve: (node 'k (node 'p (leaf 5) (leaf 7)) (node 'j (leaf 4) (leaf 7)))
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 24  Abstracción de datos Ejemplos Datatypes.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=hwvWxpp6TXo
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

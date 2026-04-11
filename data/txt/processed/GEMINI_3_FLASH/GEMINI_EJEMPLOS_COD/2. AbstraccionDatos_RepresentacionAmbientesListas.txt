@@ -1,0 +1,108 @@
+####
+Definición de los constructores y predicados base para la representación de entornos mediante listas:
+
+```racket
+#lang eopl
+
+(define empty-env
+  (lambda () (list 'empty-env)))
+
+(define extend-env
+  (lambda (id value old-env)
+    (list 'extend-env id value old-env)))
+
+(define empty-env?
+  (lambda (e)
+    (equal? (car e) 'empty-env)))
+
+(define extend-env?
+  (lambda (e)
+    (equal? (car e) 'extend-env)))
+```
+
+**Conceptos clave**
+`constructores`, `predicados`, `abstracción de datos`, `entornos`
+
+**Aplicación**
+Estos procedimientos permiten inicializar un entorno vacío y extenderlo con nuevas ligaduras (pares identificador-valor), estableciendo la estructura fundamental para gestionar el alcance de las variables.
+
+####
+Implementación de funciones extractoras para acceder a los componentes de un entorno extendido:
+
+```racket
+#lang eopl
+
+(define extend-env->id
+  (lambda (e)
+    (cadr e)))
+
+(define extend-env->value
+  (lambda (e)
+    (caddr e)))
+
+(define extend-env->old-env
+  (lambda (e)
+    (cadddr e)))
+```
+
+**Conceptos clave**
+`extractores`, `listas`, `acceso a datos`, `representación de datos`
+
+**Aplicación**
+Se utilizan para descomponer la estructura de un entorno y recuperar de forma individual el identificador, su valor asociado o la referencia al entorno anterior (el `parent scope`).
+
+####
+Función de búsqueda para recuperar el valor asociado a una variable dentro de un entorno:
+
+```racket
+#lang eopl
+
+(define apply-env
+  (lambda (e var)
+    (cond
+      [(empty-env? e) (eopl:error "La variable" var "no ha sido encontrada")]
+      [(extend-env? e)
+       (if (equal? (extend-env->id e) var)
+           (extend-env->value e)
+           (apply-env (extend-env->old-env e) var))]
+      [else (eopl:error "Estructura no válida")]
+      )))
+```
+
+**Conceptos clave**
+`recursión`, `búsqueda por identificador`, `manejo de errores`, `scope léxico`
+
+**Aplicación**
+`apply-env` busca de forma recursiva un identificador comenzando por el entorno más reciente. Si no lo encuentra en la ligadura actual, continúa la búsqueda en el entorno anterior hasta encontrarlo o llegar al entorno vacío, en cuyo caso reporta un error.
+
+####
+Demostración de creación de entornos y consulta de variables:
+
+```racket
+#lang eopl
+
+;; Definición de un entorno de prueba
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+;; Consultas al entorno
+(display (apply-env e 'x))
+(display "\n")
+(display (apply-env e 'y))
+```
+
+**Conceptos clave**
+`sombreado de variables`, `ligaduras`, `evaluación`, `visualización`
+
+**Aplicación**
+Ilustra cómo se construye una jerarquía de entornos donde una variable puede estar definida múltiples veces (como el caso de `y`). El sistema recupera el valor más reciente (`sombreado`), demostrando el comportamiento de un lenguaje con alcance dinámico o léxico según su implementación.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/RepresentacionAmbientesListas.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

@@ -1,0 +1,92 @@
+####
+**Definición de datos recursivos y gramáticas**
+
+Una forma sencilla de definir datos recursivos es mediante el uso de gramáticas. En estas, los `símbolos no terminales` actúan como funciones que pueden llamarse entre sí o ser recursivos al llamar a la misma regla. Por otro lado, los `símbolos terminales` pertenecen al alfabeto y representan el punto donde la derivación termina, como un número o un símbolo específico. Las `reglas de producción` funcionan de manera similar a las funciones en programación.
+
+Para escribir estas reglas, se utilizan notaciones como la `cerradura de Kleene` y la `cerradura positiva`:
+- `Cerradura de Kleene` (*): Indica 0 o más ocurrencias.
+- `Cerradura positiva` (+): Indica 1 o más ocurrencias.
+
+####
+**Definición recursiva de una lista de enteros**
+
+Una lista de números puede definirse de forma recursiva. Por ejemplo, una `lista de enteros` puede ser una lista vacía (que es un `símbolo terminal`, ya que no hay más descomposiciones posibles) o un entero seguido de una `lista de enteros`.
+
+**Gramática de una lista de enteros**
+```racket
+<lista-enteros> ::= ()
+                | <entero> <lista-enteros>
+```
+Esta regla es recursiva porque se invoca a sí misma. Como toda función recursiva, debe incluir un caso de terminación. También es posible definirla utilizando la `cerradura de Kleene`, donde se especifica que hay 0 o más enteros; en este caso, el valor 0 representa inherentemente la lista vacía.
+
+####
+**Naturaleza de las listas y los árboles binarios**
+
+Un `árbol binario` es estructuralmente similar a una lista, pero con una diferencia fundamental en su recursión. Mientras que una lista tiene una sola llamada recursiva (un elemento y el resto), un árbol binario tiene dos o más llamados recursivos.
+
+En una gramática, esto se observa en las `producciones`:
+- Un `árbol binario` puede ser un símbolo terminal (como un entero), lo que significa que no hay más descomposición.
+- O puede ser una producción que contiene un símbolo, un `árbol binario` izquierdo y un `árbol binario` derecho.
+
+Tanto las listas como los árboles son estructuras recursivas porque dentro de ellas se encuentra otra estructura del mismo tipo. En una lista, tras el `car` (el elemento), el `cdr` representa el resto, que es otra lista. En un árbol, se tiene el `car`, el `cadr` (hijo izquierdo) y el `caddr` (hijo derecho), manteniendo la misma naturaleza estructural.
+
+####
+**Analogía de la Matrioska para listas**
+
+Las listas pueden entenderse mediante la analogía de una `matrioska` (muñeca rusa). Al abrir una muñeca, se encuentra otra muñeca idéntica en su interior. En una `lista de enteros`, dentro de ella siempre hay otra `lista de enteros`.
+
+Esta estructura requiere obligatoriamente un punto de parada: la `lista vacía`. Si no existiera este caso base, la recursión sería infinita, lo que provocaría un error por agotamiento de memoria. La muñeca más pequeña, la que está al fondo y no contiene nada más, representa el `vacío` en la estructura de datos.
+
+####
+**Analogía de la Matrioska aplicada a árboles binarios**
+
+Si una lista es una `matrioska` que contiene una muñeca, un `árbol binario` es una matrioska que, al abrirse, contiene dos muñecas rusas en su interior. Un árbol ternario contendría tres, y un árbol n-ario contendría N muñecas.
+
+A pesar de que el manejo de árboles puede parecer más complejo que el de las listas, la lógica subyacente es la misma. El árbol es una estructura que contiene dentro de sí dos o más estructuras de su mismo tipo. La diferencia radica únicamente en la cantidad de ramificaciones o llamados recursivos internos.
+
+####
+**Llamados recursivos en estructuras de árbol**
+
+Al procesar un árbol, la estructura dicta cómo deben realizarse los llamados recursivos. A diferencia de las listas, donde generalmente se invoca la recursión sobre el `cdr`, en un árbol binario es necesario realizar dos llamados.
+
+**Ejemplo de procesamiento de árbol**
+```racket
+(define procesar-arbol
+  (lambda (arb)
+    (cond
+      [(number? arb) ...]
+      [else
+       (begin
+         (procesar-arbol (cadr arb))  ; Llamado recursivo al hijo izquierdo
+         (procesar-arbol (caddr arb)) ; Llamado recursivo al hijo derecho
+         ...)])))
+```
+Para que esto funcione, se debe garantizar que tanto el `cadr` como el `caddr` cumplan con el contrato de ser un `árbol`. Una función recursiva siempre debe recibir y devolver el mismo tipo de datos en sus llamados internos para mantener la consistencia de la estructura.
+
+####
+**Representación de nodos nulos en gramáticas de árboles**
+
+En ocasiones, un árbol puede no ser perfectamente balanceado o tener nodos con un solo hijo. En estos casos, aunque el hijo izquierdo o derecho no esté presente visualmente, estructuralmente se garantiza su presencia mediante un valor `null` o vacío, siempre que la estructura esté bien construida.
+
+Si la gramática actual solo permite `nodo`, `raíz` u `hoja`, no se podrían construir árboles con hijos ausentes de forma explícita. Para ello, es necesario incluir una opción `vacío` en la definición gramatical:
+```
+<arbol-binario> ::= <entero>
+                 | (<entero> <arbol-binario> <arbol-binario>)
+                 | vacío
+```
+El símbolo `vacío` permite representar los casos donde un nodo no tiene descendencia en una de sus ramas, permitiendo así cualquier configuración del árbol.
+
+####
+**Introducción a las expresiones Lambda**
+
+El `cálculo lambda` es la base para la creación de lenguajes de programación. Una expresión en este cálculo puede ser un `identificador`. Un `identificador` es una palabra sin espacios (como `x`, `y`, `foo`, `variable-a`) que se utiliza para dar nombre a los datos o variables. A través de estos identificadores, es posible referenciar y manipular valores dentro del sistema.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 7 Especificación mediante gramáticas.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=JPRyWqSGR_k
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

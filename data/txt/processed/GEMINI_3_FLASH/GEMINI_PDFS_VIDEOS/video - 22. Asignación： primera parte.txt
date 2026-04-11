@@ -1,0 +1,110 @@
+####
+**Introducción a la asignación y cambio de paradigma**
+
+A partir de este punto se introduce el concepto de `asignación`. Hasta ahora, las variables manejadas en el curso no podían cambiar su valor, pues funcionaban como `ligaduras`. Al introducir la posibilidad de modificar estas ligaduras, se transita de un `paradigma funcional` a un `paradigma imperativo`. 
+
+En el estudio de la `asignación` de variables, se abordará su sintaxis, la semántica de su implementación y diversos ejemplos de uso. El objetivo es evolucionar desde un lenguaje funcional puro, donde no existen variables mutables sino asociaciones fijas entre nombres y valores, hacia uno que permita efectos secundarios.
+
+####
+**Características del paradigma funcional**
+
+Hasta este momento, el lenguaje manejado posee características estrictamente funcionales:
+
+- **Ligaduras en lugar de variables:** Los nombres asociados a valores no pueden ser modificados.
+- **Evaluación de expresiones:** Cada construcción del lenguaje es una expresión que siempre devuelve un valor.
+- **Transparencia referencial:** Una función siempre retorna el mismo valor para los mismos argumentos, independientemente del contexto o el momento en que se llame.
+- **Tipos de datos:** Las computaciones producen valores expresados que pueden ser números, booleanos o procedimientos.
+
+####
+**Efectos colaterales en la computación**
+
+En la computación, además del valor producido por una expresión, pueden ocurrir alteraciones en el sistema conocidas como `operaciones de efecto`. Mientras que producir un valor es un efecto local y limitado, un `efecto de computación` implica un cambio global en el sistema. Algunos ejemplos de estas operaciones son:
+
+- Imprimir un valor en consola.
+- Cambiar un estado en la memoria.
+- Leer o escribir archivos en el sistema.
+
+En este contexto, el enfoque se centrará exclusivamente en la `asignación de ubicaciones de memoria` para modificar el estado del programa.
+
+####
+**Diferencias entre ligadura y asignación**
+
+Existen distinciones fundamentales entre el concepto de `ligadura` (vinculado a la instrucción `let`) y el de `asignación`:
+
+- **Alcance:** La `ligadura` es generalmente una operación local, mientras que la `asignación` de una variable es potencialmente global, ya que al cambiar el valor de una variable declarada previamente se pueden afectar múltiples partes del sistema.
+- **Asociación:** La `ligadura` comprende la asociación de nombres con valores. Por otro lado, la `asignación` incluye el concepto de `referencia`, que permite apuntar a una ubicación de memoria modificable.
+
+####
+**Ejecución secuencial y sintaxis de la asignación**
+
+Para permitir la `asignación` de variables es necesario habilitar la ejecución secuencial de expresiones. Esto se debe a que algunas operaciones realizarán un efecto (el cambio de valor) y otras retornarán el valor final de la computación. Para esto se introducen dos nuevas estructuras sintácticas:
+
+1. **Estructura `begin`:** Permite la ejecución de una o más expresiones de forma secuencial (de arriba hacia abajo).
+2. **Estructura `set`:** Permite la asignación de un nuevo valor a un identificador.
+
+En este nuevo esquema, los `valores expresados` (lo que el programador manipula) y los `valores denotados` (lo que se guarda en las variables) dejan de ser iguales, ya que los valores denotados pasarán a ser `referencias`.
+
+####
+**Especificación gramatical de `begin` y `set`**
+
+La incorporación de la asignación requiere modificar la gramática del interpretador. En un interpretador de expresiones recursivas, se añaden las siguientes variantes:
+
+```racket
+;; Sintaxis para ejecución secuencial
+(begin-exp
+  ("begin" expression (arbno ";" expression) "end")
+)
+
+;; Sintaxis para asignación
+(set-exp
+  ("set" identifier "=" expression)
+)
+```
+
+En la definición de `begin`, se utiliza una palabra clave de terminación como `end` para evitar conflictos de ambigüedad por la izquierda en el análisis gramatical, permitiendo así una lista de una o más expresiones separadas por puntos y comas.
+
+####
+**Semántica de evaluación de `begin` y `set`**
+
+La evaluación de las nuevas expresiones sigue reglas específicas:
+
+- **`begin`:** Se evalúan secuencialmente todas las expresiones contenidas. Si la lista de expresiones adicionales es vacía, se retorna el valor de la expresión inicial. En caso de haber múltiples expresiones, el `begin` retorna únicamente el valor de la última expresión evaluada.
+- **`set`:** Primero se evalúa la parte derecha de la asignación para obtener un `valor expresado`. Luego, ese valor se almacena en la ubicación de memoria (referencia) asociada al identificador.
+
+En lenguajes de programación, el resultado de un `set` suele ser un tipo `void`. Por razones prácticas en el interpretador, se retornará un valor simbólico (como un 0) que represente que la operación se realizó con éxito, ya que estas operaciones se ejecutan por su efecto y no por el valor que producen.
+
+####
+**Ejemplos de ejecución con asignación**
+
+A continuación se presentan ejemplos que ilustran el comportamiento de la asignación y la ejecución secuencial:
+
+**Ejemplo 1: Incremento y multiplicación**
+```racket
+let m = 0 
+in begin 
+     set m = +(m, 1);
+     *(m, 2)
+   end
+```
+En este caso, `m` inicia en 0. La instrucción `set` cambia el valor de `m` a 1. Finalmente, la expresión `*(m, 2)` evalúa 1 * 2, devolviendo como resultado 2.
+
+**Ejemplo 2: Ámbito y procedimientos**
+```racket
+let x = 100 
+in let p = proc (x) set x = +(x, 1)
+   in begin
+        (p x);
+        x
+      end
+```
+En este ejemplo, si el pasaje de parámetros es por valor, el `x` dentro del procedimiento `p` es una copia local (el primer `x` que encuentra el ambiente). Por lo tanto, el `set` interno no afectaría al `x` global de la ligadura exterior, y la expresión final devolvería 100. Sin embargo, si el pasaje fuera por referencia, el valor de `x` se vería alterado globalmente.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 22. Asignación： primera parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=glGvOtFAldY
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

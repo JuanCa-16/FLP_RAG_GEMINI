@@ -1,0 +1,161 @@
+####
+**Introducción a la inferencia de tipos**
+
+En `inferencia de tipos`, el interpretador realiza cálculos para estimar los tipos de los argumentos en los procedimientos cuando estos no son proporcionados explícitamente. Se introduce en el intérprete el concepto de `optional-type`, representado por el símbolo `?`, que indica el tipo que se debe inferir.
+
+Ejemplo de expresión con tipos opcionales:
+```racket
+letrec
+  ? f(? x, ? y) = if >(x, 0) 
+                  then (f -(x, 1) +(y, 1)) 
+                  else y
+in (f 10 20)
+```
+En este caso, se puede inferir que el procedimiento retorna un `int` y que sus argumentos `x` e `y` también son de tipo `int`.
+
+####
+**Variables de tipo y asignación única**
+
+Para realizar la inferencia, se crea una `variable de tipo`, la cual es de asignación única. Si se intenta asignar a esta variable un valor con un tipo diferente al ya establecido, se producirá un `error de tipo`.
+
+Ejemplo de inferencia correcta donde `x` es `bool`:
+```racket
+(type-of-expression
+  (cases program (scan&parse 
+    "letrec int f(? x, ? y) = if x then (f x +(y, 1)) else y in f")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+
+Ejemplo de error de tipo por reasignación contradictoria:
+```racket
+(type-of-expression
+  (cases program (scan&parse 
+    "letrec int f(? x, ? y) = if x then (f +(x, 2) +(y, 1)) else y in f")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+En este último caso, `x` debe ser `bool` por la regla del condicional `if`, pero en el cuerpo aparece `+(x, 2)`, lo que implica que `x` debe ser `int`. Al intentar realizar esta reasignación contradictoria, el sistema arroja un error.
+
+####
+**Reglas de inferencia para condicionales**
+
+La regla para la estructura de un condicional es la siguiente:
+`<expression> ::= "if" <expression> "then" <expression> "else" <expression>`
+`(cond-exp true-exp false-exp)`
+
+Para que la expresión sea válida:
+- `cond-exp` debe ser de tipo `bool`.
+- El tipo de `true-exp` debe ser igual al tipo de `false-exp`.
+
+####
+**Reglas de inferencia para procedimientos**
+
+La sintaxis para un procedimiento es:
+`<expression> ::= "proc" "(" (type-exp identifier ",")* ")" <expression>`
+`proc-exp (targs args body)`
+
+La regla de tipo para un procedimiento se define como:
+`(t1 * t2 * t3 * ... * tn) -> t`
+
+Los tipos de los argumentos dependen de los valores enviados y del cuerpo del procedimiento. Ejemplo de inferencia en un procedimiento:
+```racket
+(type-of-expression
+  (cases program (scan&parse "proc(? x) +(x, 1)")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+Resultado del interpretador:
+```racket
+#(struct:proc-type
+  (#(struct:tvar-type 39 #(#(struct:atomic-type int))))
+  #(struct:tvar-type 40 #(#(struct:atomic-type int))))
+```
+
+####
+**Polimorfismo en inferencia de tipos**
+
+Si no es posible condicionar los tipos de un procedimiento mediante su uso o su cuerpo, se considera que el procedimiento es de tipo `polimórfico`, lo que significa que no tiene un tipo fijo establecido.
+
+Ejemplo de procedimiento polimórfico:
+```racket
+(type-of-expression
+  (cases program (scan&parse "proc(? x) x")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+Resultado del interpretador indicando una variable de tipo sin restringir:
+```racket
+#(struct:proc-type
+  (#(struct:tvar-type 41 #(())))
+  #(struct:tvar-type 41 #(())))
+```
+
+####
+**Condicionamiento de tipos por aplicación**
+
+Un procedimiento puede condicionarse según cómo sea invocado en el código.
+
+Ejemplo de condicionamiento exitoso:
+```racket
+(type-of-expression
+  (cases program (scan&parse "let k = proc(? x) x in let f = (k 10) in k")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+El llamado `(k 10)` condiciona que la entrada y salida de `k` deben ser de tipo `int`.
+
+Ejemplo de conflicto de tipos:
+```racket
+(type-of-expression
+  (cases program (scan&parse "let k = proc(? x) x in let f = (k 10) in let s = (k true) in k")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+Error resultante:
+`check-equal-type!: Type mismatch: int doesn't match bool in #(struct:app-exp #(struct:var-exp k) (#(struct:true-exp)))`
+Esto sucede porque el primer llamado define que `k` es `int -> int`, pero el segundo llamado `(k true)` implica `bool -> bool`, contradiciendo el primer valor encontrado.
+
+####
+**Tipos de las primitivas**
+
+Las primitivas funcionan de forma similar a los procedimientos y siguen estas reglas de tipos:
+
+- **Primitivas numéricas:** `int * int * ... * int -> int`
+- **Primitivas relacionales:** `int * int -> bool`
+- **Primitivas lógicas:** `bool * bool * ... * bool -> bool`
+
+####
+**Aplicación de procedimientos**
+
+La aplicación de un procedimiento consiste en su invocación, por ejemplo `(f 1 2 3)`. El tipo de la aplicación es el tipo del resultado del procedimiento. Si el tipo de `f` es `tf = bool -> int`, entonces `(f true)` debe resultar en un `int`.
+
+Sintaxis:
+`<expression> ::= "(" expression (expression)* ")"`
+`app-exp (rator rands)`
+
+Reglas de validación:
+- El `rator` (operador) debe ser de tipo `proc-type`, definido como `targs -> result-type`.
+- La cantidad de elementos en `targs` debe ser igual a la cantidad de elementos en `rands` (operandos).
+- Los tipos de los `targs` deben ser iguales a los tipos de los `rands`.
+
+####
+**Pasos para realizar la inferencia**
+
+El proceso para realizar la inferencia de tipos sigue estos pasos:
+
+1. Establecer las `variables de tipo`: cada expresión dentro del código tiene asociada una variable de tipo.
+2. Establecer los tipos de los procedimientos.
+3. Establecer los tipos de las aplicaciones a los procedimientos.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Interpretador inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interpretador%20inferencia/

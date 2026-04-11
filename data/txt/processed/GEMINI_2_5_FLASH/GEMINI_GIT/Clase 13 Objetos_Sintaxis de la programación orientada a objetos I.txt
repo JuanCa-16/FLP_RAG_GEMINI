@@ -1,0 +1,145 @@
+Sintaxis de la programación orientada a objetos I. Se va a modificar el lenguaje para manejar:
+Valores denotados = ref(valor expresado)
+Valores expresados = Número, booleano, procVal y objeto
+
+Definición de una clase `c1` que hereda de `object`, incluyendo campos `i` y `j`, un constructor `initialize` y métodos `countup` y `getstate`.
+
+class c1 extends object
+  field i % Campo para almacenar un valor
+  field j % Campo para almacenar otro valor
+  method initialize (x) % Método constructor que inicializa los campos
+    begin
+      set i = x;          % Asigna x al campo i
+      set j = -(0,x)      % Asigna -x al campo j
+    end
+  method countup (d) % Método que incrementa i y decrementa j
+    begin
+      set i = +(i,d);     % Incrementa i en d
+      set j = -(j,d)      % Decrementa j en d
+    end
+  method getstate () % Método que retorna el estado actual como lista
+    list (i,j)
+
+###
+En este punto se declara la clase `c1` con campos `i` e `j`. Cuando se instancia, `i` toma el valor de `x`, y `j` toma `-x`. Se definen dos métodos: `countup` y `getstate`.
+
+A continuación, un ejemplo de uso de la clase `c1`:
+
+let t1 = 0 % Variable temporal 1
+    t2 = 0 % Variable temporal 2
+    o1 = new c1 (3) % Creación de instancia de c1 con valor inicial 3
+in
+  begin
+    set t1 = send o1 getstate ();  % Obtiene estado inicial: list(3,-3)
+    send o1 countup (2);           % Modifica el estado: incrementa en 2
+    set t2 = send o1 getstate ();  % Obtiene estado modificado: list(5,-5)
+    list (t1,t2) % Retorna lista con ambos estados
+  end
+
+###
+Cuando se inicializa `o1`, los valores de `i` y `j` son 3 y -3 respectivamente. Al llamar `getstate()` por primera vez, se obtiene `list(3,-3)`. Después de invocar `countup(2)`, el valor de `i` se actualiza a 5 y el de `j` a -5. Por lo tanto, `t2` termina valiendo `list(5,-5)`. El valor de retorno final de la expresión sería `list(list(3,-3), list(5,-5))`.
+
+###
+Se define una estructura de árbol utilizando programación orientada a objetos, empezando con la clase `node`. Esta clase hereda de `object` y tiene campos para los hijos izquierdo (`left`), derecho (`right`) y el valor propio del nodo (`val`). Incluye un constructor y un método `sum` recursivo.
+
+class node extends object
+  field left  % Hijo izquierdo del nodo
+  field right % Hijo derecho del nodo
+  field val   % Valor del nodo
+  method initialize (l,r,v) % Constructor del nodo
+    begin
+      set left = l;   % Asigna hijo izquierdo
+      set right = r;  % Asigna hijo derecho
+      set val = v     % Asigna valor del nodo
+    end
+  method sum () % Método que calcula la suma recursiva del árbol
+    + (send left sum (),  % Suma del subárbol izquierdo
+       send right sum (), % Suma del subárbol derecho
+       val                % Valor del nodo actual
+      )
+
+###
+Definición de una clase `leaf` que representa una hoja en la estructura del árbol. Hereda de `object` y tiene un campo `val` para su valor, un constructor `initialize` y un método `sum` que simplemente retorna su valor.
+
+class leaf extends object
+  field val % Valor de la hoja
+  method initialize (v) % Constructor de la hoja
+    begin
+      set val = v % Asigna valor a la hoja
+    end
+  method sum () % Método que retorna el valor de la hoja
+    val
+
+###
+Construcción de un árbol de ejemplo utilizando las clases `node` y `leaf`, seguido del cálculo de su suma total.
+
+let tree = new node (
+             new node (
+               new leaf (3), % Hoja con valor 3
+               new leaf (5), % Hoja con valor 5
+               3             % Valor del nodo interno
+             ),
+             new node (
+               new node (
+                 new leaf (4), % Hoja con valor 4
+                 new leaf (3), % Hoja con valor 3
+                 10            % Valor del nodo interno
+               ),
+               new leaf (20), % Hoja con valor 20
+               19             % Valor del nodo interno
+             ),
+             14 % Valor del nodo raíz
+           )
+in
+  send tree sum () % Calcula la suma total del árbol
+
+###
+Al ejecutar el método `sum` en el ejemplo del árbol, este puede invocarse en un objeto de tipo `node` o en un objeto de tipo `leaf`. El sistema no lo sabe a priori, sino que lo determina en tiempo de ejecución. A este proceso se le conoce como despacho dinámico de métodos, donde el comportamiento se selecciona basándose en el tipo real del objeto.
+
+###
+A continuación, se presentan conceptos teóricos adicionales en programación orientada a objetos:
+
+Despacho dinámico: Permite que el método a ejecutar se determine en tiempo de ejecución basado en el tipo real del objeto, no en el tipo declarado. Esto es fundamental para el polimorfismo.
+
+Jerarquía de clases: Las clases pueden organizarse en estructuras jerárquicas donde las clases hijas heredan y extienden el comportamiento de las clases padre.
+
+Mensajes y métodos:
+Mensaje: La solicitud enviada a un objeto para ejecutar una operación.
+Método: La implementación específica que responde a un mensaje.
+
+###
+Tabla de resumen de conceptos clave de la sintaxis de la Programación Orientada a Objetos (POO):
+
+Concepto             Definición                                         Ejemplo en Scheme
+Clase                Plantilla para crear objetos                       class c1 extends object
+Campo                Variable de instancia del objeto                   field i
+Método               Función asociada a un objeto                       method sum() val
+Constructor          Método que inicializa el objeto                    method initialize(x)
+Instanciación        Creación de un objeto a partir de una clase        new c1(3)
+Envío de mensaje     Invocación de un método en un objeto               send o1 getstate()
+Herencia             Relación entre clases padre e hijas                extends object
+Despacho dinámico    Selección del método en tiempo de ejecución        send left sum()
+Composición          Objetos que contienen otros objetos                Nodos que contienen hojas
+
+###
+Comentarios adicionales sobre programación orientada a objetos:
+- El despacho dinámico es esencial para implementar polimorfismo en lenguajes orientados a objetos.
+- La herencia permite reutilizar código y establecer relaciones de tipo entre clases.
+- Los constructores son responsables de inicializar el estado interno de los objetos.
+- La composición de objetos permite construir estructuras complejas como árboles.
+- El envío de mensajes es el mecanismo fundamental para la comunicación entre objetos.
+- La encapsulación protege el estado interno de los objetos mediante campos privados.
+- La sobreescritura de métodos permite que las clases hijas proporcionen implementaciones específicas.
+- La recursión en métodos es común cuando se trabaja con estructuras de datos jerárquicas.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Sintaxis de la programación orientada a objetos I
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Sintaxis%20de%20la%20programaci%C3%B3n%20orientada%20a%20objetos%20I/

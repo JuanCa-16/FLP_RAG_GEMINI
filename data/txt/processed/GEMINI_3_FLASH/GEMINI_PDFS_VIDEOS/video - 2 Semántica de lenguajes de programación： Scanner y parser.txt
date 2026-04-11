@@ -1,0 +1,103 @@
+#### **Introducción al Front-end: Scanning y Parsing**
+
+El objetivo de los componentes del front-end es procesar el código fuente a través de dos etapas principales: el `scanning` y el `parsing`.
+
+1. **Scanning**: Se encarga de crear unidades de caracteres significativos denominadas unidades léxicas. Estas unidades se generan de acuerdo con la gramática y se manejan mediante la `especificación léxica`.
+2. **Parsing**: Consiste en convertir esas unidades léxicas en árboles de sintaxis abstracta (`AST`).
+
+Los árboles de sintaxis abstracta obedecen a la gramática impuesta para el lenguaje de programación, lo cual facilita el proceso de ejecución del código.
+
+#### **El proceso de Scanning**
+
+El `scanning` toma el texto del código fuente (números, letras, espacios) y lo transforma en una lista de unidades léxicas, `lexemas` o `tokens`. Por ejemplo, dado un fragmento de código, el escáner identifica cada componente, su tipo y la línea donde se encuentra:
+
+```racket
+;; Ejemplo de traza de escaneo para el código:
+;; Linea 1: INT A INT B
+;; Linea 2: INT C = B + 1
+
+;; Unidad 1
+;; Valor: "INT"
+;; Tipo: Tipo de dato
+;; Línea: 1
+
+;; Unidad 2
+;; Valor: "A"
+;; Tipo: Identificador/String
+;; Línea: 1
+
+;; Unidad 3
+;; Valor: "INT"
+;; Tipo: Tipo de dato
+;; Línea: 1
+
+;; Unidad 4
+;; Valor: "B"
+;; Tipo: Identificador/String
+;; Línea: 1
+
+;; Unidad 5
+;; Valor: "INT"
+;; Tipo: Tipo de dato
+;; Línea: 2
+
+;; Unidad 6
+;; Valor: "C"
+;; Tipo: Identificador/String
+;; Línea: 2
+```
+
+El proceso de `scanning` se encarga de extraer únicamente los elementos importantes para el lenguaje. Aquellos componentes que no tienen importancia para la ejecución, como los comentarios o los espacios en blanco innecesarios, son ignorados. El resultado final de este proceso es una lista de unidades significativas que será entregada al `parser`.
+
+#### **Especificación léxica e ignorado de elementos**
+
+La `especificación léxica` define cómo se deben tratar y estructurar las unidades significativas (tipos, cadenas, identificadores, etc.). En este proceso, el escáner filtra el contenido que no aporta valor semántico a la ejecución:
+
+- **Comentarios**: Se ignoran por completo, ya que son marcas para el programador y no deben afectar la ejecución.
+- **Espacios y símbolos irrelevantes**: Elementos que no poseen significado dentro de la lógica del lenguaje de programación.
+
+Una vez filtrada, la información se estructura según la `especificación léxica` para definir cómo se trabajará con cada dato encontrado.
+
+#### **Reglas léxicas para el lenguaje objetivo**
+
+Para el lenguaje de programación del curso, se definen las siguientes reglas de `scanning`:
+
+- **Espacios y líneas**: Cualquier secuencia de espacios y líneas nuevas es equivalente a un único espacio.
+- **Comentarios**: Comienzan con el carácter `%` y se extienden hasta el final de la línea. El escáner debe ignorarlos.
+- **Identificadores**: Son secuencias de letras y números que comienzan obligatoriamente con una letra. Se utilizan para nombrar variables y procedimientos.
+- **Palabras clave y puntuación**: Símbolos específicos que ayudan a separar estructuras del lenguaje.
+
+Ejemplo de procesamiento de identificadores:
+Si el escáner recibe `FUBAR`, identificará `FUB` como un `identifier` en la línea 1; si encuentra un espacio, lo ignorará, y continuará con el siguiente elemento. Si aparece un `%`, ignorará todo el contenido posterior en esa línea.
+
+#### **Estructura de datos de un Token**
+
+Cuando el escáner encuentra un `token`, retorna una estructura de datos que contiene, al menos, la siguiente información:
+
+1. **Clase**: Describe qué tipo de `token` se encontró (ej. número, string, identificador).
+2. **Dato**: El valor particular del `token`. Por ejemplo, si la clase es un identificador, el dato puede ser el nombre de la variable; si es un número, el valor numérico correspondiente.
+3. **Ubicación**: El número de línea en la entrada donde fue hallado el `token`.
+
+#### **El proceso de Parsing y el Árbol de Sintaxis Abstracta (AST)**
+
+El `parsing` recibe la secuencia de `tokens` generada por el escáner y la estructura en un árbol de sintaxis abstracta (`AST`). Este proceso depende estrictamente de la gramática especificada para el lenguaje.
+
+- Si el código no corresponde a la gramática definida, el `parser` arrojará un error y no generará el `AST`.
+- Para especificar estas gramáticas, se utiliza la herramienta `define-datatype`.
+- El `AST` debe ser coherente y estar completo de acuerdo con los símbolos terminales de la gramática.
+
+#### **Implementación con la librería SLLGEN en DrRacket**
+
+En el entorno de `DrRacket`, se utiliza la librería `SLLGEN` para facilitar la construcción del front-end. Esta librería permite automatizar la integración entre el escáner y el `parser` de forma sencilla.
+
+La ventaja de utilizar esta herramienta, desarrollada por los autores del libro guía, es que evita la construcción manual de todos los componentes de análisis léxico y sintáctico que serían necesarios en otros lenguajes como Java o C++. Mediante `SLLGEN`, el proceso de generación de árboles y reconocimiento de tokens se realiza de forma automática a partir de la especificación de la gramática.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 2 Semántica de lenguajes de programación： Scanner y parser.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=npoh_p9PFlw
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

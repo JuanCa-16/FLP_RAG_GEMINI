@@ -1,0 +1,109 @@
+####
+**Definición de la suma mediante el sucesor**
+
+Para definir la suma entre dos números naturales en un sistema donde esta operación no está predefinida, podemos utilizar la función `sucesor`. Dado que en ciertas representaciones solo contamos con operaciones básicas como el `predecesor`, la suma de `x` y `y` se define como la aplicación de `sucesor` a un número `x` tantas veces como indique el valor de `y`. 
+
+Por ejemplo, para calcular `4 + 2`:
+- Se aplica el `sucesor` a 4, obteniendo 5.
+- Se aplica nuevamente el `sucesor` al resultado, obteniendo 6.
+
+A partir de estas funciones base (`sucesor` y `predecesor`), podemos definir funciones más complejas como `plus` para el programador.
+
+####
+**Representación unaria de números naturales**
+
+Una forma de representar números enteros no negativos es la representación unaria. En este modelo, un número entero no negativo `n` se representa mediante una lista de `n` símbolos `#t`. 
+
+Bajo esta representación:
+- El número `0` se define como la lista vacía `'()`.
+- El número `1` se obtiene concatenando el símbolo `#t` a la representación de `n`.
+
+En esta implementación:
+- La función `zero` devuelve la lista vacía.
+- El `sucesor` añade un elemento a la lista.
+- El `predecesor` se obtiene mediante la función `cdr`, que extrae el resto de la lista.
+
+####
+**Implementación de la representación unaria en Racket**
+
+La implementación de la representación unaria incluye la definición del valor cero, la función sucesor y la función predecesor con un control de errores para evitar procesar números menores a cero:
+
+```racket
+(define zero '())
+
+(define (sucesor n)
+  (cons #t n))
+
+(define (predecesor n)
+  (if (null? n)
+      (error "El número no puede ser cero")
+      (cdr n)))
+```
+
+Si ejecutamos el `sucesor` de `zero`, el resultado será `(#t)`. Si aplicamos el `sucesor` al `sucesor` de `zero`, obtendremos `(#t #t)`, que representa el número 2 en formato unario.
+
+####
+**Definición de la función suma en la representación unaria**
+
+Utilizando la interfaz de la representación unaria, podemos definir la función `plus`. Esta función recibe dos parámetros, `x` e `y`, y aplica recursivamente el `sucesor` de la suma de `x` con el `predecesor` de `y`, hasta que `y` sea el valor cero.
+
+```racket
+(define (plus x y)
+  (if (null? y)
+      x
+      (sucesor (plus x (predecesor y)))))
+```
+
+Por ejemplo, al realizar la suma entre 3 (representado por una lista de tres `#t`) y 4 (una lista de cuatro `#t`), la función devolverá una lista con siete elementos `#t`. Esta lógica se conserva independientemente de cómo se implementen las funciones básicas.
+
+####
+**Representación basada en números nativos de Scheme**
+
+Es posible cambiar la representación interna de los números para utilizar los tipos de datos nativos del lenguaje (como los números en Scheme). En este caso, la interfaz de funciones básicas se redefine de la siguiente manera:
+
+```racket
+(define zero 0)
+
+(define (is-zero? n)
+  (= n 0))
+
+(define (sucesor n)
+  (+ n 1))
+
+(define (predecesor n)
+  (if (= n 0)
+      (error "El número no puede ser cero")
+      (- n 1)))
+```
+
+En este punto, la representación ha cambiado de una lista de valores `#t` a un valor numérico directo, pero las funciones de la interfaz mantienen sus nombres y objetivos.
+
+####
+**Abstracción de datos y consistencia de la lógica de programación**
+
+La filosofía de la abstracción de datos permite que las funciones de alto nivel permanezcan inalteradas aunque cambie la representación interna de los datos. Si tomamos la función `plus` definida anteriormente y la adaptamos mínimamente a la nueva representación numérica, la lógica sigue siendo la misma:
+
+```racket
+(define (plus x y)
+  (if (= y 0)
+      x
+      (sucesor (plus x (predecesor y)))))
+```
+
+Al probar esta función con los valores 3 y 4:
+```racket
+(plus 3 4)
+;; Resultado: 7
+```
+
+A pesar de que la representación cambió de una lista unaria a números enteros nativos, la función de sumar sigue siendo conceptualmente la misma. Esto demuestra que el programador no se ve afectado por el cambio en la implementación del tipo de dato, siempre que la interfaz (`sucesor`, `predecesor`, `zero`) se mantenga constante.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 17  Abstracción de datos Ejemplo de representación parte 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=Wiqa0Xnq_k0
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

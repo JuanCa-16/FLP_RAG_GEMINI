@@ -1,0 +1,542 @@
+Un alfabeto es un conjunto finito no vacío cuyos elementos se llaman símbolos.
+Sea Σ = {a, b} el alfabeto que consta de los símbolos a y b.
+Las siguientes son cadenas sobre Σ: `aba`, `abaabaaa`, `aaaab`.
+El alfabeto binario Σ = {0, 1} define las cadenas sobre Σ como secuencias finitas de ceros y unos.
+Las cadenas son secuencias ordenadas y finitas de símbolos. Por ejemplo, si w = `aaab` y w₁ = `baaa`, entonces w ≠ w₁.
+Sea Σ = {a, b, c, ..., x, y, z} el alfabeto del idioma castellano. Este tipo de alfabeto es utilizado por muchos lenguajes de programación.
+Sea Σ = {a, b, c}, entonces podemos formar todas las cadenas sobre Σ, incluyendo la cadena vacía.
+
+####
+
+Si bien un alfabeto Σ es un conjunto finito, el conjunto de todas las cadenas sobre ese alfabeto, Σ*, es siempre un conjunto infinito (enumerable).
+Es importante distinguir entre los siguientes cuatro objetos, que son diferentes entre sí:
+- ∅: El conjunto vacío.
+- ϵ: La cadena vacía.
+- {∅}: El conjunto que contiene al conjunto vacío.
+- {ϵ}: El conjunto que contiene a la cadena vacía (un lenguaje).
+
+####
+
+<IMG_BLOCK>
+Descripción técnica: Notación estándar en teoría de lenguajes formales:
+- Σ: Denota un alfabeto (ej. {a, b}).
+- a, b, c...: Denotan símbolos de un alfabeto.
+- u, v, w...: Denotan cadenas (sucesiones finitas de símbolos).
+- ϵ: Denota la cadena vacía, la única cadena sin símbolos.
+- Σ*: Denota el conjunto de todas las cadenas que se pueden formar con los símbolos del alfabeto Σ, incluyendo ϵ.
+- L, L₁, ...: Denotan lenguajes (conjuntos de cadenas).
+</IMG_BLOCK>
+
+####
+
+Operaciones con alfabetos.
+Si Σ es un alfabeto, σ ∈ Σ denota que σ es un símbolo de Σ. Por tanto, si Σ = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, se puede decir que 0 ∈ Σ.
+Un alfabeto es simplemente un conjunto finito no vacío que cumple las siguientes propiedades. Dados Σ₁ y Σ₂ alfabetos:
+- Σ₁ ∪ Σ₂ también es un alfabeto.
+- Σ₁ ∩ Σ₂, Σ₁ − Σ₂ y Σ₂ − Σ₁ también son alfabetos, siempre que no resulten en el conjunto vacío.
+
+####
+
+Un lenguaje es un conjunto de palabras o cadenas. Un lenguaje L sobre un alfabeto Σ es un subconjunto de Σ*, es decir, L ⊆ Σ*. Si L = Σ*, entonces L es el lenguaje de todas las cadenas posibles sobre Σ.
+Sea L = ∅ el lenguaje vacío. Todo lenguaje L cumple que ∅ ⊆ L ⊆ Σ*.
+
+Ejemplos:
+- Sea Σ = {a, b, c}. Un lenguaje podría ser L = {a, aba, aca}.
+- Sea Σ = {a, b, c}. Otro lenguaje es L = {a, aa, aaa, ...} = {aⁿ | n ≥ 1}.
+- Sea Σ = {a, b, c}. L = {w ∈ Σ* | w no contiene el símbolo c}. Por ejemplo, `abbaab` ∈ L pero `abbcaa` ∉ L.
+- Sea Σ = {0, 1, 2}. Se puede definir el lenguaje de las cadenas que tienen igual número de ceros, unos y doses en cualquier orden.
+
+####
+
+Potencia del lenguaje.
+Dado un lenguaje A sobre Σ (A ⊆ Σ*) y un entero n ∈ ℕ, se define la potencia n-ésima de A, denotada como Aⁿ, de la siguiente forma:
+Aⁿ =
+  - {ϵ}, si n = 0
+  - A · Aⁿ⁻¹, si n ≥ 1
+
+Donde `·` denota la concatenación de lenguajes.
+
+Ejemplo: Sea A = {"ab"} sobre un alfabeto Σ = {a, b}, entonces:
+- A⁰ = {ϵ}
+- A¹ = A = {"ab"}
+- A² = A · A¹ = {"abab"}
+- A³ = A · A² = {"ababab"}
+
+####
+
+La cerradura de Kleene, o estrella de Kleene, de un lenguaje A ⊆ Σ* es la unión de todas sus potencias y se denota por A*.
+A* = ⋃_{i≥0} Aⁱ = A⁰ ∪ A¹ ∪ A² ∪ ...
+
+Observación: A* se puede describir como el conjunto de todas las concatenaciones de cero o más cadenas del lenguaje A.
+A* = {u₁u₂...uₙ | uᵢ ∈ A, n ≥ 0}. Esto incluye la cadena vacía ϵ (para el caso n=0).
+
+La cerradura positiva se denota por A⁺ y es la unión de todas las potencias de A excepto la potencia cero.
+A⁺ = ⋃_{i≥1} Aⁱ = A¹ ∪ A² ∪ A³ ∪ ...
+
+####
+
+Las expresiones regulares sobre un alfabeto Σ se definen recursivamente como:
+- ∅, ϵ y `a` (para todo `a` ∈ Σ) son expresiones regulares.
+- Si A y B son expresiones regulares, también lo son:
+    - A ∪ B (Unión)
+    - A · B (Concatenación)
+    - A* (Cerradura de Kleene)
+
+Son expresiones regulares: `aab*`, `ab⁺`, `(aaba*)⁺`.
+Sea el conjunto {ϵ, `aa`, `aba`, `abba`, `abbba`, `abbbba`, ...}, su expresión regular es {ϵ} ∪ `ab*a`.
+
+####
+
+Ejemplos de expresiones regulares sobre Σ = {a, b}:
+- Lenguaje de todas las cadenas de longitud par: `(aa ∪ ab ∪ ba ∪ bb)*`
+- Lenguaje de todas las cadenas de longitud impar: `(a ∪ b)(aa ∪ ab ∪ ba ∪ bb)*`
+- Lenguaje de todas las palabras que tienen un número par de `a`'s: `b*(ab*a)*b*`
+
+####
+
+<IMG_BLOCK>
+Descripción técnica: Diagrama de la Jerarquía de Chomsky, que clasifica las gramáticas formales en cuatro tipos anidados. La jerarquía muestra que las gramáticas Regulares (Tipo 3) son un subconjunto de las Libres de Contexto (Tipo 2), que a su vez son un subconjunto de las Dependientes del Contexto (Tipo 1), y estas son un subconjunto de las de Estructura de Frase o Irrestrictas (Tipo 0).
+</IMG_BLOCK>
+
+####
+
+Gramáticas Regulares (Tipo 3).
+Una gramática regular G es una 4-tupla G = (N, Σ, S, P) que consiste en:
+- N: un conjunto finito de símbolos no terminales.
+- Σ: un alfabeto de símbolos terminales.
+- S: un símbolo inicial (S ∈ N).
+- P: un conjunto de producciones o reglas.
+
+Las reglas son de la forma A → w, donde A ∈ N y w es una cadena sobre Σ ∪ N que satisface una de las siguientes condiciones para que la gramática sea regular:
+1.  w contiene como máximo un símbolo no terminal.
+2.  Si w contiene un no terminal, este debe ser el símbolo en el extremo derecho (regular por la derecha) o en el extremo izquierdo (regular por la izquierda).
+
+El conjunto de reglas P se define así:
+- Para gramáticas regulares por la derecha: P ⊆ N × (Σ* (N ∪ {ϵ}))
+- Para gramáticas regulares por la izquierda: P ⊆ N × ((N ∪ {ϵ}) Σ*)
+
+####
+
+Una gramática G = (N, Σ, S, P) es regular por la derecha si todas sus producciones son de la forma:
+- A → wB, donde A, B ∈ N y w ∈ Σ*
+- A → w, donde A ∈ N y w ∈ Σ* (esto se puede simplificar a A → ϵ si se permite una etapa intermedia).
+
+Ejemplo 1: Considere la siguiente gramática regular G = (N, Σ, S, P), que genera el lenguaje `a*`, donde Σ = {a}, N = {S}.
+Producciones P:
+- S → aS | ϵ
+
+Ejemplo 2: Sea la siguiente gramática regular G = (N, Σ, S, P) que genera el lenguaje de la expresión regular `(a ∪ b)*`.
+- Σ = {a, b}
+- N = {S}
+- Producciones P: S → aS | bS | ϵ
+
+####
+
+La Forma de Backus-Naur (BNF) se emplea para especificar reglas sintácticas de muchos lenguajes de programación y de lenguaje natural. En lugar de utilizar el símbolo `→`, se usa `::=` y se colocan los símbolos no terminales entre `<>`.
+La forma BNF se usa frecuentemente para especificar la sintaxis de lenguajes de programación como Java y LISP, lenguajes de bases de datos como SQL, y lenguajes de marcado como XML.
+
+Por ejemplo, si una gramática tiene las producciones:
+A → Aa | a | AB
+Su forma Backus-Naur es:
+`<A> ::= <A> a | a | <A> <B>`
+
+####
+
+Ejemplo de BNF para la producción de enteros con signo en notación decimal. Un entero con signo es un número natural precedido por un signo más o un signo menos.
+La forma Backus-Naur para la gramática que produce los enteros con signo es:
+```bnf
+<entero-con-signo> ::= <signo> <entero>
+<signo> ::= + | -
+<entero> ::= <dígito> | <dígito> <entero>
+<dígito> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+```
+
+####
+
+<CODIGO_BLOCK>
+;; Ejemplos de definiciones sintácticas usando BNF.
+
+;; Una definición de listas de números.
+;; Una lista es vacía o es un número seguido de otra lista.
+<lista-de-numeros> ::= () | <numero> <lista-de-numeros>
+
+;; Una definición de árbol binario.
+;; Un árbol binario es una hoja (un número) o un nodo (un símbolo)
+;; con dos subárboles.
+<arbol-binario> ::= <numero> | <simbolo> <arbol-binario> <arbol-binario>
+</CODIGO_BLOCK>
+<CODIGO_BLOCK>
+;; Ejemplo de BNF para un subconjunto de la sintaxis de Java.
+;; Describe la estructura de una unidad de compilación.
+<compilation-unit> ::= <package-declaration> <import-declarations> <type-declarations>
+<package-declaration> ::= package <package-name> ;
+<import-declarations> ::= <import-declaration> | <import-declarations> <import-declaration>
+<import-declaration> ::= <single-type-import-declaration> | <type-import-on-demand-declaration>
+<single-type-import-declaration> ::= import <type-name> ;
+</CODIGO_BLOCK>
+<CODIGO_BLOCK>
+;; Referencias a especificaciones BNF para lenguajes de programación reales.
+;; JAVA: https://users-cs.au.dk/~amoeller/RegAut/JavaBNF.html
+;; C++ 98: http://www.externsoft.ch/download/cpp-iso.html#syntax
+;; Python: https://docs.python.org/3/reference/grammar.html
+</CODIGO_BLOCK>
+
+####
+
+DrRacket se puede instalar en Windows, Linux y Mac OS. Se recomienda trabajar con la versión 7.9, ya que algunas versiones anteriores como la 5.6 y 6.2 tienen problemas con la librería `sllgen`.
+
+Las expresiones en DrRacket utilizan notación prefija.
+<CODIGO_BLOCK>
+;; En notación prefija, el operador precede a los operandos.
+(+ 5 2)  ; Equivalente a 5+2 en notación infija.
+
+;; Se recomienda utilizar paréntesis para agrupar operaciones y evitar ambigüedades.
+(+ (- 3 2) 4) ; Equivalente a (3 - 2) + 4 en notación infija.
+</CODIGO_BLOCK>
+
+Para el curso de Fundamentos de Lenguajes de Programación, se debe seleccionar el lenguaje "The Racket Language" y agregar en la primera línea del editor:
+`#lang racket`
+
+####
+
+Se utiliza la palabra reservada `define` para la definición de variables y funciones.
+
+<CODIGO_BLOCK>
+;; Para definir variables:
+(define numeroA 10)
+(define numeroB (* 2 numeroA)) ; numeroB será 20
+
+;; Para definir funciones, la sintaxis es:
+;; (define (nombre-funcion arg1 arg2 ...) cuerpo-de-la-funcion)
+;; Ejemplo:
+(define (multiplique a b)
+  (* b b))
+
+;; ¿Qué debería retornar (multiplique 3 9)?
+;; Retorna 81, ya que la función ignora el primer argumento 'a'.
+</CODIGO_BLOCK>
+
+####
+
+Así mismo, se pueden definir funciones anónimas (sin nombre) con la expresión `lambda`.
+
+<CODIGO_BLOCK>
+;; La siguiente expresión lambda define una función anónima
+;; que toma dos argumentos, x e y, y devuelve el mayor de los dos.
+(lambda (x y)
+  (if (> x y)
+      x
+      y))
+
+;; Las lambdas son valores (procedimientos) y pueden ser evaluadas directamente.
+;; Aquí se define y se llama inmediatamente con los argumentos 5 y 10.
+((lambda (x y)
+   (if (> x y)
+       x
+       y))
+ 5 10) ; El resultado es 10.
+</CODIGO_BLOCK>
+
+####
+
+Debido a que en el paradigma funcional no hay diferencia entre funciones y valores, usaremos `lambda` para representar las funciones como valores que pueden ser asignados a variables.
+
+<CODIGO_BLOCK>
+;; El siguiente código asigna una función anónima (creada con lambda)
+;; a la variable 'multiplique'.
+;; Esto es equivalente a la definición de función anterior.
+(define multiplique
+  (lambda (a b)
+    (* b b)))
+</CODIGO_BLOCK>
+
+####
+
+<CODIGO_BLOCK>
+;; Ejercicio: Escribir las siguientes expresiones matemáticas en notación prefija en DrRacket.
+
+;; Expresión 1: 2 * 2 + 3 * 5 + (1/4)^2
+;; Resultado: 19.0625
+(+ (* 2 2) (* 3 5) (expt (/ 1 4) 2))
+
+;; Expresión 2: 2 * (1 + 3^2 + 4/4) + 3 * (5 - 3) + 12/4 - 3 + 4 * 5^3
+;; Resultado: 528
+(+ (* 2 (+ 1 (expt 3 2) (/ 4 4))) (* 3 (- 5 3)) (/ 12 4) -3 (* 4 (expt 5 3)))
+
+;; Ejercicio: Diseñe una función anónima que reciba dos valores.
+;; Si ambos valores son positivos o ambos son negativos, retorna su multiplicación;
+;; en caso contrario, retorna su suma.
+(lambda (x y)
+  (if (>= (* x y) 0)
+      (* x y)
+      (+ x y)))
+
+;; Prueba de la función anónima con 2 y -3.
+;; (* 2 -3) es -6, que no es >= 0.
+;; Por lo tanto, se ejecuta la rama 'else' y retorna (+ 2 -3), que es -1.
+((lambda (x y)
+   (if (>= (* x y) 0)
+       (* x y)
+       (+ x y)))
+ 2 -3)
+</CODIGO_BLOCK>
+
+####
+
+En Racket tenemos la estructura condicional `if`, que funciona de manera similar a otros lenguajes de programación. Su sintaxis es:
+`(if <pregunta> <hacer-si-verdad> <hacer-si-falso>)`
+
+<CODIGO_BLOCK>
+;; Ejemplo de una función que utiliza 'if'.
+;; Compara dos números 'n' y 'l'.
+(define funcionMisteriosa
+  (lambda (n l)
+    (if (< n l)
+        "n es menor que l"
+        "n es mayor o igual que l")))
+</CODIGO_BLOCK>
+
+####
+
+También contamos con la estructura `cond`, que permite verificar varias condiciones sucesivamente. Se evalúa la respuesta de la primera condición que sea verdadera. Si ninguna lo es, se ejecuta la cláusula `else`.
+La sintaxis es:
+`(cond [<pregunta1> <respuesta1>] [<pregunta2> <respuesta2>] ... [else <respuesta-final>])`
+
+<CODIGO_BLOCK>
+;; Ejemplo de una función que recibe un número y verifica su paridad y signo.
+(define verificar-par
+  (lambda (n)
+    (cond
+      [(even? n) "Par"]
+      [(< n 0) "Impar y menor que 0"]
+      [else "Impar y mayor o igual que 0"])))
+</CODIGO_BLOCK>
+
+####
+
+Diseñe una función que recibe un número y un símbolo:
+1.  Si el número es menor o igual que 0, retorna el símbolo `'error`.
+2.  Si no, si el número es mayor que 0, entonces:
+    - Si el símbolo es `'m`, retorna `'hombre`.
+    - Si el símbolo es `'f`, retorna `'mujer`.
+    - En cualquier otro caso de símbolo, retorna `'error`.
+
+####
+
+En algunos casos se requiere realizar definiciones dentro de funciones. Para este curso usaremos las siguientes estructuras para declaraciones locales:
+- `let`: para definiciones no recursivas. Dentro de un `let`, las funciones definidas no se conocen a sí mismas. Su sintaxis es `(let ([id1 val1] [id2 val2] ...) cuerpo)`.
+- `letrec`: para definiciones recursivas. Aquí, las funciones pueden referenciarse a sí mismas. Su sintaxis es igual a la de `let`.
+
+<CODIGO_BLOCK>
+;; Ejemplo con 'let'. La función interna no es recursiva.
+(define funcion-let
+  (lambda (n)
+    (let ([a (+ n 5)])
+      (* a 2))))
+
+;; Ejemplo con 'letrec' para una función recursiva local 'sume'
+;; que calcula la suma de los enteros desde 0 hasta n.
+(define funcion-letrec
+  (lambda (n)
+    (letrec ([sume (lambda (i)
+                     (if (= i 0)
+                         0
+                         (+ i (sume (- i 1)))))])
+      (sume n))))
+;; Si se utilizara 'let' en lugar de 'letrec', se produciría un error
+;; porque 'sume' no se conocería a sí misma en la llamada recursiva.
+</CODIGO_BLOCK>
+
+####
+
+A veces requerimos que una definición local conozca el valor de las definiciones anteriores en el mismo bloque, pero sin necesidad de recursividad mutua. Para esto usamos `let*`. Las declaraciones se evalúan en secuencia.
+
+<CODIGO_BLOCK>
+;; Ejemplo con 'let*'. La variable 'b' puede usar el valor de 'a'
+;; porque se definen secuencialmente. Esto no sería posible con 'let'.
+(define funcion-let-star
+  (lambda (n)
+    (let* ([a (+ n 1)]
+           [b (* a 2)])
+      b)))
+
+;; Llamada de ejemplo: (funcion-let-star 5)
+;; 'a' se evalúa a 6.
+;; 'b' se evalúa a (* 6 2) = 12.
+;; La función retorna 12.
+</CODIGO_BLOCK>
+
+####
+
+Las listas son una estructura de datos recursiva que consta de dos partes:
+1.  Un valor (el primer elemento).
+2.  Una lista (el resto de los elementos), que a su vez puede ser vacía.
+
+La función `cons` construye una lista uniendo un elemento a otra lista. La lista vacía se representa como `empty` o `'()`.
+
+<CODIGO_BLOCK>
+;; Construye la lista ('a' 'b' 'c') usando 'cons'.
+(cons 'a (cons 'b (cons 'c empty)))
+
+;; DrRacket provee la función 'list' como "azúcar sintáctico"
+;; para construir listas de forma más directa.
+(list 'a 'b 'c)
+</CODIGO_BLOCK>
+
+####
+
+Para acceder a los elementos de una lista se utilizan las funciones `car` y `cdr`.
+- `car`: accede al primer elemento (la cabeza).
+- `cdr`: accede al resto de la lista (la cola).
+
+<CODIGO_BLOCK>
+;; Definimos una lista.
+(define mi-lista (cons 'a (cons 'b (cons 'c empty))))
+
+;; Acceder al primer elemento.
+(car mi-lista) ; Retorna 'a
+
+;; Acceder al resto de la lista.
+(cdr mi-lista) ; Retorna ('b 'c)
+</CODIGO_BLOCK>
+Si se observa, `cdr` devuelve una lista. Para acceder al segundo elemento, se puede usar `(car (cdr mi-lista))`, que tiene un atajo: `cadr`. Existen funciones similares como `caddr` para el tercer elemento, etc.
+
+####
+
+A lo largo del curso, utilizaremos una representación de listas especial conocida como listas "citadas" o "quoted". El apóstrofo (`'`) previene la evaluación de la expresión que le sigue.
+- `'()`: Es la lista vacía.
+- `'(perro gato)`: Es una lista que contiene los símbolos `perro` y `gato`. Sin el apóstrofo, Racket intentaría llamar a una función llamada `perro`.
+
+También se pueden representar listas anidadas:
+- `'(perro (gato))`: Es una lista cuyo segundo elemento es otra lista.
+
+Esta representación permite agilizar el diseño de ciertas funciones al tratar con datos estructurados.
+
+####
+
+Enunciado del ejercicio:
+Diseñe una función `lista-factorial` que reciba un entero `n` y devuelva una lista con los factoriales desde 0! hasta n!.
+Para esto, se necesitará una función auxiliar local y recursiva que construya la lista.
+
+<CODIGO_BLOCK>
+;; Primero, definimos la función 'factorial'.
+(define factorial
+  (lambda (n)
+    (if (= n 0)
+        1
+        (* n (factorial (- n 1))))))
+
+;; Ahora, la función principal que genera la lista de factoriales.
+(define lista-factorial
+  (lambda (n)
+    ;; Usamos 'letrec' para la función auxiliar recursiva.
+    (letrec (;; 'aux' toma un contador 'i' y la lista acumulada 'acc'.
+             [lista-factorial-aux
+              (lambda (i acc)
+                (if (> i n)
+                    ;; Si el contador supera n, invertimos la lista y terminamos.
+                    (reverse acc)
+                    ;; Si no, añadimos el factorial de 'i' y llamamos recursivamente.
+                    (lista-factorial-aux (+ i 1) (cons (factorial i) acc))))])
+      ;; La llamada inicial a la función auxiliar comienza en 0 con una lista vacía.
+      (lista-factorial-aux 0 '()))))
+
+;; Ejemplo de uso:
+(lista-factorial 4) ; Retorna '(1 1 2 6 24)
+</CODIGO_BLOCK>
+
+####
+
+<CODIGO_BLOCK>
+;; Ejemplo de funciones de orden superior: las funciones pueden pasarse como parámetros.
+
+;; 'predicado' es una función que determina si un número es par.
+(define predicado
+  (lambda (a)
+    (even? a)))
+
+;; 'filtro' es una función que recibe una lista 'lst' y una función 'f' (un predicado).
+;; Retorna una nueva lista con solo los elementos de 'lst' para los cuales (f elemento) es verdadero.
+(define filtro
+  (lambda (lst f)
+    (cond
+      [(empty? lst) '()]
+      [(f (car lst)) (cons (car lst) (filtro (cdr lst) f))]
+      [else (filtro (cdr lst) f)])))
+
+;; Se llama a 'filtro' con una lista de números y el predicado.
+(filtro (list 1 2 3 4 5 6) predicado)
+;; Retorna: '(2 4 6)
+</CODIGO_BLOCK>
+
+####
+
+<CODIGO_BLOCK>
+;; Ejemplo de funciones de orden superior: las funciones pueden ser retornadas por otras funciones.
+
+;; 'funcionMisterio' es una función que toma dos números, 'a' y 'b'.
+;; Retorna una NUEVA función (una clausura) que "recuerda" los valores de 'a' y 'b'.
+;; Esta nueva función espera dos argumentos, 'x' y 'y', y calcula su suma más 'a' y 'b'.
+(define funcionMisterio
+  (lambda (a b)
+    (lambda (x y)
+      (+ x y a b))))
+
+;; Probar:
+;; 1. Llamamos a 'funcionMisterio' con 10 y 20.
+;;    Esto crea y retorna una nueva función, que asignamos a 'sumador-especial'.
+(define sumador-especial (funcionMisterio 10 20))
+
+;; 2. Ahora usamos la función que acabamos de crear.
+;;    'sumador-especial' es (lambda (x y) (+ x y 10 20)).
+(sumador-especial 3 4) ; Retorna 3 + 4 + 10 + 20 = 37
+</CODIGO_BLOCK>
+Esto significa que no hay diferencia fundamental entre valores y funciones en este paradigma; son tratados de la misma manera.
+
+####
+
+Ejercicios:
+1.  Diseñe una función que reciba un número `a` y una función `f`. La función `f` recibe un número y retorna un booleano. La función debe hacer el llamado `(f a)` y si el resultado es verdadero, retornar `"ok"`; en otro caso, `"falso"`.
+2.  Diseñe una función que reciba dos números `a` y `b` y retorne una función `t`. La función `t` debe esperar un argumento numérico `s`. La función `t` evalúa si `a` es mayor que `b`; si es así, retorna `2 * s`, en otro caso retorna `-2 * s`.
+
+####
+
+Hasta ahora hemos trabajado en un paradigma declarativo-funcional, en el cual las variables están ligadas inmutablemente a un valor. Para trabajar en un paradigma imperativo, debemos incluir la noción de **estado** con la instrucción `set!`, que permite que las variables cambien su valor a lo largo de la ejecución del código.
+
+<CODIGO_BLOCK>
+;; El estado de una variable caracteriza la ejecución de un programa.
+;; Ejemplo:
+(define valor 1) ; El estado inicial de 'valor' es 1.
+(set! valor 2)   ; Con set!, el estado de 'valor' ha cambiado de 1 a 2.
+valor            ; Ahora 'valor' evalúa a 2.
+</CODIGO_BLOCK>
+
+####
+
+Otra característica de un paradigma imperativo es la **secuenciación**, es decir, la ejecución de más de una instrucción en un paso dado. El paradigma declarativo puro solo permite la evaluación de una única expresión. Para la secuenciación, contamos con `begin`. Su sintaxis es:
+`(begin <expresion1> <expresion2> ... <expresionN>)`
+`begin` evalúa todas las expresiones en orden y retorna el valor de la última expresión ejecutada. Su ventaja es que permite ejecutar múltiples expresiones donde sintácticamente solo se permite una.
+
+<CODIGO_BLOCK>
+;; El cuerpo de una función es un 'begin' implícito.
+;; Este ejemplo muestra el uso de 'set!' para modificar variables locales.
+(define funcion-imperativa
+  (lambda (a b)
+    (begin
+      (display "Valor inicial de a: ") (displayln a)
+      (display "Valor inicial de b: ") (displayln b)
+      (set! a (+ a 5))
+      (set! b (* b 2))
+      (+ a b)))) ; El valor retornado es el de la última expresión.
+
+(funcion-imperativa 10 3) ; Retorna (+ (10+5) (* 3 2)) = (+ 15 6) = 21
+</CODIGO_BLOCK>
+
+--- METADATA ---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 0.1. Repaso gramaticas I

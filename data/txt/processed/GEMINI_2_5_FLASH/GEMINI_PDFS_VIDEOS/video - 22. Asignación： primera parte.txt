@@ -1,0 +1,28 @@
+Se introduce el concepto de asignación de variables, lo que marca una transición de un paradigma puramente funcional a uno imperativo. A diferencia de las ligaduras (`bindings`) utilizadas hasta ahora, que asocian un nombre a un valor de forma inmutable, la asignación permite que las variables cambien su valor a lo largo de la ejecución del programa.
+
+####
+En el paradigma funcional, una computación se limita a producir un valor (como un número o un booleano), lo cual es un efecto local. Sin embargo, una computación también puede generar un "efecto", que consiste en una alteración global del estado del sistema, como imprimir en pantalla, modificar un archivo o cambiar un estado en la memoria. El enfoque a partir de ahora se centrará exclusivamente en el efecto de la asignación de valores a ubicaciones de memoria.
+
+####
+Existen diferencias fundamentales entre la ligadura y la asignación. La ligadura, implementada con la construcción `let`, crea una asociación local y estática entre un nombre y un valor. Por el contrario, la asignación, implementada con `set`, es una operación potencialmente global que modifica el contenido de una ubicación de memoria. Este mecanismo introduce el concepto de "referencia", donde una variable no contiene un valor directamente, sino la dirección de memoria donde se almacena dicho valor.
+
+####
+La introducción de la asignación, una operación con efecto, requiere la capacidad de ejecutar expresiones de forma secuencial. Esto es necesario para poder realizar operaciones que modifican el estado (como cambiar una variable) antes de realizar otras que calculan y devuelven un valor. Para ello, se añaden dos nuevas construcciones al lenguaje: `begin` para la ejecución secuencial de una o más expresiones, y `set` para realizar la operación de asignación.
+
+####
+Con la introducción de la asignación, se produce un cambio fundamental en la semántica de los valores: los valores expresados y los valores denotados dejan de ser idénticos. El valor expresado es aquel que el programador manipula en el código, mientras que el valor denotado es la representación interna que se almacena en el entorno. A partir de ahora, el valor denotado de una variable será una referencia o dirección de memoria, en lugar de ser el valor directo.
+
+####
+La semántica de la construcción `begin` establece que las expresiones contenidas en su cuerpo se evalúan en orden secuencial, de arriba hacia abajo. El valor retornado por toda la construcción `begin` es siempre el valor resultante de la evaluación de la última expresión de la secuencia. Las evaluaciones de las expresiones anteriores se realizan por sus efectos en el sistema, pero sus valores resultantes son descartados.
+
+####
+La evaluación de una expresión de asignación, como `set x = <expresión>`, se realiza en dos pasos. Primero, se evalúa completamente la expresión del lado derecho para obtener un valor. Segundo, este valor se almacena en la ubicación de memoria referenciada por la variable del lado izquierdo (`x`). Dado que la asignación es una operación de efecto, no produce un valor computacional intrínseco. Por convención, para mantener la consistencia del intérprete, una operación `set` exitosa retornará un valor simbólico que indica el éxito de la operación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=glGvOtFAldY
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

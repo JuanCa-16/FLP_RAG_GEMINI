@@ -1,0 +1,33 @@
+Se define una función `sumar-arbol` para sumar todos los valores numéricos contenidos en un tipo de dato `árbol b`. La función utiliza la estructura `cases` para realizar un pattern matching sobre el árbol. Si el árbol es una hoja (`leaf`), que contiene un único dato numérico, la función devuelve ese número. Si es un nodo (`node`), que contiene una clave (`key`), un subárbol izquierdo (`left`) y un subárbol derecho (`right`), la función ignora la clave y realiza una llamada recursiva sobre los subárboles izquierdo y derecho, sumando sus resultados. El uso de `cases` extrae automáticamente los componentes de cada variante del tipo de dato, simplificando la implementación. Por ejemplo, para un árbol con un valor de 5, `sumar-arbol` devolverá 5. Para un árbol más complejo, sumará todos los valores de sus hojas, como en un ejemplo que resulta en 23 (5 + 7 + 4 + 7).
+
+```scheme
+(define (sumar-arbol arb)
+  (cases arb
+    [(leaf num) num]
+    [(node k l r)
+     (+ (sumar-arbol l)
+        (sumar-arbol r))]))
+```
+
+####
+
+Se implementa una segunda función, `arbol-b->lista-s`, para extraer todos los símbolos almacenados en los nodos de un `árbol b` y devolverlos en una lista. Esta función también emplea `cases` para diferenciar los tipos de nodos. En el caso base, si se encuentra con una hoja (`leaf`), que contiene un número y no un símbolo, devuelve una lista vacía. En el caso recursivo, si se encuentra con un nodo (`node`) que contiene una clave simbólica (`k`), un subárbol izquierdo (`l`) y un subárbol derecho (`r`), la función construye una lista con la clave actual y la une (`append`) con los resultados de las llamadas recursivas a `arbol-b->lista-s` sobre los subárboles izquierdo y derecho. De este modo, se recorre el árbol y se coleccionan todos los símbolos. Por ejemplo, un árbol que no contiene nodos con símbolos devolverá una lista vacía, mientras que uno con símbolos 'k', 'p' y 'j' devolverá la lista `(k p j)`.
+
+```scheme
+(define (arbol-b->lista-s arb)
+  (cases arb
+    [(leaf num) '()]
+    [(node k l r)
+     (append (list k)
+             (arbol-b->lista-s l)
+             (arbol-b->lista-s r))]))
+```
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=Wec_PIRX7tY
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

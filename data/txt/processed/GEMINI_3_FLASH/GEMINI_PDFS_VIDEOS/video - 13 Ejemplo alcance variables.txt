@@ -1,0 +1,82 @@
+####
+**Alcance y block scope**
+
+El alcance se limita a la región donde ha sido creada la variable. En un `block scope`, el alcance de una variable está restringido al bloque de código donde se define. Cuando se realiza una consulta por una variable, el sistema buscará la primera ocurrencia que encuentre en el entorno actual. Por ejemplo, si tenemos una variable `x` externa y otra `x` declarada internamente, al preguntar por `x` se obtendrá la del nivel más cercano. El acceso a las variables depende directamente del lugar de su declaración. En lenguajes como `Racket`, el alcance se maneja mediante estas reglas de proximidad semántica.
+
+####
+**Ocultamiento de variables (Shadowing)**
+
+El ocultamiento de variables ocurre cuando se declara, dentro de un `scope` interno, una variable con el mismo nombre que una variable en un `scope` externo. En la búsqueda de la variable, el evaluador siempre seleccionará la más cercana al punto de uso.
+
+Considere el siguiente ejemplo con expresiones `lambda`:
+
+```racket
+(lambda (z) 
+  (lambda (a b c) 
+    (let ([a 5])
+      a)))
+```
+
+En este caso:
+- La variable `z` es accesible desde su declaración hacia adelante.
+- En la expresión `lambda (a b c)`, se definen los parámetros `a`, `b` y `c`.
+- Si declaramos nuevamente `a` dentro de un `let`, esta nueva `a` ocultará a la `a` de los parámetros del `lambda`.
+- Si se pregunta por `c`, al no estar definida en el `let`, el sistema la buscará en el nivel superior (el `lambda`).
+
+####
+**Búsqueda recursiva en los niveles de alcance**
+
+Cuando el evaluador realiza la búsqueda de variables, siempre inicia en el nivel más cercano (local). Si la variable no se encuentra allí, busca en el nivel anterior y continúa subiendo por los niveles de alcance hasta llegar al nivel global.
+
+Ejemplo de búsqueda:
+- Si se evalúa una función `f` con un argumento `x`, el sistema busca sus definiciones localmente.
+- Si dentro de esa función se hace referencia a una variable `z` que no está definida en ese bloque, el sistema buscará hacia afuera hasta encontrar la declaración de `z`.
+
+####
+**Estructura y evaluación del let en Racket**
+
+La expresión `let` se compone de un área de declaración de variables y un área de uso. Su sintaxis básica es:
+
+```racket
+(let ([x 3]   ; Área de declaración
+      [y 4])
+  (+ x y))    ; Área de uso
+```
+
+En el área de declaración, se asocian nombres a valores mediante paréntesis. El área de uso es el cuerpo del `let`, donde se realizan las operaciones. Es posible anidar estructuras `let` para crear nuevos niveles de alcance.
+
+####
+**Ejercicio práctico de evaluación con let anidados**
+
+Para determinar el resultado de una expresión compleja en `Racket`, se debe seguir la lógica de los niveles de alcance. Considere el siguiente código:
+
+```racket
+(let ([x 3]
+      [y 4])
+  (+ (let ([x (+ y 5)])
+       (* x y))
+     x))
+```
+
+El proceso de evaluación es el siguiente:
+1. En el `let` externo, se definen `x = 3` y `y = 4`.
+2. Se entra al `let` interno para calcular el primer operando de la suma.
+3. En el `let` interno, se define una nueva `x` con el valor de `(+ y 5)`. Como `y` no está en el bloque interno, se toma `y = 4` del nivel anterior, resultando en `x = 9`.
+4. El área de uso del `let` interno realiza `(* x y)`. Aquí `x` es 9 y `y` se busca en el nivel superior (4), resultando en 36.
+5. Finalmente, se completa la suma externa: el resultado del `let` interno (36) más la `x` externa (3).
+6. El resultado final de la expresión es 39.
+
+####
+**Depuración en DrRacket**
+
+Sobre las herramientas de desarrollo en `DrRacket`, la funcionalidad del botón `debug` para el paso a paso está determinada por la implementación de la librería `OPL`. Debido a las limitaciones de esta librería específica, no es posible obtener una depuración más detallada o con mayor granularidad que la que ofrece el entorno de manera estándar.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 13 Ejemplo alcance variables.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=dIhRmt4Khgw
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

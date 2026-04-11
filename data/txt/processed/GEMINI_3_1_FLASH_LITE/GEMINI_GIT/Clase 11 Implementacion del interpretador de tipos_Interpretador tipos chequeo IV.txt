@@ -1,0 +1,35 @@
+####
+**El constructor `let` y el ambiente extendido de tipos**
+
+El constructor `let` genera un ambiente extendido de tipos. Este proceso considera tanto las declaraciones de variables como la expresión ubicada en el `in`, la cual se evalúa dentro de dicho ambiente extendido.
+
+```racket
+(let-exp
+  (lid
+   lval
+   exp)
+  (type-of-expression
+   exp
+   (extend-env
+    lid
+    (list->vector
+     (map
+      (lambda (x)
+        (type-of-expression x tenv))
+      lval))
+    tenv)))
+```
+
+Para realizar esta operación, se calculan primero los tipos de los valores declarados. Posteriormente, se crea un ambiente extendido que contiene estos tipos y se evalúa la expresión principal utilizando dicho contexto.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo IV
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20IV/

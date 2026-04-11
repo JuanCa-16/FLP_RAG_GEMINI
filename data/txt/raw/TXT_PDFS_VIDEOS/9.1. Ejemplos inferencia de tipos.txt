@@ -1,0 +1,75 @@
+Considere la siguiente expresión:
+let
+j = proc ( i n t
+x ,
+? y )
++(x , y )
+t = proc (? k ,
+i n t
+a ,
+? b )
+( k a b )
+in
+( t
+j
+2
+3)
+Indique su tipo.
+
+Respuesta:
+y = int
+k = (int*int- > int)
+b = int
+La expresión es de tipo int.
+
+Considere la siguiente expresión:
+let
+j = proc ( i n t
+x ,
+? y )
+if
+( y
+2)
+then +(x , 2 )
+else − (x , 3 )
+t = proc (? k ,
+i n t
+a ,
+? b ,
+? c )
+( k +(a , b )
+c )
+s = proc (?
+a )
+zero ?( a )
+in
+let
+p = proc (?m
+,
+? n )
+(m n 5 14
+s )
+in
+( p
+t
+j )
+Indique su tipo.
+
+Respuesta:
+y = (int- > bool)
+k = (int*(int- > bool)- > int)
+b = int
+c = (int- > bool)
+a = int
+m = ((int- > bool)*int*int*(int- > bool)- > int)
+n = (int*(int- > bool)- > int)
+La expresión es de tipo int.
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 9.1. Ejemplos inferencia de tipos

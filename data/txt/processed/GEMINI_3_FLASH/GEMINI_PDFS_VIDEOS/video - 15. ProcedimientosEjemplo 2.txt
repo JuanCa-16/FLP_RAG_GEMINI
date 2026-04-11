@@ -1,0 +1,50 @@
+####
+**Representación de ambientes y resolución de variables**
+
+En este ejemplo se analiza la resolución de variables mediante la representación de ambientes. Cuando no se especifica un ambiente inicial, se asume el `ambiente vacío` (`empty-env`).
+
+A partir de allí, se construye la estructura de ambientes:
+- El `ambiente 0` contiene la ligadura `x = 5`.
+- Luego se define `f`, que es una `clausura` (`closure`) que recibe los parámetros `y` y `z`. Esta `clausura` guarda una referencia al ambiente en el que fue creada; como en este punto el `ambiente 0` es el que domina, la `clausura` guarda el `ambiente 0`.
+- Finalmente, se define el `ambiente 1`, donde el valor de `x` es `28`.
+
+####
+**Evaluación de la invocación de un procedimiento**
+
+Para evaluar la expresión `f(2, x)`, primero se busca el valor de `x` en el ambiente actual (`ambiente 1`), donde `x = 28`. Por lo tanto, la invocación efectiva es `f(2, 28)`.
+
+La invocación de un procedimiento siempre implica la creación de un nuevo ambiente. Este ambiente para la ejecución de `f` tendrá las variables `y` y `z` con los valores `2` y `28` respectivamente. Un aspecto fundamental es que este ambiente se extiende desde el ambiente almacenado en la `clausura`, que es el `ambiente 0`.
+
+La operación a ejecutar en el cuerpo del procedimiento es:
+`+ y (- z x)`
+
+La resolución de las variables se realiza de la siguiente forma:
+- `y` tiene el valor `2` (local al nuevo ambiente).
+- `z` tiene el valor `28` (local al nuevo ambiente).
+- `x` no se encuentra en el ambiente actual de la función, por lo que se busca en el ambiente del cual extiende (`ambiente 0`), donde `x = 5`.
+
+El cálculo final es: `28 - 5 = 23` y `23 + 2 = 25`.
+
+####
+**Verificación en el interpretador**
+
+El código analizado corresponde a la siguiente estructura en el interpretador, donde se valida que el resultado obtenido mediante el rastreo de ambientes es correcto:
+
+```racket
+let x = 5 
+in let f = proc(y, z) +(y, -(z, x))
+   in let x = 28 
+      in (f 2 x)
+```
+
+Al ejecutar esta expresión en el interpretador, el resultado es `25`. Esto confirma que el procedimiento utiliza el valor de `x` presente en el ambiente de definición de la `clausura` (`x = 5`) y no el valor del ambiente de invocación (`x = 28`).
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 15. ProcedimientosEjemplo 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=2Dnxwstls1c
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

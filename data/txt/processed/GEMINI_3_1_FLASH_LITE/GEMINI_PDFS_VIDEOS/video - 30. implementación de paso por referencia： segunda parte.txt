@@ -1,0 +1,66 @@
+####
+**Implementación de `deref` para referencias**
+
+El propósito de la función `deref` es obtener el valor almacenado en una referencia. Al trabajar con referencias, debemos considerar dos tipos de `target`: el `direct target` y el `indirect target`.
+
+- Si el `target` es `direct`, simplemente se retorna su valor interno.
+- Si el `target` es `indirect`, esto representa una referencia que apunta a otra referencia; en este caso, se debe buscar el valor de la referencia interna.
+
+La lógica de implementación en el interpretador es la siguiente:
+
+```racket
+(define (deref ref)
+  (let ([target (primitive-deref ref)])
+    (cond
+      [(direct-target? target) (direct-target-value target)]
+      [(indirect-target? target)
+       (let ([ref1 (indirect-target-ref target)])
+         (let ([target1 (primitive-deref ref1)])
+           (cond
+             [(direct-target? target1) (direct-target-value target1)]
+             [else (error "Referencia no válida: target indirecto anidado")]
+           )))])))
+```
+
+Esta implementación permite únicamente un nivel de indirección. Si se encuentra un `indirect-target` dentro de otro `indirect-target`, el sistema arrojará un error, ya que no se permite el encadenamiento múltiple de referencias.
+
+####
+**Implementación de `set-ref` para modificar referencias**
+
+La función `set-ref` permite actualizar el valor de una referencia. Su comportamiento varía dependiendo del tipo de `target`:
+
+- Si el blanco es un `direct-target`, se modifica directamente la referencia de entrada.
+- Si el blanco es un `indirect-target`, la modificación se redirige a la referencia que está contenida dentro del `target`.
+
+En ambos casos, el nuevo valor se almacena finalmente como un `direct-target`. A continuación, se presenta la lógica utilizada en `set-ref`:
+
+```racket
+(define (set-ref ref val)
+  (let ([target (primitive-deref ref)])
+    (let ([ref-to-modify 
+           (cond 
+             [(direct-target? target) ref]
+             [(indirect-target? target) (indirect-target-ref target)])])
+      (primitive-set-ref! ref-to-modify (make-direct-target val)))))
+```
+
+Al estructurar el interpretador de esta manera, logramos que, al intentar modificar una variable que sea un `indirect-target`, el sistema desvíe la operación hacia la variable a la que apunta originalmente, permitiendo realizar el cambio correctamente sobre el valor expresado.
+
+####
+**Resumen del manejo de referencias**
+
+Se han modificado las funciones `deref` y `set-ref` para soportar la gestión de `targets` indirectos. El objetivo principal es que el interpretador sea capaz de manejar referencias a referencias de forma transparente:
+
+- `deref`: Permite consultar el valor de una referencia, resolviendo un nivel de indirección si es necesario.
+- `set-ref`: Permite actualizar el valor, asegurando que la modificación recaiga sobre la referencia correcta (ya sea la original o la apuntada por un `indirect-target`).
+
+Estas modificaciones son fundamentales para el paso por referencia y aseguran que, al realizar una asignación, se almacene siempre un `direct-target` con el nuevo valor expresado. Este enfoque permite desviar las operaciones del interpretador hacia la variable declarada inicialmente, facilitando la consistencia en el manejo de memoria y referencias en el lenguaje.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=WtgIKHO4FcM
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

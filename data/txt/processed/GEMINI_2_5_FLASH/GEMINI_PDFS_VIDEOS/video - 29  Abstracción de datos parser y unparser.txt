@@ -1,0 +1,26 @@
+Un árbol de sintaxis abstracta (AST) es la estructura de datos interna que un intérprete o compilador utiliza para representar el código. Sin embargo, esta representación no es intuitiva ni fácil de manipular directamente por un programador. Para resolver esta brecha, se necesitan funciones que traduzcan en ambas direcciones: desde el lenguaje que escribe el programador (sintaxis concreta) hacia el árbol de sintaxis abstracta que entiende la máquina, y viceversa.
+
+####
+
+Existen dos procesos fundamentales para la traducción entre sintaxis concreta y abstracta. El primero es el **parsing**, que consiste en convertir el código fuente escrito por el programador (sintaxis concreta) en un árbol de sintaxis abstracta (AST). Si esta conversión es exitosa, significa que el código está sintácticamente bien escrito. El segundo proceso es el **unparsing**, que realiza la operación inversa: toma un árbol de sintaxis abstracta y lo convierte de nuevo en una representación de sintaxis concreta legible por el programador.
+
+####
+
+Para ilustrar los procesos de parsing y unparsing, se puede utilizar un ejemplo basado en árboles binarios, donde cada árbol puede ser una hoja (`leaf`) con un valor o un nodo (`node`) con una clave y dos subárboles (izquierdo y derecho). La sintaxis concreta para representar estos árboles puede basarse en listas. Por ejemplo, un nodo con clave 'p', hijo izquierdo `leaf 5` e hijo derecho `leaf 7` se representaría como `(list 'node 'p (list 'leaf 5) (list 'leaf 7))`. El objetivo es poder convertir esta representación en lista (sintaxis concreta) al AST correspondiente y viceversa.
+
+####
+
+La función de **parsing** (denominada `parser-expression`) toma como entrada una expresión en sintaxis concreta, como una lista, y la transforma en su correspondiente árbol de sintaxis abstracta (AST). Su implementación se basa en el análisis de la estructura de la lista de entrada. Si el primer elemento de la lista es el símbolo `'leaf'`, se construye un AST de tipo hoja utilizando el segundo elemento de la lista como su valor. Si el primer elemento es `'node'`, se construye un AST de tipo nodo, extrayendo la clave y realizando llamadas recursivas a la propia función de parsing para procesar las sublistas que representan los hijos izquierdo y derecho.
+
+####
+
+La función de **unparsing** (denominada `unparser-expression`) realiza el proceso inverso: recibe un árbol de sintaxis abstracta (AST) y lo convierte a su representación en sintaxis concreta basada en listas. Esta función opera mediante el análisis del tipo de nodo del AST. Si el nodo es de tipo `leaf`, construye una lista de la forma `(list 'leaf valor)`. Si el nodo es de tipo `node`, construye una lista cuyo primer elemento es el símbolo `'node'`, seguido de la clave del nodo, y finalmente, los resultados de llamar recursivamente a la función de unparsing con los subárboles izquierdo y derecho.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=CWw4bitbiNE
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

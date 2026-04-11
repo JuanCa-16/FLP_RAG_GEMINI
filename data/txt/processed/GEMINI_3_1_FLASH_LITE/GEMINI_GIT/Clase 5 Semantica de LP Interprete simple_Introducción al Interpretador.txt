@@ -1,0 +1,46 @@
+####
+**Librería EOPL en Racket**
+
+`Essential of Programming Languages` (`EOPL`) proporciona una librería en `Racket` diseñada específicamente para facilitar la construcción de intérpretes basados en la sintaxis de un lenguaje. La documentación oficial se encuentra disponible en [https://docs.racket-lang.org/eopl/](https://docs.racket-lang.org/eopl/).
+
+####
+**Gramáticas LL**
+
+Las gramáticas `LL` (`Left-to-left` o gramáticas por la izquierda) son aquellas en las que el terminal se encuentra a la izquierda y definen lenguajes regulares. Un conflicto común al trabajar con estas gramáticas es el `left shift conflict`, el cual puede ocurrir al definir reglas como:
+
+```text
+var x
+var x = 10
+```
+
+Este tipo de ambigüedad surge cuando el analizador no puede determinar inmediatamente si debe continuar procesando o reducir la expresión.
+
+####
+**El Frontend del intérprete**
+
+El `Frontend` de un intérprete se encarga del procesamiento inicial del código fuente y consta de dos etapas principales: el `Scanner` y el `Parser`.
+
+- `Scanner`: Toma el código fuente y genera unidades léxicas o significativas. Su función es extraer las partes importantes del código e ignorar elementos irrelevantes, como los comentarios, números o identificadores.
+- `Parser`: Toma el conjunto de unidades significativas generadas por el `scanner` y las traduce en un `AST` (`Abstract Syntax Tree`). Si el `AST` se puede generar correctamente, se determina que el programa tiene una sintaxis correcta.
+
+####
+**Definición de Intérprete y Gramática**
+
+El `intérprete` es un programa que toma un `AST` y produce un resultado; en otras palabras, es el componente encargado de otorgar semántica o significado al código fuente. Por otro lado, la `gramática` se define como el conjunto de reglas que estructuran y gobiernan nuestro lenguaje de programación.
+
+####
+**Analizador Léxico**
+
+El `analizador léxico` tiene como objetivo procesar el código fuente basándose en un conjunto de reglas predefinidas sobre lo que constituye una unidad significativa dentro del lenguaje. Como resultado de este proceso, el analizador devuelve una lista ordenada de dichas unidades.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Introducción al Interpretador
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Introduccion%20Interpretador/

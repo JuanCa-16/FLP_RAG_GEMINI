@@ -1,0 +1,34 @@
+Para finalizar la implementación del interpretador, se ajustan los métodos `FindMethod`, `Unapply` y `UnapplyMethod`. Los métodos `FindMethod` y `Unapply` se modifican para que cada referencia a una declaración de método sea ahora una referencia a un objeto de tipo `Method`. Este cambio se debe a la transición del uso de declaraciones directas al uso de los tipos de datos `DataType Class` y `DataType Method`, que encapsulan la información procesada de clases y métodos.
+
+####
+
+El procedimiento `applyMethod` se redefine para mejorar la eficiencia. Anteriormente, tomaba una declaración de método como argumento; ahora, su primer argumento es un objeto `Method`. La lista de identificadores de los campos (`fields`) se obtiene directamente de este objeto, eliminando la necesidad de llamar a la función `rule-file-leng` en tiempo de ejecución. El cambio fundamental reside en la construcción del entorno de evaluación para el cuerpo del método.
+
+####
+
+La nueva implementación de `applyMethod` crea un único entorno extendido de manera más directa. Este entorno incluye las referencias a `super` y `self`, junto con los enlaces de los parámetros del método. En lugar de construir dinámicamente una "vista" del objeto para cada herencia, el nuevo enfoque utiliza la lista de campos ya pre-calculada y almacenada tanto en el objeto `Method` como en el objeto de la instancia (`Object`). Esto simplifica y acelera significativamente la ejecución al evitar cálculos repetitivos durante la invocación de métodos.
+
+####
+
+La instanciación de nuevos objetos también se simplifica. Dado que la información sobre los campos de una clase ya está calculada y almacenada en la representación de la clase, al crear un nuevo objeto (`new-object`), ya no es necesario calcular dinámicamente esta información. En su lugar, se accede directamente a los campos pre-calculados a través del nombre de la clase, lo que optimiza el proceso de creación de instancias.
+
+####
+
+Se introduce una función para inicializar el entorno de clases, `initialize_class_env`. La finalidad de esta función es limpiar o reiniciar la variable global que almacena las definiciones de clases antes de evaluar una nueva expresión. Esto es crucial para evitar conflictos de estado entre ejecuciones consecutivas; si las clases de una ejecución anterior permanecieran en el entorno, podrían interferir con la definición de nuevas clases en una ejecución posterior.
+
+####
+
+La función `lookup_class` se actualiza para trabajar con las nuevas representaciones de datos. En lugar de buscar sobre declaraciones de clase sin procesar, ahora opera sobre la estructura de datos que representa a las clases ya procesadas. Este cambio es consistente con la estrategia general del intérprete de pasar de un manejo sintáctico (declaraciones) a uno semántico (representaciones internas).
+
+####
+
+Para asegurar el correcto funcionamiento del intérprete, es necesario mantener ciertas funciones auxiliares. A pesar de la refactorización, los selectores y observadores para las declaraciones de clase siguen siendo necesarios para procesar la sintaxis inicial. Asimismo, la función `lookup_method`, que se encarga de buscar un método dentro de la jerarquía de una clase, es una pieza fundamental que debe ser conservada en su versión actualizada para operar con las nuevas estructuras de datos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=rabG7CAMFOk
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

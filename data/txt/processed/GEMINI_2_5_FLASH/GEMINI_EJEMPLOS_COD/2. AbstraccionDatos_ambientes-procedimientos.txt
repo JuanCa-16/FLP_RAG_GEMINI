@@ -1,0 +1,54 @@
+######## RESUMEN ########
+Modelos ambientes de ejecución utilizando procedimientos para asociar y recuperar valores de variables.
+
+######## CONCEPTOS ########
+Ambientes de ejecución, clausuras, abstracción de datos, vinculación de variables, alcance léxico
+
+######## EXPLICACION ########
+El código modela la gestión de ambientes de ejecución a través de funciones (`empty-env`, `extend-env`, `apply-env`) que actúan como abstracciones de datos.
+Permite a un intérprete de lenguaje de programación registrar y consultar los valores asociados a identificadores, simulando el alcance de variables.
+Determina el valor actual de una variable (`search-var`) dentro de un contexto anidado, esencial para la evaluación de expresiones.
+Aplica el patrón de abstracción de datos mediante clausuras, donde cada ambiente es un procedimiento que encapsula sus vinculaciones.
+`extend-env` demuestra cómo construir ambientes nuevos apilando recursivamente las definiciones, gestionando así la vinculación de variables.
+Este enfoque es fundamental para comprender cómo los lenguajes gestionan el alcance léxico de las variables.
+
+######## METADATA ########
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-procedimientos.rkt
+FUENTE: CODIGO
+lenguaje: Racket
+
+######## CODIGO ########
+#lang eopl
+
+;;;; Ambientes - Representación como procedimientos ;;;;;;;;;;;;;;;;;;;;
+
+;; empty-env
+(define empty-env
+  (lambda ()
+    (lambda (search-var)
+      (eopl:error 'apply-env "No binding for ~s" search-var))))
+
+;; extend-env
+(define extend-env
+  (lambda (saved-var saved-val saved-env)
+    (lambda (search-var)
+      (if (eqv? search-var saved-var)
+          saved-val
+          (apply-env saved-env search-var)))))
+
+;; apply-env
+(define apply-env
+  (lambda (env search-var)
+    (env search-var)))
+
+;; Ejemplos
+(define e
+  (extend-env 'd 6
+              (extend-env 'y 8
+                          (extend-env 'x 7
+                                      (extend-env 'y 14
+                                                  (empty-env))))))
+
+(apply-env e 'd)
+;(apply-env e 'y)
+;(apply-env e 'c)

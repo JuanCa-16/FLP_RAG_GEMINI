@@ -1,0 +1,78 @@
+#### **Implementación de asignación mediante referencias**
+
+Para implementar la `asignación` utilizando referencias, es necesario introducir cambios en la estructura del `ambiente`. En el modelo anterior, el `ambiente extendido` utilizaba una lista de símbolos y una lista de valores. Sin embargo, debido a que la `asignación` requiere modificar los valores existentes en el `ambiente`, ya no se utilizará una lista de valores, sino un `vector` de valores.
+
+El uso de un `vector` facilita la mutación de los datos, ya que en una lista no es posible cambiar un elemento directamente; la única forma de introducir un nuevo valor en una lista sería reconstruirla, lo cual implica un proceso costoso. El cambio principal en el `data type` de `ambiente` consiste en sustituir la lista de valores por un `vector` para permitir estos efectos de persistencia y modificación.
+
+#### **Modificación del data type de ambientes**
+
+El `data type` de los ambientes se modifica para soportar referencias. En esta redefinición, se elimina temporalmente el caso de `ambiente extendido recursivo` para ajustarlo a la nueva lógica de vectores. El nuevo constructor se denomina `ambiente-extendido-ref` y su estructura es la siguiente:
+
+```racket
+(define-datatype ambiente ambiente?
+  (ambiente-vacio)
+  (ambiente-extendido-ref
+   (l-ids (list-of symbol?))
+   (l-vals vector?)
+   (ambiente-previo ambiente?)))
+```
+
+Esta modificación arrastra cambios en otras partes del interpretador, especialmente donde se crean o manipulan ambientes, asegurando que la estructura de almacenamiento sea un `vector`.
+
+#### **Función de intermediación para ambientes extendidos**
+
+Para no romper la compatibilidad con funciones como `evaluar-expresion` o el caso de `app-expression` (donde las `rands` se transforman en una lista de números), se crea una función de intermediación llamada `ambiente-extendido`. Esta función actúa como un truco de programación para transformar la lista de valores recibida en un `vector` antes de construir el `ambiente-extendido-ref`.
+
+```racket
+(define ambiente-extendido
+  (lambda (l-ids l-vals ambiente-previo)
+    (ambiente-extendido-ref l-ids (list->vector l-vals) ambiente-previo)))
+```
+
+Esto permite que el resto del interpretador siga enviando listas de valores (por ejemplo, al evaluar los argumentos de un procedimiento), mientras que internamente el `ambiente` los almacena en un `vector` para permitir la `asignación`.
+
+#### **Redefinición del ambiente extendido recursivo**
+
+El `ambiente extendido recursivo` requiere una reconvención para ser compatible con la `asignación`. En la versión anterior, este ambiente solo permitía contener procedimientos. Sin embargo, al permitir la modificación de variables, un identificador que inicialmente contenía un procedimiento podría ser cambiado por un número u otro tipo de dato mediante una asignación.
+
+Para manejar esto, un `ambiente extendido recursivo` se implementará como un `ambiente-extendido-ref` que contiene:
+- Una lista de identificadores con los nombres de los procedimientos.
+- Un `vector` de valores que contiene las `clausuras`.
+- Las `clausuras` deben guardar una referencia al mismo `ambiente` donde están definidas para permitir la recursión.
+
+#### **Implementación técnica del ambiente extendido recursivo**
+
+La implementación del `ambiente extendido recursivo` utiliza un `vector` y una función auxiliar para llenar dicho `vector` con las `clausuras` correspondientes. El proceso consiste en crear un `vector` vacío (inicializado con ceros), construir el `ambiente` con ese `vector` y luego mutar el `vector` para que cada posición contenga la `clausura` que referencia al ambiente recién creado.
+
+```racket
+(define ambiente-extendido-recursivo
+  (lambda (proc-names l-ids cuerpos old-env)
+    (let* ((len (length proc-names))
+           (vec-clausuras (make-vector len)))
+      (letrec ((amp (ambiente-extendido-ref proc-names vec-clausuras old-env))
+               (obtener-clausuras
+                (lambda (ids-list bodies-list pos)
+                  (if (null? ids-list)
+                      amp
+                      (begin
+                        (vector-set! vec-clausuras pos 
+                                     (closure (car ids-list) (car bodies-list) amp))
+                        (obtener-clausuras (cdr ids-list) (cdr bodies-list) (+ pos 1)))))))
+        (obtener-clausuras l-ids cuerpos 0)))))
+```
+
+En este esquema, `make-vector` construye un vector del tamaño de la lista de nombres de procedimientos. Mediante `vector-set!`, se inserta cada `clausura` en el `vector`. Como la `clausura` guarda el ambiente `amp` que ya contiene el `vector`, se logra que los procedimientos puedan conocerse a sí mismos y a los demás definidos en el mismo bloque, solucionando el problema de la recursión en un entorno mutable.
+
+#### **Impacto en las funciones de búsqueda y aplicación**
+
+La modificación de los ambientes de listas a vectores y la introducción de referencias obligan a realizar cambios profundos en las funciones de búsqueda. Específicamente, se deben modificar las funciones relacionadas con `apply-env` para conectar la búsqueda de variables con la recuperación de referencias. Estos cambios permitirán que el interpretador no solo recupere valores, sino que también pueda localizarlos dentro de los vectores para su posterior modificación mediante la `asignación`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 24. Asignación： tercera parte.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=dVERIOle5zA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

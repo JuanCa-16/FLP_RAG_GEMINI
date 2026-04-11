@@ -1,0 +1,37 @@
+####
+**Concepto de paso por valor**
+
+El `paso de parámetros` se refiere al proceso que ocurre cuando se invoca una función, por ejemplo `f(x)` o `f(5)`. En el modelo de ejecución actual, cuando un procedimiento recibe un parámetro, se genera una nueva variable que contiene una copia del valor de la expresión evaluada. Al realizar la expansión de la `clausura` en el `app-expression` para ejecutar el procedimiento, se crea una nueva referencia en un ambiente extendido. Esta nueva referencia es totalmente independiente de las demás, un comportamiento conocido como `paso por valor`.
+
+####
+**Ejemplo de ambiente en paso por valor**
+
+Considere el siguiente código para analizar el comportamiento de las referencias:
+
+```racket
+let p = proc (x) set x = 4
+in let a = 3
+in begin
+  (p a);
+  a
+end
+```
+
+En este caso, se genera un ambiente inicial donde `p` tiene una `clausura` que identifica al parámetro `x` y guarda el ambiente correspondiente. Al definir `let a = 3`, se crea un vector que contiene el valor `3`. Cuando se ejecuta `(p a)`, se genera un nuevo ambiente para el procedimiento `p` donde la variable `x` recibe el valor de `a`, que es `3`. Al ejecutarse la instrucción `set x = 4`, el valor de `x` en su propio ambiente cambia a `4`, pero la variable `a` en el ambiente anterior sigue valiendo `3`. Esto sucede porque en el `paso por valor`, `x` es una referencia nueva y no tiene relación con la ubicación de memoria de `a`.
+
+####
+**Introducción al paso por referencia**
+
+El `paso por referencia` permite conectar la variable que se pasa como argumento con la variable que recibe el procedimiento en sus parámetros. El objetivo es que las variables originales puedan ser afectadas dentro del procedimiento. Bajo este mecanismo, si se cambia un valor dentro del procedimiento y este está conectado a una variable que ha sido pasada por parámetro, dicha variable original se debe ver afectada.
+
+En lugar de pasar el contenido de la variable, se pasa la dirección o ubicación donde ella se encuentra. Por ejemplo, al implementar `paso por referencia` en el código anterior, la ejecución de `set x = 4` forzaría a que la variable `a` también valga `4`, ya que ambas estarían conectadas a la misma ubicación.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 28. Paso por valor y referencia.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=gswgFVuh48Q
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,353 @@
+###
+Un Tipo Abstracto de Dato (TAD) es una especificación matemática de un conjunto de datos y las operaciones definidas sobre ellos, independiente de su implementación concreta en memoria. En Essentials of Programming Languages (EOPL), los TADs enfatizan la separación entre la interfaz (qué hace el tipo) y la implementación (cómo lo hace).
+
+###
+Los tipos primitivos, como los enteros nativos, no son TADs porque su representación (e.g., 32 bits) depende directamente del hardware.
+Ejemplo:
+```racket
+int pollito = 8; // Representación: 32 bits (000...1000)
+```
+Ventajas de tipos primitivos:
+- Operaciones a nivel de CPU (eficientes)
+- Soporte nativo del lenguaje
+Desventajas:
+- Rango limitado (\(-2^{31}\) a \(2^{31}-1\))
+- Problemas de desbordamiento
+- Comportamiento dependiente de la plataforma
+
+En lenguajes de alto nivel se busca la abstracción, donde las operaciones tienen una implementación interna oculta.
+Ejemplo:
+```racket
+a = 3 # Objeto con comportamiento definido
+(define x 10) # Representación abstracta
+```
+
+###
+Una forma de representar números naturales de manera abstracta se basa en los axiomas de Peano:
+$$
+\begin{align}
+\lceil 0 \rceil \in \mathbb{N} \\
+n \in \mathbb{N} \rightarrow n+1 \in \mathbb{N}
+\end{align}
+$$
+Esto define el cero y el sucesor como operaciones fundamentales.
+
+###
+**Implementación 1: Usando números nativos de Racket**
+Esta implementación utiliza los enteros de Racket directamente para representar los números naturales. La interfaz de constructores y observadores es la siguiente:
+```racket
+#lang eopl
+
+;; === IMPLEMENTACIÓN (OCULTA) ===
+(define zero 0)            ; Constructor del cero
+(define isZero? (lambda (n) (eqv? n zero))) ; Predicado de cero
+(define succ (lambda (n) (+ n 1))) ; Constructor de sucesor
+(define pred (lambda (n) (- n 1))) ; Constructor de predecesor
+```
+
+###
+Sobre esta implementación básica, se pueden construir operaciones más complejas como suma y multiplicación, que forman parte de la interfaz visible para el programador.
+```racket
+;; === INTERFAZ (VISIBLE) ===
+(define cinco (succ (succ (succ (succ (succ zero))))))
+
+(define suma
+  (lambda (a b)
+    (cond
+      [(isZero? b) a] ; Caso base: a + 0 = a
+      [else (suma (succ a) (pred b))] ; Paso recursivo: a + b = (a+1) + (b-1)
+    )))
+
+(define diez (suma cinco cinco))
+
+(define multiplicacion
+  (lambda (a b)
+    (cond
+      [(isZero? b) zero] ; a × 0 = 0
+      [(eqv? (succ zero) b) a] ; a × 1 = a
+      [else (suma a (multiplicacion a (pred b)))] ; a × b = a + (a × (b-1))
+    )))
+
+(define cincuenta (multiplicacion cinco diez))
+```
+
+###
+**Implementación 2: Usando listas (representación unaria)**
+Los números naturales pueden representarse como listas. El cero es una lista vacía, y el sucesor es una lista con un elemento adicional. Las operaciones `succ` y `pred` manipulan esta estructura de lista.
+```racket
+#lang eopl
+
+;; === IMPLEMENTACIÓN ALTERNATIVA ===
+(define zero '())           ; Cero representado como lista vacía
+(define isZero? (lambda (n) (eqv? n zero)))
+(define succ (lambda (n) (cons #T n))) ; Sucesor: agregar elemento
+(define pred (lambda (n) (cdr n))) ; Predecesor: remover elemento
+```
+La interfaz de usuario (funciones como `suma` y `multiplicacion` definidas anteriormente) permanece *idéntica* y funciona sin cambios, demostrando la independencia de la implementación.
+
+###
+**Implementación 3: Representación en base 16 (bignum)**
+Para manejar números grandes de manera más eficiente, se puede usar una representación posicional en base 16. Los números se representan como listas de dígitos, donde `(car n)` es el dígito menos significativo.
+```racket
+#lang eopl
+
+;; === IMPLEMENTACIÓN EFICIENTE ===
+(define zero '())
+(define base 16) ; La base de la representación
+
+(define isZero? (lambda (n) (equal? n zero)))
+
+(define succ
+  (lambda (n)
+    (cond
+      [(isZero? n) '(1)] ; Caso base: cero → 1
+      [(equal? (- base 1) (car n)) ; Acarreo: dígito llega al máximo
+       (cons 0 (succ (cdr n)))] ; Poner 0 y propagar acarreo
+      [else
+       (cons (+ (car n) 1) (cdr n))] ; Incremento normal
+    )))
+
+(define pred
+  (lambda (n)
+    (cond
+      [(equal? n (list 1)) zero] ; 1 → 0
+      [(equal? 0 (car n)) ; Préstamo: dígito es 0
+       (cons (- base 1) (pred (cdr n)))] ; Poner máximo y propagar préstamo
+      [else
+       (cons (- (car n) 1) (cdr n))] ; Decremento normal
+    )))
+```
+Al igual que con la implementación basada en listas, el programador utiliza exactamente las mismas operaciones (`suma`, `multiplicacion`) sin necesidad de conocer esta compleja representación interna.
+
+###
+**Análisis de la abstracción en EOPL**
+Las implementaciones anteriores ilustran puntos clave sobre los TADs en EOPL:
+*   **Ocultamiento de información**: La implementación interna (cómo se almacena el número) está encapsulada y no es visible para el usuario del TAD.
+*   **Invariantes preservadas**: Las operaciones (constructores, sucesor, predecesor) garantizan que el estado interno del TAD siempre sea válido.
+*   **Sustituibilidad**: Diferentes implementaciones pueden satisfacer la misma interfaz abstracta, permitiendo intercambiarlas.
+*   **Independencia de representación**: El comportamiento lógico del TAD es independiente de su representación física o lógica subyacente.
+
+Los TADs se componen de:
+*   **Constructores**: Como `zero` y `succ`, que crean instancias válidas del tipo.
+*   **Observadores**: Como `isZero?`, que examinan el estado del TAD sin revelar su implementación.
+*   **Operaciones**: Definen el comportamiento abstracto del tipo, a menudo usando recursión estructural sobre su definición.
+
+###
+La abstracción de datos permite definir tipos mediante su comportamiento (interfaz) independientemente de su implementación concreta. El mismo programa funciona con tres implementaciones radicalmente diferentes (números nativos, listas unarias, representación posicional en base 16).
+Esto permite:
+-   Optimizaciones transparentes (cambiar de una implementación unaria a una bignum).
+-   Corrección de bugs en la implementación sin afectar el código cliente.
+-   Adaptación a diferentes requisitos de rendimiento/memoria.
+El programador no necesita conocer los detalles de implementación; solo la interfaz abstracta.
+
+###
+Dominar estos conceptos de abstracción separa a los programadores que solo escriben código de los que diseñan sistemas elegantes y mantenibles. Cada vez que encapsulas una decisión de implementación, estás construyendo software que sobrevivirá a los cambios.
+
+###
+**Componentes Fundamentales de un TAD**
+Todo Tipo Abstracto de Dato requiere:
+*   **Procedimientos constructores**: Crean instancias válidas del TAD.
+*   **Procedimientos observadores**:
+    *   **Predicados**: Determinan si un dato pertenece a una variante del TAD.
+    *   **Extractores**: Obtienen componentes específicos de los datos.
+
+###
+**Estrategia Basada en Listas para ASTs**
+Esta estrategia implementa un Tipo Abstracto de Dato para la representación de Expresiones (AST - Abstract Syntax Tree) utilizando listas de Racket. Cada tipo de expresión (variable, lambda, aplicación) se representa con una lista que empieza con un "tag" simbólico y contiene sus componentes.
+
+Los **constructores** definen cómo crear cada tipo de expresión:
+```racket
+#lang eopl
+
+;; === CONSTRUCTORES (Interfaz) ===
+(define var-exp
+  (lambda (id)
+    (list 'var-exp id))) ; Tag 'var-exp + identificador
+
+(define lambda-exp
+  (lambda (id exp)
+    (list 'lambda-exp id exp))) ; Tag + parámetro + cuerpo
+
+(define app-exp
+  (lambda (rator rand)
+    (list 'app-exp rator rand))) ; Tag + operador + operando
+```
+
+###
+Los **observadores** proporcionan una interfaz para inspeccionar las expresiones sin acceder directamente a la estructura de lista subyacente. Incluyen predicados para verificar el tipo y extractores para obtener sus componentes:
+```racket
+;; === OBSERVADORES ===
+;; Predicados (verifican el tag en posición 0)
+(define var-exp?
+  (lambda (exp)
+    (equal? (car exp) 'var-exp)))
+
+(define lambda-exp?
+  (lambda (exp)
+    (equal? (car exp) 'lambda-exp)))
+
+(define app-exp?
+  (lambda (exp)
+    (equal? (car exp) 'app-exp)))
+
+;; Extractores (acceden a posiciones específicas)
+(define var-exp->id
+  (lambda (exp)
+    (cadr exp))) ; Posición 1: identificador
+
+(define lambda-exp->id
+  (lambda (exp)
+    (cadr exp))) ; Posición 1: parámetro
+
+(define lambda-exp->exp
+  (lambda (exp)
+    (caddr exp))) ; Posición 2: cuerpo
+
+(define app-exp->rator
+  (lambda (exp)
+    (cadr exp))) ; Posición 1: operador
+
+(define app-exp->rand
+  (lambda (exp)
+    (caddr exp))) ; Posición 2: operando
+```
+
+###
+El **código del programador** utiliza únicamente esta interfaz abstracta para operar sobre las expresiones, sin conocer los detalles de cómo se representan las listas. Aquí, un ejemplo de una función que verifica si una variable ocurre libre en una expresión:
+```racket
+;; === CÓDIGO DEL PROGRAMADOR (usa solo la interfaz) ===
+(define occurs-free?
+  (lambda (exp v)
+    (cond
+      [(var-exp? exp)
+       (equal? v (var-exp->id exp))] ; Variable libre si coincide
+      [(lambda-exp? exp)
+       (and (not (equal? v (lambda-exp->id exp))) ; No libre si es parámetro
+            (occurs-free? (lambda-exp->exp exp) v))] ; Buscar en cuerpo
+      [(app-exp? exp)
+       (or (occurs-free? (app-exp->rator exp) v) ; Libre en operador
+           (occurs-free? (app-exp->rand exp) v))]))) ; o en operando
+```
+
+###
+Ejemplos de cómo se construyen y usan las expresiones AST con la interfaz definida:
+```racket
+;; Ejemplos de uso
+(define exp1 (var-exp 'x)) ; 'x
+(define exp2 (lambda-exp 'x (app-exp (var-exp 'x) (var-exp 'y)))) ; (lambda (x) (x y))
+(define exp3
+  (app-exp
+    (var-exp 'x) ; (x (lambda (x) (lambda (y) x)))
+    (lambda-exp 'x
+      (lambda-exp 'y (var-exp 'x)))))
+```
+
+###
+**Estrategia Basada en Procedimientos para ASTs**
+Esta implementación del TAD de expresiones utiliza *closures* (clausuras) como constructores. Cada constructor devuelve un procedimiento que, al ser llamado con un "selector" numérico, revela el tipo de expresión o sus componentes. Esto proporciona una encapsulación más fuerte que la estrategia basada en listas.
+
+Los **constructores** crean procedimientos que "contienen" los datos y responden a selectores:
+```racket
+#lang eopl
+
+;; === CONSTRUCTORES (Implementación con closures) ===
+(define var-exp
+  (lambda (id)
+    (lambda (s) ; Closure que responde a selectores
+      (cond
+        [(= s 0) 'var-exp] ; Selector 0: tipo
+        [(= s 1) id] ; Selector 1: identificador
+        [else (eopl:error "Error en var-exp")]))))
+
+(define lambda-exp
+  (lambda (id exp)
+    (lambda (s)
+      (cond
+        [(= s 0) 'lambda-exp] ; Tipo
+        [(= s 1) id] ; Parámetro
+        [(= s 2) exp] ; Cuerpo
+        [else (eopl:error "Error en lambda-exp")]))))
+
+(define app-exp
+  (lambda (rator rand)
+    (lambda (s)
+      (cond
+        [(= s 0) 'app-exp] ; Tipo
+        [(= s 1) rator] ; Operador
+        [(= s 2) rand] ; Operando
+        [else (eopl:error "Error en app-exp")]))))
+```
+
+###
+Los **observadores** para esta estrategia invocan los procedimientos (expresiones) con los selectores apropiados para obtener la información. La *interfaz para el programador es exactamente la misma* que en la estrategia de listas, lo que demuestra la independencia de la implementación.
+
+```racket
+;; === OBSERVADORES (Misma interfaz) ===
+;; Predicados
+(define var-exp?
+  (lambda (exp)
+    (equal? (exp 0) 'var-exp))) ; Invoca selector 0
+
+(define lambda-exp?
+  (lambda (exp)
+    (equal? (exp 0) 'lambda-exp)))
+
+(define app-exp?
+  (lambda (exp)
+    (equal? (exp 0) 'app-exp)))
+
+;; Extractores
+(define var-exp->id
+  (lambda (exp)
+    (exp 1))) ; Invoca selector 1
+
+(define lambda-exp->id
+  (lambda (exp)
+    (exp 1)))
+
+(define lambda-exp->exp
+  (lambda (exp)
+    (exp 2))) ; Invoca selector 2
+
+(define app-exp->rator
+  (lambda (exp)
+    (exp 1)))
+
+(define app-exp->rand
+  (lambda (exp)
+    (exp 2)))
+```
+El código del programador, como la función `occurs-free?` y los ejemplos de uso, permanece *exactamente el mismo* que en la versión basada en listas.
+
+###
+**Análisis Comparativo de Estrategias para TADs**
+La estrategia basada en procedimientos, aunque potencialmente con un mayor overhead computacional debido a la invocación de closures, ofrece las siguientes ventajas:
+*   **Encapsulación fuerte**: Los datos solo son accesibles mediante la interfaz definida por los selectores, no directamente.
+*   **Validación incorporada**: Los selectores pueden validar los accesos, detectando errores si se intenta acceder a un componente inexistente.
+*   **Flexibilidad de implementación**: La representación interna puede cambiar (e.g., usar estructuras hash en lugar de selectores numéricos) sin afectar la interfaz.
+*   **Posibilidad de comportamiento dinámico**: Los procedimientos pueden implementar lógica compleja al acceder a los datos.
+
+El principio fundamental de EOPL se demuestra claramente: el *código cliente* (como `occurs-free?` y los ejemplos) permanece *inalterado* entre ambas implementaciones (listas vs. procedimientos), ilustrando cómo la interfaz abstracta protege al programador de los detalles de implementación.
+
+###
+**Conclusión sobre Estrategias de Implementación de TADs**
+Ambas estrategias (basada en listas y basada en procedimientos) implementan el mismo Tipo Abstracto de Dato, pero con diferentes ventajas y desventajas:
+*   **Listas**: Más simple de implementar y con menor overhead, pero ofrece menos encapsulación (el programador podría acceder a `car` o `cadr` directamente).
+*   **Procedimientos**: Proporciona una mejor encapsulación y validación, pero introduce un mayor overhead computacional debido a la creación e invocación de closures.
+
+La elección entre una u otra depende de los requisitos específicos del proyecto, pero el punto clave es que *la interfaz abstracta permanece constante*. Esto permite cambiar la implementación subyacente sin afectar el código existente que utiliza el TAD.
+
+###
+Cuando se usan funciones como `car` y `cdr` directamente en el código del programa principal, se está acoplando el código a una representación específica (listas). Dominar los TADs permite escribir código que sobreviva a cambios de requisitos y optimizaciones. Es como aprender a construir con bloques que se pueden reorganizar sin demoler toda la estructura, lo cual vale la pena el esfuerzo.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 3 Representación abstracta de datos (TAD)_Estrategias de representacion TAD
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/Estrategias%20de%20representacion%20TAD/

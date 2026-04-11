@@ -1,0 +1,30 @@
+La evaluación de una función recursiva definida con `letrec` comienza en un ambiente inicial, en este caso, el ambiente vacío. La expresión `letrec` crea un tipo especial de ambiente, que podemos denominar ambiente extendido recursivo (`mr`). La estructura de este ambiente contiene la lista de identificadores de las funciones definidas (en este caso, solo `fat`), una lista con los parámetros de cada función (el parámetro `x`) y los cuerpos de dichas funciones. Crucialmente, este ambiente `mr` se extiende a sí mismo, permitiendo que las referencias a `fat` dentro de su propio cuerpo puedan ser resueltas.
+
+####
+
+Al invocar la función, por ejemplo `fat(6)`, se genera una clausura (closure). Esta clausura encapsula los parámetros de la función (la variable `x`), el cuerpo del procedimiento y, fundamentalmente, el ambiente en el que fue definida, que es el ambiente extendido recursivo `mr`. La ejecución de esta clausura con el argumento `6` crea un nuevo ambiente, `enf1`, donde `x` queda ligado al valor `6`. Este nuevo ambiente `enf1` extiende directamente del ambiente recursivo `mr`, lo cual es la clave para que las llamadas recursivas subsecuentes puedan encontrar la definición de `fat`.
+
+####
+
+Dentro del ambiente `enf1` donde `x=6`, la condición `x > 0` se evalúa como verdadera, lo que desencadena la expresión recursiva `x * fat(x-1)`, es decir, `6 * fat(5)`. La llamada `fat(5)` se resuelve buscando `fat` en el ambiente actual. Como `enf1` extiende de `mr`, la definición de `fat` se encuentra en `mr`, y el proceso se repite: se crea una nueva clausura y un nuevo ambiente donde `x` se liga a `5`. Este mecanismo genera una cadena de ambientes anidados para cada llamada recursiva: `x=5` llama a `x=4`, `x=4` llama a `x=3`, y así sucesivamente hasta llegar a `x=1` que llama a `x=0`. En este punto se alcanza la condición de parada de la recursión, evitando la generación indefinida de ambientes y el agotamiento de la memoria.
+
+####
+
+Una vez que la llamada con `x=0` alcanza la condición de parada, la recursión comienza a resolverse y retornar valores hacia atrás a través de la cadena de ambientes.
+1.  La evaluación de `fat(0)` retorna `1` (el caso base).
+2.  En el ambiente donde `x=1`, se calcula `1 * fat(0)`, que es `1 * 1 = 1`.
+3.  En el ambiente donde `x=2`, se calcula `2 * fat(1)`, que es `2 * 1 = 2`.
+4.  En el ambiente donde `x=3`, se calcula `3 * fat(2)`, que es `3 * 2 = 6`.
+5.  En el ambiente donde `x=4`, se calcula `4 * fat(3)`, que es `4 * 6 = 24`.
+6.  En el ambiente donde `x=5`, se calcula `5 * fat(4)`, que es `5 * 24 = 120`.
+7.  Finalmente, en el ambiente inicial de la llamada donde `x=6`, se calcula `6 * fat(5)`, que es `6 * 120 = 720`.
+Este es el resultado final de la evaluación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=T-h2Q-EtcNc
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

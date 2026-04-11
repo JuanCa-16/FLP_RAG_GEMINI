@@ -1,0 +1,53 @@
+Para implementar las expresiones del cálculo lambda, se definen los constructores, que son funciones para crear cada tipo de expresión, y las funciones observadoras (predicados y extractores), que permiten inspeccionarlas. La estructura de datos se representa mediante listas, donde el primer elemento actúa como una etiqueta o "bandera" para identificar el tipo de expresión.
+
+Los tres constructores definidos son:
+1.  **`var-expression`**: Representa una variable. Se construye con una lista que contiene el símbolo `'var-expression'` y un identificador.
+2.  **`lambda-expression`**: Representa una abstracción o función. Se construye con una lista que contiene el símbolo `'lambda-expression'`, un identificador para la variable ligada y una expresión que constituye el cuerpo de la función.
+3.  **`app-expression`**: Representa la aplicación de una función. Se construye con una lista que contiene el símbolo `'app-expression'`, una expresión para el operador (`rator`) y otra para el operando (`rand`).
+
+####
+
+Los predicados son funciones observadoras que permiten determinar el tipo de una expresión del cálculo lambda. Su implementación se basa en inspeccionar el primer elemento (`car`) de la lista que representa la expresión para verificar si coincide con la etiqueta de tipo correspondiente.
+
+Existen tres predicados principales:
+1.  **`var-expression?`**: Recibe una expresión y devuelve verdadero (`true`) si el primer elemento de la lista es el símbolo `'var-expression'`.
+2.  **`lambda-expression?`**: Devuelve verdadero si el primer elemento de la lista es el símbolo `'lambda-expression'`.
+3.  **`app-expression?`**: Devuelve verdadero si el primer elemento de la lista es el símbolo `'app-expression'`.
+
+El uso de estas etiquetas como primer elemento de la lista simplifica la identificación de cada variante del tipo de dato.
+
+####
+
+Los extractores son funciones observadoras diseñadas para acceder a los componentes internos de una estructura de datos. Para las expresiones del cálculo lambda, los extractores recuperan las partes constituyentes de cada tipo de expresión, basándose en su posición dentro de la lista.
+
+Los extractores para cada tipo son:
+-   Para `var-expression`:
+    -   **`var-expression-id`**: Devuelve el identificador de la variable, que es el segundo elemento de la lista (`cadr`).
+-   Para `lambda-expression`:
+    -   **`lambda-expression-id`**: Devuelve el identificador de la variable ligada (segundo elemento, `cadr`).
+    -   **`lambda-expression-body`**: Devuelve la expresión del cuerpo (tercer elemento, `caddr`).
+-   Para `app-expression`:
+    -   **`app-expression-rator`**: Devuelve la expresión del operador (segundo elemento, `cadr`).
+    -   **`app-expression-rand`**: Devuelve la expresión del operando (tercer elemento, `caddr`).
+
+Estos extractores permiten manipular los datos de forma abstracta, sin depender directamente de la estructura de lista subyacente.
+
+####
+
+La función `occurs-free?` determina si una variable (un símbolo) aparece libre en una expresión del cálculo lambda. Su implementación utiliza los predicados y extractores previamente definidos para analizar la expresión de manera recursiva según su tipo.
+
+La lógica se divide en tres casos:
+1.  **Si la expresión es un `var-expression`**: La variable ocurre libre si su símbolo es igual al identificador contenido en la expresión. Este es el caso base de la recursión.
+2.  **Si la expresión es un `lambda-expression`**: La variable ocurre libre si cumple dos condiciones simultáneamente: (a) no es la misma variable que está siendo ligada por el lambda y (b) ocurre libre en el cuerpo de la expresión. Si la variable es la misma que la ligada, su ocurrencia dentro del cuerpo no se considera libre.
+3.  **Si la expresión es un `app-expression`**: La variable ocurre libre si aparece libre en la expresión del operador (`rator`) o en la expresión del operando (`rand`). La función se llama recursivamente sobre ambas partes.
+
+Este enfoque, que utiliza constructores, predicados y extractores, permite implementar lógica compleja sobre el tipo de dato de forma clara y mantenible, abstrayendo los detalles de la representación interna.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=DsPWtf9LUqQ
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

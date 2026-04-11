@@ -1,0 +1,18 @@
+Para determinar el tipo de una expresión condicional `if`, se deben realizar varias verificaciones. Primero, la condición de la expresión debe evaluarse como un tipo booleano. Segundo, el tipo de la expresión en la rama `then` debe ser idéntico al tipo de la expresión en la rama `else`. El tipo de retorno de la expresión `if` completa será el tipo común de estas dos ramas. En el ejemplo analizado, la condición es booleana, y las ramas `then` y `else` devuelven un entero. Como los tipos de las ramas coinciden, la expresión completa pasa la verificación y su tipo resultante es entero. Adicionalmente, se debe validar que los argumentos pasados a cualquier procedimiento dentro de la expresión coincidan con los tipos esperados en su definición.
+
+####
+
+El análisis de tipos para una expresión `letrec` que define una función recursiva, como la función factorial (`fat`), requiere validar la consistencia interna de la función y su uso. La función `fat` se declara para recibir un argumento `x` de tipo entero y devolver un resultado también de tipo entero. Dentro de su cuerpo, se utilizan primitivas como `>` y `*`, las cuales operan sobre enteros. Se verifica que los argumentos de estas primitivas, incluyendo el propio `x` y el resultado del llamado recursivo a `fat`, sean del tipo esperado (entero). Si todas las operaciones y valores de retorno dentro de la función son consistentes con la signatura de tipo declarada, la definición es correcta. Finalmente, la invocación de la función en el cuerpo del `letrec`, como `fat(5)`, debe usar un argumento del tipo correcto, y el tipo de toda la expresión `letrec` será el tipo de retorno de esta invocación final, en este caso, un entero.
+
+####
+
+El principio fundamental del chequeo de tipos consiste en verificar sistemáticamente cada uno de los llamados a procedimientos y las relaciones entre variables. Es crucial asegurar que los tipos de los datos utilizados en cada operación se correspondan con los tipos esperados por las primitivas, los procedimientos definidos y las estructuras de control del lenguaje. Este proceso es especialmente importante al analizar procedimientos, y más aún en el caso de procedimientos recursivos, donde la consistencia de la signatura de tipo es fundamental para garantizar la corrección del programa.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=a58oyy--My8
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

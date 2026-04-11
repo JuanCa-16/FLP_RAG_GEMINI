@@ -1,0 +1,148 @@
+####
+**Expresión para inferencia de tipos**
+```racket
+let
+  f = proc(? x, ? y, ? z)
+        if (x y) then *(z, 2)
+        else z
+in
+  let
+    g = proc(? m)
+          if m then true else false
+    k = 5
+  in (f g true k)
+```
+
+Esta expresión define una función `f` que recibe tres parámetros con tipos desconocidos (`? x`, `? y`, `? z`), y una función `g` con un parámetro `? m`. El objetivo es determinar los tipos de estas variables mediante el proceso de inferencia.
+
+####
+**1. Variables de tipos**
+A continuación se presenta la asociación de cada expresión y variable con su respectiva variable de tipo:
+
+- `let ... in`: `t0` (Tipo: `int`)
+- `proc(? x, ? y, ? z)`: `tf` (Tipo: `tx * ty * tz -> t2`)
+- `x`: `tx` (Tipo: `bool -> bool`)
+- `y`: `ty` (Tipo: `bool`)
+- `z`: `tz` (Tipo: `int`)
+- `(x y)`: `t1` (Tipo: `bool`)
+- `*(z, 2)`: `t2` (Tipo: `int`)
+- `proc(? m)`: `tg` (Tipo: `bool -> bool`)
+- `5`: `tk` (Tipo: `int`)
+- `(f g true k)`: `t3` (Tipo: `int`)
+- `m`: `tm` (Tipo: `bool`)
+
+####
+**Resolver el sistema**
+Para determinar los tipos, se plantean y resuelven las siguientes ecuaciones basadas en las reglas del lenguaje:
+
+**Ecuaciones iniciales:**
+- `t0 = t3`
+
+**Declaración de funciones:**
+- `tf = tx * ty * tz -> t2`
+- `tf = tx * ty * tz -> tz`
+- `tg = tm -> bool`
+
+**Evaluaciones y reglas:**
+- `tx * ty -> t1`: Aplicación de `x` sobre `y`.
+- `t1 = bool`: Por la regla del `if`.
+- `t2 = tz`: Por la regla del `if` (ramas `then` y `else` deben coincidir).
+- `tz * int -> t2`: Por la regla de la primitiva `*`, donde `int * int -> int`.
+- `tz = int`
+- `t2 = int`
+- `tm = bool`: Por la regla del `if` en la definición de `g`.
+- `tg = bool -> bool`
+
+**Sustitución en la aplicación final:**
+- `tf = tg * bool * int -> t3`
+- `tg = tx`
+- `ty = bool`
+- `tz = int`
+- `t2 = tz = t3`
+
+####
+**Comprobación del tipo de la expresión resultante**
+El siguiente código en `racket` utiliza el intérprete para verificar que el tipo de la expresión completa es `int`:
+
+```racket
+(type-to-external-form
+ (type-of-expression
+  (cases program
+    (scan&parse
+     "let
+        f = proc(? x, ? y, ? z)
+          if (x y) then *(z,2)
+          else z
+      in
+        let
+          g = proc(? m)
+            if m then true else false
+          k = 5
+        in let
+          res = (f g true k) in res")
+    (a-program (exp) exp))
+  (empty-tenv)))
+```
+La salida es `int`.
+
+####
+**Comprobación del tipo de la función f**
+Se verifica el tipo inferido para la función `f`, el cual corresponde a una función que toma una función (`bool -> bool`), un `bool` y un `int`, para retornar un `int`:
+
+```racket
+(type-to-external-form
+ (type-of-expression
+  (cases program
+    (scan&parse
+     "let
+        f = proc(? x, ? y, ? z)
+          if (x y) then *(z,2)
+          else z
+      in
+        let
+          g = proc(? m)
+            if m then true else false
+          k = 5
+        in let
+          res = (f g true k) in f")
+    (a-program (exp) exp))
+  (empty-tenv)))
+```
+La salida es `((bool -> bool) * bool * int -> int)`.
+
+####
+**Comprobación del tipo de la función g**
+Se verifica el tipo inferido para la función `g`, el cual corresponde a una función que recibe un `bool` y retorna un `bool`:
+
+```racket
+(type-to-external-form
+ (type-of-expression
+  (cases program
+    (scan&parse
+     "let
+        f = proc(? x, ? y, ? z)
+          if (x y) then *(z,2)
+          else z
+      in
+        let
+          g = proc(? m)
+            if m then true else false
+          k = 5
+        in let
+          res = (f g true k) in g")
+    (a-program (exp) exp))
+  (empty-tenv)))
+```
+La salida es `(bool -> bool)`.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Ejemplo 2 Inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%202%20Inferencia/

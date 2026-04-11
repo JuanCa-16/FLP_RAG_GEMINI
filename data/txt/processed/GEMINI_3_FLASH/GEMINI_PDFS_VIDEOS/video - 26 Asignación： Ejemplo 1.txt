@@ -1,0 +1,61 @@
+####
+**Representación de ambientes y mutación con `set`**
+
+Para comprender cómo se representan los ambientes y los cambios que ocurren con la mutación, se analiza el siguiente caso:
+
+```racket
+let x = 2
+in begin
+    set x = 3;
+    x
+end
+```
+
+Al representar este ambiente, se considera lo siguiente:
+
+- Se asume un ambiente inicial vacío `empty-env`.
+- Al evaluar el `let`, se crea un ambiente donde `x` está ligado al valor 2. En un lenguaje con mutación, esta ligadura se representa mediante un `vector`.
+- La expresión `begin set x = 3; x end` modifica el valor contenido en dicho vector. La instrucción `set x = 3` cambia el valor de 2 a 3.
+- Al evaluar la variable `x` después de la mutación, el resultado obtenido es 3.
+
+####
+**Comportamiento de `set` y procedimientos en ambientes**
+
+En el análisis de lenguajes con procedimientos, es fundamental observar cómo se generan y afectan los ambientes durante la ejecución. Considere el siguiente ejemplo:
+
+```racket
+let x = 100
+in let p = proc (x)
+    begin
+        set x = +(x, 1);
+        x
+    end
+in +(p(x), p(x))
+```
+
+El proceso de evaluación detallado es:
+
+- El ambiente inicial posee a `x` ligado a un `vector` con el valor 100.
+- Se define `p` como un `proc` que contiene una `closure` (clausura) que captura el ambiente actual.
+- Al ejecutar `+(p(x), p(x))`, los operandos se evalúan de izquierda a derecha.
+- En la primera llamada `p(x)`, se genera un nuevo ambiente para el cuerpo del procedimiento. En este ambiente, el parámetro `x` recibe el valor 100.
+- Al ejecutar `set x = +(x, 1)` dentro de la primera llamada, se afecta únicamente el `x` más cercano en el alcance (el parámetro local). Este cambia de 100 a 101. La llamada retorna 101.
+- En la segunda llamada `p(x)`, se genera un nuevo ambiente independiente. El parámetro `x` vuelve a tomar el valor 100 del ambiente original. Al ejecutar el `set` local, este cambia a 101 y el procedimiento retorna 101.
+- El resultado final de la suma es `101 + 101 = 202`.
+
+Este comportamiento demuestra que cada llamado a un procedimiento genera un ambiente nuevo y que la instrucción `set` afecta la ligadura más próxima según el `scope`.
+
+####
+**Introducción a la representación de procedimientos recursivos**
+
+En el estudio de los lenguajes de programación, los procedimientos recursivos introducen cambios específicos en la representación de ambientes. Es necesario identificar con precisión cómo se gestionan estas estructuras para evitar errores en la evaluación de la recursión. A continuación, se examinarán los ajustes requeridos en el modelo de ambientes para soportar estas definiciones.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 26 Asignación： Ejemplo 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=m2bDVFw5KXc
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,73 @@
+####
+**Ajustes finales en el interpretador: Find-method, Unapply y Apply-method**
+
+En esta etapa final del desarrollo del interpretador, es necesario ajustar los procedimientos `find-method`, `unapply` y `apply-method` para la correcta gestión de la representación interna. El procedimiento `find-method` y `unapply` no cambian en su lógica fundamental, con la excepción de que ahora cada referencia a una declaración de método se convierte en una referencia a un objeto de tipo `method`. 
+
+Anteriormente se utilizaban declaraciones, pero ahora empleamos los tipos de datos `class` y `method` para almacenar la información. El procedimiento `apply-method` se refina para recibir un `method` como primer argumento en lugar de una declaración. De este modo, obtiene la lista de identificadores directamente del objeto `method` sin necesidad de invocar funciones auxiliares como `role-field-id`.
+
+**Refinamiento de Apply-method**
+
+El procedimiento `apply-method` realiza la evaluación de la expresión del cuerpo del método en un ambiente extendido. Este ambiente incluye las ligaduras para `super`, `self` y los campos del objeto. La mejora principal es que ya no se requiere calcular la vista del objeto ni construir un ambiente por cada nivel de herencia. En su lugar, se toman los campos precalculados que residen en el `method` y en el `object`, facilitando significativamente la ejecución mediante la creación de un único ambiente.
+
+####
+**Optimización de la gestión de clases y campos**
+
+En la nueva implementación del interpretador, se ha eliminado la necesidad de recalcular la información de los campos en cada instancia. Dado que esta información ya ha sido procesada, el sistema simplemente accede al `class-name` y al `field-layout` almacenados. 
+
+Anteriormente, funciones como `new-object` requerían calcular dinámicamente el `field-layout`. Con el cambio al tipo de datos `class`, esta información ya está disponible, permitiendo simplificar el código y eliminar funciones de cálculo redundantes que se utilizaban en la declaración de clases.
+
+```racket
+;; Cambio en la obtención de información de la clase
+(class-name class-info)
+(field-layout class-info)
+```
+
+####
+**Inicialización del ambiente de clases**
+
+La función `initialize-class-env!` es fundamental para el correcto funcionamiento del interpretador en ejecuciones sucesivas. Su propósito es reiniciar la variable que almacena la lista de clases definidas.
+
+Si no se reiniciara el `class-environment`, las clases de una ejecución previa quedarían grabadas en la variable, lo que podría generar conflictos de nombres o comportamientos inesperados al procesar una nueva expresión con definiciones de clases distintas. La función asegura que cada nueva evaluación comience con un ambiente de clases limpio.
+
+```racket
+;; Lógica de construcción del ambiente de clases
+(define initialize-class-env!
+  (lambda ()
+    (set! class-environment '())))
+
+(define add-class-to-env!
+  (lambda (class-info)
+    (set! class-environment (cons class-info class-environment))))
+```
+
+####
+**Selectores y observadores de declaraciones**
+
+A pesar de que el interpretador ahora trabaja con representaciones internas (`method` y `class`), se mantienen los selectores y observadores para las declaraciones de clases. Estos extractores son necesarios para procesar la sintaxis inicial y transformar las declaraciones en las estructuras de datos que el interpretador utiliza durante la ejecución. 
+
+Entre estos selectores se encuentran aquellos encargados de obtener el `super-name` y las declaraciones de métodos dentro de una `class-declaration`. Asimismo, se ajusta el manejo de ambientes extendidos para asegurar que las referencias se resuelvan correctamente en el nuevo esquema de ejecución.
+
+####
+**Redefinición de Lookup-class y verificación final**
+
+El procedimiento `lookup-class` ha sido actualizado para operar con las nuevas representaciones de objetos en lugar de las declaraciones sintácticas. Esta transición permite que la búsqueda de clases en el ambiente sea más eficiente y coherente con el resto del sistema de tipos de datos definido.
+
+```racket
+;; Ejemplo de estructura de lookup-class actualizada
+(define lookup-class
+  (lambda (name)
+    ;; Busca en la representación interna de clases
+    ...))
+```
+
+Con estos cambios, el interpretador de objetos planos queda completado. Las pruebas realizadas con ejemplos clásicos, como la manipulación de listas y el uso de métodos `get`, confirman que la transición de declaraciones sintácticas a tipos de datos de soporte permite una ejecución correcta y un manejo de ambientes más robusto. Esto sienta las bases para analizar la progresión de los ambientes en este modelo de implementación.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - Video 54 Objetos planos Implementación Parte 3.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=rabG7CAMFOk
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

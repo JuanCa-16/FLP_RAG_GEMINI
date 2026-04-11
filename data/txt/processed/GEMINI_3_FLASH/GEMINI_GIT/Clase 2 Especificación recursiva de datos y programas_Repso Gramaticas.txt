@@ -1,0 +1,37 @@
+####
+**Gramáticas regulares y conflictos de terminales**
+
+En las `gramáticas regulares`, los `terminales` están por la izquierda. Por ejemplo:
+
+```text
+var x = 10
+var y
+```
+
+Este ejemplo produce un conflicto porque ambas construcciones inician igual.
+
+####
+**Gramáticas en forma BNF**
+
+Representación de una `<lista>` utilizando la notación `BNF`:
+
+```bnf
+<lista> ::= <empty>
+        | <int> <lista>
+
+<lista> ::= <int>*
+
+<lista> ::= <int>+
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 2 Especificación recursiva de datos y programas_Repso Gramaticas
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

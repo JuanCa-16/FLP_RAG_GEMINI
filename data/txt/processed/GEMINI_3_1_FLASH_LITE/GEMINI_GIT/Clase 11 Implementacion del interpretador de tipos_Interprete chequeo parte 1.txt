@@ -1,0 +1,146 @@
+####
+**Especificación léxica para el intérprete**
+
+La especificación léxica define los patrones de los `tokens` que el escáner reconocerá en el código fuente. Se utilizan reglas para ignorar comentarios y espacios, y para identificar números y variables:
+
+```racket
+(define lexical
+  '((comment ("%" (arbno (not #\newline))) skip)
+    (whitespace (whitespace) skip)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (identifier (letter (arbno (or letter digit))) symbol)))
+```
+
+- `comment`: Los comentarios inician con `%` y se extienden hasta el final de la línea.
+- `number`: Identifica números enteros positivos y negativos.
+- `identifier`: Define variables como una letra seguida de una secuencia de letras o dígitos.
+
+####
+**Gramática del lenguaje y estructuras del AST**
+
+La gramática define las producciones del lenguaje, estableciendo cómo se construyen las expresiones del Árbol de Sintaxis Abstracta (`AST`). Incluye primitivas, estructuras de control como `if`, `let`, `proc` y `letrec`, además de tipos de datos básicos:
+
+```racket
+(define grammar
+  '((program (expression) a-program)
+    (expression (identifier) var-exp)
+    (expression (number) lit-exp)
+    (expression ("true") true-exp)
+    (expression ("false") false-exp)
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    (expression ("if" expression "then" expression "else" expression) if-exp)
+    (expression ("let" (arbno identifier "=" expression) "in" expression) let-exp)
+    (expression ("proc" "(" (separated-list type-exp identifier ",") ")" expression) proc-exp)
+    (expression ("letrec" (arbno type-exp identifier "(" (separated-list type-exp identifier ",") ")" "=" expression) "in" expression) letrec-exp)
+    (expression ("set" identifier "=" expression) set-exp)
+    (expression ("begin" expression (arbno ";" expression) "end") begin-exp)
+    (expression ("(" expression (arbno expression) ")") app-exp)))
+```
+
+####
+**Definición y manejo del entorno (`environment`)**
+
+El entorno gestiona el ámbito de las variables, permitiendo almacenar y recuperar valores. Se utilizan `datatypes` para definir un entorno vacío, entornos extendidos y entornos recursivos:
+
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+    (lid (list-of symbol?))
+    (lval vector?)
+    (old-env environment?))
+  (extend-recursively-env
+    (procname (list-of symbol?))
+    (argss (list-of (list-of symbol?)))
+    (bodies (list-of expression?))
+    (old-env environment?)))
+```
+
+`apply-env-ref` se utiliza para buscar el valor de una variable en el entorno actual, navegando recursivamente hacia entornos anteriores si es necesario.
+
+####
+**Evaluación de expresiones (`eval-expression`)**
+
+La función `eval-expression` procesa cada nodo del `AST` según su tipo. Por ejemplo, evalúa variables buscando en el entorno, procesa literales numéricos, y ejecuta aplicaciones de funciones (`app-exp`):
+
+```racket
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id) (apply-env env id))
+      (lit-exp (datum) datum)
+      (prim-exp (prim lrands)
+        (let ((values (map (lambda (x) (eval-expression x env)) lrands)))
+          (apply-primitive prim values)))
+      (if-exp (cond-exp true-exp false-exp) ...)
+      (proc-exp (types lid exp) (closure lid exp env)))))
+```
+
+Cuando se encuentra una expresión `proc-exp`, se genera un `closure` que captura el entorno léxico actual.
+
+####
+**Aplicación de primitivas**
+
+Las operaciones primitivas del lenguaje se agrupan bajo `apply-primitive`, que toma una lista de valores y aplica la operación correspondiente:
+
+```racket
+(define apply-primitive
+  (lambda (prim values)
+    (cases primitive prim
+      (add-prim () (operation + values 0))
+      (sub-prim () (- (car values) (operation + (cdr values) 0)))
+      (less-prim () (< (car values) (cadr values)))
+      (eq-prim () (= (car values) (cadr values)))
+      ...)))
+```
+
+Se implementa `operation` como una función genérica que aplica un operador acumulativo sobre una lista de valores.
+
+####
+**Sistema de tipos y chequeo estático**
+
+El sistema cuenta con un chequeo de tipos para asegurar la consistencia antes de la ejecución. Se definen tipos atómicos (`int`, `bool`) y tipos de procedimiento:
+
+```racket
+(define-datatype type type?
+  (atomic-type (nombre symbol?))
+  (proc-type (arg-type (list-of type?)) (result-t type?)))
+
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'type-check "Types didn't match ~s != ~s in ~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2) exp)
+        t1)))
+```
+
+`check-equal-type!` compara dos tipos y lanza un error si hay discrepancias, facilitando la detección temprana de errores de programación.
+
+####
+**Intérprete interactivo (REPL)**
+
+El intérprete se ejecuta mediante un bucle de lectura-evaluación-impresión (`REPL`), configurado con el prompt `-->`:
+
+```racket
+(define interpreter
+  (sllgen:make-rep-loop
+    "-->"
+    eval-program
+    (sllgen:make-stream-parser lexical grammar)))
+```
+
+Este componente permite al usuario ingresar expresiones, las cuales son escaneadas, parseadas y evaluadas en el entorno global predefinido.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interprete chequeo parte 1
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interprete%20chequeo%20parte%201/

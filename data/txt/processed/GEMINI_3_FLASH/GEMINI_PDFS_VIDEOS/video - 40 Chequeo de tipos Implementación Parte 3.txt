@@ -1,0 +1,128 @@
+#### **Reglas de creación de procedimientos**
+
+La regla de creación de procedimientos establece que cada uno de los argumentos tendrá asociado un tipo específico. El tipo de salida del procedimiento depende del tipo de la expresión interna (el cuerpo), el cual puede ser calculado. Para implementar esto, se utiliza un procedimiento auxiliar denominado `type-of-proc-exp`.
+
+Este procedimiento recibe una expresión de tipo `proc-exp`, que contiene una lista de tipos `t1...tn`, una lista de identificadores `x1...xn` y un cuerpo. La función realiza lo siguiente:
+- Convierte los tipos de los argumentos en una lista de tipos de argumentos (`arg-types`).
+- Evalúa el tipo del cuerpo en un ambiente extendido donde los identificadores están ligados a sus respectivos tipos.
+- Construye y devuelve un `proc-type` que contiene los `arg-types` y el `result-type`.
+
+En el despacho de expresiones de `type-of-expression`, la implementación para `proc-exp` se invoca de la siguiente manera:
+
+```racket
+;; En type-of-expression
+(proc-exp (texps ids body)
+          (type-of-proc-exp texps ids body tenv))
+```
+
+#### **Implementación de type-of-proc-exp**
+
+El procedimiento `type-of-proc-exp` es el encargado de procesar la definición de una función y determinar su firma de tipos completa. Utiliza el ambiente de tipos `tenv` para extender la visibilidad de los argumentos hacia el cuerpo de la función.
+
+```racket
+(define type-of-proc-exp
+  (lambda (arg-texps ids body tenv)
+    (let ((arg-types (map (lambda (texp) (texp->type texp)) arg-texps)))
+      (let ((result-type (type-of-expression body
+                                             (extend-tenv ids arg-types tenv))))
+        (proc-type arg-types result-type)))))
+```
+
+Este procedimiento devuelve un `proc-type` que empaqueta los tipos de los argumentos y el tipo del resultado, permitiendo que el sistema de tipos valide futuras aplicaciones de este procedimiento.
+
+#### **Regla de tipamiento para aplicaciones de procedimientos**
+
+En el caso de las aplicaciones de procedimientos o primitivas, la regla de tipamiento se define mediante la estructura: `t1 * t2 * ... * tn -> t`. Aquí, `t1...tn` representan los tipos de los operandos y `t` es el tipo del resultado.
+
+La función `type-of-expression` encuentra el tipo del operador (`rator`) y luego invoca al procedimiento auxiliar `type-of-application` para aplicar las validaciones. El proceso de `type-of-application` sigue esta lógica:
+- Revisa si el tipo del operador es efectivamente un `proc-type`.
+- Verifica si el número de argumentos proporcionados coincide con el número de argumentos esperados.
+- Compara, mediante un ciclo o iteración, si cada tipo de argumento esperado es igual al tipo del operando correspondiente utilizando `check-equal-type!`.
+- Si todas las revisiones tienen éxito, el tipo de la aplicación es el tipo del resultado definido en el procedimiento.
+
+```racket
+;; Caso app-exp en type-of-expression
+(app-exp (rator rands)
+         (type-of-application
+          (type-of-expression rator tenv)
+          (map (lambda (rand) (type-of-expression rand tenv)) rands)
+          rator rands))
+```
+
+#### **Validación técnica en type-of-application**
+
+El procedimiento `type-of-application` realiza la comprobación de tipos en tiempo de análisis estático. Si el operador no es un procedimiento o si los tipos de los argumentos no coinciden, se genera un mensaje de error detallado.
+
+```racket
+(define type-of-application
+  (lambda (rator-type rand-types rator rands)
+    (cases type rator-type
+      (proc-type (arg-types result-type)
+                 (if (not (= (length arg-types) (length rand-types)))
+                     (eopl:error 'type-of-application 
+                                 "Número incorrecto de argumentos para ~s" rator)
+                     (begin
+                       (for-each
+                        (lambda (arg-type rand-type rand)
+                          (check-equal-type! arg-type rand-type rand))
+                        arg-types rand-types rands)
+                       result-type)))
+      (else
+       (eopl:error 'type-of-application
+                   "El operador ~s no es un procedimiento, su tipo es ~s" 
+                   rator rator-type)))))
+```
+
+Este procedimiento utiliza `check-equal-type!` para comparar lo que el usuario envía frente a lo que el procedimiento espera, asegurando la consistencia del programa.
+
+#### **Tipamiento de primitivas y manejo de aridad variable**
+
+Las primitivas como `+`, `-` o `>` se tratan como procedimientos. Cada primitiva recibe valores de tipo dato primitivo y se le asocia un `proc-type`. En sistemas donde las primitivas pueden recibir una cantidad variable de argumentos (como en el caso de las primitivas numéricas), se requiere una construcción dinámica de la lista de tipos.
+
+Para manejar esto, se define `primitive-numeric`, una función recursiva que construye una lista de `int-type` basada en la cantidad de operandos (`rands`) presentes en la expresión.
+
+```racket
+(define primitive-numeric
+  (lambda (rands)
+    (if (null? rands)
+        '()
+        (cons (int-type) (primitive-numeric (cdr rands))))))
+```
+
+Esto permite que, si una primitiva recibe cinco argumentos, se genere una firma de tipo que exija cinco enteros, expandiendo la funcionalidad estándar de aridad fija.
+
+#### **Implementación de type-of-primitive**
+
+El procedimiento `type-of-primitive` asigna firmas de tipos a los operadores incorporados del lenguaje. Se divide principalmente en primitivas booleanas de comparación y primitivas numéricas.
+
+```racket
+(define type-of-primitive
+  (lambda (prim rands)
+    (cases primitive prim
+      (greater-prim () (proc-type (list (int-type) (int-type)) (bool-type)))
+      (less-prim () (proc-type (list (int-type) (int-type)) (bool-type)))
+      (equal-prim () (proc-type (list (int-type) (int-type)) (bool-type)))
+      (add-prim () (proc-type (primitive-numeric rands) (int-type)))
+      (sub-prim () (proc-type (primitive-numeric rands) (int-type)))
+      (mult-prim () (proc-type (primitive-numeric rands) (int-type)))
+      (incr-prim () (proc-type (list (int-type)) (int-type)))
+      (decr-prim () (proc-type (list (int-type)) (int-type))))))
+```
+
+Para las primitivas unarias como el incremento (`incr-prim`) o decremento (`decr-prim`), se restringe la lista de tipos de entrada a un único `int-type`. Finalmente, el procesamiento de múltiples expresiones se apoya en `type-of-expressions`, que aplica `type-of-expression` a cada elemento de una lista mediante un `map`.
+
+```racket
+(define type-of-expressions
+  (lambda (rands tenv)
+    (map (lambda (x) (type-of-expression x tenv)) rands)))
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 40 Chequeo de tipos Implementación Parte 3.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=tTJVA-uCnWw
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

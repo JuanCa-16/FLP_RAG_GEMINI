@@ -1,0 +1,76 @@
+####
+Definición de la base numérica y la representación del valor cero en un sistema de numeración posicional basado en listas utilizando el lenguaje de programación `EOPL`:
+
+```racket
+#lang eopl
+(define base 16)
+(define zero '())
+(define zero? null?)
+```
+
+**Conceptos clave**
+`base numérica`, `representación de datos`, `abstracción`, `listas`, `predicados`
+
+**Aplicación**
+Esta configuración establece los cimientos para construir un sistema de aritmética de precisión arbitraria (Big-Num), donde los números se representan como listas de dígitos en base 16 y el valor cero se identifica con una lista vacía.
+
+####
+Implementación de la función sucesor para incrementar un número en la representación de base 16, gestionando el acarreo de valores de manera recursiva:
+
+```racket
+(define succ
+  (lambda (n)
+    (cond
+      [(zero? n) (list 1)]
+      [(= (car n) (- base 1)) (cons 0 (succ (cdr n)))]
+      [else (cons (+ 1 (car n)) (cdr n))])))
+```
+
+**Conceptos clave**
+`recursión`, `acarreo`, `condicionales`, `manipulación de listas`, `sucesor`
+
+**Aplicación**
+La función `succ` permite obtener el siguiente número en la secuencia aritmética. Es una operación primitiva fundamental para construir sumas y otros cálculos de mayor nivel en sistemas numéricos definidos por el usuario.
+
+####
+Implementación de la función predecesor para decrementar un número en base 16, incluyendo validación de errores y manejo de préstamos entre posiciones:
+
+```racket
+(define pred
+  (lambda (n)
+    (cond
+      [(zero? n) (eopl:error "El número no puede ser cero")]
+      [(= (car n) 0) (cons (- base 1) (pred (cdr n)))]
+      [(equal? (succ zero) n) '()]
+      [else (cons (- (car n) 1) (cdr n))])))
+```
+
+**Conceptos clave**
+`manejo de errores`, `decremento`, `recursión`, `lógica de préstamos`, `predecesor`
+
+**Aplicación**
+Se utiliza para disminuir el valor de un número en una unidad. Es esencial en algoritmos que requieren conteo descendente o como paso inductivo para definir operaciones aritméticas mediante recursión.
+
+####
+Implementación de la operación de suma mediante un enfoque recursivo que utiliza las funciones primitivas `succ` y `pred`:
+
+```racket
+(define plus
+  (lambda (x y)
+    (if
+     (zero? y)
+     x
+     (succ (plus x (pred y))))))
+```
+
+**Conceptos clave**
+`recursión`, `abstracción de procedimientos`, `aritmética funcional`, `inducción`
+
+**Aplicación**
+Esta función permite realizar la adición de dos números representados como listas. Ilustra cómo construir operaciones complejas en el "área del programador" a partir de las abstracciones de bajo nivel que definen el sistema numérico.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/3.RepresentacionBignum.rkt
+LENGUAJE: racket
+FUENTE: CODIGO

@@ -1,0 +1,142 @@
+####
+**Expansión de expresiones de tipo**
+
+Para transformar expresiones de tipo en un `tipo` (AST), se utiliza el procedimiento `expand-type-expression`. Este toma una expresión de tipo como entrada y retorna el tipo correspondiente.
+
+```racket
+(define expand-type-expression
+  (lambda (texp)
+    (cases type-exp texp
+      (int-exp () int-type)
+      (bool-exp () bool-type)
+      (proc-type-exp (targs tresult)
+        (proc-type (expand-type-expressions targs)
+                   (expand-type-expression tresult))))))
+
+(define expand-type-expressions
+  (lambda (texps)
+    (map expand-type-expression texps)))
+```
+
+Estos procedimientos permiten convertir definiciones de tipos del lenguaje fuente a estructuras de datos internas del interpretador.
+
+####
+**Interpretación de expresiones literales y variables**
+
+El procedimiento `type-of-expression` determina el tipo de una expresión dado un ambiente de tipos (`tenv`). En el caso de literales, se retorna su tipo base, mientras que para variables, se busca su tipo en el ambiente.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (lit-exp (d) int-type)
+      (true-exp () bool-type)
+      (false-exp () bool-type)
+      (var-exp (id) (deref (apply-tenv tenv id))))))
+```
+
+El ambiente de tipos (`init-tenv`) gestiona las asociaciones entre identificadores y sus tipos. La búsqueda se realiza mediante `apply-tenv`, que recorre las estructuras de entorno para localizar el tipo asociado a una variable.
+
+####
+**Gestión del ambiente de tipos**
+
+El ambiente de tipos se define mediante una estructura que extiende el entorno con listas de identificadores y sus tipos correspondientes almacenados en vectores.
+
+```racket
+(define init-tenv
+  (extend-env '(x y z)
+              (list->vector (list int-type int-type int-type))
+              (extend-env '(a b c)
+                          (list->vector (list int-type int-type int-type))
+                          (empty-env))))
+
+(define apply-tenv
+  (lambda (env var)
+    (cases environment env
+      (empty-env () (eopl:error "Variable not found" var))
+      (extend-env (lid vec old-env)
+        (letrec ((search-var (lambda (lid lval [pos 0])
+                               (cond [(null? lid) (apply-tenv old-env var)]
+                                     [(equal? (car lid) var) (a-ref pos vec)]
+                                     [else (search-var (cdr lid) vec (+ pos 1))]))))
+          (search-var lid vec))))))
+```
+
+Cuando se encuentra la variable, el sistema retorna una referencia (`a-ref`) a su posición dentro del vector de tipos en el ambiente.
+
+####
+**Verificación de tipos en expresiones condicionales**
+
+La expresión `if` requiere una validación estricta de tipos: la condición (`test-exp`) debe ser de tipo `bool`, y los tipos de las ramas `true-exp` y `false-exp` deben coincidir.
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (if-exp (test-exp true-exp false-exp)
+        (let ((test-type (type-of-expression test-exp tenv))
+              (true-type (type-of-expression true-exp tenv))
+              (false-type (type-of-expression false-exp tenv)))
+          (begin
+            (check-equal-type! test-type bool-type test-exp)
+            (check-equal-type! true-type false-type exp)
+            true-type))))))
+```
+
+Para implementar esto, se utilizan procedimientos auxiliares que garantizan la consistencia de tipos y facilitan la depuración mediante mensajes de error legibles.
+
+####
+**Procedimientos auxiliares para verificación de tipos**
+
+Para asegurar que las expresiones cumplan con las reglas de tipado, se utilizan funciones de verificación y formateo de mensajes.
+
+```racket
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'type-check
+                    "Types didn't match ~s != ~s in ~%~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2)
+                    exp)
+        t1)))
+
+(define type-to-external-form
+  (lambda (t)
+    (cases type t
+      (atomic-type (name) name)
+      (proc-type (targs tresult)
+        (append (arg-types-to-external-form targs)
+                '(->)
+                (list (type-to-external-form tresult)))))))
+```
+
+`check-equal-type!` compara dos tipos y genera un error si no son idénticos, mientras que `type-to-external-form` convierte el AST de tipos a una representación de texto legible.
+
+####
+**Tipado de procedimientos (proc-exp)**
+
+Los procedimientos siguen la estructura `t1 * t2 * ... * tn -> t`. Para procesarlos, el interpretador convierte las expresiones de tipo a tipos internos, calcula el tipo del cuerpo en un ambiente extendido con los parámetros del procedimiento y genera un `proc-type`.
+
+```racket
+(define type-of-proc-exp
+  (lambda (targs args body tenv)
+    (let* ((args-types (expand-type-expressions targs))
+           (result-type (type-of-expression body 
+                                            (extend-env args (list->vector args-types) tenv))))
+      (proc-type args-types result-type))))
+```
+
+Este proceso asegura que el tipo resultante de la función sea consistente con el tipo declarado para el cuerpo y los argumentos de entrada.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo II
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20II/

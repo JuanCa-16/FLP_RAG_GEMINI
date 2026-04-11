@@ -1,0 +1,75 @@
+Una segunda forma de representar datos es la representación basada en procedimientos. En este enfoque, la información no se almacena en una estructura de datos pasiva como una lista, sino que es la propia función la que, al ser invocada, nos devuelve el dato que necesitamos. Para ello, se utilizan señales o códigos numéricos que indican qué información se desea obtener.
+
+####
+
+La construcción de un ambiente vacío (`empty-env`) se implementa como una función que no recibe argumentos y devuelve otra función. Esta función interna, un procedimiento, recibe una señal numérica. Si la señal es `0`, que se utiliza para la verificación de tipo, devuelve un símbolo que la identifica como un ambiente vacío. Para cualquier otra señal, genera un error, ya que un ambiente vacío no contiene más información.
+
+```scheme
+(define empty-env
+  (lambda ()
+    (lambda (signal)
+      (if (= signal 0)
+          'empty-env
+          (eopl:error 'empty-env "Señal no válida: ~s" signal)))))
+```
+
+####
+
+Para extender un ambiente, se define la función `extend-env` que toma un identificador (`id`), un valor (`val`) y un ambiente previo (`env`). Esta función también devuelve un procedimiento que recibe una señal. La lógica interna de este procedimiento mapea cada señal a un dato específico: la señal `0` se reserva para identificarlo como un ambiente extendido, la señal `1` devuelve el `id`, la señal `2` devuelve el `val`, y la señal `3` devuelve el ambiente previo (`env`).
+
+```scheme
+(define extend-env
+  (lambda (id val env)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'extended-env)
+        ((= signal 1) id)
+        ((= signal 2) val)
+        ((= signal 3) env)
+        (else (eopl:error 'extend-env "Señal no válida: ~s" signal))))))
+```
+
+####
+
+Los observadores, como los predicados, se implementan invocando el procedimiento del ambiente con la señal correspondiente. Para determinar si un ambiente es vacío (`is-empty-env?`), se le envía la señal `0` y se comprueba si el resultado es el símbolo `'empty-env'`. De manera análoga, para verificar si es un ambiente extendido (`is-extended-env?`), se envía la misma señal `0` y se compara con el símbolo `'extended-env'`.
+
+```scheme
+(define is-empty-env?
+  (lambda (env)
+    (eq? (env 0) 'empty-env)))
+
+(define is-extended-env?
+  (lambda (env)
+    (eq? (env 0) 'extended-env)))
+```
+
+####
+
+Los extractores de datos para un ambiente extendido operan de forma similar a los predicados, utilizando las señales numéricas codificadas en su definición. Para extraer el identificador (`extend-env-id`), se invoca al procedimiento del ambiente con la señal `1`. Para el valor (`extend-env-val`), se usa la señal `2`, y para obtener el ambiente anterior (`extend-env-old`), se utiliza la señal `3`. Esta implementación es directa y depende completamente de la interfaz definida por el procedimiento.
+
+```scheme
+(define extend-env-id
+  (lambda (env)
+    (env 1)))
+
+(define extend-env-val
+  (lambda (env)
+    (env 2)))
+
+(define extend-env-old
+  (lambda (env)
+    (env 3)))
+```
+
+####
+
+El objetivo principal de la abstracción de datos es separar la interfaz de la implementación. Al cambiar la representación interna de los ambientes, pasando de una basada en listas a una basada en procedimientos, las funciones de alto nivel que operan sobre estos ambientes, como `apply-env` (que busca un valor asociado a un identificador), no requieren ninguna modificación. La función `apply-env` sigue funcionando correctamente porque interactúa con los ambientes únicamente a través de su interfaz pública (constructores, predicados y extractores), sin depender de los detalles de su representación interna.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=5ymi1j8FQuI
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

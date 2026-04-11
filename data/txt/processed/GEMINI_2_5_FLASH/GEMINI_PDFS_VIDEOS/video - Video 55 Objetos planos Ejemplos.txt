@@ -1,0 +1,34 @@
+A continuación se presentan ejemplos de instanciación de objetos y su funcionamiento en un modelo de objetos simples. El primer caso analiza la representación de un objeto y la invocación de uno de sus métodos. La clase `S1`, que extiende de `Object`, posee los campos `X` y `Y`, así como los métodos `initialize`, `M1` y `M2`. Al instanciar un objeto `O1` de la clase `S1` con los valores `1` y `2`, su representación interna consiste en una etiqueta de tipo `Object`, la referencia a su clase `S1`, y un vector de campos que contiene `X` con el valor `1` y `Y` con el valor `2`.
+
+####
+
+Al invocar el método `M1` sobre el objeto `O1` mediante la expresión `send(O1, M1)`, se construye un entorno de ejecución específico. Este entorno se inicia vacío y se le añade la representación del objeto, que encapsula sus campos `X` y `Y` con sus respectivos valores. Dentro de este entorno, la variable `self` se vincula al objeto `O1` sobre el que se invoca el método. La variable `super` se vincula a la clase `Object`, que es la clase padre donde se encuentra definido el método `M1` en este contexto.
+
+####
+
+Un segundo ejemplo, más complejo, involucra dos clases, `C1` y `C2`, para ilustrar la herencia y la resolución de métodos. Primero, se instancia un objeto `O1` de la clase `C1`. Su representación contiene la referencia a la clase `C1` y los campos `X` y `Y` inicializados con `1` y `2` respectivamente. Posteriormente, se instancia un objeto `O2` de la clase `C2`. La representación de `O2` incluye una etiqueta de tipo `Object`, la referencia a su clase `C2`, y un conjunto de campos que combina los de `C1` y `C2`. Los campos `X` y `Y` heredados de `C1` se inicializan con `1` y `2` mediante una llamada al inicializador de la clase padre, mientras que los campos `X` y `Y` propios de `C2` se inicializan con `9` y `10`. Es fundamental invocar el inicializador de la superclase para que los campos heredados reciban sus valores correctos; de lo contrario, podrían quedar con valores por defecto como cero.
+
+####
+
+Al analizar la ejecución de `send(O2, M2)`, el sistema busca el método `M2` comenzando por la clase `C2`. Al no encontrarlo, la búsqueda continúa en la jerarquía de herencia hasta la clase `C1`, donde finalmente se localiza. Por lo tanto, `M2` se ejecuta en el contexto de `C1`. El mecanismo de resolución de alcance, como `refine-position`, determina que, al ejecutarse desde `C1`, el entorno de visibilidad inicial se limita a los campos definidos en `C1`. En este contexto, `self` se refiere al objeto `O2`, mientras que `super` apunta a `Object`.
+
+####
+
+El método `M2` contiene una llamada anidada: `send(self, M1)`. Dado que `self` es `O2`, la expresión se resuelve como `send(O2, M1)`. Al ejecutarse `M1` sobre `O2`, se construye un nuevo entorno que incluye los campos de ambas clases, `C1` y `C2`. Para resolver la ambigüedad de campos con el mismo nombre (como `X`), la búsqueda prioriza los campos de la clase más específica, en este caso, `C2`. Cuando `M1` solicita el valor de `X`, obtiene el valor `9` del campo de `C2`. Si se hubiera ejecutado `send(O1, M1)`, el resultado habría sido `1`, ya que `O1` solo posee los campos de `C1`.
+
+####
+
+Un tercer ejemplo demuestra la mutación del estado de un objeto. Se instancia un objeto `O1` de una clase `C1` con campos `i` y `j`, inicializados con los valores `3` y `-3`. Una primera llamada a `send(O1, get_state)` retorna una lista con el estado actual del objeto: `[3, -3]`. Posteriormente, se ejecuta `send(O1, count_up, 2)`. El método `count_up` recibe el parámetro `2` y lo utiliza para modificar el estado interno del objeto: el campo `i` se incrementa a `5` (`3 + 2`) y el campo `j` se decrementa a `-5` (`-3 - 2`). Estos cambios son efectos secundarios que alteran permanentemente el estado de `O1`.
+
+####
+
+Tras la mutación del estado del objeto `O1` por el método `count_up`, una segunda llamada a `send(O1, get_state)` refleja los cambios. Al construir el entorno de ejecución para esta nueva invocación, se accede al estado actualizado del objeto. Los campos `i` y `j` ahora contienen los valores `5` y `-5`, respectivamente. En consecuencia, el método devuelve la lista `[5, -5]`, mostrando cómo el estado del objeto ha sido modificado por la invocación anterior. La verificación de estos tres ejemplos en un intérprete confirma los resultados teóricos: `1` para el primer caso, `9` para el segundo y la concatenación de estados `[3, -3, 5, -5]` para el tercero.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=nL5i_K0OV_4
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,133 @@
+####
+**Evaluación de procedimientos**
+
+En la evaluación se deben validar los siguientes puntos:
+- El `rator` debe ser un `procVal`.
+- El número de argumentos debe ser igual al número que espera el `procVal`.
+- Los tipos de los argumentos deben ser iguales a lo que espera el procedimiento.
+
+Ejemplo:
+`let f = proc (int x) x in (f 3)`
+
+Al evaluar el procedimiento, el resultado es el tipo de retorno del `proc`.
+- `f` es `int -> int`
+- `(f 3)` es `int`
+
+####
+**Implementación de type-of-expression para aplicaciones**
+
+El siguiente código muestra cómo se procesan las expresiones de aplicación `app-exp` dentro de la función `type-of-expression`:
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    ...
+    (app-exp (rator rands)
+      (let ((trator (type-of-expression rator tenv))
+            (trands (map (lambda (x) (type-of-expression x tenv)) rands)))
+        (type-of-application trator trands rator rands exp)))
+    ...))
+```
+
+En `app-exp` se calculan los tipos del `rator` (que debe representar un procedimiento) y los tipos de los argumentos (una lista de tipos) para luego invocar a `type-of-application`.
+
+####
+**Implementación de la función type-of-application**
+
+La función `type-of-application` se encarga de validar la consistencia de tipos en una llamada a función:
+
+```racket
+(define type-of-application
+  (lambda (trator trands rator rands exp)
+    (cases type trator
+      (proc-type (args-types result-type)
+        (if (= (length args-types) (length trands))
+            (begin
+              (for-each check-equal-type! trands args-types rands)
+              result-type)
+            (eopl:error 'type-of-application
+                        "Length of the args mismatch ~s ~s"
+                        args-types trands)))
+      (else
+       (eopl:error 'type-of-expression
+                   "Rator isn't a proc-type ~s is a type ~s"
+                   rator
+                   (type-to-external-form trator))))))
+```
+
+Esta función realiza las siguientes acciones:
+- Verifica que el tamaño de los argumentos enviados sea igual al esperado por el procedimiento.
+- Verifica que cada tipo enviado coincida con el tipo esperado mediante `check-equal-type!`.
+- Si las validaciones son correctas, retorna el tipo de resultado definido en el procedimiento.
+
+####
+**Configuración de ambientes de ejecución y de tipos**
+
+Se definen los ambientes iniciales tanto para valores como para tipos:
+
+```racket
+(define env0
+  (extend-env '(a b c)
+              (list->vector '(4 5 6))
+              (empty-env)))
+
+(define init-env
+  (extend-env '(x y z f)
+              (list->vector
+               (list 1 2 3
+                     (closure '(x y)
+                              (prim-exp (add-prim)
+                                        (list (var-exp 'x) (var-exp 'y)))
+                              env0)))
+              env0))
+
+(define init-tenv
+  (extend-env '(x y z f)
+              (list->vector
+               (list int-type 
+                     int-type 
+                     int-type
+                     (proc-type (list int-type int-type int-type) int-type)))
+              (extend-env '(a b c)
+                          (list->vector (list int-type int-type int-type))
+                          (empty-env))))
+```
+
+####
+**Ejemplos de chequeo de tipos en el intérprete**
+
+Evaluación del tipo de la variable `f`:
+```racket
+> (type-of-expression
+    (cases program (parser "f")
+      (a-program (exp) exp))
+    init-tenv)
+
+#(struct:proc-type
+  (#(struct:atomic-type int)
+   #(struct:atomic-type int)
+   #(struct:atomic-type int))
+  #(struct:atomic-type int))
+```
+
+Evaluación del tipo de una aplicación del procedimiento `f`:
+```racket
+> (type-of-expression
+    (cases program (parser "(f 1 2 3)")
+      (a-program (exp) exp))
+    init-tenv)
+
+#(struct:atomic-type int)
+```
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo III
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20III/

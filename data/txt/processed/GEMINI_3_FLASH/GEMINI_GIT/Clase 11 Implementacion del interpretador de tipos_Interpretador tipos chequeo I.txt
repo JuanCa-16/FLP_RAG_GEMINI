@@ -1,0 +1,83 @@
+####
+**Expresiones de tipo en el interpretador**
+
+Para el desarrollo del interpretador con chequeo de tipos, es necesario incluir expresiones de tipo en las definiciones de procedimientos y estructuras recursivas. Se contemplan casos como los siguientes:
+
+- `proc (int x) ...`
+- `proc ((int * int -> int) x) ...`
+- `proc ((int -> (int * int -> int)) x) ...`
+- `letrec int f (int x, int y) = ....`
+- `(int * int -> int) g (int x) = ....`
+
+####
+**Modificaciones en la gramática para el chequeo de tipos**
+
+Se requiere ajustar la gramática para soportar la declaración explícita de tipos en `proc` y `letrec`, además de definir la sintaxis para las expresiones de tipo `type-exp`:
+
+```racket
+(expression
+  ("proc" "(" (separated-list type-exp identifier ",") ")" expression)
+  proc-exp)
+
+(expression
+  ("letrec" 
+    (arbno type-exp identifier "(" (separated-list type-exp identifier ",") ")" "=" expression) 
+    "in" expression)
+  letrec-exp)
+
+(type-exp
+  ("int")
+  int-exp)
+
+(type-exp
+  ("bool")
+  bool-exp)
+
+(type-exp
+  ("(" (separated-list type-exp "*") "->" type-exp ")")
+  proc-type-exp)
+```
+
+####
+**Representación interna de tipos**
+
+La representación de los tipos en el interpretador se divide en dos categorías principales:
+- `Tipo atómico`: Un tipo primitivo que no está compuesto por otros tipos.
+- `Tipo procedimiento`: Especifica los tipos de los argumentos y el tipo del resultado.
+
+```racket
+; Tipos
+(define-datatype type type?
+  (atomic-type
+    (nombre symbol?))
+  (proc-type
+    (arg-type (list-of type?))
+    (result-t type?)))
+```
+
+####
+**Instanciación de tipos básicos**
+
+Para facilitar el uso de tipos primitivos dentro del interpretador, se definen constantes para los tipos `int` y `bool` utilizando la estructura de `atomic-type`:
+
+```racket
+; int
+(define int-type
+  (atomic-type 'int))
+
+; bool
+(define bool-type
+  (atomic-type 'bool))
+```
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 11 Implementacion del interpretador de tipos_Interpretador tipos chequeo I
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2011/Interpretador%20tipos%20chequeo%20I/

@@ -1,0 +1,132 @@
+En inferencia de tipos, el interpretador realiza cálculos para estimar los tipos de los argumentos en los procedimientos, especialmente cuando no son proporcionados. Considera el siguiente ejemplo con `letrec`:
+
+```
+letrec
+? f (? x, ? y) = if >(x,0) then (f -(x,1) +(y,1)) else y
+in
+(f 10 20)
+```
+En este punto, podemos inferir que el procedimiento `f` retorna un `int` y que sus argumentos `x` e `y` también son `int`. Para esta inferencia, se introduce en el intérprete el `optional-type` (`?`), el cual es el tipo que se va a inferir.
+
+###
+Para inferir tipos, se crea una variable de tipo, la cual es de asignación única. Si se intenta asignar a esta variable un valor de un tipo diferente, se producirá un error de tipo.
+
+Un ejemplo donde `x` es inicialmente un `bool` debido a la condición `if x`:
+```
+(type-of-expression
+  (cases program
+    (scan&parse " letrec int f(? x, ? y) = if x then (f x +(y,1)) else y in f")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+
+###
+Sin embargo, si se intenta reasignar el tipo de `x` en el cuerpo del procedimiento, se generará un error de tipo. En este caso, `x` es `bool` por la regla del condicional, pero `+(x,2)` exige que `x` sea `int`, lo que causa un conflicto:
+```
+(type-of-expression
+  (cases program
+    (scan&parse " letrec int f(? x, ? y) = if x then (f +(x,2) +(y,1)) else y in f")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+El error se produce porque `x` es un `bool` en la condición, pero luego se usa como `int` en la operación de suma, lo cual es una reasignación de tipo no permitida.
+
+###
+Vamos a establecer unas reglas de inferencia, comenzando por los condicionales.
+La estructura de un condicional es la siguiente:
+```
+<expression> ::= "if" <expression> "then" <expression> "else" <expression>
+(cond-exp true-exp false-exp)
+```
+La `cond-exp` (expresión de la condición) debe ser de tipo `bool`. Además, la `true-exp` (expresión del "then") debe tener el mismo tipo que la `false-exp` (expresión del "else").
+
+###
+Las reglas para los procedimientos se definen de la siguiente manera:
+```
+<expression> ::= "proc" "(" (type-exp identifer ',')* ")" <expression>
+proc-exp (targs args body)
+```
+La regla de tipo para un procedimiento es `(t1*t2*t3*...*tn) -> t`, donde `t1` a `tn` son los tipos de los argumentos y `t` es el tipo del valor retornado. Los tipos de los argumentos dependen de los valores enviados y del cuerpo del procedimiento.
+
+Por ejemplo, al inferir el tipo de un procedimiento que suma 1 a su argumento `x`:
+```
+(type-of-expression
+  (cases program
+    (scan&parse " proc(? x) +(x,1)")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+El resultado de la inferencia mostrará que `x` y el valor retornado serán de tipo `int`, como se indica en la estructura `(struct:tvar-type 39 #( #(struct:atomic-type int)))` y `(struct:tvar-type 40 #( #(struct:atomic-type int)))`.
+
+###
+Si no podemos condicionar los procedimientos, se consideran de tipo polimórfico, es decir, no tienen un tipo establecido inicialmente.
+Considera un procedimiento de identidad:
+```
+(type-of-expression
+  (cases program
+    (scan&parse " proc(? x) x")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+En este caso, la inferencia mostrará un tipo polimórfico, donde `x` y el resultado comparten una variable de tipo sin restricciones iniciales, como `(struct:tvar-type 41 #(()))`.
+
+###
+Sin embargo, podemos condicionar el tipo de un procedimiento polimórfico a través de su uso. Si un procedimiento polimórfico se llama con un argumento de un tipo específico, su tipo se restringe.
+Por ejemplo, si `k` es un procedimiento de identidad, y se le llama con el número `10`:
+```
+(type-of-expression
+  (cases program
+    (scan&parse "let k = proc(? x) x in let f = (k 10) in k")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+La llamada `(k 10)` condiciona que tanto la entrada como la salida del procedimiento `k` deben ser `int`, transformándolo de un procedimiento polimórfico a `int -> int`.
+
+###
+Si un procedimiento ya ha sido condicionado a un tipo específico y luego se intenta usar con un tipo diferente, se producirá un error de tipo.
+Considera el siguiente ejemplo, donde `k` primero se condiciona a `int -> int` y luego se intenta usar con un `bool`:
+```
+(type-of-expression
+  (cases program
+    (scan&parse "let k = proc(? x) x in let f = (k 10) in let s = (k true) in k")
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+En este caso, la segunda llamada `(k true)` implica `bool -> bool`, lo que contradice el tipo `int -> int` establecido por la primera llamada `(k 10)`. Esto genera un error de tipo, como `check-equal-type!: Type mismatch: int doesn't match bool`.
+
+###
+Las reglas de inferencia también se aplican a las primitivas, las cuales funcionan como procedimientos:
+*   **Primitivas numéricas**: `int*int*...*int -> int` (ej. suma, resta, multiplicación).
+*   **Primitivas relacionales**: `int*int -> bool` (ej. mayor que, menor que, igual a).
+*   **Primitivas lógicas**: `bool*bool*...*bool -> bool` (ej. and, or, not).
+
+###
+La aplicación de procedimientos consiste en invocar un procedimiento, por ejemplo, `(f 1 2 3)`. El tipo de la aplicación es el tipo resultado del procedimiento. Si, por ejemplo, `tf = bool -> int`, entonces la aplicación `(f true)` debe resultar en un `int`.
+
+La estructura de una aplicación de procedimiento es:
+```
+<expression> ::= "(" expression (expression)* ")"
+app-exp (rator rands)
+```
+Para que una aplicación sea válida, se deben cumplir las siguientes condiciones:
+1.  El `rator` (operador, es decir, la función) debe ser de un tipo `proc-type` con la forma `targs -> result-type`.
+2.  El número de `targs` (argumentos esperados) debe ser igual al número de `rands` (argumentos enviados).
+3.  Los tipos de los `targs` deben ser iguales a los tipos de los `rands` correspondientes.
+
+###
+Para realizar la inferencia de tipos, seguimos estos pasos:
+1.  **Establecer las variables de tipo**: Cada expresión dentro del código tiene asociada una variable de tipo.
+2.  **Establecer los tipos de los procedimientos**: Determinar los tipos de los procedimientos declarados.
+3.  **Establecer los tipos de las aplicaciones a los procedimientos**: Resolver los tipos resultantes de las llamadas a procedimientos, aplicando las restricciones de tipo.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Interpretador inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interpretador%20inferencia/

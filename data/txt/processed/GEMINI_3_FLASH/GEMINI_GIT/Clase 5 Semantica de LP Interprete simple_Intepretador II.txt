@@ -1,0 +1,230 @@
+####
+**Especificación léxica y gramatical del intérprete**
+El intérprete proporciona un `scanner` y un `parser` para transformar el código fuente en un `Abstract Syntax Tree` (AST). La tarea principal consiste en procesar este `AST` para retornar una respuesta al programador. El sistema incluye un `REPL` (prompt) que permite introducir código y un ambiente gestionado mediante `datatypes` para manejar las ligaduras de variables.
+
+####
+**Gramática del lenguaje en formato BNF extendido**
+```scheme
+#lang eopl
+#|
+<expression> ::= <identifier>
+                var-exp(id)
+             ::= <number>
+                lit-exp(dat)
+             ::= "true"
+                true-exp()
+             ::= "false"
+                false-exp()
+             ::= <primitive> "(" <expression>* (,) ")"
+                prim-exp(prim, rands)
+
+<primitive>  ::= "+"  plus-prim()
+             ::= "-"  sub-prim()
+             ::= "*"  times-prim()
+             ::= "/"  div-prim()
+             ::= "and" and-prim()
+             ::= "or"  or-prim()
+             ::= ">"   more-prim()
+             ::= ">="  moreeq-prim()
+             ::= "<"   less-prim()
+             ::= "<="  lesseq-prim()
+|#
+```
+Esta definición en `BNF` describe la estructura jerárquica de las expresiones y primitivas que el lenguaje puede reconocer.
+
+####
+**Especificación léxica del intérprete**
+```racket
+(define lexical
+  '((comment ("%" (arbno (not #\newline))) skip)
+    (whitespace (whitespace) skip)
+    (number (digit (arbno digit)) number)
+    (number ("-" digit (arbno digit)) number)
+    (identifier (letter (arbno (or letter digit))) symbol)))
+```
+La especificación léxica define los patrones de los `tokens` mediante expresiones regulares, incluyendo comentarios (iniciados con `%`), espacios en blanco, números (positivos y negativos) e identificadores.
+
+####
+**Especificación de la gramática para el parser**
+```racket
+(define grammar
+  '((program (expression) a-program)
+    (expression (identifier) var-exp)
+    (expression (number) lit-exp)
+    (expression ("true") true-exp)
+    (expression ("false") false-exp)
+    (expression (primitive "(" (separated-list expression ",") ")") prim-exp)
+    (primitive ("+") add-prim)
+    (primitive ("-") sub-prim)
+    (primitive ("*") prod-prim)
+    (primitive ("/") div-prim)
+    (primitive ("and") and-prim)
+    (primitive ("or") or-prim)
+    (primitive ("<") less-prim)
+    (primitive ("<=") lesseq-prim)
+    (primitive (">") more-prim)
+    (primitive (">=") moreeq-prim)
+    (primitive ("==") eq-prim)
+    (primitive ("!=") neq-prim)))
+```
+Esta gramática define las producciones necesarias para que el `parser` construya el `AST`. Incluye literales, variables y operaciones primitivas con listas de argumentos separados por comas.
+
+####
+**Generación de datatypes y funciones de parsing**
+```racket
+(sllgen:make-define-datatypes lexical grammar)
+
+(define scanner
+  (lambda (program)
+    ((sllgen:make-string-scanner lexical grammar) program)))
+
+(define parser
+  (lambda (program)
+    ((sllgen:make-string-parser lexical grammar) program)))
+```
+Se utiliza la biblioteca `sllgen` para generar automáticamente los `datatypes` a partir de las especificaciones léxicas y gramaticales. Asimismo, se definen las funciones `scanner` y `parser` para procesar cadenas de texto.
+
+####
+**Implementación del ambiente (environment)**
+```racket
+(define-datatype environment environment?
+  (empty-env)
+  (extend-env
+   (lid (list-of symbol?))
+   (lval (list-of value?))
+   (old-env environment?)))
+
+(define value? (lambda (v) #t))
+
+(define apply-env
+  (lambda (env var)
+    (cases environment env
+      (empty-env ()
+        (eopl:error "Variable not found" var))
+      (extend-env (lid lval old-env)
+        (letrec
+            ((search-var
+              (lambda (lid lval)
+                (cond
+                  [(null? lid) (apply-env old-env var)]
+                  [(equal? (car lid) var) (car lval)]
+                  [else (search-var (cdr lid) (cdr lval))]))))
+          (search-var lid lval))))))
+```
+El `environment` gestiona las ligaduras de variables. `apply-env` permite buscar un símbolo recorriendo los entornos extendidos de forma recursiva hasta encontrar el valor o alcanzar el entorno vacío.
+
+####
+**Evaluación de programas y ambiente inicial**
+```racket
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (exp)
+        (eval-expression exp init-env)))))
+
+(define init-env
+  (extend-env
+   '(x y z) '(1 2 3)
+   (extend-env
+    '(a b c) '(4 5 6)
+    (empty-env))))
+```
+`eval-program` actúa como el punto de entrada del intérprete, evaluando la expresión del programa en un `init-env` predefinido que contiene constantes numéricas ligadas a identificadores.
+
+####
+**Evaluación de expresiones (eval-expression)**
+```racket
+(define eval-expression
+  (lambda (exp env)
+    (cases expression exp
+      (var-exp (id) (apply-env env id))
+      (lit-exp (datum) datum)
+      (true-exp () #t)
+      (false-exp () #f)
+      (prim-exp (prim lrands)
+        (let ((values (map (lambda (x) (eval-expression x env)) lrands)))
+          (apply-primitive prim values)))
+      (else 0))))
+```
+La función `eval-expression` utiliza `pattern matching` sobre el `AST`. Resuelve variables mediante el ambiente, retorna literales directamente y procesa las primitivas evaluando primero sus argumentos mediante un `map` recursivo.
+
+####
+**Implementación de operaciones primitivas y función operation**
+```racket
+(define operation
+  (lambda (f lst acc)
+    (cond
+      [(null? lst) acc]
+      [else (operation f (cdr lst) (f (car lst) acc))])))
+
+(define apply-primitive
+  (lambda (prim values)
+    (cases primitive prim
+      (add-prim () (operation + values 0))
+      (sub-prim () (- (car values) (operation + (cdr values) 0)))
+      (prod-prim () (operation * values 1))
+      (div-prim () (/ (car values) (operation * (cdr values) 1)))
+      (and-prim () (operation (lambda (a b) (and a b)) values #t))
+      (or-prim () (operation (lambda (a b) (or a b)) values #f))
+      (less-prim () (< (car values) (cadr values)))
+      (lesseq-prim () (<= (car values) (cadr values)))
+      (more-prim () (> (car values) (cadr values)))
+      (moreeq-prim () (>= (car values) (cadr values)))
+      (eq-prim () (= (car values) (cadr values)))
+      (neq-prim () (not (= (car values) (cadr values)))))))
+```
+La función genérica `operation` implementa una reducción acumulativa. `apply-primitive` ejecuta la lógica correspondiente para cada operador aritmético, lógico o relacional. Nótese que la resta y división se calculan operando el primer elemento contra el acumulado del resto.
+
+####
+**Ciclo de ejecución interactivo (REPL)**
+```racket
+(define interpreter
+  (sllgen:make-rep-loop "-->" eval-program
+    (sllgen:make-stream-parser lexical grammar)))
+
+(interpreter)
+```
+Se utiliza `sllgen:make-rep-loop` para iniciar un ciclo de lectura, evaluación e impresión con el prompt `"-->"`, integrando el flujo de parseo y evaluación.
+
+####
+**Análisis técnico del intérprete: Valores y Estructura**
+- **Valores denotados y expresados**: Los números se representan como números de Scheme y los booleanos como `#t` y `#f`. Los valores expresados son los resultados directos de la evaluación.
+- **Flujo de control**: `eval-program` inicia el proceso, delegando en `eval-expression`, que a su vez utiliza `apply-env` para variables y `apply-primitive` para operaciones.
+- **Alcance léxico**: El manejo de entornos mediante `extend-env` y la búsqueda recursiva en `apply-env` garantiza un comportamiento de alcance léxico.
+
+####
+**Análisis técnico del intérprete: Primitivas y Limitaciones**
+- **Recursión acumulativa**: Las primitivas utilizan la función `operation` con acumuladores iniciales específicos (`0` para suma, `1` para producto, `#t` para `and`).
+- **Limitaciones de diseño**:
+    - **Tipado**: No existe verificación de tipos; se asume que las primitivas reciben los datos correctos.
+    - **Aridad**: Las comparaciones (como `<` o `==`) están limitadas a exactamente dos argumentos.
+    - **Operaciones no estándar**: La resta se procesa como `a - (b + c + ...)` y la división como `a / (b * c * ...)`.
+- **Interactividad**: El uso de `sllgen` facilita un `REPL` funcional donde el parseo y la evaluación están acoplados.
+
+####
+**Ejemplos de ejecución y pruebas**
+```scheme
+;; Prueba de recuperación de variable del ambiente inicial
+;; > (eval-program (parser "x"))
+;; 1
+
+;; > (eval-program (parser "y"))
+;; 2
+
+;; Prueba de evaluación de expresión primitiva
+;; > (eval-program (parser "+(x,y)"))
+;; 3
+```
+Estos ejemplos demuestran el funcionamiento del flujo completo: desde la cadena de texto de entrada, pasando por la generación del `AST` con el `parser`, hasta la obtención del resultado numérico final.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 5 Semantica de LP Interprete simple_Intepretador II
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%205/Intepretador%20II/

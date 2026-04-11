@@ -1,0 +1,43 @@
+#### **Evaluación de una función recursiva con letrec**
+
+En este ejemplo evaluaremos una función diseñada para obtener el doble de un número. Dado que no se indica un ambiente inicial, asumiremos un `ambiente vacío`. La evaluación comienza con un `letrec`, el cual genera un `ambiente extendido de recursivos` (denotado como `R0`), que es diferente a un ambiente normal. Este ambiente `R0` contendrá a `doble` en la lista de `pronames`, la lista de parámetros (en este caso `x`) y el cuerpo de la función. Sobre este punto, procederemos a evaluar la expresión `(doble 3)`.
+
+#### **Trazado de la ejecución y recursión**
+
+La evaluación de `(doble 3)` genera un ambiente que extiende de `R0`, donde el parámetro `x` toma el valor de 3. El proceso sigue la siguiente lógica recursiva basada en la condición `(> x 0)`:
+
+- **Evaluación de (doble 3):** Como 3 es mayor que cero, se ejecuta la resta del resultado de la llamada recursiva y la constante -2: `(- (doble 2) -2)`.
+- **Evaluación de (doble 2):** Se extiende el ambiente con `x = 2`. Al ser mayor que cero, ejecuta `(- (doble 1) -2)`.
+- **Evaluación de (doble 1):** Se extiende el ambiente con `x = 1`. Al ser mayor que cero, ejecuta `(- (doble 0) -2)`.
+- **Evaluación de (doble 0):** Se alcanza la condición de parada de la recursión, por lo que sencillamente devuelve `0`.
+
+El código evaluado tiene la siguiente estructura:
+
+```racket
+(letrec
+  (doble (x)
+    (if (> x 0)
+        (- (doble (- x 1)) -2)
+        0))
+  (doble 3))
+```
+
+#### **Cálculo de retornos y verificación de resultados**
+
+Una vez que `(doble 0)` devuelve `0`, comenzamos a resolver las operaciones pendientes en la pila de ejecución:
+
+- Para `(doble 1)`: La operación es `(- 0 -2)`, lo que por ley de signos resulta en `2`.
+- Para `(doble 2)`: La operación es `(- 2 -2)`, lo que resulta en `4`.
+- Para `(doble 3)`: La operación es `(- 4 -2)`, lo que resulta en `6`.
+
+Efectivamente, el resultado de `(doble 3)` es `6`. Al verificar el código con otros valores, por ejemplo `(doble 30)`, el resultado es `60`. Esto confirma que la función siempre devuelve el doble del número mediante la aplicación de la lógica recursiva y el manejo de ambientes con `letrec`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 20. Procedimientos recursivos： ejemplo 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=XhQKzTxORlo
+CORTE: Corte 1
+TEMATICA: Procedimientos y procedimientos recursivos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica recursión y clausuras en lenguajes funcionales.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

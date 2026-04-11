@@ -1,0 +1,55 @@
+####
+**Análisis de tipos de los procedimientos G y F**
+
+Se analiza un ejemplo para verificar los tipos de retorno de diferentes procedimientos. El tipo de `g` es un procedimiento que recibe un entero, un segundo entero y dos booleanos, retornando un `bool` (ya que retorna `true` o `w`, y `w` debe ser booleano). 
+
+El procedimiento `f` recibe los siguientes parámetros:
+- Un procedimiento `h` que recibe un entero, un entero, un booleano y otro booleano, y retorna un `bool`.
+- Un procedimiento `p` que recibe un entero y saca un booleano.
+- Un entero `m`.
+- Un booleano `i`.
+
+Al realizar la evaluación `f(g, q, 5, i)`, se verifica la correspondencia:
+- El primer argumento `g` coincide con el tipo esperado para `h`.
+- El procedimiento `q` coincide con el tipo de `p`, pues recibe un entero y saca un booleano.
+- El valor `5` es un entero, cumpliendo con el tipo de `m`.
+- La variable `i` es un booleano.
+
+Dado que los argumentos pasados en la evaluación coinciden con los tipos definidos en la declaración, el paso de argumentos es correcto y no existe un error de tipos en esta fase.
+
+####
+**Verificación de tipos en la ejecución interna de F**
+
+Dentro del procedimiento `f`, se debe validar que las operaciones internas respeten los tipos declarados. En la expresión `if p(m)`, el resultado debe ser un `bool`; esto se cumple porque `p` es un procedimiento que retorna un booleano y recibe el entero `m`.
+
+Posteriormente, se revisa la evaluación de `h`:
+- Los argumentos `n` y `m` son de tipo `int`, lo cual es correcto.
+- La evaluación `p(n)` genera un booleano.
+- La evaluación `p(2 * n)` también genera un booleano.
+
+Como `h` corresponde al procedimiento `g`, se verifica internamente que la primitiva de comparación `mayor` reciba dos enteros y que el uso de `w` sea consistente con un booleano. Al relacionar la declaración de los procedimientos con su evaluación, se confirma que no hay errores de tipos. La salida de la expresión completa de `f` es un `bool`. Es importante distinguir que la declaración de `f` describe la estructura del procedimiento, mientras que la evaluación es el valor que este retorna.
+
+####
+**Errores comunes en el chequeo de tipos**
+
+Si existiera un error de tipos, el intérprete lo notificaría. Algunos escenarios de error incluyen:
+- **Tipos no correspondientes:** Si se intenta pasar un booleano donde se espera un tipo `entero`, el intérprete arrojará un mensaje indicando que los tipos no corresponden.
+- **Número incorrecto de argumentos:** Si un procedimiento espera una cantidad determinada de parámetros y se le envía una cantidad distinta, se generará el error `wrong number argument in expression`.
+- **Inconsistencia en expresiones condicionales:** En una estructura `if`, tanto la rama `then` como la rama `else` deben retornar el mismo tipo de dato. Si una retorna un `booleano` y la otra un `entero`, el chequeo de tipos fallará.
+
+Para realizar correctamente el `chequeo de tipos`, es necesario verificar cada variable, relacionar la declaración de los procedimientos con su evaluación y asegurar que los condicionales reciban booleanos.
+
+####
+**Transición a la inferencia de tipos**
+
+Tras estudiar el chequeo de tipos, el siguiente concepto es la `inferencia de tipos`. En este método, el intérprete tiene la capacidad de estimar y deducir los tipos de las expresiones cuando estos no se conocen explícitamente, basándose en reglas predefinidas. El objetivo es modificar el intérprete de chequeo para agregarle la funcionalidad de inferir tipos automáticamente durante el análisis del código.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 44 Chequeo de tipos Ejemplo 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=yKNOAasafJI
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

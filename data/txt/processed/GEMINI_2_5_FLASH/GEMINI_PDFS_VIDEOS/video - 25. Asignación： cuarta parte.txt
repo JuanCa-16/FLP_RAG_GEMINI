@@ -1,0 +1,30 @@
+Para trabajar con referencias y estado mutable, se modifica la función de consulta del ambiente, `apply-env`. Se introducen dos versiones: `apply-env-ref` y `apply-env`. La función `apply-env-ref` es la responsable de buscar una variable en el ambiente y devolver una referencia a su ubicación, no su valor. Por otro lado, la función `apply-env` se redefine como un simple contenedor que invoca a `apply-env-ref` y luego desreferencia el resultado para obtener el valor actual de la variable. Este diseño asegura que cada consulta construya una referencia fresca, permitiendo que los cambios de estado sean visibles durante toda la ejecución.
+
+####
+
+La implementación de `apply-env-ref` se adapta para manejar un vector de valores en lugar de una lista. La función busca una variable de forma recursiva a través de los ambientes anidados. Cuando se busca en un ambiente extendido, que ahora contiene un vector de valores, la recursión no se realiza mediante `cdr`, sino incrementando un índice de posición que recorre el vector. Cuando la variable es encontrada en la posición actual, la función no devuelve el valor, sino que construye y retorna una estructura de datos de referencia (`a-ref`), que encapsula tanto el vector como la posición específica donde se encuentra el valor. Si la variable no se encuentra en el ambiente actual, la búsqueda continúa recursivamente en el ambiente anterior.
+
+####
+
+La expresión `begin` se implementa para permitir la evaluación secuencial de una lista de expresiones. Su lógica de evaluación se gestiona de forma recursiva. Si la lista de expresiones a evaluar contiene un único elemento (es decir, el `cdr` de la lista es nulo), simplemente se evalúa esa expresión y se devuelve su resultado. Si la lista contiene múltiples expresiones, se evalúa la primera expresión (el `car` de la lista) y luego se realiza una llamada recursiva para evaluar el resto de las expresiones (el `cdr` de la lista). El valor de retorno de toda la construcción `begin` es el valor de la última expresión evaluada en la secuencia.
+
+####
+
+La expresión de asignación `set!` permite modificar el valor de una variable ya existente. Su implementación utiliza la primitiva `set-ref!`. Primero, se invoca a `apply-env-ref` con el identificador de la variable y el ambiente actual para obtener una referencia a la ubicación de la variable. A continuación, se evalúa la expresión del lado derecho de la asignación para obtener el nuevo valor. Finalmente, `set-ref!` utiliza la referencia y el nuevo valor para actualizar la ubicación de memoria correspondiente. Por convención, tras una asignación exitosa, la expresión `set!` devuelve un valor simbólico, como el número 1, para indicar que la operación se completó.
+
+####
+
+Las asignaciones realizadas con `set!` tienen un efecto persistente dentro del ámbito léxico donde la variable fue definida. Esto significa que si una variable es modificada, el cambio se refleja en todas las consultas posteriores a esa variable dentro del mismo ciclo de ejecución del intérprete. Por ejemplo, si se define una función que accede a una variable externa y luego se usa `set!` para cambiar el valor de esa variable, las futuras invocaciones de la función verán el nuevo valor, demostrando que el cambio de estado es permanente y respeta las reglas del alcance léxico.
+
+####
+
+En este lenguaje interpretado, los procedimientos son valores de primera clase, lo que implica que una variable que está ligada a un procedimiento puede ser reasignada a un valor de un tipo diferente, como un número. Utilizando `set!`, es posible modificar la referencia de una variable, que inicialmente apuntaba a una función (por ejemplo, un factorial definido con `letrec`), para que apunte a un valor numérico. Esto demuestra que las ataduras de nombres a procedimientos no son inmutables y pueden ser alteradas dinámicamente durante la ejecución, permitiendo cambiar el comportamiento del programa de forma radical.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=-qYggrtY6bQ
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

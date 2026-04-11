@@ -1,0 +1,47 @@
+####
+El proceso de análisis de un lenguaje de programación, conocido como *front-end*, se compone principalmente de dos etapas: el `Scanning` y el `Parsing`. El objetivo del `Scanning` es transformar el código fuente en unidades significativas, denominadas `lexemas` o `tokens`, siguiendo las reglas establecidas en la `especificación léxica`. Posteriormente, el `Parsing` utiliza estas unidades para construir un `árbol de sintaxis abstracta`, una estructura que facilita la ejecución del programa al ajustarse a la gramática definida para el lenguaje.
+
+####
+El `Scanning` toma el código fuente, compuesto por texto, números y espacios, y lo convierte en una lista de unidades significativas. Durante este proceso, el escáner ignora elementos que no contribuyen a la ejecución, tales como comentarios, espacios en blanco excesivos y ciertos símbolos. 
+
+Por ejemplo, dado el siguiente fragmento de código:
+
+```text
+INT A
+INT B
+INT C = B + 1
+```
+
+El escáner procesará cada componente identificando su tipo y su ubicación. Por ejemplo:
+- `INT`: es un tipo de dato (línea 1).
+- `A`: es un identificador (línea 1).
+- `INT`: es un tipo de dato (línea 2).
+- `B`: es un identificador (línea 2).
+
+Esta lista de `tokens` es la entrada necesaria para el `Parser`.
+
+####
+La `especificación léxica` define cómo el escáner identifica y categoriza cada unidad del lenguaje, estableciendo qué constituye un tipo, un `string` o un identificador. Para el lenguaje objetivo del curso, se definen las siguientes reglas:
+
+- **Espacios y saltos de línea**: Cualquier secuencia de estos caracteres se considera equivalente a un único espacio y es ignorada.
+- **Comentarios**: Comienzan con el símbolo `%` y se extienden hasta el final de la línea. El escáner debe ignorarlos por completo.
+- **Identificadores**: Secuencias de letras y números que obligatoriamente comienzan con una letra, utilizados para nombres de variables y procedimientos.
+
+Cuando el escáner detecta un `token`, retorna una estructura de datos que incluye:
+- **Clase**: El tipo de token encontrado (ej. número, `string`, identificador).
+- **Valor**: La representación del token (ej. el símbolo o número específico).
+- **Ubicación**: El número de línea donde aparece el token.
+
+####
+El `Parsing` toma la secuencia de `tokens` generada por el escáner y la organiza en un `árbol de sintaxis abstracta`. Esta estructura es estrictamente dependiente de la gramática del lenguaje. Si el código fuente no respeta la gramática definida, el `Parser` no podrá generar el árbol y reportará un error de sintaxis.
+
+Para definir estas gramáticas, utilizamos `define-datatype`. No obstante, en el curso aprovecharemos la librería `eopl` (o las herramientas integradas en `DrRacket`), la cual automatiza gran parte de este proceso, permitiendo construir el `Parser` de forma eficiente y sencilla en comparación con otros lenguajes como Java o C++.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=npoh_p9PFlw
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

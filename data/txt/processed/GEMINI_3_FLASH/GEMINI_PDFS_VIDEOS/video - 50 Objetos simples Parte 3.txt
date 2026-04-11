@@ -1,0 +1,108 @@
+#### **Ejecución y Ambiente de Métodos**
+
+El método `find-method-and-apply` busca un método y devuelve su representación. Para aplicar un método, se debe ejecutar el cuerpo del mismo en un ambiente en el cual estén ligados los valores apropiados. Este ambiente contiene:
+
+- Un primer elemento con la ligadura `self` y `super`.
+- Los parámetros formales del método.
+- El resto del ambiente, que proviene de las ligaduras para cada campo según la visibilidad del método.
+
+Por ejemplo, al ejecutar `o3.m1(7, 8)`, si el método `m1` pertenece a la clase `c2`, el ambiente resultante permite visualizar:
+- Las palabras clave `self` y `super`.
+- Los parámetros del método `u` y `v` (con valores 7 y 8).
+- Los campos de la clase `c2` (por ejemplo, `y`).
+- Los campos de la clase `c1` (por ejemplo, `x` e `y`) con sus respectivos valores.
+
+Este ambiente constituye una "vista" del objeto desde la perspectiva del método que se está ejecutando.
+
+#### **Construcción de Vistas del Objeto**
+
+Para generar la vista de un objeto se utiliza el procedimiento `build-view`, el cual recibe las partes de la clase con la que se está trabajando. Este procedimiento construye la vista de la siguiente manera:
+
+- Si encuentra el método en la clase actual, devuelve sus partes.
+- Si no lo encuentra, realiza un llamado recursivo con el resto de la lista de clases en la jerarquía de herencia.
+
+Por ejemplo, si se busca el método `m1` y este no se encuentra en `c3`, se buscará en `c2` y se devolverá la vista correspondiente a `c2`. A partir de esta vista del objeto, se genera un ambiente que consiste en un elemento para cada parte de la clase. Cada elemento liga los campos de una parte usando el vector ya construido. Para esto se utiliza una función auxiliar que extrae la información y construye un ambiente extendido (denominado frecuentemente `extend-env-refs` o ambiente extendido por referencia) para las partes involucradas (como `c2` y `c1` en el ejemplo mencionado).
+
+#### **Procedimiento apply-method**
+
+El procedimiento `apply-method` se define para gestionar la aplicación efectiva de un método sobre un objeto. Sus parámetros de entrada son:
+- `method-name`: El nombre del método a ejecutar.
+- `self`: La instancia del objeto (el receptor).
+- `args`: Los argumentos pasados al método.
+
+Dentro de su implementación:
+1. Se extraen los `ids` (parámetros formales) y el `body` (cuerpo) de la declaración del método utilizando funciones auxiliares basadas en `cases` sobre `method-declaration`.
+2. El cuerpo del método se evalúa sobre un ambiente extendido que contiene:
+   - La referencia a `super`.
+   - La referencia a `self`.
+   - Los `ids` vinculados a los `args` (argumentos del procedimiento).
+3. Este ambiente extiende la representación del objeto mismo, permitiendo que el método acceda a sus campos.
+
+#### **Ejemplo de Estructura de Ambiente en Ejecución**
+
+Al ejecutar un método `m(7, 8)` ubicado en la clase `c2`, la estructura del ambiente de evaluación se configura así:
+
+- **Nivel de Parámetros:** Contiene `u = 7` y `v = 8`.
+- **Nivel de Referencias del Objeto:** Contiene `self` (el objeto actual con su lista de partes) y `super` (la superclase de `c2`).
+- **Nivel de Campos (C2):** Contiene los campos específicos de `c2`, por ejemplo `y = 22`.
+- **Nivel de Campos (C1):** Contiene los campos heredados de `c1`, por ejemplo `x = 11` e `y = 12`.
+
+Es fundamental comprender que el cuerpo del método se evalúa sobre esta jerarquía de ambientes para garantizar que el despacho dinámico y la visibilidad de campos funcionen correctamente según la definición de la clase donde reside el método.
+
+#### **Implementación del Intérprete y Extractores**
+
+En la implementación del intérprete de objetos, se utilizan estructuras de `cases` para manejar las declaraciones de clases (`class-decl`) y métodos (`method-decl`). Estas funciones actúan como extractores para obtener la información necesaria sin procesar manualmente cada estructura de datos.
+
+Se han realizado correcciones técnicas en el intérprete, específicamente en la función `eval-expression`, donde se corrigió un error de sintaxis en la definición de un `lambda`. En cuanto a `apply-method`, se utiliza `eval-expression` junto con un ambiente extendido que transforma las listas de valores en vectores para el manejo de referencias.
+
+#### **Ejemplo: Herencia y Despacho Dinámico**
+
+Consideremos el siguiente escenario de clases:
+
+```racket
+class c1 extends object
+  field x
+  field y
+  method initialize()
+    begin
+      set x = 11
+      set y = 12
+    end
+  method m1() x
+  method m2() send self m1()
+
+class c2 extends c1
+  field y
+  method initialize()
+    begin
+      super initialize()
+      set y = 22
+    end
+  method m1() 9
+```
+
+Si instanciamos `c2` y llamamos al método `m2`, ocurre lo siguiente:
+1. `o2.m2()` se busca en `c2`. Al no estar, se busca y encuentra en `c1`.
+2. El cuerpo de `m2` ejecuta `send self m1()`.
+3. Debido al `dynamic dispatch` (despacho dinámico), `self` refiere al objeto de clase `c2`.
+4. Por lo tanto, se ejecuta el método `m1` de `c2`, que devuelve `9`, y no el de `c1`, que devolvería el valor de `x`.
+
+#### **Resultados de Evaluación de Casos de Prueba**
+
+Al probar la implementación con diversos ejemplos, se obtienen los siguientes comportamientos:
+
+- **Caso 1 (Clase simple):** Una clase con campos `x=1, y=2` y métodos que retornan sus valores. Al evaluarlos en una lista, el intérprete devuelve correctamente `(1 2)`.
+- **Caso 2 (Herencia y Self):** En el ejemplo donde una clase `c2` hereda de `c1` y redefine `m1`, el uso de `send self m1()` dentro de un método heredado retorna el valor de la versión más específica (en este caso, `9`).
+- **Caso 3 (Puntos en el plano):** En el ejemplo de coordenadas que inicialmente retorna `3, 3` y luego tras una actualización `5, 5`, el intérprete muestra los resultados como `2 -3` y `5 -5` (según los valores de entrada procesados en la clase).
+
+Con esto concluye la implementación de objetos basada en esta estructura. La siguiente etapa consistirá en evaluar la segunda implementación: objetos planos.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 50 Objetos simples Parte 3.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=nJ5ANKnZpfU
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

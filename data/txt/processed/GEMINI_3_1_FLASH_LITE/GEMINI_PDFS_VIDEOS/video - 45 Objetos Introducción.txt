@@ -1,0 +1,44 @@
+####
+**Conceptos fundamentales de la Programación Orientada a Objetos**
+
+La `programación orientada a objetos` es uno de los pilares fundamentales de la formación académica y una herramienta esencial para resolver problemas en la vida profesional. Un programa orientado a objetos se define, fundamentalmente, como un conjunto de objetos que se comunican entre sí a través de mensajes. En este paradigma, un objeto consiste en campos (o atributos) y métodos para acceder y manipular dicha información. Una operación, o `método`, se entiende como el envío del nombre del método y sus argumentos a manera de mensaje, permitiendo la interacción entre los objetos.
+
+####
+**Abstracción de objetos y el mundo real**
+
+Los objetos son abstracciones del mundo real. Por ejemplo, al observar animales como un gato o un perro, se identifican características comunes como edad, color, número de dientes y peso; estos atributos corresponden al `estado` actual del objeto. Si se comparan dos instancias, por ejemplo dos perros, estos pueden diferenciarse en sus valores de estado (por ejemplo, ocho años frente a dos años). Además de los atributos, los objetos poseen un `comportamiento` definido, como la capacidad de emitir sonidos, correr o morder, elementos que se abstraen hacia el mundo de la computación mediante la `programación orientada a objetos`.
+
+####
+**Definición de clase y diferencia con objeto**
+
+Cuando varios objetos presentan comportamientos y características similares, es posible agruparlos bajo una `clase`. Una `clase` actúa como una plantilla de la cual se derivan los objetos. La diferencia principal es que la clase define qué atributos y métodos existirán, mientras que al definir un objeto (instanciar la clase), se asignan valores específicos a dichos atributos. Por tanto, los objetos son instancias de una clase.
+
+####
+**Herencia**
+
+La `herencia` permite definir nuevas clases basadas en clases existentes que comparten características similares, añadiendo modificaciones o atributos propios. Por ejemplo, a partir de una clase `animal` (que posee atributos como color, edad y peso), se pueden derivar clases como `mamífero`, `reptil` y `ave`. Cada una de estas clases derivadas puede tener atributos específicos: un `ave` podría incluir la velocidad en el aire, mientras que un `mamífero` podría incluir el número de crías. Esta relación de extender una clase existente se denomina herencia.
+
+####
+**Polimorfismo**
+
+El `polimorfismo` es una característica donde un mismo tipo de mensaje puede ser enviado a objetos de diferentes clases, resultando en comportamientos distintos. Se manifiesta de dos formas:
+- En la `herencia`, donde se puede modificar el comportamiento de ciertos métodos según la clase (por ejemplo, una operación de suma que varía su lógica dependiendo de si trabaja con números binarios o decimales).
+- En métodos cuyo comportamiento cambia según los datos recibidos; un ejemplo es el operador `+`, que suma si recibe números o realiza una concatenación si recibe `strings`. El método es `polimórfico` porque la respuesta cambia de acuerdo con los datos enviados.
+
+####
+**Características de los lenguajes orientados a objetos**
+
+En resumen, las características principales de los lenguajes de programación orientados a objetos son:
+- `Encapsulamiento`: Los objetos encapsulan el comportamiento y el estado almacenado en campos. El objeto funciona como una estructura que protege el estado, permitiendo acceder o modificar la información exclusivamente a través de los métodos.
+- `Clases`: Agrupan objetos que difieren únicamente en su estado.
+- `Herencia`: Permite derivar nuevas clases a partir de clases existentes.
+- `Polimorfismo`: Permite que un mismo mensaje sea enviado a objetos de diferentes clases con respuestas coherentes al tipo de dato o implementación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=yCXq0NCG00o
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

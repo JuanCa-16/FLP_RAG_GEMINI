@@ -1,0 +1,387 @@
+####
+**Conceptos fundamentales de tipos en lenguajes de programación**
+
+Uno de los conceptos fundamentales de cualquier lenguaje de programación es el concepto de `tipo`. Los tipos definen las estructuras de almacenamiento disponibles para representar información; además, el tipo determina cómo interpreta el compilador el contenido de la memoria. Un `error de tipo` se produce cuando se aplica una operación a un dato con características diferentes a las esperadas.
+
+Según la forma en que los lenguajes se comportan frente a los diversos tipos, se clasifican de dos formas:
+- **Lenguajes fuertemente tipados**: requieren definiciones de los tipos y no permiten errores en los tipos. Ejemplo: Pascal.
+- **Lenguajes débilmente tipados**: tienen cierta flexibilidad para errores de tipos, aunque estos sigan existiendo. Ejemplo: Racket.
+
+####
+**El análisis de tipos**
+
+El análisis de tipos es un paso del procesamiento de un lenguaje de programación que se realiza para evitar que se presenten errores de tipos en tiempo de ejecución. Para realizar este análisis se tienen en cuenta los siguientes aspectos:
+
+1. Se define un conjunto de tipos para el lenguaje y lo que significa que "un valor expresado `v` es de tipo `t`".
+2. El analizador asigna un tipo para cada expresión en el programa. Si a una expresión `e` se le asigna un tipo `t`, entonces siempre que `e` es interpretada, su valor será de tipo `t`. Esta propiedad hace que un sistema de tipos sea adecuado (`sound`).
+3. El analizador debe inspeccionar también cada invocación de una operación en el programa, con el fin de verificar que los operandos sean del tipo adecuado. Si no se puede determinar si los argumentos son del tipo apropiado, se dice que esta invocación posiblemente genera un error de tipo.
+4. Si se detectan errores de tipo, el analizador puede tomar acciones como rehusarse a ejecutar el programa o aplicar medidas correctivas.
+
+####
+**Tipado dinámico y modelos no tipados**
+
+En el diseño del lenguaje se definen cuáles tipos habrá, si un valor puede tener más de un tipo y si los tipos pueden ser determinados en tiempo de ejecución.
+
+- **Tipado dinámico**: En algunos lenguajes, en cada ejecución, los valores incluyen una etiqueta para indicar su tipo. Racket es un lenguaje de tipado dinámico; las etiquetas son revisadas por funciones como `number?` o `string?`. Sus desventajas son que insertar y revisar las etiquetas puede adicionar tiempo en ejecución y no soporta abstracción de datos.
+- **Modelos de ejecución no tipados**: En estos lenguajes, los valores pueden representar, por ejemplo, un entero y un carácter simultáneamente. Normalmente no detectan operaciones inapropiadas en tiempo de ejecución. Si las operaciones son aplicadas con datos incorrectos, los resultados no son especificados; por ejemplo, se podría realizar la multiplicación de dos caracteres y el resultado sería lo que el hardware haga con su representación. Esto es llamado un `diseño político`.
+
+####
+**Chequeo de tipos estático**
+
+Los lenguajes tipados evitan dificultades analizando el programa antes de la ejecución para determinar cualquier llamado particular que pueda resultar en una operación no apropiada en tiempo de ejecución. Esto es llamado `chequeo de tipos estático`. Si un error es detectado, el analizador podría producir una advertencia, insertar un código de revisión en tiempo de ejecución o rechazar el programa.
+
+####
+**Estructura y gramática de las expresiones de tipos**
+
+Los tipos para el lenguaje que se está implementando incluyen tipos base para enteros, booleanos y procedimientos. El tipo de un procedimiento consiste de los tipos de sus argumentos (separados por `*`) y el tipo de su resultado. Cuando se permite explicitar los tipos en los programas, se suele hacer con `expresiones de tipos`.
+
+La estructura gramatical es la siguiente:
+- `tipo-exp` ::= `int` (`int-type-exp ()`)
+- `tipo-exp` ::= `bool` (`bool-type-exp ()`)
+- `tipo-exp` ::= `({tipo-exp} * ( * ) -> tipo-exp)` (`proc-type-exp (arg-texps result-texp)`)
+
+####
+**Definición inductiva de tipos**
+
+La propiedad "un valor expresado `v` es de tipo `t`" se define inductivamente sobre `t` de la siguiente manera:
+- Un valor expresado es de tipo `int` si y solo si es un entero.
+- Un valor expresado es de tipo `bool` si y solo si es un booleano.
+- Un valor expresado es de tipo `(t1 * ... * tn -> t)` si y solo si es un `ProcVal` que espera exactamente `n` argumentos, y cuando recibe `n` argumentos de tipos `t1, ..., tn`, este retorna un valor de tipo `t`.
+
+En este lenguaje, cada valor expresado tiene como máximo un tipo. Sin embargo, no siempre es posible determinar el tipo de un valor en tiempo de ejecución, ya que no siempre se puede determinar el tipo del valor retornado por un procedimiento.
+
+####
+**Ejemplos de tipos aplicados a valores de Racket**
+
+Se pueden usar los tipos definidos para describir valores de Racket. En los siguientes ejemplos, se describen los tipos de los valores de las expresiones:
+
+```racket
+;; Tipo de even?
+(int -> bool)
+
+;; Tipo de +
+(int * int -> int)
+
+;; Tipo de (lambda (x) (lambda (y) (+ x y)))
+(int -> (int -> int))
+
+;; Tipo de (lambda (f x) (even? (f (+ x 1))))
+((int -> int) * int -> bool)
+```
+
+####
+**Ejercicios de identificación de tipos**
+
+Identifique el tipo de dato de las siguientes expresiones del lenguaje del curso:
+1. `-(32, 26)`
+2. `proc(x) (x 26)`
+3. `proc(x) if x then 1 else 3`
+4. `proc(f, x) if (f x) then 1 else 2`
+5. `proc(x) proc(y) if y then x else 3`
+
+####
+**Definición de errores de tipo en el lenguaje diseñado**
+
+El lenguaje diseñado será fuerte y estáticamente tipado, lo que significa que ningún programa que pase el chequeo de tipos tendrá un error de tipos. Un error de tipo se define como:
+1. Un intento de aplicar un entero o un booleano a un argumento.
+2. Un intento de aplicar un procedimiento o primitiva a un número errado de argumentos.
+3. Un intento de aplicar una primitiva que espera un entero a un no-entero.
+4. Un intento de usar un no-booleano como la prueba de una expresión condicional.
+
+Errores como la división por cero no serán considerados como errores de tipo.
+
+####
+**El procedimiento type-of-expression**
+
+Se define un procedimiento `type-of-expression` que, dada una expresión `exp` y un ambiente de tipos `tenv` (que asocia cada variable con un tipo), asigna a `exp` un tipo `t`. El análisis se basa en el principio de que si se conocen los tipos de las variables, se puede deducir el tipo de la expresión.
+
+Comportamiento inicial:
+- Si la expresión es un número, el resultado es `int`.
+- Si es una expresión booleana (`true` o `false`), el resultado es `bool`.
+- Si es una variable, el resultado es el tipo especificado por `tenv`.
+
+Especificación formal:
+- `(type-of-expression n tenv) = int`
+- `(type-of-expression true tenv) = bool`
+- `(type-of-expression false tenv) = bool`
+- `(type-of-expression id tenv) = (apply-env tenv id)`
+
+####
+**Reglas de tipamiento y aplicaciones**
+
+Una regla de tipamiento es una especificación condicional. Para una aplicación de la forma `(rator rand1 ... randn)`, el tipo se infiere del operador y los operandos:
+
+**Regla de aplicación**:
+- El tipo del operador debe ser un tipo procedimiento: `(type-of-expression rator tenv) = (t1 * t2 * ... * tn -> t)`
+- Debe haber exactamente `n` operandos y el tipo del i-ésimo operando debe ser `ti`: `(type-of-expression rand_i tenv) = ti`
+- Si se cumplen las condiciones, el resultado es `t`.
+
+####
+**Regla de tipamiento para expresiones condicionales**
+
+La regla para las expresiones `if` establece:
+- `(type-of-expression test-exp tenv) = bool`
+- `(type-of-expression true-exp tenv) = t`
+- `(type-of-expression false-exp tenv) = t`
+- `(type-of-expression (if test-exp then true-exp else false-exp) tenv) = t`
+
+####
+**Tipado de procedimientos y estrategias de análisis**
+
+Para una expresión que crea un procedimiento `proc (x1, ..., xn) exp`, el procedimiento tiene tipo `(t1 * t2 * ... * tn -> t)` si:
+1. Cada `xi` está asociado con el tipo `ti`.
+2. Tiene exactamente `n` argumentos.
+3. El cuerpo `exp` produce un valor de tipo `t`.
+
+**Estrategias para encontrar tipos en proc**:
+- **Chequeo de tipos**: El programador brinda información explícita sobre los tipos de las variables.
+- **Inferencia de tipos**: El analizador deduce los tipos según cómo se usan las variables en el programa.
+
+####
+**Gramática para el lenguaje con chequeo de tipos**
+
+Para implementar el chequeo de tipos, se modifica la gramática para incluir tipos explícitos en `proc` y `letrec`:
+
+```
+<expresión> ::= proc ( {<tipo-exp> <identificador>}* (,) ) <expresión>
+                 proc-exp (arg-texps ids body)
+
+<expresión> ::= letrec {<type-exp> <identificador> ( {<type-exp> <identificador>}* (,) ) = <expresión>}* 
+                 in <expresión>
+                 letrec-exp (result-texps proc-names arg-texpss idss bodies letrec-body)
+
+<type-exp>  ::= int | bool | ( {type-exp}* ( * ) -> type-exp )
+```
+
+####
+**Ejemplos de programas con tipos explícitos**
+
+Ejemplo de recursión con `letrec` donde el tipo de `fact` es `(int -> int)`:
+```
+letrec
+  int fact (int x) =
+    if zero?(x)
+    then 1
+    else *(x, (fact sub1(x)))
+in (fact 5)
+```
+
+Ejemplo de `let` con procedimiento donde el tipo de `sum` es `(bool * int * int -> int)`:
+```
+let
+  sum = proc (bool b, int x, int y)
+          if b then +(x, y) else -(x, y)
+  m = 4
+  n = 3
+in (sum true m n)
+```
+
+####
+**Tipo abstracto de datos para tipos**
+
+Se define un ADT para representar los valores de los tipos. Un tipo es un `atomic-type` (como `int` o `bool`) o un `proc-type`.
+
+```racket
+(define-datatype type type?
+  (atomic-type
+    (name symbol?))
+  (proc-type
+    (arg-types (list-of type?))
+    (result-type type?)))
+
+(define int-type (atomic-type 'int))
+(define bool-type (atomic-type 'bool))
+```
+
+####
+**Procedimiento expand-type-expression**
+
+Este procedimiento convierte una expresión de tipo de la gramática en un valor del ADT `type`.
+
+```racket
+(define expand-type-expression
+  (lambda (texp)
+    (cases type-exp texp
+      (int-type-exp () int-type)
+      (bool-type-exp () bool-type)
+      (proc-type-exp (arg-texps result-texp)
+        (proc-type
+          (expand-type-expressions arg-texps)
+          (expand-type-expression result-texp))))))
+
+(define expand-type-expressions
+  (lambda (texps)
+    (map expand-type-expression texps)))
+```
+
+####
+**Implementación del checker: Literales y variables**
+
+El revisor (`checker`) se implementa en `type-of-expression`. Para literales y variables, la lógica es:
+
+```racket
+(define type-of-expression
+  (lambda (exp tenv)
+    (cases expression exp
+      (lit-exp (number) int-type)
+      (true-exp () bool-type)
+      (false-exp () bool-type)
+      (var-exp (id) (apply-tenv tenv id))
+      ;; ... otras cláusulas
+    )))
+```
+
+####
+**Implementación del checker: Expresiones condicionales**
+
+La cláusula para `if-exp` verifica que la condición sea booleana y que ambas ramas tengan el mismo tipo.
+
+```racket
+(cases expression exp
+  (if-exp (test-exp true-exp false-exp)
+    (let ((test-type (type-of-expression test-exp tenv))
+          (false-type (type-of-expression false-exp tenv))
+          (true-type (type-of-expression true-exp tenv)))
+      (check-equal-type! test-type bool-type test-exp)
+      (check-equal-type! true-type false-type exp)
+      true-type))
+  ;; ...
+)
+```
+
+####
+**Verificación de igualdad de tipos y visualización**
+
+El procedimiento `check-equal-type!` valida la igualdad de tipos, mientras que `type-to-external-form` facilita la lectura de los tipos convirtiéndolos a listas.
+
+```racket
+(define check-equal-type!
+  (lambda (t1 t2 exp)
+    (if (not (equal? t1 t2))
+        (eopl:error 'check-equal-type! 
+                    "Types didn't match: ~s != ~s in ~%~s"
+                    (type-to-external-form t1)
+                    (type-to-external-form t2)
+                    exp))))
+
+(define type-to-external-form
+  (lambda (ty)
+    (cases type ty
+      (atomic-type (name) name)
+      (proc-type (arg-types result-type)
+        (append
+          (arg-types-to-external-form arg-types)
+          '(->)
+          (list (type-to-external-form result-type)))))))
+```
+
+####
+**Implementación de tipos para procedimientos**
+
+El procedimiento `type-of-proc-exp` gestiona la creación de tipos para procedimientos, expandiendo los tipos de los argumentos y revisando el cuerpo en un ambiente extendido.
+
+```racket
+(define type-of-proc-exp
+  (lambda (texps ids body tenv)
+    (let ((arg-types (expand-type-expressions texps)))
+      (let ((result-type (type-of-expression body
+                           (extend-tenv ids arg-types tenv))))
+        (proc-type arg-types result-type)))))
+
+;; En type-of-expression:
+(proc-exp (texps ids body)
+  (type-of-proc-exp texps ids body tenv))
+```
+
+####
+**Implementación de tipos para aplicaciones**
+
+Para las aplicaciones, `type-of-application` verifica que el operador sea un procedimiento y que los tipos de los argumentos coincidan con lo esperado.
+
+```racket
+(define type-of-application
+  (lambda (rator-type rand-types rator rands exp)
+    (cases type rator-type
+      (proc-type (arg-types result-type)
+        (if (= (length arg-types) (length rand-types))
+            (begin
+              (for-each check-equal-type! rand-types arg-types rands)
+              result-type)
+            (eopl:error 'type-of-expression "Wrong number of arguments")))
+      (else (eopl:error 'type-of-expression "Rator not a proc type")))))
+```
+
+####
+**Tipos para aplicaciones de primitivas**
+
+Se utiliza `type-of-primitive` para asignar un tipo procedimiento a las primitivas del lenguaje antes de realizar la validación de la aplicación.
+
+```racket
+(define type-of-primitive
+  (lambda (prim)
+    (cases primitive prim
+      (add-prim () (proc-type (list int-type int-type) int-type))
+      (incr-prim () (proc-type (list int-type) int-type))
+      (zero-test-prim () (proc-type (list int-type) bool-type))
+      ;; ...
+    )))
+
+;; En type-of-expression para primapp-exp:
+(primapp-exp (prim rands)
+  (type-of-application
+    (type-of-primitive prim)
+    (types-of-expressions rands tenv)
+    prim rands exp))
+```
+
+####
+**Implementación de tipos para expresiones let**
+
+La regla para `let` implica encontrar el tipo de cada expresión de los operandos, extender el ambiente de tipos y luego evaluar el tipo del cuerpo.
+
+```racket
+(define type-of-let-exp
+  (lambda (ids rands body tenv)
+    (let ((tenv-for-body (extend-tenv ids 
+                           (types-of-expressions rands tenv) 
+                           tenv)))
+      (type-of-expression body tenv-for-body))))
+
+;; En type-of-expression:
+(let-exp (ids rands body)
+  (type-of-let-exp ids rands body tenv))
+```
+
+####
+**Implementación de tipos para expresiones letrec**
+
+Para `letrec`, el cuerpo del `letrec` y los cuerpos de los procedimientos deben revisarse en un ambiente donde todas las variables (incluyendo las funciones recursivas) tengan asignado el tipo correcto.
+
+Regla formal:
+- Cada `pi` tiene tipo `(ti1 * ti2 ... -> ti)`.
+- Los cuerpos de los procedimientos se revisan en un ambiente extendido con los argumentos y las funciones declaradas.
+
+```racket
+(define type-of-letrec-exp
+  (lambda (result-texps proc-names texpss idss bodies letrec-body tenv)
+    (let ((arg-typess (map expand-type-expressions texpss))
+          (result-types (expand-type-expressions result-texps)))
+      (let ((the-proc-types (map proc-type arg-typess result-types)))
+        (let ((tenv-for-body (extend-tenv proc-names the-proc-types tenv)))
+          (for-each
+            (lambda (ids arg-types body result-type)
+              (check-equal-type!
+                (type-of-expression body (extend-tenv ids arg-types tenv-for-body))
+                result-type body))
+            idss arg-typess bodies result-types)
+          (type-of-expression letrec-body tenv-for-body))))))
+```
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 8. Chequeo de tipos

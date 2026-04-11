@@ -1,0 +1,74 @@
+####
+
+**Concepto de tipos en lenguajes de programación**
+
+Los `tipos` definen las estructuras de almacenamiento disponibles para representar la información en un lenguaje de programación. El uso de tipos permite administrar adecuadamente la memoria, ya que el sistema asigna una cantidad específica de bits para representar cada valor. Por ejemplo:
+- Los `enteros` (`int`) suelen requerir 32 bits.
+- Los valores de precisión doble (`double`) requieren 64 bits.
+- Los valores de punto flotante (`float`) requieren 32 bits.
+
+Estos definen cómo el compilador debe interpretar el almacenamiento y la manipulación de la información en memoria. Un `error de tipo` se produce cuando se aplica una operación a un dato con características diferentes a las esperadas, como intentar multiplicar una cadena de texto (`string`) con un número o realizar operaciones aritméticas incompatibles.
+
+####
+
+**Clasificación de los lenguajes según su tipado**
+
+Los lenguajes de programación se clasifican generalmente en dos categorías:
+
+- **Lenguajes fuertemente tipados**: Requieren definiciones explícitas de tipos y no permiten errores de tipado, deteniendo la ejecución del programa si se detecta alguno. Ejemplos: `Pascal`, `C++`, `Java`.
+- **Lenguajes débilmente tipados**: Ofrecen mayor flexibilidad y, ante errores de tipo menores, pueden aplicar medidas correctivas o conversiones implícitas en lugar de generar un error. Por ejemplo, en `Racket`, si se intenta sumar dos cadenas de texto, el lenguaje podría interpretarlo como una operación de concatenación.
+
+####
+
+**Análisis de tipos**
+
+El `análisis de tipos` es una etapa fundamental en el procesamiento de un lenguaje de programación que ocurre tras el análisis sintáctico. Su objetivo principal es evitar errores en tiempo de ejecución. 
+
+En este proceso, cada valor expresado `v` tiene un tipo asociado `t`. El analizador asigna un tipo a cada expresión del programa, asegurando que, al ser interpretada, su valor corresponda siempre al tipo `t`. Esta propiedad otorga `sonido` (consistencia) al sistema de tipos. El analizador inspecciona cada invocación de operación; si los argumentos no coinciden con los tipos esperados, el lenguaje puede:
+- Rechazar la ejecución del programa (en lenguajes fuertemente tipados).
+- Aplicar medidas correctivas, como la coerción de tipos (en lenguajes débilmente tipados).
+
+####
+
+**Tipado dinámico**
+
+En los lenguajes con `tipado dinámico`, los valores incluyen una etiqueta interna que indica su tipo durante la ejecución. Esto permite que una misma variable pueda almacenar datos de diferentes tipos a lo largo del ciclo de vida del programa.
+
+Un ejemplo de `tipado dinámico` es `Python`:
+
+```python
+a = 3
+print(type(a)) # Resultado: <class 'int'>
+
+a = "hola"
+print(type(a)) # Resultado: <class 'str'>
+
+a = [1, 2, 3]
+print(type(a)) # Resultado: <class 'list'>
+```
+
+En este caso, la variable `a` cambia su tipo dinámicamente, lo que implica una reasignación del contenedor en memoria. `Racket` también es un lenguaje de `tipado dinámico`, donde los tipos se definen directamente en el código de ejecución y no requieren una declaración previa.
+
+####
+
+**Lenguajes de ejecución no tipados**
+
+Los lenguajes de ejecución `no tipados` generalmente no detectan operaciones inapropiadas, permitiendo realizar cualquier operación sobre la representación binaria de los datos. El resultado de estas operaciones dependerá exclusivamente de la interpretación que haga el hardware de los bits involucrados. Un ejemplo clásico de este comportamiento es el lenguaje `ensamblador`, donde es posible realizar operaciones aritméticas entre diferentes tipos de datos, siendo el resultado el comportamiento físico del procesador. Este enfoque se conoce como `diseño polimórfico` a nivel de hardware.
+
+####
+
+**Chequeo de tipos estáticos**
+
+Los lenguajes que implementan `chequeo de tipos estáticos` analizan el programa antes de su ejecución para evitar inconsistencias. Este proceso es común en lenguajes como `Java` o `C++`. Si el analizador detecta un error de tipo, puede:
+- Emitir una advertencia (`warning`).
+- Insertar código de revisión.
+- Rechazar la compilación del programa, lo cual es la práctica estándar en lenguajes fuertemente tipados para garantizar la integridad del software antes de su puesta en marcha.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=m_Th0xGC8oo
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

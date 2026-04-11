@@ -1,0 +1,19 @@
+La regla de creación de procedimientos establece que cada uno de sus argumentos debe tener un tipo asociado explícitamente. El tipo de retorno del procedimiento no se declara, sino que se infiere calculando el tipo de la expresión que constituye su cuerpo. Para automatizar este proceso, se utiliza una función auxiliar, `type_of_proc_expression`. Esta función recibe una expresión de procedimiento, extrae los tipos de los argumentos para formar una lista de tipos (`arg_types`) y luego calcula el tipo del cuerpo (`result_type`) dentro de un ambiente de tipos extendido. Dicho ambiente se enriquece temporalmente con los identificadores de los argumentos y sus respectivos tipos. Finalmente, la función construye y devuelve un tipo de procedimiento (`proc_type`) que encapsula tanto la lista de tipos de los argumentos como el tipo de retorno inferido.
+
+####
+Para verificar el tipo de una aplicación de procedimiento (`app_expression`), el sistema primero determina el tipo del operador. Luego, invoca una función auxiliar, `type_application`, que aplica la regla de tipado correspondiente. Esta función realiza una serie de validaciones secuenciales: primero, confirma que el tipo del operador sea efectivamente un `proc_type`; segundo, comprueba que el número de argumentos proporcionados en la llamada coincida con el número de argumentos esperados por el procedimiento; y tercero, itera sobre los argumentos para verificar que el tipo de cada operando coincide con el tipo del parámetro correspondiente en la firma del procedimiento. Si todas las validaciones son exitosas, el tipo de la expresión de aplicación es el tipo de retorno especificado en el `proc_type` del procedimiento. Si alguna comprobación falla, se genera un error de tipado.
+
+####
+Las operaciones primitivas, como las aritméticas (`+`, `*`) o las de comparación (`>`), son tratadas como procedimientos para mantener la consistencia en el sistema de tipos. Se implementa una función, `type_of_primitive`, que recibe una primitiva y genera un `proc_type` que describe su signatura de tipos. Por ejemplo, para una primitiva de comparación que opera sobre dos números y devuelve un valor de verdad, esta función construiría un `proc_type` que define dos argumentos de tipo entero (`int_type`) y un tipo de retorno booleano (`bool_type`). Este enfoque permite que la lógica de aplicación de procedimientos (`type_application`) se utilice también para validar el uso de operaciones primitivas.
+
+####
+Para gestionar primitivas numéricas que aceptan un número variable de argumentos (aridad variable), se implementa una función recursiva especializada. Esta función construye dinámicamente la lista de tipos de argumentos para el `proc_type` de la primitiva, basándose en la cantidad de operandos proporcionados. Se asume que todos los argumentos de estas primitivas numéricas deben ser de tipo entero (`int_type`). De este modo, una operación con `n` operandos resultará en un `proc_type` que espera una lista de `n` tipos `int_type` y devuelve un resultado también de tipo `int_type`. Por otro lado, las primitivas unarias, como el incremento, se definen con un `proc_type` estático que espera un único argumento de tipo entero y devuelve un resultado del mismo tipo.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=tTJVA-uCnWw
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

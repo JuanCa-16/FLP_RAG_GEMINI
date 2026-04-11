@@ -1,0 +1,45 @@
+####
+**Evaluación de expresiones con ambientes**
+
+Para evaluar una expresión en un lenguaje con `ambiente` inicial, se parte de un `ambiente` vacío que se extiende según las definiciones de variables. En este ejemplo, el `ambiente` inicial (denominado `ambiente cero`) contiene los símbolos y valores asignados: `x` con valor 4, `y` con valor 2 y `z` con valor 5. El objetivo es evaluar una expresión donde se define un procedimiento y se invoca posteriormente.
+
+####
+**Representación de procedimientos mediante `closure`**
+
+Al definir un procedimiento, este no crea un `ambiente` nuevo en ese instante, sino que genera una `closure`. Una `closure` es una estructura que contiene:
+- Los parámetros del procedimiento (en este caso, `x`).
+- El cuerpo de la expresión (el código a ejecutar).
+- El `ambiente` donde fue creada la `closure` (en este caso, el `ambiente cero`).
+
+La `closure` captura el entorno léxico para permitir que el procedimiento acceda a las variables definidas fuera de su alcance cuando sea invocado.
+
+####
+**Invocación de procedimientos y extensión de ambientes**
+
+Cada vez que se invoca un procedimiento, se crea un `ambiente` nuevo. Este `ambiente` debe extender al `ambiente` que tiene almacenado la `closure`. En el ejemplo, al evaluar `f(z)` donde `z` tiene el valor 5, se crea un nuevo `ambiente` donde `x` toma el valor de `z`. Este `ambiente` extiende al `ambiente` donde se definió originalmente la `closure`.
+
+La evaluación del cuerpo del procedimiento, `x * x`, utiliza el valor de `x` contenido en este nuevo `ambiente`. Dado que `z` es 5, el resultado de la expresión es 25.
+
+####
+**Ejemplo de código para la evaluación**
+
+Para realizar la evaluación siguiendo la lógica de los `ambientes`, se estructura el código de la siguiente manera:
+
+```racket
+;; Definición del ambiente inicial
+;; x = 4, y = 2, z = 5
+
+(let ((f (lambda (x) (* x x))))
+  (f z))
+```
+
+Al ejecutar este código, se debe prestar atención a la asignación de variables en el `ambiente`. Si el valor de `z` es 5, al invocar `f(z)`, el parámetro `x` se vincula a 5 dentro del nuevo `ambiente` creado por la llamada, resultando en `5 * 5 = 25`. Es fundamental asegurar que la correspondencia entre los símbolos y los valores en el `ambiente` sea consistente durante todo el proceso de evaluación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=91lReaV1wcU
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

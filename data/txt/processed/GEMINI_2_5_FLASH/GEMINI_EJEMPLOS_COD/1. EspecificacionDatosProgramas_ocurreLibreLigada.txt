@@ -1,0 +1,41 @@
+######## RESUMEN ########
+Verifica si una variable se encuentra libre o ligada en una expresión simbólica Racket dada.
+
+######## CONCEPTOS ########
+variables libres, variables ligadas, expresiones lambda, scope léxico, S-expresiones
+
+######## EXPLICACION ########
+La función `occurs-free?` determina si una variable específica aparece de forma libre en una expresión simbólica Racket.
+Permite identificar variables cuyo valor no está definido localmente por una `lambda`, crucial para analizar el alcance de las variables. Este mecanismo es fundamental al implementar evaluadores o transformadores de código, o al depurar errores de definición en programas funcionales.
+La implementación aplica recursión para recorrer la estructura anidada de las S-expresiones y utiliza un condicional para diferenciar entre símbolos, expresiones `lambda` (donde la variable puede ligarse) y aplicaciones de funciones. Distingue entre variables ligadas por el parámetro de una `lambda` y aquellas que no lo están.
+Fundamenta la comprensión de la semántica de evaluación y el diseño de lenguajes de programación con closures.
+
+######## METADATA ########
+NOMBRE_DOCUMENTO: 1. EspecificacionDatosProgramas/ocurreLibreLigada.scm
+FUENTE: CODIGO
+lenguaje: racket
+
+######## CODIGO ########
+#lang racket
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp) (eqv? var exp))
+      ((eqv? (car exp) 'lambda) 
+       (and (not (eqv? (caadr exp) var))
+            (occurs-free? var (caddr exp))))
+      (else (or (occurs-free? var  (car exp))
+                (occurs-free? var (cadr exp)))))))
+
+
+(define exp1 '(lambda (x y) ((lambda (a) (x (a y)))x)))
+(occurs-free? 'x exp1)
+
+(define exp2 '((lambda (x) x) y))
+(occurs-free? 'y exp2)
+
+(define exp4 '(lambda (y) ((lambda (x) x) y)))
+(occurs-free? 'y exp4)
+
+(define exp5 '(lambda (x y z) (a b)))
+(occurs-free? 'x exp5)

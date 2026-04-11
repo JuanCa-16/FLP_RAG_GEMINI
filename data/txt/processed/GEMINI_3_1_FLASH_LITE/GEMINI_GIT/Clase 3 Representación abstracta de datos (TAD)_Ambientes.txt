@@ -1,0 +1,143 @@
+####
+**Definición formal de ambientes**
+
+En `Essentials of Programming Languages` (EOPL), un ambiente (`ρ`) se define como una función parcial que mapea identificadores a sus valores asociados. Formalmente:
+
+\[ \rho: \text{Identifier} \rightharpoonup \text{Value} \]
+
+La gramática abstracta para los ambientes se define mediante:
+
+```text
+<environment> ::= (empty-env)
+                ::= (extend-env <list<identifier>> <list<value>> <environment>)
+```
+
+Los ambientes poseen propiedades fundamentales:
+- `Alcance léxico`: Las variables se resuelven en el entorno donde fueron definidas.
+- `Shadowing`: Las definiciones más recientes ocultan las anteriores.
+- `Extensibilidad`: Los ambientes pueden extenderse con nuevos `bindings`.
+
+####
+**Implementación de ambientes basada en listas**
+
+Esta implementación utiliza estructuras de datos explícitas (listas) para representar los ambientes en `Racket` (`#lang eopl`).
+
+**Constructores y observadores**
+```racket
+;; === CONSTRUCTORES ===
+(define empty-env
+  (lambda ()
+    (list 'empty-env)))
+
+(define extend-env
+  (lambda (lid lval old-env)
+    (list 'extend-env lid lval old-env)))
+
+;; === OBSERVADORES ===
+(define empty-env?
+  (lambda (env)
+    (equal? (car env) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (equal? (car env) 'extend-env)))
+
+(define extend-env->lid (lambda (env) (cadr env)))
+(define extend-env->lval (lambda (env) (caddr env)))
+(define extend-env->old-env (lambda (env) (cadddr env)))
+```
+
+####
+**Operación fundamental: apply-env**
+
+La operación `apply-env` permite recuperar el valor asociado a una variable mediante una búsqueda recursiva en el ambiente.
+
+```racket
+(define apply-env
+  (lambda (env var)
+    (cond
+      [(empty-env? env)
+       (eopl:error "Variable no encontrada: " var)]
+      [(extend-env? env)
+       (letrec
+         ([buscar-var
+            (lambda (lid lval old-env)
+              (cond
+                [(null? lid) (apply-env old-env var)]
+                [(equal? (car lid) var) (car lval)]
+                [else (buscar-var (cdr lid) (cdr lval) old-env)]))])
+         (buscar-var (extend-env->lid env)
+                     (extend-env->lval env)
+                     (extend-env->old-env env)))]
+      [else (eopl:error "Ambiente no válido")])))
+```
+
+**Ejemplo de creación de ambiente**
+```racket
+(define env1
+  (extend-env '(a b c) '(1 2 3)
+    (extend-env '(x y z) '(4 5 6)
+      (empty-env))))
+```
+
+####
+**Implementación basada en procedimientos**
+
+Es posible representar ambientes utilizando `closures`, lo cual permite ocultar la estructura de datos interna tras una interfaz procedimental.
+
+```racket
+#lang eopl
+
+;; === CONSTRUCTORES (Usando closures) ===
+(define empty-env
+  (lambda ()
+    (lambda (s)
+      (cond [( = s 0) 'empty-env]
+            [else (eopl:error "Error en empty-env")]))))
+
+(define extend-env
+  (lambda (lid lval old-env)
+    (lambda (s)
+      (cond [( = s 0) 'extend-env]
+            [( = s 1) lid]
+            [( = s 2) lval]
+            [( = s 3) old-env]
+            [else (eopl:error "Error en extend-env")]))))
+
+;; === OBSERVADORES ===
+(define empty-env? (lambda (env) (equal? (env 0) 'empty-env)))
+(define extend-env? (lambda (env) (equal? (env 0) 'extend-env)))
+(define extend-env->lid (lambda (env) (env 1)))
+(define extend-env->lval (lambda (env) (env 2)))
+(define extend-env->old-env (lambda (env) (env 3)))
+```
+
+####
+**Análisis de eficiencia y diseño**
+
+La operación `apply-env` presenta las siguientes características:
+- **Complejidad**: `O(n)`, donde `n` es el número de `bindings`.
+- **Orden de búsqueda**: Se realiza de izquierda a derecha en las listas.
+- **Shadowing**: El primer `matching` encontrado prevalece sobre definiciones previas en el mismo nivel o niveles superiores.
+
+**Ventajas de la abstracción:**
+- **Independencia de implementación**: El código cliente ignora si la estructura interna son listas o procedimientos.
+- **Encapsulación**: Los detalles de representación permanecen ocultos.
+- **Extensibilidad**: Facilita la incorporación de nuevos tipos de ambientes.
+
+Para el caso del ambiente `env1` definido previamente, el comportamiento es:
+- `(apply-env env1 'a)` retorna `1`.
+- `(apply-env env1 'x)` retorna `4`.
+- `(apply-env env1 'w)` genera un error por variable no definida.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 3 Representación abstracta de datos (TAD)_Ambientes
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%203/Ambientes/

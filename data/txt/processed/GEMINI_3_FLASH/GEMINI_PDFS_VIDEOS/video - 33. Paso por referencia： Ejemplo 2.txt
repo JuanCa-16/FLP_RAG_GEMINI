@@ -1,0 +1,86 @@
+####
+**Ambiente inicial y definición de variables**
+
+Vamos a analizar un ejemplo elaborado donde el resultado final es 10. Como no se indica el ambiente inicial, arrancaremos con el ambiente vacío `empty-env`. Posteriormente, se crea un ambiente que denominaremos `environment 0` con las variables `a`, `b`, `c`, `p` y `q`. En este nivel, todos son `direct targets`.
+
+El vector de `direct targets` se define de la siguiente manera:
+- `a` es 1
+- `b` es 2
+- `c` es 3
+- `p` es una `clausura`
+- `q` es una `clausura`
+
+Es fundamental indicar si los elementos son `direct target` o `indirect target`. En este caso, las variables iniciales y las clausuras se almacenan como `direct targets` en este ambiente.
+
+####
+**Ejecución del bloque begin y llamada al procedimiento p**
+
+Se procede a ejecutar el siguiente bloque de código:
+
+```racket
+(begin 
+  (set! a (p c b a q)) 
+  (+ a c))
+```
+
+Al llamar al procedimiento `p` con los argumentos `c`, `b`, `a` y `q`, se debe tener cuidado con el tipo de paso de parámetros. Dado que se están pasando variables y no valores constantes, el nuevo ambiente para `p` utilizará `indirect targets`. El procedimiento `p` está definido para recibir los parámetros `x`, `y`, `z` y `f`.
+
+La relación de los `indirect targets` en el ambiente de `p` es:
+- `x` es un `indirect target` hacia `c`
+- `y` es un `indirect target` hacia `b`
+- `z` es un `indirect target` hacia `a`
+- `f` es un `indirect target` hacia `q`
+
+####
+**Lógica interna del procedimiento p y modificación de variables**
+
+Dentro del procedimiento `p` se ejecuta la instrucción `(set! x (- y x))`. Para resolver esto, evaluamos los valores a los que apuntan los `indirect targets`: `y` se refiere al valor de `b` (2) y `x` se refiere al valor de `c` (3). La operación `2 - 3` resulta en -1.
+
+Debido a que `x` es un `indirect target` vinculado a `c`, el valor de `c` en el ambiente original se actualiza a -1.
+
+Posteriormente, se invoca a `f` (que es el procedimiento `q`) pasando como argumentos `z` (que apunta a `a`) y `x` ( que apunta a `c`). Esta llamada genera un nuevo ambiente de ejecución.
+
+####
+**Ejecución del procedimiento q y actualización de referencias**
+
+El procedimiento `q` (invocado como `f`) recibe los parámetros `m` y `n`. Al ser una llamada con variables, `m` y `n` son `indirect targets` que apuntan a `a` y `c` respectivamente.
+
+Dentro de `q` se realizan las siguientes operaciones:
+1. `(set! n (* m 5))`: El valor de `m` es el valor de `a` (1), por lo que `1 * 5 = 5`. Como `n` es un `indirect target` hacia `c`, el valor de `c` se actualiza de -1 a 5.
+2. `(set! m (+ m 6))`: Se suma 6 al valor de `m` (que es `a`). Como `a` vale 1, `1 + 6 = 7`. El valor de `a` en el ambiente original cambia a 7.
+3. `(+ m n)`: Se suma el valor actual de `m` (7) y `n` (5), lo que retorna 12.
+
+####
+**Retorno del procedimiento p y evaluación del resultado final**
+
+Tras finalizar la ejecución de `q`, regresamos al procedimiento `p`. El valor de retorno de `p` es `x`. Es importante recordar que `x` está atado mediante un `indirect target` a la variable `c`. Como el valor de `c` fue modificado a 5 durante la ejecución anterior, `p` retorna 5.
+
+De regreso en el bloque `begin` principal:
+1. Se ejecuta `(set! a (p c b a q))`, por lo que la variable `a` toma el valor retornado, que es 5.
+2. Finalmente, se evalúa la expresión `(+ a c)`. En este punto, tanto `a` como `c` valen 5. La suma `5 + 5` da como resultado 10.
+
+Podemos verificar los valores finales en el intérprete:
+- El valor de `a` es 5.
+- El valor de `c` es 5.
+- El valor de `b` es 12.
+
+####
+**Conclusiones sobre el paso por referencia y targets**
+
+A través de este ejercicio hemos comprobado cómo funciona el `paso por referencia` y cómo se gestionan las relaciones entre variables mediante el uso de `indirect targets`.
+
+En resumen:
+- Se utilizan `indirect targets` cuando se realiza un paso de parámetros por referencia (pasando variables a un procedimiento).
+- Se utilizan `direct targets` para el `paso por valor`, que ocurre cuando se invoca un procedimiento con un valor definido o constante.
+
+Este flujo pedagógico concluye la explicación de ambientes y referencias. Los siguientes temas a tratar en el curso serán `tipos` y `objetos`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 33. Paso por referencia： Ejemplo 2.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=ShlhAy8owxI
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,78 @@
+####
+
+Para extender el interpretador y soportar procedimientos, se definen dos estructuras fundamentales en la gramática: la creación del procedimiento y su aplicación o llamada. Los procedimientos son esenciales en los lenguajes de programación para implementar tareas reutilizables.
+
+**Especificación gramatical**
+
+La sintaxis para la creación de procedimientos (`proc`) y su aplicación se define de la siguiente manera:
+
+- **Creación:** Se utiliza la palabra reservada `proc`, seguida de una lista de identificadores separados por comas entre paréntesis, y finalmente el cuerpo del procedimiento (una `expresión`).
+- **Aplicación:** Se denota mediante la llamada a un procedimiento (que debe ser una `expresión` evaluada) seguida de sus argumentos (`rands`), que corresponden a una lista de expresiones.
+
+La gramática extendida para las expresiones es:
+
+```racket
+; Creación de procedimientos
+proc-expresión: proc (identificador*) expresión
+
+; Aplicación de procedimientos
+app-expresión: (expresión expresión*)
+```
+
+En la aplicación, la primera expresión debe resultar obligatoriamente en un procedimiento.
+
+####
+
+Al trabajar con procedimientos, surge la necesidad de gestionar el alcance de las variables. Cuando un procedimiento es creado, las variables declaradas en su lista de parámetros existen únicamente dentro del cuerpo del procedimiento. Al invocarlo, estas variables deben ser enlazadas a los valores proporcionados como argumentos.
+
+Considere el siguiente ejemplo de evaluación:
+```racket
+f = proc (y, z) { + y, - z, 5 }
+f(2, 28)
+```
+Al evaluar `f(2, 28)`, se asigna `y = 2` y `z = 28`. La expresión `+ y, - z, 5` se resuelve como `2 + (28 - 5)`, resultando en `25`. La evaluación sigue un orden donde se resuelven primero los argumentos y luego se aplica el cuerpo del procedimiento.
+
+####
+
+Un desafío técnico surge cuando un procedimiento utiliza variables definidas fuera de su propio cuerpo (variables libres). En el paradigma funcional, el resultado de una función debe depender únicamente de sus argumentos y del contexto en el que fue definida.
+
+Considere este caso:
+```racket
+let x = 5
+let f = proc (y, z) { + y, - z, x }
+let x = 7
+f(2, 28)
+```
+Para que el lenguaje sea consistente, el valor de `x` dentro de `f` debe ser el que tenía al momento de la creación del procedimiento (es decir, `5`) y no el valor actual al momento de la llamada (`7`). Para garantizar esto, introducimos el concepto de `clausura` (o `closure`).
+
+####
+
+La `clausura` es una estructura de datos que representa el procedimiento y almacena la información necesaria para su ejecución correcta, independientemente de dónde sea llamado. Una `clausura` contiene tres elementos esenciales:
+
+1. La lista de identificadores (parámetros del procedimiento).
+2. El cuerpo del procedimiento (la `expresión` a evaluar).
+3. El ambiente (`environment`) en el que el procedimiento fue creado.
+
+Al guardar el ambiente de creación, el interpretador puede recuperar el valor de las variables libres correctamente al momento de ejecutar el procedimiento. En nuestra implementación, definiremos la clausura como un `data type`:
+
+```racket
+(define-datatype procval procval?
+  (closure (ids (list-of symbol?))
+           (body expression?)
+           (env environment?)))
+```
+
+####
+
+Durante el proceso de evaluación (`eval-expression`), al encontrar una `proc-expresión`, el interpretador no ejecuta el cuerpo, sino que retorna una `clausura` que encapsula los parámetros, el cuerpo y el ambiente actual.
+
+Por otro lado, la `app-expresión` (aplicación) utiliza la `clausura` previamente almacenada. Al invocar el procedimiento, el interpretador extiende el ambiente guardado en la `clausura` con las nuevas vinculaciones de los argumentos, y bajo ese nuevo ambiente, evalúa el cuerpo del procedimiento. Este mecanismo asegura que las variables externas sean resueltas según el `scope léxico` original.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=nbjdT8UYKAc
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

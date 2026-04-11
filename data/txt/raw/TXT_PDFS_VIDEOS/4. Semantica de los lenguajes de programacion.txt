@@ -1,0 +1,1103 @@
+El texto de un programa es escrito en un lenguaje llamado el
+lenguaje fuente o el lenguaje deﬁnido .
+Los programas son pasados a través de un front end que los
+analiza y construye el árbol de sintaxis abstracta.
+Luego, el árbol de sintaxis abstracta es pasado a un
+interpretador, que examina su estructura y desarrolla algunas
+acciones que dependen de esa estructura.
+
+La siguiente ﬁgura ilustra el proceso llevado a cabo cuando se
+utiliza un interpretador:
+
+<CODIGO_BLOCK_START>
+codigo fuente
+respuesta
+árbol de sintaxis
+´
+Interpretador
+Front End.
+<CODIGO_BLOCK_END>
+
+Un interpretador es un programa que toma un árbol de
+sintaxis abstracta y lo convierte en una respuesta.
+Un interpretador está escrito en algún lenguaje. Este lenguaje
+es llamado el lenguaje de implementación o el lenguaje de
+deﬁnición .
+
+Los programas interpretados suelen ser más lentos que los
+programas compilados debido a que es necesario traducir el
+programa mientras se ejecuta.
+Los lenguajes de programación interpretados son más ﬂexibles
+y favorecen la modularidad. Por esta razón se logra mayor
+velocidad de desarrollo con su uso.
+
+Otra alternativa para el análisis y ejecución de programas es el
+uso de un compilador.
+Un compilador traduce el árbol de sintaxis abstracta en un
+programa en otro lenguaje para ser ejecutado. Este lenguaje
+es llamado el lenguaje destino .
+El lenguaje generado puede ser ejecutado por un interpretador
+o puede ser traducido en un lenguaje de bajo nivel para su
+ejecución.
+
+La siguiente ﬁgura ilustra el proceso llevado a cabo cuando se
+utiliza un compilador:
+Compilador
+programa
+traductor
+
+<CODIGO_BLOCK_START>
+codigo fuente
+árbol de sintaxis
+´
+Front End
+respuesta
+Interpretador
+Analizador
+Traductor.
+<CODIGO_BLOCK_END>
+
+Por lo general, el lenguaje destino es un lenguaje máquina
+interpretado por un hardware.
+Otras implementaciones de lenguaje usan un lenguaje destino
+de propósito especial que es más simple que el original y para
+el cual es relativamente fácil escribir un interpretador (código
+intermedio u objeto).
+Esto permite que el programa pueda ser compilado una vez y
+ejecutado en diferentes plataformas.
+Este tipo de lenguajes destino son llamados lenguajes a
+bytecode y sus interpretadores máquinas virtuales .
+
+Un compilador está dividido en dos partes: un analizador y un
+traductor .
+El analizador tiene como ﬁnalidad deducir información útil
+sobre el programa.
+El traductor lleva a cabo la traducción del programa a partir
+de la información del analizador.
+
+Sin importar, la estrategia que se utilice, es neceario deﬁnir un
+front end que convierta programas en árboles de sintaxis
+abstracta.
+Dado que los programas son solo cadenas de caracteres, el
+front end debe agrupar estos caracteres en unidades
+signiﬁcativas.
+La agrupación de estas unidades es llevada a cabo en dos
+etapas: scanning y parsing .
+
+Scanning es el nombre que se le da al proceso de dividir la
+secuencia de caracteres en palabras, números, puntuación,
+comentarios, etc.
+Estas unidades son conocidas como unidades léxicas , lexemas
+o tokens .
+La especiﬁcación léxica de un lenguaje se reﬁere a la forma en
+la cual un programa debe ser dividido en unidades léxicas.
+El scanner recibe una secuencia de caracteres y produce una
+secuencia de unidades léxicas (tokens).
+
+La especiﬁcación léxica es una parte de la especiﬁcación del
+lenguaje que provee información como:
+Cualquier secuencia de espacios y nueva línea es equivalente a
+un solo espacio.
+Un comentario comienza con % y continúa hasta el ﬁnal de la
+línea.
+Un identiﬁcador es una secuencia de letras y números, que
+comienza con una letra.
+
+La siguiente ﬁgura muestra un segmento de código y la forma
+como el scanner lo analiza.
+)
+begin
+baz
+´
+distingue identificadores de palabras clave y puntuacion
+bar
+foo
+ident
+ident
+ident
+% este es un comentario
+espacio ignorado
+comentario ignorado
+"begin"
+")".
+
+Cuando el scanner encuentra un token, retorna una estructura de
+datos que consiste de al menos los siguientes datos:
+Una clase , la cual describe qué clase de token se encontró.
+
+<CODIGO_BLOCK_START>
+Un dato que describe el token particular. Por ejemplo, para
+identiﬁcadores, el dato es un símbolo de Scheme contruído de
+la cadena en el token; para números, el dato es el número
+descrito por el literal; y para cadenas, el dato es la cadena.
+Un dato que describe la ubicación del token en la entrada
+(que sirve para ayudar al programador a identiﬁcar dónde se
+encuentran los errores de sintaxis).
+El conjunto de clases y la descripción de los tokens hacen parte de
+la especiﬁcación léxica.
+<CODIGO_BLOCK_END>
+
+Parsing es el nombre que se le da al proceso de organizar una
+secuencia de tokens en estructuras sintácticas jerárquicas
+como expresiones, estamentos y bloques.
+La estructura sintáctica o gramátical de un lenguaje se reﬁere
+a la forma en la cual se deben organizar las unidades léxicas.
+El parser recibe una secuencia de tokens del scanner y produce
+un árbol de sintaxis abstracta.
+
+Un generador de parser es un programa que toma como
+entrada una especiﬁcación léxica y una gramática y produce
+como salida un scanner y un parser para ellos.
+Los tipos de datos de la gramática (con los cuales se basa un
+parser para generar el árbol de sintaxis) pueden ser descritos
+usando define-datatype .
+Dada una gramática, debe haber un tipo de dato para cada
+símbolo no terminal; y debe haber una variante por cada
+producción que tenga símbolos no terminales en el lado
+derecho. Cada variante tendrá un campo por cada símbolo no
+terminal, identiﬁcador, o número que aparezca en su lado
+derecho.
+
+SLLGEN es un generador de parsers que toma como entrada
+una especiﬁcación léxica y una gramática, y produce como
+salida, un scanner y un parser en Scheme.
+La especiﬁcación léxica en SLLGEN es una lista que satisface
+la siguiente gramática:
+⟨ scanner-spec ⟩
+::=
+( {⟨ exp-reg-y-acción ⟩} ∗ )
+⟨ exp-reg-y-acción ⟩
+::=
+( ⟨ nombre ⟩ ( {⟨ exp-reg ⟩} ∗ ) ⟨ salida ⟩
+⟨ nombre ⟩
+::=
+⟨ símbolo ⟩
+⟨ exp-reg ⟩
+::=
+⟨ cadena ⟩| letter | digit | whitespace | any
+::=
+( not ⟨ caracter ⟩ ) | ( or {⟨ exp-reg ⟩} ∗ )
+::=
+( arbno ⟨ exp-reg ⟩ ) | ( concat {⟨ exp-reg ⟩} ∗ )
+⟨ salida ⟩
+::=
+skip | symbol | number | string.
+
+A medida que el scanner trabaja, va recolectando caracteres
+en un búfer.
+Cuando el scanner determina que ha encontrado la cadena
+más larga posible de todas las expresiones regulares en la
+especiﬁcación, ejecuta la salida de la expresión regular
+correspondiente.
+
+Dicha salida puede ser:
+skip : Signiﬁca que es el ﬁnal de un token, pero ningún token
+es emitido. El scanner continúa trabajando en la cadena para
+encontrar el siguiente token. Esta acción es usada en espacios
+en blanco y comentarios.
+symbol : Los caracteres en el búfer son convertidos en un
+símbolo de Scheme y un token es emitido, con el nombre
+symbol como su clase y con el símbolo como dato.
+
+Dicha salida puede ser:
+number : Los caracteres en el búfer son convertidos en un
+número de Scheme y un token es emitido, con el nombre
+number como su clase y con el número como dato.
+string : Los caracteres en el búfer son convertidos en una
+cadena de Scheme y un token es emitido, con el nombre string
+como su clase y con la cadena como dato.
+
+SLLGEN incluye un lenguaje para especiﬁcar gramáticas.
+Una gramática en SLLGEN es una lista descrita por la
+siguiente gramática:
+⟨ gramática ⟩
+::=
+( {⟨ producción ⟩} ∗ )
+⟨ producción ⟩
+::=
+( ⟨ lhs ⟩ ( {⟨ rhs-item ⟩} ∗ ) ⟨ nombre-prod ⟩ )
+⟨ lhs ⟩
+::=
+⟨ símbolo ⟩
+⟨ rhs-item ⟩
+::=
+⟨ símbolo ⟩| ⟨ cadena ⟩
+::=
+( arbno {⟨ rhs-item ⟩} ∗ )
+::=
+( separated-list {⟨ rhs-item ⟩} ∗ ⟨ cadena ⟩ )
+⟨ nombre-prod ⟩
+::=
+⟨ símbolo ⟩.
+
+En SLLGEN, la gramática debe permitir al parser determinar
+cuál producción usar conociendo solo:
+1 qué símbolo no terminal se está buscando, y
+2 el primer símbolo (token) de la cadena a ser analizada.
+Las gramáticas en esta forma son denominadas gramáticas LL
+(de allí el nombre SLLGEN - Scheme LL GENerator).
+
+SLLGEN incluye procedimientos para incorporar los scanners y
+gramáticas en un parser ejecutable.
+El procedimiento sllgen:make-define-datatypes genera
+cada una de las expresiones define-datatype de la
+gramática para ser usada por cases .
+El procedimiento sllgen:make-string-parser es usado
+para construir un scanner y un parser basados en las
+especiﬁcaciones léxicas y gramaticales.
+Este procedimiento retorna un procedimiento que toma una
+cadena y produce un árbol de sintaxis abstracta.
+
+La interfaz interactiva del usuario provista por la mayoría de
+implementaciones de Scheme es un read-eval-print-loop , es
+decir, un ciclo que repite la acción de leer una expresión o
+deﬁnición, evaluarla e imprimir el resultado.
+SLLGEN puede ser usado para construir un
+read-eval-print-loop , usando los siguientes procedimientos:
+sllgen:make-stream-parser : Toma un ﬂujo de caracteres y
+genera un ﬂujo de tokens, y
+sllgen:make-rep-loop : Toma una cadena str , un
+procedimiento de un solo argumento pro y un ﬂujo de tokens,
+y produce un read-eval-print-loop que crea a str como
+indicador en la salida estándar, lee el ﬂujo de tokens, los
+analiza, imprime el resultado de aplicar el procedimiento pro al
+árbol de sintaxis abstracta resultante, y se llama
+recursivamente.
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+Dada la gramática:
+⟨ declaración ⟩
+::=
+{⟨ declaración ⟩ ; ⟨ declaración ⟩}
+::=
+while ⟨ expresión ⟩ do ⟨ declaración ⟩
+::=
+⟨ identiﬁcador ⟩ := ⟨ expresión ⟩
+⟨ expresión ⟩
+::=
+⟨ identiﬁcador ⟩
+::=
+( ⟨ expresión ⟩ + ⟨ expresión ⟩ ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+Los tipos de datos para está gramática pueden ser descritos así:
+( define-datatype
+statement
+statement ?
+( compound − statement
+( stmt1
+statement ?)
+( stmt2
+statement ?) )
+( while − statement
+( t e s t
+e x p r e s s i o n ?)
+( body
+statement ?) )
+( assign − statement
+( l h s
+symbol ?)
+( rhs
+e x p r e s s i o n ?) ) ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+( define-datatype
+e x p r e s s i o n
+e x p r e s s i o n ?
+( var − exp
+( i s
+symbol ?) )
+( sum − exp
+( exp1
+e x p r e s s i o n ?)
+( exp2
+e x p r e s s i o n ?) ) ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+Los especiﬁcación léxica para el interpretador será:
+( define
+scanner − spec
+’ (( white − sp
+( whitespace )
+skip )
+( comment
+( " %"
+( arbno
+( not # \ newline ) ) )
+s k i p )
+( i d e n t i f i e r
+( l e t t e r
+( arbno
+( or
+l e t t e r
+d i g i t
+"?" ) ) )
+symbol )
+( number
+( d i g i t
+( arbno
+d i g i t ) )
+number ) ) ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+La gramática puede ser escrita en SLLGEN de la siguiente manera:
+( define grammar
+’ (( statement
+( "{"
+statement
+";"
+statement
+"}" )
+compound − statement )
+( statement
+( "while"
+e x p r e s s i o n
+"do"
+statement )
+while − statement )
+( statement
+( i d e n t i f i e r
+":="
+e x p r e s s i o n )
+assign − statement )
+( e x p r e s s i o n
+( i d e n t i f i e r )
+var − exp )
+( e x p r e s s i o n
+( "("
+e x p r e s s i o n
+"+"
+e x p r e s s i o n
+")" )
+sum − exp ) ) ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+Para generar las expresiones define-datatype se utiliza:
+( sllgen : make − define − datatypes
+scanner − spec
+grammar )
+Para crear el scanner y el parser se tiene:
+( define
+scan &parse
+( sllgen : make − string − parser
+scanner − spec
+grammar ) ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+Si se llama a scan&parse con x := y como argumento, éste
+retorna el árbol de sintaxis abstracta correspondiente:
+> ( scan &parse
+"x := y" )
+( assign − statement
+( x
+( var − exp
+( y ) ) ) ).
+<CODIGO_BLOCK_END>
+
+
+<CODIGO_BLOCK_START>
+Ejemplo:
+Para el interpretador el procedimiento read-eval-print será:
+( define
+read − eval − print
+( sllgen : make − rep − loop "-->"
+eval − program
+( sllgen : make − stream − parser
+scanner − spec
+grammar ) ) ).
+<CODIGO_BLOCK_END>
+
+Nuestro primer lenguaje permitirá la evalución de expresiones
+aritméticas.
+El lenguaje consistirá de expresiones para variables, números y
+aplicación de los operadores +, *, -. add1 y sub1 .
+
+Una parte importante de la especiﬁcación de cualquier
+lenguaje de programación es el conjunto de valores que éste
+manipula.
+Cada lenguaje tiene como mínimo dos conjuntos:
+Los valores expresados : posibles valores de expresiones, y
+Los valores denotados : valores limitados a las variables.
+Para el primer lenguaje que se creará, se tiene que
+Valor Expresado
+=
+Número
+Valor Denotado
+=
+Número.
+
+La gramática para el lenguaje será la siguiente:
+⟨ programa ⟩
+::=
+⟨ expresión ⟩
+a-program (exp)
+⟨ expresión ⟩
+::=
+⟨ número ⟩
+lit-exp (datum)
+::=
+⟨ identiﬁcador ⟩
+var-exp (id)
+::=
+⟨ primitiva ⟩ ( {⟨ expresión ⟩} ∗ ( , ) )
+primapp-exp (prim rands)
+⟨ primitiva ⟩
+::=
++ | - | * | add1 | sub1.
+
+La especiﬁcación léxica para el lenguaje será la siguiente:
+( define
+scanner − spec − simple − interpreter
+’ (( white − sp
+( whitespace )
+skip )
+( comment
+( " %"
+( arbno
+( not # \ newline ) ) )
+s k i p )
+( i d e n t i f i e r
+( l e t t e r
+( arbno
+( or
+l e t t e r
+d i g i t
+"?" ) ) )
+symbol )
+( number
+( d i g i t
+( arbno
+d i g i t ) )
+number ) ) ).
+
+La especiﬁcación de la gramática es la siguiente:
+( define
+grammar − simple − interpreter
+’ (( program
+( e x p r e s s i o n )
+a − program )
+( e x p r e s s i o n
+( number )
+l i t − e x p )
+( e x p r e s s i o n
+( i d e n t i f i e r )
+var − exp )
+( e x p r e s s i o n
+( p r i m i t i v e
+"("
+( s e p a r a t e d − l i s t
+e x p r e s s i o n
+"," ) ")" )
+primapp − exp )
+( p r i m i t i v e
+( "+" )
+add − prim )
+( p r i m i t i v e
+( "-" )
+subtract − prim )
+( p r i m i t i v e
+( "*" )
+mult − prim )
+( p r i m i t i v e
+( "add1" )
+incr − prim )
+( p r i m i t i v e
+( "sub1" )
+decr − prim )
+) ).
+
+La sintaxis abstracta está construida según la gramática deﬁnida
+anteriormente.
+( define-datatype
+program
+program ?
+( a − program
+( exp
+e x p r e s s i o n ?) ) )
+( define-datatype
+e x p r e s s i o n
+e x p r e s s i o n ?
+( l i t − e x p
+( datum number ?) )
+( var − exp
+( i d
+symbol ?) )
+( primapp − exp
+( prim
+p r i m i t i v e ?)
+( rands
+( l i s t − o f
+e x p r e s s i o n ?) ) ) ).
+
+( define-datatype
+p r i m i t i v e
+p r i m i t i v e ?
+( add − prim )
+( substract − prim )
+( mult − prim )
+( incr − prim )
+( decr − prim ) )
+Estas deﬁniciones pueden ser generadas automáticamente mediante
+SLLGEN con el procedimiento sllgen:make-define-datatypes.
+
+El interpretador simple constará de tres procedimientos
+correspondientes a los tres símbolos no terminales de la
+gramática.
+El procedimiento principal eval-program , toma un árbol de
+sintaxis abstracta y retorna un valor.
+
+( define
+eval − program
+( lambda
+(pgm)
+( cases
+program pgm
+( a − program
+( body )
+( e v a l − e x p r e s s i o n
+body
+( init − env ) ) ) ) ) )
+( define
+init − env
+( lambda
+( )
+( extend − env
+’ ( i
+v x )
+’ (1
+5
+10)
+( empty − env ) ) ) ).
+
+El procedimiento eval-expression toma una expresión exp
+y un ambiente env , y retorna el valor de la expresión usando
+dicho ambiente para encontrar los valores de las variables.
+Los casos en este procedimiento son los siguientes:
+Si exp es un literal, el dato es retornado.
+Si exp es un nodo que representa una variable, se busca el
+identiﬁcador en el ambiente para retornar su valor.
+Si exp es un nodo que representa una aplicación de una
+operación primitiva a algunos operandos, primero se evalúan
+los operandos (usando el procedimiento auxiliar eval-rands )
+y luego se pasan al procedimiento apply-primitive para
+determinar el valor.
+
+( define
+e v a l − e x p r e s s i o n
+( lambda
+( exp
+env )
+( cases
+e x p r e s s i o n
+exp
+( l i t − e x p
+( datum )
+datum )
+( var − exp
+( i d )
+( apply − env
+env
+i d ) )
+( primapp − exp
+( prim
+rands )
+( let
+( ( args
+( eval − rands
+rands
+env ) ) )
+( a p p l y − p r i m i t i v e
+prim
+args ) ) ) ) ) ).
+
+El procedimiento auxiliar eval-rands toma una lista de operandos
+y un ambiente y evalúa cada operando usando eval-rand (el cual
+llama a eval-expression con el ambiente actual para determinar
+los valores de las variables).
+( define
+eval − rands
+( lambda
+( rands
+env )
+( map
+( lambda
+( x )
+( eval − rand
+x
+env ) )
+rands ) ) )
+( define
+eval − rand
+( lambda
+( rand
+env )
+( e v a l − e x p r e s s i o n
+rand
+env ) ) ).
+
+El procedimiento apply-primitive toma una operación
+primitiva y una lista de valores, y produce el valor que se debe
+obtener al aplicar la operación primitiva a la lista de valores.
+( define
+a p p l y − p r i m i t i v e
+( lambda
+( prim
+args )
+( cases
+p r i m i t i v e
+prim
+( add − prim
+() (+ ( car
+args )
+( cadr
+args ) ) )
+( substract − prim
+() ( − ( car
+args )
+( cadr
+args ) ) )
+( mult − prim
+()
+( ∗
+( car
+args )
+( cadr
+args ) ) )
+( incr − prim
+() (+ ( car
+args )
+1) )
+( decr − prim
+() ( − ( car
+args )
+1) ) ) ) )
+Es de notar que no se necesita pasar el ambiente como argumento a
+apply-primitive ya que éste solo trabaja con valores y no con
+expresiones que puedan contener variables.
+
+Nuestro lenguaje será extendido para incorporar condicionales
+y ligadura local (asignación).
+El lenguaje consistirá de las expresiones especiﬁcadas
+anteriormente y de expresiones para condicionales if ...
+then ... else y para el operador de ligadura local let .
+Para este lenguaje se extiende el conjunto de valores
+expresados y denotados de la siguiente manera:
+Valor Expresado
+=
+Número + Booleano
+Valor Denotado
+=
+Número + Booleano.
+
+La gramática para el lenguaje será la siguiente:
+⟨ programa ⟩
+::=
+⟨ expresión ⟩
+a-program (exp)
+⟨ expresión ⟩
+::=
+⟨ número ⟩
+lit-exp (datum)
+::=
+”true”
+true-exp
+::=
+”false”
+false-exp
+::=
+⟨ identiﬁcador ⟩
+var-exp (id).
+
+::=
+⟨ primitiva ⟩ ( {⟨ expresión ⟩} ∗ ( , ) )
+primapp-exp (prim rands)
+::=
+if ⟨ expresión ⟩ then ⟨ expresión ⟩ else ⟨ expresión ⟩
+if-exp (test-exp true-exp false-exp)
+::=
+let {⟨ identiﬁcador ⟩ = ⟨ expresión ⟩} ∗ in ⟨ expresión ⟩
+let-exp (ids rands body)
+⟨ primitiva ⟩
+::=
++ | - | * | add1 | sub1 | == | ¿= | ¡= | ¿ | ¡.
+
+La especiﬁcación léxica será la misma del lenguaje anterior:
+( define
+scanner − spec − simple − interpreter
+’ (( white − sp
+( whitespace )
+skip )
+( comment
+( " %"
+( arbno
+( not # \ newline ) ) )
+s k i p )
+( i d e n t i f i e r
+( l e t t e r
+( arbno
+( or
+l e t t e r
+d i g i t
+"?" ) ) )
+symbol )
+( number
+( d i g i t
+( arbno
+d i g i t ) )
+number ) ) ).
+
+La especiﬁcación de la gramática es la siguiente:
+( define
+grammar − simple − interpreter
+’ (( program
+( e x p r e s s i o n )
+a − program )
+( e x p r e s s i o n
+( number )
+l i t − e x p )
+( e x p r e s s i o n
+( i d e n t i f i e r )
+var − exp )
+( e x p r e s s i o n
+( "true" )
+true − exp )
+( e x p r e s s i o n
+( "false" )
+false − exp )
+( e x p r e s s i o n
+( p r i m i t i v e
+"("
+( s e p a r a t e d − l i s t
+e x p r e s s i o n
+",
+" ) ")" )
+primapp − exp )
+( e x p r e s s i o n
+( "if"
+e x p r e s s i o n
+"then"
+e x p r e s s i o n
+"else"
+e x p r e s s i o n )
+if − exp )
+( e x p r e s s i o n
+( "let"
+( arbno
+i d e n t i f i e r
+"="
+e x p r e s s i o n )
+"in
+"
+e x p r e s s i o n )
+let − exp )
+( p r i m i t i v e
+( "+" )
+add − prim )
+( p r i m i t i v e
+( "-" )
+subtract − prim )
+( p r i m i t i v e
+( "*" )
+mult − prim )
+( p r i m i t i v e
+( "add1" )
+incr − prim )
+( p r i m i t i v e
+( "sub1" )
+decr − prim )
+) ).
+
+La sintaxis abstracta está construida de la siguiente manera.
+( define-datatype
+program
+program ?
+( a − program
+( exp
+e x p r e s s i o n ?) ) ).
+
+( define-datatype
+e x p r e s s i o n
+e x p r e s s i o n ?
+( l i t − e x p
+( datum number ?) )
+( var − exp
+( i d
+symbol ?) )
+( primapp − exp
+( prim
+p r i m i t i v e ?)
+( rands
+( l i s t − o f
+e x p r e s s i o n ?) ) )
+( if − exp
+( test − exp
+e x p r e s s i o n ?)
+( true − exp
+e x p r e s s i o n ?)
+( false − exp
+e x p r e s s i o n ?) )
+( let − exp
+( i d s
+( l i s t − o f
+symbol ?) )
+( rans
+( l i s t − o f
+e x p r e s s i o n ?) )
+( body
+e x p r e s s i o n ?) ) ).
+
+( define-datatype
+p r i m i t i v e
+p r i m i t i v e ?
+( add − prim )
+( substract − prim )
+( mult − prim )
+( incr − prim )
+( decr − prim ) ).
+
+Para determinar el valor de una expresión condicional
+(if-exp exp 1 exp 2 exp 3 ) es necesario determinar el valor de
+la subexpresión exp 1 .
+Si este valor corresponde al valor booleano true , el valor de
+toda la expresión if-exp debe ser el valor de la subexpresión
+exp 2 .
+En caso contrario, el valor de la expresión if-exp debe ser el
+valor de la subexpresión exp 3 .
+
+Para poder determinar si el valor de una expresión es un valor
+booleano (verdadero o falso), es necesario dar alguna
+representación a este tipo de dato.
+Para esto se deﬁne el tipo de dato booleano, como true y false.
+Además se agregan las primitivas booleanas de comparación.
+
+De esta manera, el comportamiento de los condicionales en el
+interpretador, se obtiene agregando la siguiente clausula en el
+procedimiento eval-expression :
+( if − exp
+( test − exp
+true − exp
+false − exp )
+( if
+( e v a l − e x p r e s s i o n
+test − exp
+env )
+( e v a l − e x p r e s s i o n
+true − exp
+env )
+( e v a l − e x p r e s s i o n
+false − exp
+env ) ) ).
+
+Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el
+ambiente inicial de computación.
+Se quiere evaluar la expresión:
+if >(x,4) then +(y,11) else *(y,10)
+Primero se evalua la subexpresión >(x,4) . Dado que x vale 4,
+este da falso.
+Como el valor de la subexpresión >(x,4) es falso, se evalúa la
+subexpresión *(y,10) .
+Finalmente, el valor de toda la expresión if es 20.
+
+Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el
+ambiente inicial de computación.
+Se quiere evaluar la expresión:
+if >(x,4) then +(y,11) else *(y,10)
+Primero se evalua la subexpresión >(x,4) . Dado que x vale 4,
+este da falso.
+Como el valor de la subexpresión >(x,4) es falso, se evalúa la
+subexpresión *(y,10) .
+Finalmente, el valor de toda la expresión if es 20.
+
+Hasta el momento, todas las expresiones del lenguaje se
+evalúan en el mismo ambiente ( el ambiente inicial).
+La expresión let permite la creación de ligaduras locales a
+variables nuevas.
+Típicamente, la expresión let crea un nuevo ambiente que
+extiende el ambiente principal (sobre el que se evalúa el let )
+con las variables y valores especiﬁcados en el contenido de la
+expresión.
+
+Para determinar el valor de una expresión (let-exp ids exps
+body ) es necesario evaluar las partes derechas de las
+declaraciones (correspondientes a las expresiones exps ) en el
+ambiente anterior.
+Posteriormente, debe crearse un nuevo ambiente extendiendo
+el ambiente anterior con las variables de la declaración y sus
+valores (obtenidos al evaluar las expresiones exps ).
+Finalmente, se evalúa la expresión body en el nuevo ambiente
+extendido.
+
+De esta manera, el comportamiento del operador de ligadura local,
+se obtiene agregando la siguiente clausula en el procedimiento
+eval-expression :
+( let − exp
+( i d s
+rands
+body )
+( let
+( ( args
+( eval − rands
+rands
+env ) ) )
+( e v a l − e x p r e s s i o n
+body
+( extend − env
+i d s
+args
+env ) ) ) ).
+
+Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el
+ambiente inicial de computación.
+Se quiere evaluar la expresión:
+let
+x = − (y , 1 )
+i n
+let
+x = +(x , 2 )
+i n
+add1 ( x ).
+
+Primero se evalua la subexpresión -(y,1) correspondiente a
+la parte derecha de la única declaración en el let exterior.
+El valor de la subexpresión -(y,1) es 1 por lo que se crea un
+ambiente env 1 que extiende el ambiente anterior env 0 con la
+variable x y el valor 1.
+Posteriromente se evalúa la expresión:
+let
+x = +(x , 2 )
+i n
+add1 ( x )
+en el ambiente env 1 .
+
+Se evalua la subexpresión +(x,2) correspondiente a la parte
+derecha de la única declaración en el let interior.
+El valor de la subexpresión +(x,2) es 3 por lo que se crea un
+ambiente env 2 que extiende el ambiente env 1 con la variable x
+y el valor 3.
+Posteriromente se evalúa la expresión add1(x) en el ambiente
+env 2 .
+Finalmente, el valor de la expresión original es 4.
+
+Los ambientes creados en la evaluación de la expresión anterior se
+pueden visualizar así:
+x = 4
+y = 2
+z = 5
+env0
+env1
+x = 3
+env2
+x = 1.
+
+Finalmente, el procedimiento eval-expression se deﬁne así:
+( define
+e v a l − e x p r e s s i o n
+( lambda
+( exp
+env )
+( cases
+e x p r e s s i o n
+exp
+. . .
+( let − exp
+( i d s
+rands
+body )
+( let
+(( args
+( eval − rands
+rands
+env ) ) )
+( e v a l − e x p r e s s i o n
+body
+( extend − env
+i d s
+args
+env ) )
+) ) ) ) ).
+
+Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el
+ambiente inicial de computación. Evaluar:
+let
+z=5
+t=sub1 ( x )
+i n
+let
+x= − ( t ,
+1)
+i n
+let
+y= 4
+i n
+∗ ( t ,
+− (z ,
+− (x , y ) ) ).
+
+Sea el ambiente env 0 con símbolos ( x y z ) y valores (4 2 5) el
+ambiente inicial de computación. Evaluar:
+let
+z=5
+t= let
+p = 5
+q = 2
+i n
++(p , q )
+i n
+let
+x= add1 ( z )
+i n
+∗ ( t ,
+∗ ( y , x ) ).
+
+Sea el ambiente env 0 con símbolos ( x y z ) y valores (3 7 1) el
+ambiente inicial de computación. Evaluar:
+let
+y=5
+m= let
+t = sub1 ( y )
+i n
+∗ ( t , x )
+i n
+let
+y= if > (y , 3 )
+then +(add1 ( y ) , m)
+else
+sub1 (+(y ,m) )
+i n
+let
+t = − (y ,m)
+i n
++(t ,
++(y ,
+− (z ,
+3) ) )
+Dibuje los ambientes creados en la evaluación de la expresión.
+
+--- METADATA ---
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 4. Semantica de los lenguajes de programacion

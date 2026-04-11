@@ -1,0 +1,97 @@
+####
+
+**Implementación de `type-of-let-expression`**
+
+Para manejar la estructura `let` en el verificador de tipos, debemos evaluar los tipos de cada una de las expresiones asignadas a las variables y, posteriormente, evaluar el cuerpo de la expresión en un ambiente de tipos extendido. El procedimiento `type-of-let-expression` realiza las siguientes acciones:
+
+- Recibe los identificadores (`ids`), las expresiones de valor (`rands`), el cuerpo de la expresión (`body`) y el ambiente de tipos actual (`tenv`).
+- Determina el tipo de cada expresión en `rands` utilizando `type-of-expression`.
+- Crea un ambiente de tipos extendido que vincula las variables con los tipos encontrados.
+- Determina el tipo del cuerpo (`body`) en este nuevo ambiente extendido.
+
+La implementación lógica sigue este flujo:
+
+```racket
+(define type-of-let-expression
+  (lambda (ids rands body tenv)
+    (let ([new-tenv (extend-tenv ids (map (lambda (x) (type-of-expression x tenv)) rands) tenv)])
+      (type-of-expression body new-tenv))))
+```
+
+####
+
+**Reglas de tipamiento para `letrec`**
+
+El `letrec` requiere una verificación más compleja, ya que los procedimientos declarados deben conocerse a sí mismos (recursividad) y cada uno de sus cuerpos debe ser validado en un ambiente que contenga todas las definiciones de procedimientos.
+
+Para cada procedimiento definido en el `letrec`, el `type-of-letrec-expression` debe:
+- Convertir los tipos de los argumentos y el tipo de retorno declarado (`result-types`).
+- Vincular la lista de tipos de los procedimientos al ambiente del cuerpo.
+- Verificar que cada cuerpo de procedimiento coincida con el tipo declarado, utilizando un ambiente donde los procedimientos son visibles.
+
+La función `type-of-letrec-expression` gestiona esta estructura:
+
+```racket
+(define type-of-letrec-expression
+  (lambda (proc-names proc-result-types proc-args-types proc-bodies letrec-body tenv)
+    (let ([new-tenv (extend-tenv-with-procs proc-names proc-result-types proc-args-types tenv)])
+      (check-proc-bodies proc-bodies proc-result-types proc-args-types new-tenv)
+      (type-of-expression letrec-body new-tenv))))
+```
+
+En este contexto, `new-tenv` es el ambiente extendido que permite la resolución recursiva, asegurando que cada `proc-body` sea consistente con sus tipos declarados (`proc-result-types` y `proc-args-types`).
+
+####
+
+**Implementación de ambientes de tipos**
+
+Los ambientes de tipos (`tenv`) funcionan de manera análoga a los ambientes de evaluación estándar, pero almacenan tipos en lugar de valores. Cada ambiente guarda una lista de símbolos (identificadores) y una lista de tipos correspondientes.
+
+Las funciones auxiliares necesarias incluyen:
+- `extend-tenv`: Añade nuevas asociaciones de variables y tipos al ambiente.
+- `apply-tenv`: Busca el tipo asociado a un identificador dentro del ambiente, retornando el tipo o lanzando un error si no se encuentra.
+
+```racket
+(define extend-tenv
+  (lambda (vars types tenv)
+    (list 'extend-tenv vars types tenv)))
+
+(define apply-tenv
+  (lambda (tenv var)
+    (cond
+      [(eqv? (car tenv) 'empty-tenv) (report-no-binding-found var)]
+      [(eqv? (car tenv) 'extend-tenv)
+       (let ([pos (list-index (cadr tenv) var)])
+         (if (number? pos)
+             (list-ref (caddr tenv) pos)
+             (apply-tenv (cadddr tenv) var)))])))
+```
+
+####
+
+**Integración del verificador con el intérprete**
+
+Para integrar el verificador de tipos con el intérprete principal, debemos realizar una validación previa antes de la ejecución. Se debe definir una función `type-of-program` que llame a `type-of-expression` con un ambiente inicial vacío. Posteriormente, se utiliza un `auxiliar-interpretador` que actúa como puerta de seguridad:
+
+1. Invoca `type-of-program` sobre el programa.
+2. Si la verificación retorna un tipo válido (el proceso fue exitoso), procede a ejecutar `eval-program`.
+3. En caso contrario, retorna un error de tipos.
+
+```racket
+(define auxiliar-interpretador
+  (lambda (pgm)
+    (if (type-of-program pgm)
+        (eval-program pgm)
+        (eopl:error "Error de tipos detectado"))))
+```
+
+Esto garantiza que el intérprete solo evalúe expresiones que cumplen con las reglas de tipamiento estático definidas.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=ukFGcDhW2xc
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

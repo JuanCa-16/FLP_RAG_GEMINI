@@ -1,0 +1,41 @@
+####
+**Validación de estructuras de árbol de sintaxis**
+
+De acuerdo con las definiciones de árbol binario presentadas, analizaremos si las sentencias generan un `árbol de sintaxis abstracta` (`AST`) correctamente. Para la expresión `list` de 5, la estructura se compone de un nodo tipo `list` que contiene el número 5. Este es el `AST` correspondiente a dicha expresión, representado mediante un `struct` que almacena el valor numérico.
+
+```racket
+(define arbol1 (list-node 5))
+```
+
+####
+**Análisis de nodos compuestos en el árbol de sintaxis**
+
+El segundo ejemplo, denominado `árbol 2`, consiste en un `node` que posee tres componentes: una llave `key`, un hijo izquierdo `left` y un hijo derecho `right`. En este caso, la llave principal es `ca`. El hijo izquierdo es, a su vez, otro `node` que contiene tres elementos: la llave `p`, un hijo izquierdo de tipo `list` con el valor 5 y un hijo derecho de tipo `list` con el valor 7.
+
+```racket
+(node 'ca 
+      (node 'p (list-node 5) (list-node 7)) 
+      right-child)
+```
+
+####
+**Verificación de la rama derecha y cumplimiento gramatical**
+
+El hijo derecho del `árbol 2` es también un `node` compuesto por tres partes: la llave `j`, un hijo izquierdo de tipo `list` con el número 4 y un hijo derecho de tipo `list` con el número 7. Determinar si estas estructuras están correctamente escritas permite verificar si el código cumple con la especificación gramatical. La generación automática del `árbol de sintaxis abstracta` es una herramienta fundamental para asegurar que el código respete las reglas de la gramática definida.
+
+```racket
+(define arbol2 
+  (node 'ca 
+        (node 'p (list-node 5) (list-node 7)) 
+        (node 'j (list-node 4) (list-node 7))))
+```
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 28  Abstracción de datos Ejemplos sintaxis abstracta.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=tkfnonZyeZ0
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

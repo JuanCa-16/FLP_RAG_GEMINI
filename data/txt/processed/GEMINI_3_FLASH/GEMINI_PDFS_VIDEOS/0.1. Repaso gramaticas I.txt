@@ -1,0 +1,463 @@
+#### **El alfabeto**
+
+Un `alfabeto` es un conjunto finito no vacío cuyos elementos se llaman `símbolos`. Por ejemplo, sea Σ = {a, b} el alfabeto que consta de los símbolos `a` y `b`. Las siguientes son cadenas sobre Σ: `aba`, `abaabaaa`, `aaaab`. 
+
+El `alfabeto binario` Σ = {0, 1} define cadenas que son secuencias finitas de ceros y unos. Las cadenas son secuencias ordenadas y finitas de símbolos.
+
+```racket
+; Ejemplo de distinción de cadenas
+; w = aaab no es igual a w1 = baaa
+```
+
+En el caso del idioma castellano, el alfabeto es Σ = {a, b, c, ..., x, y, z}. En un alfabeto Σ = {a, b, c}, se pueden formar todas las cadenas posibles, incluyendo la `cadena vacía`. Si bien un alfabeto Σ es un conjunto finito, el conjunto Σ* de todas las cadenas posibles es siempre un conjunto infinito enumerable.
+
+#### **Objetos en la teoría de lenguajes**
+
+Es fundamental distinguir entre los siguientes cuatro objetos, que son diferentes entre sí:
+- ∅: El conjunto vacío.
+- ε: La cadena vacía (única cadena que no tiene símbolos).
+- {∅}: El conjunto que contiene al conjunto vacío.
+- {ε}: El conjunto que contiene la cadena vacía.
+
+#### **Notación en la teoría de lenguajes**
+
+La teoría de lenguajes utiliza la siguiente notación técnica para definir sus componentes:
+- Σ, Γ: Denotan `alfabetos`.
+- Σ*: Denota el conjunto de todas las cadenas que se pueden formar con los símbolos del alfabeto Σ.
+- a, b, c: Denotan `símbolos` de un alfabeto.
+- u, v, w, x, y, z: Denotan `cadenas`, que son sucesiones finitas de símbolos de un alfabeto.
+- ε: Denota la `cadena vacía`.
+- L, L1, L2: Denotan `lenguajes` (subconjuntos de Σ*).
+
+#### **Operaciones con alfabetos**
+
+Si Σ es un alfabeto, σ ∈ Σ denota que σ es un símbolo de Σ. Por ejemplo, si Σ = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, entonces 0 ∈ Σ. Un alfabeto es un conjunto finito no vacío que cumple con las propiedades de la teoría de conjuntos. Dados Σ1 y Σ2 como alfabetos, se cumple que:
+- Σ1 ∪ Σ2 (Unión) es un alfabeto.
+- Σ1 ∩ Σ2 (Intersección) es un alfabeto.
+- Σ1 - Σ2 y Σ2 - Σ1 (Diferencia) son alfabetos.
+
+#### **Lenguaje**
+
+Un `lenguaje` es un conjunto de palabras o cadenas. Un lenguaje `L` sobre un alfabeto Σ es un subconjunto de Σ*. Si L = Σ*, es el lenguaje de todas las cadenas posibles sobre Σ.
+
+**Ejemplos de lenguajes:**
+- Lenguaje vacío: L = ∅. Se cumple que ∅ ⊆ L ⊆ Σ*.
+- Sobre Σ = {a, b, c}: L = {a, aba, aca}.
+- Sobre Σ = {a, b, c}: L = {a, aa, aaa} = {a^n : n ≥ 1}.
+- Sobre Σ = {a, b, c}: L = {w ∈ Σ* : w no contiene el símbolo c}.
+
+```racket
+; Ejemplo de pertenencia en lenguajes
+; Para L = {w ∈ Σ* : w no contiene el símbolo c}
+; abbaab ∈ L pero abbcaa ∉ L
+```
+
+Sobre Σ = {0, 1, 2}, el lenguaje de las cadenas que tienen igual número de ceros, unos y doses en cualquier orden.
+
+#### **Potencia del lenguaje**
+
+Dado un lenguaje `A` sobre Σ (donde A ⊆ Σ*) y un número n ∈ N, la potencia `A^n` se define recursivamente:
+- A^n = {ε} si n = 0.
+- A^n = A · A^(n-1) si n ≥ 1.
+
+```racket
+; Ejemplo de potencia de un lenguaje
+; Sea A = {ab} sobre el alfabeto Σ = {a, b}
+; A^0 = {ε}
+; A^1 = A = {ab}
+; A^2 = A · A^1 = {abab}
+; A^3 = A · A^2 = {ababab}
+```
+
+#### **Cerradura de Kleene y Cerradura Positiva**
+
+La `cerradura de Kleene` de un lenguaje A ⊆ Σ*, denotada por A*, es la unión de todas sus potencias:
+A* = ∪ (i ≥ 0) A^i = A^0 ∪ A^1 ∪ A^2 ∪ ... ∪ A^n
+
+Se puede describir como el conjunto de todas las concatenaciones de cadenas de A, incluyendo la cadena vacía ε:
+A* = {u_1 u_2 ... u_n : u_i ∈ A, n ≥ 0}
+
+La `cerradura positiva`, denotada por A+, excluye la potencia cero (la cadena vacía, a menos que esté en A^1):
+A+ = ∪ (i ≥ 1) A^i = A^1 ∪ A^2 ∪ A^3 ∪ ... ∪ A^n
+
+#### **Expresiones Regulares**
+
+Las `expresiones regulares` sobre un alfabeto Σ se definen recursivamente:
+- ∅, ε y a (donde a ∈ Σ) son expresiones regulares.
+- Si `A` y `B` son expresiones regulares, también lo son:
+  - A ∪ B (Unión)
+  - A · B (Concatenación)
+  - A* (Cerradura de Kleene)
+
+Ejemplos: `aab*`, `ab+`, `(aaba*)+`.
+Si se tiene el conjunto {ε, aa, aba, ab^2a, ab^3a, ...}, la expresión regular correspondiente es {ε} ∪ ab*a.
+
+#### **Ejemplos de Expresiones Regulares sobre Σ = {a, b}**
+
+- **Cadenas de longitud impar:**
+  a(aa ∪ ab ∪ ba ∪ bb)* ∪ b(aa ∪ ab ∪ ba ∪ bb)*
+- **Cadenas de longitud par:**
+  (aa ∪ ab ∪ ba ∪ bb)*
+- **Cadenas con un número par de a's:**
+  b*(ab*a)*b*
+
+#### **Clasificación de Gramáticas según Chomsky**
+
+Las gramáticas se clasifican en cuatro niveles según su jerarquía de estructura:
+1. **Gramática de estructura de frase (Tipo 0):** La más general.
+2. **Gramática dependiente del contexto (Tipo 1).**
+3. **Gramáticas libres de contexto (Tipo 2).**
+4. **Gramáticas regulares (Tipo 3):** La más restrictiva.
+
+#### **Gramáticas Regulares (Tipo 3)**
+
+Una `gramática regular` G es una 4-tupla G = (N, Σ, S, P) compuesta por:
+- `N`: Conjunto de símbolos no terminales.
+- `Σ`: Alfabeto de símbolos terminales.
+- `S`: Símbolo inicial (S ∈ N).
+- `P`: Conjunto de producciones o reglas.
+
+Las reglas son de la forma A → w, donde A ∈ N y w es una cadena sobre Σ ∪ N que satisface:
+1. w contiene un no terminal como máximo.
+2. Si w contiene un no terminal, este debe estar en el extremo derecho (o izquierdo, según la convención).
+3. El conjunto P se define como P ⊆ N × Σ*(N ∪ ε) o P ⊆ N × (N ∪ ε)Σ*.
+
+#### **Gramáticas Regulares por la Derecha**
+
+Una gramática G = (N, Σ, S, P) es `regular por la derecha` si sus producciones tienen la forma:
+- A → wB, donde w ∈ Σ* y B ∈ N.
+- A → ε.
+
+```racket
+; Ejemplo: Gramática que genera a*
+; Σ = {a, b}, N = {S, A}
+; P: S → aA | ε
+;    A → aA | ε
+
+; Ejemplo: Gramática que genera (a ∪ b)*
+; Σ = {a, b}, N = {S, A}
+; P: S → aS | bS | ε
+```
+
+#### **Forma de Backus-Naur (BNF)**
+
+La `forma de Backus-Naur` (BNF) se emplea para especificar las reglas sintácticas de lenguajes de programación y lenguajes naturales. Sus convenciones son:
+- Se utiliza el símbolo `::=` en lugar de `→`.
+- Los símbolos no terminales se colocan entre `< >`.
+
+Se usa frecuentemente para especificar la sintaxis de lenguajes como Java, LISP, SQL y XML.
+
+**Ejemplo de conversión a BNF:**
+Gramática original: A → Aa | a | AB
+Forma BNF: `<A> ::= <A> a | a | <A><B>`
+
+#### **Ejemplos de Gramáticas en BNF**
+
+**Enteros con signo en notación decimal:**
+Un entero con signo es un natural precedido por un signo más (+) o menos (-).
+```bnf
+<entero con signo> ::= <signo><entero>
+<signo> ::= + | -
+<entero> ::= <dígito> | <dígito><entero>
+<dígito> ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+```
+
+**Estructuras de datos:**
+```bnf
+; Definición de listas de números
+<lista-de-numeros> ::= () | <numero> <lista-de-numeros>
+
+; Definición de árbol binario
+<arbol-binario> ::= <numero> | <simbolo> <arbol-binario> <arbol-binario>
+```
+
+#### **BNF en Lenguajes de Programación Reales**
+
+La sintaxis de lenguajes modernos se define mediante BNF. Por ejemplo, en Java:
+```bnf
+<compilation unit> ::= <package declaration> <import declarations> <type declarations>
+<package declaration> ::= package <package name> ;
+<import declarations> ::= <import declaration> | <import declarations> <import declaration>
+<import declaration> ::= <single type import declaration> | <type import on demand declaration>
+<single type import declaration> ::= import <type name> ;
+```
+Existen gramáticas oficiales documentadas en BNF para Java, C++ 98 y Python en sus respectivos manuales de referencia.
+
+#### **Introducción a DrRacket**
+
+Para el estudio de lenguajes de programación, se recomienda la versión 7.9 de `DrRacket`. Versiones anteriores (como 5.6 o 6.2) presentan problemas con la librería `SLLGEN`.
+
+**Configuración inicial:**
+Para el curso de Fundamentos de Lenguajes de Programación, se debe seleccionar "The Racket Language" e incluir la siguiente directiva en la primera línea:
+`#lang eopl`
+
+**Notación Prefija:**
+Las expresiones en DrRacket usan notación prefija. Por ejemplo, `(+ 5 2)` equivale a `5 + 2`. Se recomienda el uso de paréntesis para asegurar la correcta interpretación: `(+ (- 3 2) 4)` equivale a `((3 - 2) + 4)`.
+
+#### **Definiciones y Funciones en Racket**
+
+En Racket, se utiliza la palabra reservada `define` para crear variables y funciones.
+
+```racket
+; Definición de variables
+(define numeroA 5)
+(define numeroB (* 2 numeroA))
+
+; Definición de funciones
+; Sintaxis: (define (nombre argumentos) <operaciones>)
+(define (multiplique a b)
+  (* a (* b b)))
+
+; Evaluación: (multiplique 3 9) retorna 243
+```
+
+#### **Funciones Anónimas y Expresiones Lambda**
+
+Las funciones anónimas se definen mediante la expresión `lambda`. Estas retornan un procedimiento que puede ser evaluado inmediatamente.
+
+```racket
+; Definición de una función anónima con lambda
+; Evalúa si x > y, de ser así multiplica, si no resta.
+((lambda (x y)
+   (if (> x y)
+       (* x y)
+       (- x y)))
+ 3 4)
+```
+
+En el paradigma funcional, no existe distinción entre funciones y valores; por ello, se usa `lambda` para representar funciones como valores asignados a una variable:
+
+```racket
+(define multiplique
+  (lambda (a b)
+    (* a (* b b))))
+```
+
+#### **Ejercicios de Notación Prefija en Racket**
+
+**Conversión de expresiones matemáticas a prefijas:**
+
+1. Expresión: 2 * 2 + 3 * 5 + (1/4)^2
+```racket
+(+ (* 2 2)
+   (* 3 5)
+   (expt (/ 1 4) 2))
+; Resultado: 19.0625
+```
+
+2. Expresión: 2 * (1 + 3^2 + 4/4) + 3 * (5 - 3) + 12/4 - 3 + 4 * 5^3
+```racket
+(+ (* 2 (+ 1 (expt 3 2) (/ 4 4)))
+   (* 3 (- 5 3))
+   (/ 12 4)
+   -3
+   (* 4 (expt 5 3)))
+; Resultado: 528
+```
+
+**Función anónima lógica:**
+Diseño de función que retorna multiplicación si ambos valores tienen el mismo signo, o suma en caso contrario:
+```racket
+(lambda (x y)
+  (if (>= (* x y) 0)
+      (* x y)
+      (+ x y)))
+```
+
+#### **Condicionales en Racket: if y cond**
+
+Racket provee dos estructuras principales para el control de flujo:
+
+**Estructura if:**
+`(if pregunta hacer_si_verdad hacer_si_falso)`
+```racket
+(define funcionMisteriosa
+  (lambda (n l)
+    (if (< n l)
+        "n es menor que l"
+        "n es mayor o igual que l")))
+```
+
+**Estructura cond:**
+Permite verificar múltiples condiciones sucesivamente. Solo se ejecuta la respuesta de la primera condición verdadera.
+```racket
+(define verificar-par
+  (lambda (n)
+    (cond
+      [(even? n) "Par"]
+      [(< n 0) "Impar y menor que 0"]
+      [else "Impar y mayor o igual que 0"])))
+```
+
+#### **Definiciones Locales: let, letrec y let***
+
+Para realizar definiciones dentro de funciones se utilizan tres variantes:
+
+1. **let:** Para definiciones no recursivas. Las funciones definidas aquí no se conocen a sí mismas.
+```racket
+(define funcion
+  (lambda (n)
+    (let ((p 2)
+          (f (lambda (a b) (* a b))))
+      (f n p))))
+```
+
+2. **letrec:** Para definiciones recursivas. Las funciones se conocen a sí mismas.
+```racket
+(define funcion
+  (lambda (n)
+    (letrec ((p 2)
+             (sume (lambda (a b)
+                     (if (= b 0) 0 (+ a (sume a (- b 1)))))))
+      (sume n p))))
+```
+
+3. **let*:** Permite que un valor declarado conozca los anteriores. Las funciones no son recursivas.
+```racket
+(define funcion
+  (lambda (n)
+    (let* ((p 2)
+           (q 3)
+           (r (+ p q n)))
+      r)))
+```
+
+#### **Estructura de Listas en Racket**
+
+Las listas son estructuras recursivas que constan de un valor y una lista (que puede ser vacía). 
+- `cons`: Constructor básico de listas.
+- `list`: Función de "azúcar sintáctico" para construir listas directamente.
+
+```racket
+; Construcción manual
+(cons 1 (cons 2 (cons 3 empty)))
+
+; Usando la función list
+(list 1 2 3)
+```
+
+**Funciones de acceso:**
+- `car`: Accede al primer elemento.
+- `cdr`: Accede al resto de la lista.
+- `cadr`: Accede al segundo elemento (car del cdr).
+
+#### **Representación con Quote y Símbolos**
+
+Racket permite una representación especial de listas usando el símbolo `'`. Esto convierte los elementos en símbolos en lugar de evaluar variables.
+
+```racket
+; Lista vacía
+'()
+
+; Lista con símbolos y números
+'(perro gato 1 2 3)
+
+; Listas anidadas
+'((perro 1 2 3) (3 2 4) gato)
+```
+En esta notación, los paréntesis definen la estructura de la lista y los nombres internos no requieren definición previa como variables.
+
+#### **Ejercicio: Generación de Lista de Factoriales**
+
+Diseño de una función que almacene los factoriales desde 0! hasta n! en una lista. Requiere el uso de `letrec` para manejar la recursión interna y un acumulador.
+
+```racket
+; Calcula el factorial de un número
+(define factorial
+  (lambda (n)
+    (cond
+      [(= n 0) 1]
+      [else (* n (factorial (- n 1)))])))
+
+; Genera lista desde 0! hasta n!
+(define lista-factorial
+  (lambda (n)
+    (letrec
+        ((lista-factorial-aux
+          (lambda (n acc)
+            (if (= acc n)
+                (list (factorial n))
+                (cons (factorial acc)
+                      (lista-factorial-aux n (+ 1 acc)))))))
+      (lista-factorial-aux n 0))))
+
+; Llamado: (lista-factorial 10)
+```
+
+#### **Funciones de Orden Superior: Funciones como Parámetros**
+
+En Racket, las funciones pueden ser pasadas como argumentos a otras funciones.
+
+```racket
+(define predicado
+  (lambda (a b)
+    (cond
+      [(< a b) #t]
+      [(even? a) #t]
+      [else #f])))
+
+(define filtro
+  (lambda (lst num f)
+    (cond
+      [(eqv? lst '()) empty]
+      [(f (car lst) num)
+       (cons (car lst) (filtro (cdr lst) num f))]
+      [else (filtro (cdr lst) num f)])))
+
+; Llamado: (filtro (list 1 2 3 4 5) 3 predicado)
+```
+Esta función `filtro` recorre una lista y aplica el `predicado` (función `f`) para decidir qué elementos conservar basándose en un número de referencia.
+
+#### **Funciones como Valores de Retorno**
+
+Racket permite que una función retorne otra función, reforzando la idea de que no hay diferencia entre valores y procedimientos.
+
+```racket
+(define funcionMisterio
+  (lambda (a b)
+    (lambda (x y) (+ x y a b))))
+
+; Evaluación:
+; (funcionMisterio 1 2) retorna un procedimiento
+; ((funcionMisterio 1 2) 3 4) retorna 10
+```
+
+**Ejercicios de diseño:**
+1. Función que recibe un valor `a` y una función booleana `f`, retornando "ok" si `(f a)` es verdadero.
+2. Función que recibe `a` y `b`, y retorna una función `t(s)` que devuelve `2*s` si `a > b`, o `-2*s` en caso contrario.
+
+#### **Paradigma Imperativo en Racket: Estado y set!**
+
+A diferencia del paradigma declarativo puro, el paradigma imperativo introduce la noción de `estado`. La instrucción `set!` permite cambiar el valor ligado a una variable durante la ejecución.
+
+```racket
+(define valor 1)
+(set! valor 2)
+; El estado de 'valor' ha cambiado de 1 a 2.
+```
+Este cambio de estado caracteriza la ejecución de un programa imperativo, permitiendo que las variables muten su contenido a lo largo del tiempo.
+
+#### **Secuenciación con begin**
+
+En el paradigma imperativo se requiere ejecutar múltiples instrucciones en un solo paso. Para esto se utiliza `begin`, que permite agrupar expresiones y retorna el resultado de la última.
+
+```racket
+(define funcion
+  (lambda (a b)
+    (begin
+      (set! a (* a b))
+      (set! b (- a b))
+      (+ a b))))
+
+; Llamado: (funcion 2 3)
+; Ejecuta las mutaciones de a y b, y retorna el resultado de (+ a b)
+```
+
+--- METADATA ---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 0.1. Repaso gramaticas I

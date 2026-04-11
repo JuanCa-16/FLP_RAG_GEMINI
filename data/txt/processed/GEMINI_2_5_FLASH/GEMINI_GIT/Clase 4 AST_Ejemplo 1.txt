@@ -1,0 +1,110 @@
+Arboles binarios
+Se define el tipo de dato `tree` para árboles binarios utilizando `define-datatype` de `eopl`. Un `tree` puede ser una `leaf` que contiene un número (`datum`), o un `node` que tiene un símbolo como clave (`key`) y dos sub-árboles (`left`, `right`).
+
+```racket
+#lang eopl
+
+#|
+<tree> ::= <int>
+           leaf(datum)
+         ::= <symbol> <tree> <tree>
+           node(key, left, right)
+|#
+(define-datatype tree tree?
+  (leaf (datum number?))
+  (node (key symbol?)
+        (left tree?)
+        (right tree?)))
+```
+
+###
+Se construye un árbol binario de ejemplo, `treeA`, con una estructura compleja que incluye nodos y hojas anidadas.
+
+```racket
+(define treeA
+  (node 'a
+        (node 'b
+              (node 'd
+                    (node 'h
+                          (leaf 7)
+                          (leaf 8))
+                    (node 'i
+                          (leaf 9)
+                          (leaf 10)))
+              (node 'e
+                    (leaf 1)
+                    (leaf 2)))
+        (node 'c
+              (node 'f
+                    (leaf 3)
+                    (leaf 4))
+              (node 'g
+                    (leaf 5)
+                    (leaf 6)))))
+```
+
+###
+La función `preorder` realiza un recorrido pre-orden del árbol (`tree -> lista`). En este recorrido, se procesa primero la clave del nodo, luego se recorre el sub-árbol izquierdo y finalmente el sub-árbol derecho.
+
+```racket
+(define preorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum)
+            (list datum))
+      (node (key left right)
+            (append (list key)
+                    (preorder left)
+                    (preorder right))))))
+
+(display (preorder treeA))
+(display "\n")
+```
+
+###
+La función `posorder` implementa un recorrido post-orden del árbol (`tree -> lista`). En este método, se visitan primero los sub-árboles izquierdo y derecho, y al final se procesa la clave del nodo.
+
+```racket
+(define posorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum)
+            (list datum))
+      (node (key left right)
+            (append (posorder left)
+                    (posorder right)
+                    (list key))))))
+
+(display (posorder treeA))
+(display "\n")
+```
+
+###
+La función `inorder` realiza un recorrido in-orden del árbol (`tree -> lista`). Este recorrido procesa el sub-árbol izquierdo, luego la clave del nodo, y finalmente el sub-árbol derecho.
+
+```racket
+(define inorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum)
+            (list datum))
+      (node (key left right)
+            (append (inorder left)
+                    (list key)
+                    (inorder right))))))
+
+(display (inorder treeA))
+(display "\n")
+```
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_Ejemplo 1
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Ejemplo%201/

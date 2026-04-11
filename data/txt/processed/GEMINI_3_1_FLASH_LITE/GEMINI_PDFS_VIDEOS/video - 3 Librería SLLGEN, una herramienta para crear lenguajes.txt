@@ -1,0 +1,74 @@
+####
+
+La librería `SLG` proporcionada por `Dr. Racket` es una herramienta fundamental para el curso, ya que permite construir un `escáner` y un `parser`. Su propósito es automatizar la creación de estos componentes, los cuales son necesarios para desarrollar un `interpretador`. El `SLG` funciona a partir de dos insumos principales: una `especificación léxica` y una `gramática`.
+
+####
+
+La `especificación léxica` define cómo se interpretan los caracteres de entrada (números, identificadores, espacios, comentarios, etc.). Se estructura como una lista de reglas que asocian una `expresión regular` con una `acción` de salida. 
+
+La gramática de la especificación léxica incluye diversos operadores:
+- `letter`: captura letras.
+- `digit`: captura dígitos.
+- `space`: captura espacios en blanco.
+- `any`: captura cualquier carácter.
+- `not`: excluye caracteres específicos.
+- `or`: permite capturar una opción u otra.
+- `arno`: implementa la cerradura de Kleene (cero o más repeticiones).
+- `concat`: une varias expresiones.
+
+Las salidas posibles para estas reglas son:
+- `skip`: ignora el elemento (útil para comentarios o espacios).
+- `symbol`: transforma la cadena en un `símbolo`.
+- `number`: transforma la cadena en un `número`.
+- `string`: transforma la cadena en un `string`.
+
+####
+
+A continuación se presenta un ejemplo de una `especificación léxica` implementada en `Dr. Racket`:
+
+```racket
+(define léxico
+  '((espacio (space) skip)
+    (comentario ("%" (arno (not #\newline))) skip)
+    (identificador (letter (arno (or letter digit #\?))) symbol)
+    (numero (digit (arno digit)) number)))
+```
+
+En este ejemplo, se definen reglas para ignorar espacios y comentarios, y para transformar secuencias de caracteres en `símbolos` (identificadores) o `números`. El `escáner` trabaja recolectando la cadena más larga posible que coincida con estas expresiones regulares, almacenando el resultado en un `buffer` para su posterior procesamiento.
+
+####
+
+La `especificación gramatical` permite definir la estructura del lenguaje de programación como una lista, evitando la creación manual de `define-data-type`. La gramática se compone de producciones, donde cada una incluye:
+- `LHS` (Left-Hand Side): El nombre de la producción o del tipo de dato.
+- `RHS` (Right-Hand Side): La especificación de qué elementos se capturan.
+
+Por ejemplo, si se desea representar una estructura de árbol:
+
+```racket
+; Ejemplo de definición de gramática conceptual
+(define gramática
+  '((árbol (árbol-vacío) árbol-vacío)
+    (árbol (numero (arb-left árbol) (arb-right árbol)) nodo)))
+```
+
+Aquí, `árbol-vacío` y `nodo` actúan como las variantes del `data-type`. `SLG` genera automáticamente todos los `data-types` necesarios a partir de esta estructura.
+
+####
+
+Al diseñar gramáticas en `SLG`, es obligatorio utilizar `gramáticas determinadas por la izquierda` (`left-language`). Esto implica que no pueden existir dos producciones que comiencen con el mismo símbolo o token, ya que esto generaría un conflicto de ambigüedad en el `parser`. Si dos reglas comienzan de forma idéntica, es necesario reestructurar la gramática para diferenciar los casos.
+
+####
+
+La librería `SLG` incorpora funciones clave para la construcción del sistema:
+- `SLG-make-define-data-types`: genera automáticamente los `data-types` a partir de la gramática.
+- `SLG-make-parser`: construye el `escáner` y el `parser` basados en las especificaciones léxica y gramatical. Retorna un procedimiento que, al recibir una cadena, produce un `árbol de sintaxis abstracta`.
+- `REPL` (Read-Eval-Print Loop): permite abrir una consola interactiva para evaluar código línea por línea, facilitando la depuración y ejecución durante el desarrollo del interpretador.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=vNQauK4mMHA
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

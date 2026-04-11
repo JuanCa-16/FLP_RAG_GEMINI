@@ -1,0 +1,47 @@
+#### **Análisis de tipos en expresiones condicionales**
+
+En este punto veremos ejemplos de cómo trabajar ejercicios para determinar el tipo de salida de una expresión. Para una función `sum`, debemos identificar que recibe un `boolean`, un `integer` y otro `integer`.
+
+Las verificaciones necesarias son:
+- El argumento `b` debe ser de tipo `boolean`.
+- La salida de la rama `then` debe ser igual a la salida de la rama `else`.
+
+En este caso, ambas ramas son de tipo `integer` porque el resultado de las variables `m` y `n` es entero. Según el análisis de la evaluación, los argumentos que entran deben corresponder a lo que la función espera. Al revisar el `lambda`, el primer argumento es `boolean`, el segundo es `integer` y el tercero es `integer`, por lo cual el código pasa el `chequeo de tipos`.
+
+```racket
+;; Representación lógica del análisis de tipos
+(lambda (b m n)
+  (if b m n))
+```
+
+Al verificar en el interpretador, el resultado es 7, que corresponde efectivamente a un tipo `integer`.
+
+#### **Chequeo de tipos en procedimientos recursivos con letrec**
+
+En este segundo ejemplo se analiza el uso de `letrec` para definir una función recursiva. El análisis se enfoca en la función `fact`, que recibe un `integer` `x`.
+
+Dentro de la implementación:
+- La primitiva `>` recibe dos enteros. Como `x` es de tipo `integer`, la condición es correcta.
+- La primitiva `*` recibe uno o más enteros de acuerdo con su definición.
+- El llamado a `(fact 5)` debe resultar también en un `integer`.
+
+```racket
+(letrec
+  ((fact (lambda (x)
+           (if (> x 0)
+               (* x (fact (- x 1)))
+               1))))
+  (fact 5))
+```
+
+Al ejecutar esta expresión en el interpretador, el resultado es 120, lo cual confirma que el valor de retorno es un `integer`. Al realizar un `chequeo de tipos`, es fundamental verificar cada uno de los llamados y las relaciones entre variables para asegurar que los tipos correspondan, especialmente en procedimientos y procedimientos recursivos. Ahora veremos un ejercicio mucho más elaborado.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 43 Chequeo de tipos Ejemplo 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=a58oyy--My8
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

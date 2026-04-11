@@ -1,0 +1,22 @@
+La representación 'vigno' consiste en representar un número en una base determinada mediante un vector o lista. En esta representación, cada elemento de la lista corresponde a un dígito en la base especificada, donde el primer elemento es el dígito menos significativo. Por ejemplo, en base 16, el vector `(1, 2)` representa el número `1 * 16^0 + 2 * 16^1`. De manera similar, el vector `(2, 0, 1)` correspondería a `2 * 16^0 + 0 * 16^1 + 1 * 16^2`. A pesar de esta forma de representación, las operaciones aritméticas fundamentales operan de la misma manera.
+
+####
+
+La implementación de la función `sucesor` para números en representación 'vigno' se define considerando varios casos clave. El número cero se representa como una lista vacía, y su sucesor es la lista `(1)`. El caso principal ocurre cuando el primer dígito del número (el `car` de la lista) es igual a `base - 1` (por ejemplo, 15 en base 16). En esta situación, se produce un "acarreo": este dígito se convierte en 0 y se llama recursivamente a la función `sucesor` sobre el resto de la lista (`cdr`). Si el primer dígito no es `base - 1`, el sucesor se calcula simplemente incrementando en uno el valor de ese primer dígito y manteniendo el resto de la lista sin cambios. Por ejemplo, el sucesor de `(15)` en base 16 es `(0, 1)`, y el sucesor de `(15, 15, 3)` es `(0, 0, 4)`.
+
+####
+
+La función `predecesor` opera de manera inversa al sucesor, manejando el concepto de "préstamo". Se definen casos especiales: el predecesor de 0 (lista vacía) no está definido, y el predecesor de 1 (lista `(1)`) es 0 (lista vacía). El caso de borde principal se presenta cuando el primer dígito del número es 0. Para calcular el predecesor, este dígito se reemplaza por `base - 1` (por ejemplo, 15 en base 16), y se llama recursivamente a la función `predecesor` sobre el resto de la lista. En cualquier otro caso, el predecesor se obtiene restando uno al primer dígito y conservando el resto de la lista. Por ejemplo, el predecesor de `(0, 1)` es `(15)`, y el predecesor de `(0, 0, 1)` es `(15, 15)`.
+
+####
+
+Una vez definidas las funciones de `sucesor` y `predecesor` para la representación 'vigno', las operaciones aritméticas de nivel superior, como la suma (`plus`), funcionan sin necesidad de modificar su lógica interna. Por ejemplo, al sumar números en base 16, `16 + 16` da como resultado `32`, que en esta representación es la lista `(0, 2)`, ya que equivale a `0 * 16^0 + 2 * 16^1`. Esto demuestra un principio fundamental: la implementación de las funciones aritméticas es independiente de la representación numérica subyacente. Siempre que las operaciones básicas como `sucesor` y `predecesor` estén correctamente definidas para un sistema numérico, las funciones más complejas construidas sobre ellas conservarán su validez y comportamiento.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=z_uAWdqChmk
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

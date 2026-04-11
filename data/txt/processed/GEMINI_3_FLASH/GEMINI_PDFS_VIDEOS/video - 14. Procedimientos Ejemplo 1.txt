@@ -1,0 +1,47 @@
+####
+**Configuración del ambiente inicial y evaluación de expresiones**
+
+Para este ejemplo, se define un `ambiente inicial` denominado `env0` que contiene los símbolos `X`, `Y`, `Z` con los valores `4`, `2`, `5` respectivamente. Este `ambiente` extiende de un `ambiente vacío` (`empty-env`). El objetivo es realizar la evaluación de una expresión que involucra la definición e invocación de un procedimiento. Se parte de la base de que el `ambiente inicial` de computación ya posee estas ligaduras antes de procesar la siguiente expresión:
+
+```racket
+let f = proc (x) *(x, x)
+in (f z)
+```
+
+####
+**Representación de procedimientos mediante clausuras**
+
+Al evaluar la expresión `let`, se crea un nuevo `ambiente` `env1` donde se define el identificador `f`. En este punto, el procedimiento no se representa como un ambiente nuevo, sino como una `clausura` (`closure`). Una `clausura` es una estructura de datos que almacena tres elementos fundamentales:
+- El parámetro formal del procedimiento (en este caso, `x`).
+- El cuerpo de la expresión (en este caso, `*(x, x)`).
+- El `ambiente` donde el procedimiento fue creado (en este caso, `env0`).
+
+####
+**Invocación de procedimientos y creación de ambientes dinámicos**
+
+Cada vez que se invoca un procedimiento, como en el caso de `(f z)`, se crea un nuevo `ambiente`. Para realizar esta evaluación, primero se busca el valor de `z` en el `ambiente` actual; según la configuración definida, el valor de `z` es `5`. 
+
+Al llamar a `f`, el nuevo `ambiente` creado asigna el valor del argumento (`5`) al parámetro formal `x`. Es fundamental notar que este ambiente de ejecución siempre debe extender del `ambiente` que la `clausura` tiene almacenado (`env0`). Por lo tanto, el diagrama de ambientes muestra que el nuevo contexto de `f` apunta directamente a `env0`, que es donde se encuentra la información original de la definición.
+
+####
+**Cálculo del resultado y verificación en el intérprete**
+
+Dentro del `ambiente` creado para la invocación de `f`, se evalúa el cuerpo del procedimiento `*(x, x)`. Dado que el valor de `x` es `5`, la operación resulta en `25`. Este comportamiento es el que se observa al ejecutar el código en el intérprete de clase:
+
+```racket
+;; Ambiente con X=4, Y=2, Z=5
+let f = proc (x) *(x, x)
+in (f z)
+```
+
+Como demuestra el código, el valor resultante es `25`. Se debe tener precaución al identificar los valores en el `ambiente`, asegurando que `z` corresponde a `5` para que la multiplicación sea correcta. Cada invocación genera un ambiente nuevo que preserva el `scope léxico` al extender el ambiente de la `clausura`. A continuación, se presentará el segundo ejemplo de ejecución.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 14. Procedimientos Ejemplo 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=91lReaV1wcU
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

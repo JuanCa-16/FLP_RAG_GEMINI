@@ -1,0 +1,139 @@
+####
+**Inferencia de tipos en procedimientos**
+
+En la inferencia de tipos, el interpretador realiza cálculos para estimar los tipos de los argumentos en los procedimientos, cubriendo los casos donde estos no son proporcionados explícitamente. Se introduce el concepto de `optional-type` (`?`), que es el valor que el sistema debe inferir.
+
+Para la inferencia, se crean `variable de tipo`, las cuales son de asignación única. Si se intenta asignar una `variable de tipo` con un valor diferente al ya establecido, el sistema genera un error de tipo.
+
+Un ejemplo de estructura `letrec` es:
+
+```racket
+letrec int f(? x, ? y) = if >(x, 0) then (f -(x, 1) +(y, 1)) else y in (f 10 20)
+```
+
+En este caso, el procedimiento retorna un `int` y sus argumentos son `int`.
+
+####
+**Detección de errores mediante variables de tipo**
+
+El sistema utiliza `type-of-expression` para validar las restricciones impuestas por el uso de variables en el cuerpo del código.
+
+```racket
+type-of-expression(
+  cases program (scan&parse "letrec int f(? x, ? y) = if x then (f x +(y, 1)) else y in f")
+  (a-program (exp) exp))
+  (empty-tenv))
+```
+
+Aquí, es correcto inferir que `x` es un `bool` debido a su posición en la condición del `if`. Sin embargo, si encontramos una contradicción, el sistema detecta el error:
+
+```racket
+type-of-expression(
+  cases program (scan&parse "letrec int f(? x, ? y) = if x then (f +(x, 2) +(y, 1)) else y in f")
+  (a-program (exp) exp))
+  (empty-tenv))
+```
+
+En este segundo caso, `x` es un `bool` por la regla del condicional, pero el cuerpo contiene `+(x, 2)`, lo que implica que `x` debe ser un `int`. Al intentar reasignar el tipo, se genera un `error de tipo`.
+
+####
+**Reglas para estructuras condicionales**
+
+La sintaxis de una expresión condicional se define como:
+`<expression> ::= "if" <expression> "then" <expression> "else" <expression>`
+
+Las reglas de inferencia son:
+- La `cond-exp` debe ser de tipo `bool`.
+- El tipo de `true-exp` debe ser igual al tipo de `false-exp`.
+
+####
+**Reglas para procedimientos**
+
+La sintaxis de un procedimiento se define como:
+`<expression> ::= "proc" "(" (type-exp identifier ',')* ")" <expression>`
+
+La regla para un procedimiento es `(t1 * t2 * t3 * ... * tn) -> t`. Los tipos de los argumentos dependen de los valores enviados y del cuerpo del procedimiento.
+
+Ejemplo de inferencia en `proc`:
+```racket
+type-of-expression(
+  cases program (scan&parse "proc(? x) +(x, 1)")
+  (a-program (exp) exp))
+  (empty-tenv))
+```
+
+Resultado:
+```racket
+# (struct:proc-type (# (struct:tvar-type 39 # (# (struct:atomic-type int)))) # (struct:tvar-type 40 # (# (struct:atomic-type int))))
+```
+
+####
+**Procedimientos polimórficos**
+
+Si no es posible condicionar los tipos de los argumentos de un procedimiento, se considera de tipo `polimórfico`, es decir, no tiene un tipo establecido inicialmente.
+
+```racket
+type-of-expression(
+  cases program (scan&parse "proc(? x) x")
+  (a-program (exp) exp))
+  (empty-tenv))
+```
+
+Resultado:
+```racket
+# (struct:proc-type (# (struct:tvar-type 41 # (()))) # (struct:tvar-type 41 # (())))
+```
+
+####
+**Restricciones de tipo por aplicación**
+
+Es posible condicionar un procedimiento mediante su aplicación. Si un procedimiento se utiliza en diferentes contextos, sus tipos deben ser consistentes.
+
+```racket
+type-of-expression(
+  cases program (scan&parse "let k = proc(? x) x in let f = (k 10) in k")
+  (a-program (exp) exp))
+  (empty-tenv))
+```
+
+El llamado `(k 10)` condiciona que la entrada y salida del procedimiento deben ser `int`. Si posteriormente se intenta usar con otro tipo, se producirá un error:
+
+```racket
+type-of-expression(
+  cases program (scan&parse "let k = proc(? x) x in let f = (k 10) in let s = (k true) in k")
+  (a-program (exp) exp))
+  (empty-tenv))
+```
+
+Error resultante:
+`check-equal-type!: Type mismatch: int doesn't match bool`
+
+####
+**Reglas de primitivas y aplicación**
+
+Las primitivas funcionan como procedimientos y siguen estas reglas:
+- **Primitivas numéricas:** `int * int * ... * int -> int`
+- **Primitivas relacionales:** `int * int -> bool`
+- **Primitivas lógicas:** `bool * bool * ... * bool -> bool`
+
+Para la aplicación de procedimientos (`app-exp`), se siguen estas condiciones:
+- El `rator` debe ser de tipo `proc-type` con la forma `targs -> result-type`.
+- El número de argumentos (`rands`) debe coincidir con el tamaño de `targs`.
+- Los tipos de los `targs` deben ser iguales a los tipos de los `rands`.
+
+**Proceso de inferencia:**
+1. Establecer variables de tipo para cada expresión.
+2. Establecer los tipos de los procedimientos.
+3. Establecer los tipos de las aplicaciones a los procedimientos.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Interpretador inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Interpretador%20inferencia/

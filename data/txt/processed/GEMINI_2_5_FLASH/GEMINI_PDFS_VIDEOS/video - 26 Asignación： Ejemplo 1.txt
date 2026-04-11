@@ -1,0 +1,18 @@
+La representación de ambientes para la expresión `let x = 2 in begin set x = 3; x end` se construye partiendo de un ambiente inicial vacío. Primero, la declaración `let x = 2` extiende el ambiente inicial, creando uno nuevo donde la variable `x` está asociada al valor 2. Posteriormente, dentro del bloque `begin...end`, la instrucción `set x = 3` modifica el valor de la variable `x` existente, actualizándolo a 3. Por lo tanto, el valor final de `x` que se devuelve es 3.
+
+####
+
+Para analizar la expresión `let x = 100 in let p = proc(x) begin set x = +(x,1); x end in +(p(x), p(x))`, se parte de un ambiente inicial vacío (`env0`). La primera declaración, `let x = 100`, extiende `env0` para crear un nuevo ambiente (`env1`) en el que `x` está ligado al valor 100. A continuación, la declaración `let p = proc(...)` extiende `env1` para crear un nuevo ambiente (`env2`), donde el identificador `p` se asocia a una clausura. Esta clausura encapsula el código del procedimiento y una referencia a su ambiente de definición, que en este caso es `env1`.
+
+####
+
+La evaluación de la expresión `+(p(x), p(x))` se realiza de izquierda a derecha. En la primera llamada, `p(x)`, el valor de `x` del ambiente circundante (que es 100) se pasa como argumento. Al invocar el procedimiento, se crea un nuevo ambiente de ejecución (`env_p1`) donde el parámetro formal `x` se liga al valor 100. Dentro de este ambiente, la instrucción `set x = +(x, 1)` modifica esta variable `x` local, cambiándola a 101. El `set` afecta a la variable más cercana en el alcance, que es la del propio procedimiento, sin alterar la `x` externa. La llamada retorna este valor, 101. La segunda llamada `p(x)` repite exactamente el mismo proceso: crea otro ambiente de ejecución (`env_p2`), modifica su `x` local a 101 y retorna 101. Finalmente, la suma de ambos resultados, `+(101, 101)`, da como resultado 202.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=m2bDVFw5KXc
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

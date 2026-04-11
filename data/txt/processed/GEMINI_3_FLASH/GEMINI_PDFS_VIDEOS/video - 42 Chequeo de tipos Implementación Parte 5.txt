@@ -1,0 +1,66 @@
+####
+**Corrección en la expresión If y definición de Set**
+
+En la implementación del interpretador, se ha realizado una corrección en el caso de la `if-expression`. Es necesario que esta devuelva un tipo, como `true-type` o `bool-type`, ya que omitir esto genera problemas en el chequeo de tipos.
+
+Para el caso de la `set-expression`, esta recibe un identificador (`id`) y una expresión. El valor de retorno definido para esta operación es un `int-type`. Aunque se podría implementar un `void-type`, se ha decidido manejarlo como un número (representado por `int-type`) debido a que se estableció previamente que el valor de retorno de una asignación es 1.
+
+####
+**Gramática y lógica de la expresión Begin**
+
+La `begin-expression` tiene la función de revisar el `type-expression` de cada una de las expresiones contenidas en su cuerpo y devolver el tipo de la última de ellas. Según la especificación gramatical, un `begin` recibe una expresión inicial seguida de una lista de expresiones:
+
+```racket
+; Especificación gramatical aproximada
+(begin-exp (exp1 (list-of exp)))
+```
+
+Para procesar esto en `type-expression`, se verifica si la lista de expresiones adicionales está vacía. Si es así, simplemente se calcula el tipo de la expresión inicial en el ambiente de tipos actual.
+
+####
+**Implementación del chequeo de tipos para Begin**
+
+En caso de que la `begin-expression` contenga múltiples elementos, se utiliza una función recursiva dentro de un `letrec` para evaluar la lista. La lógica consiste en recorrer la lista de expresiones, evaluando sus tipos secuencialmente, pero asegurando que el resultado final sea el tipo del último elemento.
+
+```racket
+; Implementación de la lógica para Begin Expression
+(if (null? lista-expresiones)
+    (type-expression expresión ambiente-tipos)
+    (letrec
+        ((evaluar-tipos
+          (lambda (ls-interno)
+            (cond
+              [(null? (cdr ls-interno))
+               (type-expression (car ls-interno) ambiente-tipos)]
+              [else
+               (begin
+                 (type-expression (car ls-interno) ambiente-tipos)
+                 (evaluar-tipos (cdr ls-interno)))]))))
+      (begin
+        (type-expression expresión ambiente-tipos)
+        (evaluar-tipos lista-expresiones))))
+```
+
+Este comportamiento permite inferir el tipo resultante de toda la secuencia basándose exclusivamente en su última expresión.
+
+####
+**Integración del chequeo de tipos en la evaluación del programa**
+
+La función `type-expression` es la encargada de calcular siempre los tipos de las expresiones que ingresan. En la función `evaluar-programa`, específicamente dentro del auxiliar del interpretador, se verifica el resultado de este análisis.
+
+Si el resultado de procesar el código es un tipo válido, el sistema procede a evaluar el programa. En caso contrario, se devuelve un error. Esta validación asegura que cualquier violación a las reglas de tipos especificadas sea capturada internamente antes de la ejecución.
+
+####
+**Consideraciones sobre el tipo Void en Set**
+
+Al implementar `set`, se consideró el uso de un `void-type`. Sin embargo, esto podría introducir dificultades adicionales, como la necesidad de manejar excepciones para evitar asignaciones del tipo `x = set ...`. Por esta razón, se mantiene el retorno de la asignación como un `int-type`, manteniendo la consistencia con el diseño actual del interpretador donde las asignaciones retornan un valor numérico.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 42 Chequeo de tipos Implementación Parte 5.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=rZR5WOfo5T0
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

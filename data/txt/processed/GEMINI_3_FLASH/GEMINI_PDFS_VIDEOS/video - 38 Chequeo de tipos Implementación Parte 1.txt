@@ -1,0 +1,65 @@
+####
+**Implementación del chequeo de tipos**
+
+En la implementación del `chequeo de tipos` en el interpretador, se utiliza como punto de partida el interpretador de asignación. En un lenguaje con `chequeo de tipos`, se requiere que el programador incluya el tipo de todas las variables. Esto implica cambios en la gramática para el `chequeo de tipos`, específicamente en la forma en que se escriben los procedimientos `proc-expression` y la recursión `letrec-expression`. 
+
+####
+**Cambios en la gramática para procedimientos y recursión**
+
+Para realizar el `chequeo de tipos`, se reescriben las expresiones de procedimiento y recursión de la siguiente manera:
+
+- El `proc` ahora recibe una expresión de tipo (`type-expression`) para cada identificador. Por ejemplo: `proc (int x, int y, int z)`.
+- En el `letrec`, se especifica tanto el tipo de salida como el tipo de los argumentos de entrada. Por ejemplo: `letrec int f(int x)`.
+
+En la especificación gramatical, se modifica la lista de identificadores para incluir un `type-expression`. En los procedimientos recursivos es indispensable indicar el tipo de retorno, ya que cuando se realiza un llamado recursivo dentro de la misma función, el interpretador necesita conocer su tipo. Sin esta especificación, para resolver el tipo de una función recursiva sería necesario evaluar la recursión hasta el fondo, proceso que se evita mediante la declaración explícita del tipo de salida, similar a como ocurre en lenguajes como C++.
+
+####
+**Definición de expresiones de tipo en la gramática**
+
+Se agregan a la gramática las expresiones de tipo (`type-expression`) para soportar los tipos básicos y los tipos de procedimientos:
+
+- `int-type-exp`: Representa el tipo entero.
+- `bool-type-exp`: Representa el tipo booleano.
+- `proc-type-exp`: Representa el tipo de un procedimiento. Se define con una lista de tipos de entrada (separados por asteriscos) y un tipo de salida.
+
+Un ejemplo de declaración de procedimiento con tipos sería `proc (int x, int y)`, donde el resultado de la evaluación puede ser un entero, pero la declaración del procedimiento especifica que recibe dos `int` y devuelve un `int`. Es fundamental distinguir entre la declaración del tipo y la evaluación de la expresión.
+
+####
+**Representación interna de los tipos**
+
+Para gestionar los tipos internamente, se implementa un `data-type` que permite diferenciar entre tipos atómicos y tipos de procedimientos.
+
+```racket
+(define-datatype tipo tipo?
+  (atomic-type
+   (name symbol?))
+  (proc-type
+   (arg-types (list-of tipo?))
+   (result-type tipo?)))
+```
+
+Esta estructura define:
+- `atomic-type`: Para tipos directos como `int` y `boolean`.
+- `proc-type`: Que almacena una lista de tipos para los argumentos (`arg-types`) y un tipo para el resultado (`result-type`).
+
+####
+**Definición de tipos base**
+
+Utilizando la estructura de `atomic-type`, se definen las constantes para los tipos enteros y booleanos en el interpretador:
+
+```racket
+(define int-type (atomic-type 'int))
+(define bool-type (atomic-type 'boolean))
+```
+
+Con estas modificaciones, el interpretador puede procesar la nueva sintaxis de los procedimientos y procedimientos recursivos, permitiendo especificar los tipos de entrada y salida necesarios para el proceso de `chequeo de tipos`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 38 Chequeo de tipos Implementación Parte 1.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=J8kdPqy64gc
+CORTE: Corte 2
+TEMATICA: Tipos: conceptos y chequeo
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Analiza tipos y aplica chequeo de tipos en programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

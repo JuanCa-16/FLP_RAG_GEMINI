@@ -1,0 +1,56 @@
+####
+Para implementar la evaluación de operaciones matemáticas en el lenguaje, debemos trabajar con `prim-expression`, la cual recibe una primitiva y una lista de expresiones. Dado que esta lista se encuentra en `sintaxis abstracta`, es necesario transformarla en una lista de números. Para ello, utilizamos una función recursiva o la función `map` para aplicar `evaluar-expression` a cada elemento de la lista junto con el ambiente actual.
+
+```racket
+(let ([lista-valores (map (lambda (x) (evaluar-expression x ambiente)) lista-expresiones)])
+  (evaluar-primitiva primitiva lista-valores))
+```
+
+Esta función `evaluar-expression` garantiza que siempre obtengamos un `valor expresado`, que en este caso corresponde a un número.
+####
+La función `evaluar-primitiva` recibe una primitiva y la lista de valores (números) previamente procesada. Utilizando una estructura de `cases`, se identifican las operaciones a realizar: `sum-prim`, `minus-prim`, `mult-prim`, `div-prim`, `incr-prim` y `decr-prim`.
+
+Para las operaciones de incremento y decremento, ignoramos el resto de los elementos de la lista y operamos únicamente sobre el primer valor (`car` de la lista):
+
+```racket
+(define (evaluar-primitiva prim lista-valores)
+  (cases primitive prim
+    (incr-prim () (+ (car lista-valores) 1))
+    (decr-prim () (- (car lista-valores) 1))
+    ...))
+```
+####
+Para manejar las operaciones aritméticas que aceptan múltiples argumentos (`suma`, `resta`, `multiplicación` y `división`), implementamos una función recursiva auxiliar llamada `operacion-prim`. Esta función requiere la lista de valores, la operación matemática correspondiente y un valor de terminación (identidad) para cuando la lista de valores esté vacía.
+
+```racket
+(define (operacion-prim lista-valores operacion terminacion)
+  (if (null? lista-valores)
+      terminacion
+      (operacion (car lista-valores)
+                 (operacion-prim (cdr lista-valores) operacion terminacion))))
+```
+
+El valor de terminación es fundamental para mantener la propiedad de la operación: usamos `0` para la suma y resta, y `1` para la multiplicación y división, evitando así efectos no deseados en el resultado final.
+####
+Utilizando funciones como `ciudadanos de primera clase`, integramos la lógica de `operacion-prim` dentro del evaluador de primitivas:
+
+```racket
+(cases primitive prim
+  (sum-prim () (operacion-prim lista-valores + 0))
+  (minus-prim () (operacion-prim lista-valores - 0))
+  (mult-prim () (operacion-prim lista-valores * 1))
+  (div-prim () (operacion-prim lista-valores / 1))
+  (incr-prim () (+ (car lista-valores) 1))
+  (decr-prim () (- (car lista-valores) 1)))
+```
+
+Con esta implementación, es posible evaluar expresiones complejas como `(+ (- 1 2) (* 2 3))`, donde el sistema procesa recursivamente cada operación respetando la estructura de la `sintaxis abstracta`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=rY7EvYy-4B0
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

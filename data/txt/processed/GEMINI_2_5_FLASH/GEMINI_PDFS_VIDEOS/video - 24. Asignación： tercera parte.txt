@@ -1,0 +1,26 @@
+Para implementar la asignación por referencia, es necesario modificar la estructura de datos del ambiente. El tipo de ambiente extendido, que originalmente contenía una lista de símbolos y una lista de valores, debe adaptarse para permitir la modificación de dichos valores. Por esta razón, la lista de valores se reemplaza por un vector. Las listas son estructuras inmutables, y modificarlas requeriría una reconstrucción completa, lo cual es ineficiente. En cambio, un vector es una estructura de datos mutable que permite alterar sus elementos directamente, facilitando así la operación de asignación. El nuevo tipo de dato para el ambiente se denominará `ambiente-extendido-ref` (`extend-env-ref`).
+
+####
+
+Para mantener la compatibilidad con el código existente del intérprete, se introduce una función constructora llamada `ambiente-extendido`. Esta función actúa como una capa de intermediación. Partes del intérprete, como la que gestiona la aplicación de procedimientos (`app-expression`), generan listas de valores para crear nuevos ambientes. La función `ambiente-extendido` recibe la lista de identificadores, la lista de valores y el ambiente anterior, e internamente convierte la lista de valores a un vector usando `list->vector` antes de invocar al constructor `ambiente-extendido-ref`. Este enfoque evita la necesidad de modificar múltiples partes del código que esperan trabajar con listas, encapsulando la conversión en un único punto.
+
+####
+
+La implementación original del ambiente extendido recursivo (`ambiente-extendido-recursivo`) presenta una limitación fundamental en un lenguaje con asignación. Estaba diseñado exclusivamente para vincular procedimientos, asumiendo que los valores asociados a los identificadores recursivos serían siempre clausuras. Sin embargo, la asignación permite que una variable que inicialmente contenía un procedimiento sea modificada para almacenar un valor de otro tipo, como un número. Si esto ocurriera, la estructura del ambiente recursivo se corrompería. Por lo tanto, es necesario rediseñar el mecanismo para que sea más general y robusto frente a la asignación.
+
+####
+
+La nueva implementación de `ambiente-extendido-recursivo` se basará en el `ambiente-extendido-ref`. En lugar de ser un tipo de dato distinto, será una función que construye un ambiente extendido estándar (`ambiente-extendido-ref`) con una estructura específica que permite la autorreferencia de los procedimientos. La estrategia consiste en crear un ambiente donde las clausuras de los procedimientos recursivos capturen el mismo ambiente en el que están siendo definidas. De esta forma, cada procedimiento puede "conocerse" a sí mismo y a los demás procedimientos definidos en el mismo bloque recursivo, habilitando la recursión mutua y simple.
+
+####
+
+La implementación de la función `ambiente-extendido-recursivo` sigue varios pasos. Primero, se crea un vector de un tamaño igual al número de procedimientos a definir, inicializado con valores provisionales (e.g., ceros), utilizando una función como `make-vector`. A continuación, se construye el ambiente de salida (`ambiente-extendido-ref`) usando la lista de nombres de los procedimientos, el vector recién creado y el ambiente anterior. Este ambiente ya es una entidad completa, aunque el vector de valores aún no contiene las clausuras finales. Finalmente, se itera sobre las listas de argumentos y cuerpos de los procedimientos para crear cada clausura. Crucialmente, cada clausura se construye para que guarde una referencia al ambiente de salida que se acaba de crear. Mediante una operación como `vector-set!`, cada clausura se inserta en la posición correspondiente del vector de valores. Debido a que las clausuras capturan el ambiente que las contiene, se logra el efecto de autorreferencia necesario para la recursión.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=dVERIOle5zA
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

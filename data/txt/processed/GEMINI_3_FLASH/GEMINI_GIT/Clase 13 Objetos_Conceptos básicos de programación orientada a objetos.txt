@@ -1,0 +1,141 @@
+####
+**Conceptos básicos de objetos**
+
+Los objetos son una abstracción del mundo real que poseen:
+
+- `Estado`: atributos o propiedades del objeto.
+- `Comportamiento`: métodos o acciones que puede realizar.
+
+Por ejemplo, un perro tiene una edad y un peso, que pueden cambiar con el tiempo. El perro tiene comportamientos como ladrar, caminar, morder, etc. La `programación orientada a objetos` consiste en pensar las soluciones a problemas como relaciones entre objetos, tales como `herencia`, `composición` y `uso`.
+
+####
+**Clases e instancias**
+
+Las `clases` son agrupaciones de objetos del mismo tipo. Por ejemplo: Lucas y Toby son perros; ambos comparten las características de un perro, pero se diferencian en su `estado`. Lucas tiene 10 años mientras Toby tiene 5 años.
+
+Esto significa que ambos son `instancias` de una clase llamada `Perro`. Una `instancia` consiste en dar valores específicos a los atributos definidos en una `clase`.
+
+####
+**Relaciones entre clases: Herencia**
+
+La `herencia` es una relación donde se define una clase usando los atributos de otra. Por ejemplo, un `Perro de caza` y un `Perro doméstico` son grupos de perros, pero varían en sus propiedades y acciones. Se dice que el perro de caza y el perro doméstico heredan características de la clase `Perro`, pero definen las suyas propias.
+
+####
+**Relaciones entre clases: Composición y Uso**
+
+Existen otros tipos de relaciones fundamentales entre clases:
+
+**Composición**
+Una clase puede tener internamente en sus campos valores complejos que son representados por otras clases. Por ejemplo, un `computador` tiene un `disco duro` (con capacidad, color, peso), `memoria` (con sus características) y `pantalla` (marca, modelo).
+
+**Uso**
+Es una relación en la cual una clase utiliza métodos de la otra, pero no la compone. Por ejemplo, la relación entre `Persona` y `Guitarra`: una persona puede tocar la guitarra, pero la guitarra no es una parte constituyente de la persona.
+
+####
+**Polimorfismo y ejemplo en Python**
+
+El `polimorfismo` en el contexto de `herencia` significa que una subclase (clase hija) posee métodos heredados de una clase padre, pero al invocarlos puede presentar un comportamiento diferente.
+
+```python
+# Clase padre que define la estructura básica de un animal
+class Animal:
+    def __init__(self, nombre, edad):
+        # Constructor que inicializa los atributos básicos
+        self.nombre = nombre
+        self.edad = edad
+
+    def emitir_sonido(self):
+        # Método que será sobrescrito por las clases hijas
+        return "muhaha"
+
+# Clase hija que hereda de Animal
+class Reptil(Animal):
+    def __init__(self, nombre, edad):
+        # Llamada al constructor de la clase padre
+        super().__init__(nombre, edad)
+
+    def emitir_sonido(self):
+        # Implementación específica para reptiles
+        return "grrrr"
+
+# Otra clase hija que hereda de Animal
+class Mamifero(Animal):
+    def __init__(self, nombre, edad):
+        # Llamada al constructor de la clase padre
+        super().__init__(nombre, edad)
+
+    def emitir_sonido(self):
+        # Implementación específica para mamíferos
+        return "auuuuuuuuu"
+
+# Bloque principal de ejecución
+if __name__ == "__main__":
+    # Creación de instancias de las clases hijas
+    animalA = Reptil("Juan", 32)
+    animalB = Mamifero("Pedro", 10)
+
+    # Demostración del polimorfismo: mismo método, comportamientos diferentes
+    print(animalA.emitir_sonido())  # Output: grrrr
+    print(animalB.emitir_sonido())  # Output: auuuuuuuuu
+```
+
+Al ejecutar este código, el comportamiento de `emitir_sonido` cambia de acuerdo a la implementación de las clases hijas, a pesar de que ambos objetos son de tipo `Animal`.
+
+####
+**Características de los objetos**
+
+Los objetos y el paradigma de orientación a objetos presentan las siguientes características clave:
+
+- `Propiedad de encapsulación`: Permite controlar la gestión (acceso o modificación) del estado usando métodos. Aquí aparecen los modificadores de alcance: `public`, `private` y `protected`.
+- `Clases agrupan objetos`: Las clases definen el molde para crear múltiples objetos con las mismas características.
+- `Herencia`: Permite generar nuevas clases a partir de las anteriores, facilitando la reutilización de código y la creación de jerarquías.
+- `Polimorfismo`: Permite que objetos de la misma clase puedan tener un comportamiento diferente (mismo método, diferentes implementaciones).
+
+####
+**Conceptos adicionales de la POO**
+
+Otros conceptos fundamentales para el desarrollo de software orientado a objetos son:
+
+- `Abstracción`: La capacidad de representar características esenciales de un objeto sin incluir detalles de implementación.
+- `Encapsulación`: El ocultamiento de los detalles internos de implementación de un objeto, exponiendo solo una interfaz pública.
+- `Modularidad`: La división del sistema en partes más pequeñas y manejables (`módulos` o `clases`) que pueden ser desarrolladas y mantenidas independientemente.
+
+####
+**Tabla de resumen de conceptos de POO**
+
+| Concepto | Definición | Ejemplo |
+| :--- | :--- | :--- |
+| `Objeto` | Entidad que combina estado y comportamiento | Un perro con edad=5 y método `ladrar()` |
+| `Clase` | Molde o plantilla para crear objetos | Clase `Perro` define atributos y métodos comunes |
+| `Instancia` | Objeto específico creado a partir de una clase | Lucas (perro de 10 años) |
+| `Herencia` | Mecanismo para crear nuevas clases basadas en existentes | `PerroDeCaza` hereda de `Perro` |
+| `Polimorfismo` | Capacidad de objetos de responder al mismo mensaje de forma diferente | `emitir_sonido()` produce "grrrr" en `Reptil` y "auuu" en `Mamifero` |
+| `Encapsulación` | Ocultamiento de detalles internos del objeto | Atributos privados con métodos públicos de acceso |
+| `Composición` | Relación donde una clase contiene objetos de otras clases | `Computador` contiene `DiscoDuro`, `Memoria`, `Pantalla` |
+| `Abstracción` | Representación simplificada de la realidad | Clase `Vehículo` sin detalles de motor específico |
+| `Modularidad` | División del sistema en partes independientes | Separación en clases distintas para cada responsabilidad |
+
+####
+**Principios y comentarios sobre POO**
+
+El diseño orientado a objetos se rige por diversas consideraciones técnicas:
+
+- La programación orientada a objetos mejora la mantenibilidad y reutilización del código.
+- El `principio de responsabilidad única` sugiere que cada clase debe tener una única responsabilidad.
+- Las relaciones entre clases deben diseñarse cuidadosamente para evitar un `acoplamiento` excesivo.
+- Los `patrones de diseño` son soluciones recurrentes a problemas comunes en POO.
+- La `sobrecarga de métodos` permite múltiples implementaciones con diferentes parámetros.
+- Las `interfaces` definen contratos que las clases deben implementar sin especificar cómo.
+- La `cohesión` mide cómo se relacionan las responsabilidades dentro de una clase.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Conceptos básicos de programación orientada a objetos
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Conceptos%20b%C3%A1sicos%20de%20programaci%C3%B3n%20orientada%20a%20objetos/

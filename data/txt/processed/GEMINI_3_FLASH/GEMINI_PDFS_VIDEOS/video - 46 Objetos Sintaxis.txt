@@ -1,0 +1,230 @@
+#### **Modificación de la gramática para el manejo de clases**
+
+Para implementar el soporte de programación orientada a objetos, se modifica la gramática permitiendo una o más declaraciones de clases antes de las expresiones principales. La estructura de una clase y sus métodos se define de la siguiente manera:
+
+**Declaración de clases**
+Una clase consta de un identificador, la palabra reservada `extends` seguida de otro identificador (para manejar la herencia), una lista de cero o más identificadores que representan los campos (`fields`) y una serie de declaraciones de métodos.
+
+**Declaración de métodos**
+Un método se define con la palabra `method`, un identificador para su nombre, una lista de parámetros de entrada separados por comas y una expresión que constituye el cuerpo del método.
+
+```text
+Class-decl ::= class Identifier extends Identifier {Identifier}* {Method-decl}*
+Method-decl ::= method Identifier ({Identifier}*(,)) Expression
+```
+
+Para interactuar con los objetos, se agregan nuevas reglas de producción a las expresiones:
+
+- `new`: Permite la creación de objetos mediante un identificador de clase y una lista de expresiones para sus argumentos.
+- `send`: Permite la invocación de un método sobre un objeto (expresión), especificando el nombre del método y sus parámetros.
+- `super`: Permite el llamado a un método de la clase padre.
+
+```text
+Expression ::= new Identifier ({Expression}*(,))
+Expression ::= send Expression Identifier ({Expression}*(,))
+Expression ::= super Identifier ({Expression}*(,))
+```
+
+#### **Valores denotados, expresados y definición de clases**
+
+En este modelo, los `valores denotados` (aquellos almacenados en las variables en memoria) y los `valores expresados` incluyen:
+- Números
+- `PROCVAL` (procedimientos)
+- Objetos
+- Listas de valores expresados
+
+**Ejemplo de definición de una clase**
+A continuación, se presenta la declaración de la clase `C1`. Cuando una clase no tiene una clase padre, se utiliza `Object` para indicar el tope de la jerarquía. Por limitaciones técnicas de la implementación, la palabra `extends` siempre debe estar presente.
+
+```racket
+class C1 extends Object
+  field i
+  field j
+  method initialize (x)
+    begin
+      set i = x;
+      set j = -(0, x)
+    end
+  method countup (d)
+    begin
+      set i = +(i, d);
+      set j = -(j, d)
+    end
+  method getstate () list(i, j)
+```
+
+En este código:
+- La clase `C1` extiende de `Object`.
+- Cada objeto de la clase `C1` contiene dos campos: `i` y `j`.
+- El método `initialize` actúa como el constructor por defecto y se ejecuta automáticamente al crear el objeto.
+- Los métodos `countup` y `getstate` definen el comportamiento y los mensajes a los que las instancias de `C1` pueden responder.
+
+#### **Creación y semántica de objetos**
+
+La creación de un objeto se realiza mediante la expresión `new`. Al instanciar un objeto, su método `initialize` es invocado automáticamente.
+
+**Ejemplo de uso de objetos**
+En el siguiente fragmento, se crean y manipulan objetos de la clase `C1` previamente definida:
+
+```racket
+let o1 = new C1(3)
+in let t1 = send o1 getstate()
+   in let t2 = send o1 countup(2)
+      in let t3 = send o1 getstate()
+         in list(t1, t3)
+```
+
+**Análisis de la ejecución**
+1. Al ejecutar `new C1(3)`, el método `initialize` asigna `i = 3` y `j = -3`.
+2. La primera llamada a `send o1 getstate()` retorna la lista `(3 -3)`.
+3. Al ejecutar `send o1 countup(2)`, el campo `i` se incrementa en 2 (`i = 5`) y a `j` se le resta 2 (`j = -5`).
+4. La segunda llamada a `send o1 getstate()` retorna `(5 -5)`.
+5. El resultado final del programa es la lista `((3 -3) (5 -5))`.
+
+#### **Polimorfismo y despacho dinámico de métodos**
+
+El polimorfismo permite que diferentes clases respondan al mismo mensaje de formas distintas. Esto se ilustra mediante la implementación de un árbol con nodos internos y hojas.
+
+```racket
+class interior-node extends Object
+  field left
+  field right
+  method initialize (l, r)
+    begin
+      set left = l;
+      set right = r
+    end
+  method sum () +(send left sum(), send right sum())
+
+class leaf-node extends Object
+  field value
+  method initialize (v) set value = v
+  method sum () value
+```
+
+**Despacho dinámico**
+Al ejecutar el método `sum` sobre una instancia, el interpretador determina en tiempo de ejecución a qué clase pertenece el objeto para decidir qué implementación del método invocar.
+
+```racket
+let o1 = new interior-node(
+           new interior-node(
+             new leaf-node(3),
+             new leaf-node(4)
+           ),
+           new leaf-node(5)
+         )
+in send o1 sum()
+```
+
+Si el objeto es un `interior-node`, el método `sum` realizará llamadas recursivas a sus hijos. Si es un `leaf-node`, simplemente retornará su valor. Esta capacidad de resolver el método correspondiente según la instancia se denomina `despacho dinámico`.
+
+#### **El identificador `self`**
+
+El identificador `self` se utiliza para invocar métodos dentro del mismo objeto, funcionando de manera análoga a `this` en lenguajes como Java. `self` está ligado directamente al objeto sobre el cual se invocó el método original.
+
+**Ejemplo de uso de `self`**
+En el siguiente ejemplo, la clase `odeven` utiliza `self` para realizar llamadas internas entre los métodos `even` y `odd`:
+
+```racket
+class odeven extends Object
+  method initialize () 0
+  method even (n)
+    if iszero(n)
+    then 1
+    else send self odd(-(n, 1))
+  method odd (n)
+    if iszero(n)
+    then 0
+    else send self even(-(n, 1))
+```
+
+Cuando se ejecuta `send o1 even(n)`, el identificador `self` dentro del código se refiere a la instancia `o1`. Esto permite que el objeto se envíe mensajes a sí mismo para resolver comportamientos complejos o recursivos.
+
+#### **Herencia y ocultamiento de campos**
+
+La herencia permite definir nuevas clases a partir de clases existentes. Cuando una clase extiende a otra, hereda sus campos y métodos. Si una clase hija redefine un campo con el mismo nombre que uno en la clase padre, se produce un `ocultamiento` (`shadowing`), y se prioriza el campo de la clase actual.
+
+**Ejemplo de jerarquía y búsqueda de métodos**
+Considérese una clase `C2` que extiende a `C1`:
+
+```racket
+class c1 extends Object
+  field x
+  field y
+  method initialize () 1
+  method set-x1 (v) set x = v
+  method set-y1 (v) set y = v
+  method get-x1 () x
+  method get-y1 () y
+
+class c2 extends c1
+  field y
+  method set-y2 (v) set y = v
+  method get-x2 () x
+  method get-y2 () y
+```
+
+En este caso:
+- Si se llama a un método que no existe en `c2` (como `set-x1`), el interpretador lo busca en la clase padre `c1`.
+- Debido a que `c2` redefine el campo `y`, el método `set-y1` (de la clase padre) modificará el campo `y` de `c1`, mientras que `set-y2` modificará el campo `y` propio de `c2`.
+
+#### **Despacho dinámico con `self` en herencia**
+
+El uso de `self` en combinación con la herencia permite que métodos definidos en una clase padre invoquen implementaciones redefinidas en las clases hijas.
+
+**Ejemplo de despacho dinámico**
+```racket
+class c1 extends Object
+  method m1 () 1
+  method m2 () 100
+  method m3 () send self m2()
+
+class c2 extends c1
+  method m2 () 2
+```
+
+Si se crea un objeto `o2` de la clase `c2` y se invoca `send o2 m3()`:
+1. `m3` no existe en `c2`, por lo que se ejecuta el `m3` de la clase padre `c1`.
+2. El cuerpo de `m3` ejecuta `send self m2()`.
+3. Como `self` es una instancia de `c2`, el método `m2` que se ejecuta es el de la clase `c2` (que retorna 2) y no el de `c1` (que retorna 100).
+
+Este comportamiento es fundamental para el `despacho dinámico de métodos`, ya que la resolución del método depende del objeto real (`self`) y no de dónde está definido el código que hace la llamada.
+
+#### **Llamados a la clase padre con `super`**
+
+La palabra reservada `super` permite invocar métodos de la clase padre, lo cual es especialmente útil para la inicialización en cadena de objetos en una jerarquía de herencia.
+
+**Ejemplo de inicialización con `super`**
+```racket
+class point extends Object
+  field x
+  field y
+  method initialize (init-x, init-y)
+    begin
+      set x = init-x;
+      set y = init-y
+    end
+
+class colored-point extends point
+  field color
+  method initialize (init-x, init-y, init-color)
+    begin
+      super initialize(init-x, init-y);
+      set color = init-color
+    end
+```
+
+**Comportamiento de `super`**
+- En `colored-point`, el método `initialize` utiliza `super initialize` para delegar la inicialización de los campos `x` e `y` a la clase `point`.
+- Si no se invoca explícitamente el inicializador del padre, los campos heredados pueden quedar con valores por defecto (como 0).
+- Esta técnica permite mantener la coherencia en jerarquías profundas (ej. `C3` extiende `C2` y `C2` extiende `C1`), asegurando que cada nivel de la jerarquía configure sus propios campos correctamente.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 46 Objetos Sintaxis.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=PFEp6jFmshw
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

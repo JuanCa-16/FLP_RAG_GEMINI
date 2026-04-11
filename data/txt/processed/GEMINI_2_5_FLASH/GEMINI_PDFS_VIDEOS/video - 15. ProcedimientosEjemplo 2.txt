@@ -1,0 +1,30 @@
+La representación de ambientes permite resolver ambigüedades en la resolución de variables. El proceso comienza con un ambiente inicial, que, si no se especifica, es el ambiente vacío. En este caso, se define un primer ambiente, `e0`, donde la variable `x` se enlaza al valor 5.
+
+####
+
+A continuación, se define una función `f` con parámetros `y` y `z`. Esta definición crea una clausura, que es un par compuesto por el código del procedimiento y una referencia al ambiente en el que fue creada. Por lo tanto, la clausura de `f` contiene un puntero al ambiente `e0`. Seguidamente, se define un nuevo ambiente, `e1`, que extiende a `e0` y donde la variable `x` se enlaza a un nuevo valor, 28.
+
+####
+
+La invocación de un procedimiento siempre resulta en la creación de un nuevo ambiente. Al evaluar la expresión `f(2, x)`, primero se resuelve el argumento `x` en el ambiente de llamada, `e1`, cuyo valor es 28. Por lo tanto, la llamada efectiva es `f(2, 28)`. Esto crea un nuevo ambiente para la ejecución de `f`, donde los parámetros `y` y `z` se enlazan a los valores 2 y 28, respectivamente.
+
+####
+
+Un aspecto fundamental del modelo de alcance léxico es que el nuevo ambiente creado para la llamada a una función extiende del ambiente que fue almacenado en su clausura. En este caso, el ambiente de `f` extiende del ambiente `e0`, no del ambiente de llamada `e1`. Este enlace determina qué variables no locales son visibles dentro de la función.
+
+####
+
+Para evaluar el cuerpo de la función, la expresión `(+ y (- z x))`, la búsqueda de variables se realiza de la siguiente manera: `y` y `z` se encuentran en el ambiente local de la función con valores 2 y 28. La variable `x` no está en el ambiente local, por lo que la búsqueda continúa en el ambiente padre, `e0`, donde `x` se encuentra con el valor 5. La operación es `2 + (28 - 5)`, que da como resultado final 25.
+
+####
+
+La ejecución del código equivalente en un intérprete valida este análisis. La expresión `let x = 5 in let f = proc(y, z) (+ y (- z x)) in let x = 28 in f(2, x)` produce el resultado 25. Esto confirma que el valor de la variable `x` utilizado dentro de la función `f` es el que estaba definido en el alcance léxico donde `f` fue creada, no en el alcance donde fue invocada.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=2Dnxwstls1c
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

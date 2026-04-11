@@ -1,0 +1,90 @@
+####
+
+**Representación de ambientes y ejecución de métodos en objetos simples**
+
+Para trabajar el código de declaración de clases y objetos, iniciamos con un ambiente global `empty-env`. Al procesar un bloque `let`, se extiende este ambiente para incluir las definiciones de los objetos.
+
+Considerando la creación de un objeto `O1` de la clase `C1` mediante `new C1()`, el estado inicial de sus atributos `X` e `Y` es `0, 0`. La representación interna del objeto es una lista de partes donde la primera parte contiene la referencia a la clase `C1` y sus valores asociados.
+
+Al ejecutar la expresión `send O1 M1`, dado que el método `M1` no recibe argumentos, se crea un ambiente de ejecución con la siguiente estructura:
+- `super`: Referencia a la superclase (en este caso `object`).
+- `self`: La representación del objeto `O1`.
+- Parámetros: Vacío.
+
+Este ambiente extiende la vista de los atributos de la clase `C1`. En el momento de la construcción del objeto con `new C1`, se ejecuta el método `initialize`, el cual asigna los valores `1` y `2` a los atributos `X` e `Y` respectivamente. Por lo tanto, cuando el cuerpo del método `M1` busca la variable `X`, el sistema de resolución de alcances encuentra el valor `1` en el ambiente del objeto.
+
+####
+
+**Jerarquía de clases y representación de objetos con múltiples partes**
+
+En un escenario más elaborado con dos clases, `C1` y `C2`, donde existe una relación de herencia, la representación de los objetos se vuelve más compleja. Un objeto `O1` de la clase `C1` se representa como una lista de partes que contiene únicamente la sección correspondiente a `C1` con sus atributos `X` e `Y` inicializados (por ejemplo, `1` y `2`).
+
+Para un objeto `O2` de la clase `C2` (que hereda de `C1`), la representación interna incluye:
+- Una parte para `C2` con sus propios atributos `X` e `Y` (con valores como `9` y `10`).
+- Una parte para `C1` con sus atributos `X` e `Y` (con valores `1` y `2`).
+
+Si se utiliza un método como `super initialize`, los valores se propagan correctamente entre las partes. De lo contrario, los atributos de las clases superiores permanecerían en su valor por defecto `0`.
+
+####
+
+**Despacho dinámico y el ambiente de ejecución de métodos**
+
+Al ejecutar `send O2 M2`, donde `M2` es un método definido en la clase `C1`, el despacho dinámico determina la vista adecuada del objeto. El ambiente generado para la ejecución de `M2` contiene:
+- `super`: `object` (porque `M2` se encuentra en `C1` y su padre directo es `object`).
+- `self`: El objeto completo `O2`.
+- Parámetros: Vacíos (si no recibe argumentos).
+
+Sobre este ambiente se extiende la vista de los atributos correspondientes a la clase donde reside el método (`C1`), permitiendo el acceso a `X = 1` e `Y = 2`. El cuerpo del método `M2` puede contener una llamada a `send self M1`. En este caso, `self` sigue siendo `O2`, pero la búsqueda del método `M1` comenzará desde la clase efectiva del objeto (`C2`), aplicando nuevamente las reglas de despacho dinámico.
+
+####
+
+**Resolución de nombres en llamadas internas con `send self`**
+
+Cuando se procesa la instrucción `send self M1` dentro del contexto anterior, se genera un nuevo ambiente de llamado. A pesar de que la ejecución inició en un método de `C1`, al usar `send self`, la búsqueda de `M1` se realiza sobre la estructura completa de `O2`.
+
+Si `M1` se encuentra en la parte de la clase `C2`, la vista del ambiente priorizará los atributos de esa clase. El ambiente para `M1` se estructura así:
+- `super`: `C1` (la clase superior a `C2`).
+- `self`: El objeto `O2`.
+- Vista de atributos: Se encuentran `X = 9` e `Y = 10` correspondientes a `C2`.
+
+Si el cuerpo de `M1` solicita el valor de `X`, el sistema de búsqueda en el ambiente encontrará primero el valor `9` definido en la parte más específica del objeto (`C2`), ignorando el `X = 1` que reside en la parte de `C1`. Este comportamiento es fundamental para entender el sombreado de variables y el polimorfismo en lenguajes orientados a objetos.
+
+####
+
+**Estado persistente y compartición mediante vectores**
+
+En un sistema donde los objetos mantienen su estado, las variables de instancia (como `I` y `J`) suelen estar encapsuladas en vectores para permitir la mutación. Consideremos un objeto `O1` de la clase `C1` con atributos inicializados en `I = 3` y `J = -3`.
+
+Al ejecutar un método `get-state`, se crea un ambiente de llamado:
+- `super`: `object`
+- `self`: `O1`
+- Vista: `I = 3, J = -3`
+
+Si el método devuelve `(list i j)`, el resultado será la lista `(3 -3)`. Cada llamado a un método está encapsulado en su propio ambiente, lo que garantiza que los parámetros locales del método no interfieran con otros llamados, manteniendo la propiedad de aislamiento de las ejecuciones de los objetos.
+
+####
+
+**Mutación de estado y efectos secundarios en ambientes de objetos**
+
+Cuando se ejecuta un método que modifica el estado, como `add(v)`, el ambiente de ejecución recibe el parámetro (por ejemplo, `v = 2`). Si el cuerpo del método realiza una operación de actualización sobre los atributos:
+```racket
+set i = + i v
+set j = - j v
+```
+Se produce un efecto secundario. Debido a que `I` y `J` están almacenados en vectores compartidos dentro de la representación del objeto `O1`, los valores cambian de `3` y `-3` a `5` y `-5`. Este cambio es persistente y visible para cualquier otra referencia al objeto o futuros llamados a métodos.
+
+Si posteriormente se llama de nuevo a `get-state`, el nuevo ambiente de ejecución reflejará los valores actualizados:
+- Vista actual: `I = 5, J = -5`
+- Retorno: `(5 -5)`
+
+Si el programa original almacenó el primer resultado en `T1` y el segundo en `T2`, al final, una expresión `(list T1 T2)` devolverá la estructura de lista `((3 -3) (5 -5))`, demostrando cómo el estado del objeto evolucionó a través de los envíos de mensajes.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 51 Objetos simples Ejemplos.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=LpBRO1CbfZA
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

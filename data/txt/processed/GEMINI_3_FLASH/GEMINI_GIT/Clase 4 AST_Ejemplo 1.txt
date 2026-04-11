@@ -1,0 +1,137 @@
+####
+**Definición de Árboles Binarios en EOPL**
+
+La estructura de un árbol binario se define mediante la siguiente gramática BNF:
+
+`<tree> ::= <number>`
+`leaf(datum)`
+`::= <symbol> <tree> <tree>`
+`node(key, left, right)`
+
+Para implementar esta estructura en el lenguaje `Racket` utilizando la librería `eopl`, se define el tipo de dato `tree` de la siguiente manera:
+
+```racket
+#lang eopl
+
+(define-datatype tree tree?
+  (leaf
+   (datum number?))
+  (node
+   (key symbol?)
+   (left tree?)
+   (right tree?)))
+```
+
+Esta definición establece que un `tree` puede ser una hoja (`leaf`) que contiene un valor numérico, o un nodo (`node`) que contiene una clave simbólica y dos subárboles (izquierdo y derecho).
+
+####
+**Ejemplo de instancia de un árbol binario**
+
+Se define una instancia de ejemplo denominada `treeA` para representar una estructura jerárquica compleja utilizando el tipo de dato `tree`:
+
+```racket
+(define treeA
+  (node 'a
+        (node 'b
+              (node 'd
+                    (node 'h
+                          (leaf 7)
+                          (leaf 8))
+                    (node 'i
+                          (leaf 9)
+                          (leaf 10)))
+              (node 'e
+                    (leaf 1)
+                    (leaf 2)))
+        (node 'c
+              (node 'f
+                    (leaf 3)
+                    (leaf 4))
+              (node 'g
+                    (leaf 5)
+                    (leaf 6)))))
+```
+
+Este código construye un árbol con raíces simbólicas y hojas numéricas en el área del programador.
+
+####
+**Recorrido en preorder**
+
+El recorrido `preorder` procesa un árbol siguiendo el orden: raíz, subárbol izquierdo y subárbol derecho. La función transforma el árbol en una lista:
+
+```racket
+;; preorder: tree -> lista
+(define preorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum)
+            (list datum))
+      (node (key left right)
+            (append
+             (list key)
+             (preorder left)
+             (preorder right))))))
+
+(display (preorder treeA))
+(display "\n")
+```
+
+La implementación utiliza el mecanismo de `cases` para diferenciar entre una hoja (`leaf`), donde retorna el dato en una lista, y un nodo (`node`), donde concatena la clave con los resultados de las llamadas recursivas sobre los hijos.
+
+####
+**Recorrido en posorder**
+
+El recorrido `posorder` procesa un árbol siguiendo el orden: subárbol izquierdo, subárbol derecho y finalmente la raíz. La función se define de la siguiente manera:
+
+```racket
+(define posorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum)
+            (list datum))
+      (node (key left right)
+            (append
+             (posorder left)
+             (posorder right)
+             (list key))))))
+
+(display (posorder treeA))
+(display "\n")
+```
+
+Mediante el uso de `cases` sobre el tipo de dato `tree`, se realiza la recursión sobre los nodos `left` y `right` antes de añadir el símbolo `key` al final de la lista resultante.
+
+####
+**Recorrido en inorder**
+
+El recorrido `inorder` procesa un árbol siguiendo el orden: subárbol izquierdo, raíz y subárbol derecho. Su implementación en `Racket` es la siguiente:
+
+```racket
+(define inorder
+  (lambda (t)
+    (cases tree t
+      (leaf (datum)
+            (list datum))
+      (node (key left right)
+            (append
+             (inorder left)
+             (list key)
+             (inorder right))))))
+
+(display (inorder treeA))
+(display "\n")
+```
+
+En esta función, la clave del nodo (`key`) se inserta entre los resultados obtenidos de procesar recursivamente el subárbol izquierdo (`left`) y el subárbol derecho (`right`).
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 4 AST_Ejemplo 1
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%204/Ejemplo%201/

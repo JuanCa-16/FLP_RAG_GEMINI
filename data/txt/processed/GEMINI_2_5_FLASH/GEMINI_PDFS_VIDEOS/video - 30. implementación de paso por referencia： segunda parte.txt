@@ -1,0 +1,22 @@
+La función `de-ref`, encargada de obtener el valor de una referencia, se modifica para gestionar distintos tipos de "blancos" o `targets`. Cuando una variable es representada como un `target`, se distinguen dos casos. Si el `target` es directo, la función simplemente retorna su valor contenido, ya que no hay indirección. Si el `target` es indirecto, significa que la referencia apunta a otra referencia. En esta situación, `de-ref` debe buscar y devolver el valor de esa referencia interna, estableciendo así la conexión entre ellas.
+
+####
+La implementación de `de-ref` se actualiza para manejar la lógica de `targets` directos e indirectos. La función recibe una referencia y primero evalúa su `target`. Si es un `direct-target`, extrae y devuelve el valor expresado contenido en él. Si es un `indirect-target`, procede a dereferenciar la referencia interna que contiene. A continuación, se evalúa el `target` de esta referencia interna: si es un `direct-target`, se devuelve su valor; si resulta ser otro `indirect-target`, se genera un error. Esta restricción impide referencias anidadas a múltiples niveles, como una referencia que apunta a otra referencia que a su vez apunta a una tercera, permitiendo únicamente un solo nivel de indirección.
+
+####
+El procedimiento `set-ref!`, que modifica el valor de una referencia, también se adapta para considerar si el `target` es directo o indirecto. Si el `target` es directo, `set-ref!` modifica el valor de la referencia de entrada, siguiendo el comportamiento estándar. En cambio, si el `target` es indirecto, la operación de modificación no se aplica sobre la referencia de entrada, sino sobre la referencia interna a la que esta apunta. De esta manera, se logra la conexión y se asegura que el cambio se propague a la variable final. En ambos casos, el nuevo valor asignado se almacena siempre como un `direct-target`.
+
+####
+La implementación de `set-ref!` determina primero cuál es la referencia efectiva que debe ser modificada. Al recibir una referencia y un nuevo valor, se inspecciona el `target` de la referencia de entrada. Si es un `direct-target`, la propia referencia de entrada es seleccionada para la modificación. Si se trata de un `indirect-target`, se extrae la referencia interna que contiene y esta se convierte en el objetivo de la operación de asignación. Una vez identificada la referencia correcta, se invoca a la función primitiva `primitive-set-ref!`, pasándole dicha referencia y el nuevo valor, que siempre se empaqueta como un `direct-target`. Este mecanismo desvía la asignación a la variable a la que se apunta en casos de indirección.
+
+####
+Se han modificado las funciones `de-ref` y `set-ref!` para manejar correctamente las referencias que pueden tener `targets` directos o indirectos. `de-ref` ahora resuelve la indirección consultando la referencia interna cuando encuentra un `indirect-target`. Por su parte, `set-ref!` desvía la operación de asignación a la referencia apuntada si el `target` es indirecto, o modifica la referencia de entrada si es directo. Estas adaptaciones son fundamentales para el correcto funcionamiento del paso por referencia. A continuación, será necesario realizar ajustes adicionales en otras partes del interpretador, como en la evaluación de expresiones y procedimientos, para integrar completamente esta nueva funcionalidad.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=WtgIKHO4FcM
+CORTE: Corte 2
+TEMATICA: Asignación y paso por referencia
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Maneja ligadura y paso de parámetros por valor y referencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

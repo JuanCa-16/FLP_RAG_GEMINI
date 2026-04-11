@@ -1,0 +1,45 @@
+####
+**Análisis de la evaluación de expresiones con `scope` léxico**
+
+El proceso de evaluación manual de la expresión se realiza siguiendo la jerarquía de los bloques `let` y la resolución de variables en sus respectivos ámbitos. 
+
+Iniciamos con la subexpresión `(+ 2 y)`. En este punto, `y` toma el valor de 3, lo que resulta en 5. Posteriormente, la variable `x` debe resolverse: en este contexto, `x` referencia a un valor de 6. Al sumar estos resultados, la expresión interna `6 + 5` nos devuelve 11.
+
+Continuando con la evaluación, se suma una `x` adicional que se encuentra inmediatamente en el ámbito con un valor de 6. Esto nos da `11 + 6 = 17`. A este resultado se le suma el valor de `y` definido en un nivel superior, que es 8, para un total de `17 + 8 = 25`.
+
+Para la parte final de la operación, se evalúa un bloque donde `x` vale 4. La expresión realiza una resta donde se busca el valor de una variable en el ámbito externo (que corresponde a 7). La operación `7 - 4` resulta en 3. Finalmente, al multiplicar los resultados obtenidos, `25 * 3`, el valor total es 75.
+
+####
+**Implementación y verificación en DrRacket**
+
+Para comprobar la lógica del ejercicio, se traslada la estructura de `let` anidados al entorno de `DrRacket`. El código organiza las definiciones de variables `x` y `y` para asegurar que el intérprete siga las reglas de visibilidad y alcance léxico explicadas.
+
+```racket
+(let ([x 7])
+  (let ([y 8])
+    (* (+ (+ (let ([x 6])
+               (+ (let ([y 3])
+                    (+ 2 y))
+                  x))
+             6)
+          y)
+       (let ([x 4])
+         (- 7 x)))))
+```
+
+**Estructura del programa en el área de trabajo**
+
+- **Definiciones iniciales:** Se establece un entorno donde `x` es 7 y `y` es 8.
+- **Cuerpo de la operación:** Se define una multiplicación `*`. El primer operando es una suma `+` que integra un `let` interno (donde `x` es 6 y se procesa la suma con un `y` de 3), sumado a los valores actuales de `x` y `y`.
+- **Resolución de la resta:** En el segundo operando de la multiplicación, se define localmente `x` como 4 y se resta de la constante 7 (proveniente del `x` exterior).
+- **Resultado final:** Al ejecutar el código en el área de trabajo, el sistema procesa las expresiones y devuelve el valor `75`, validando así el análisis manual previo.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 14 Ejemplo alcance de variables.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=e_DfC91mtas
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

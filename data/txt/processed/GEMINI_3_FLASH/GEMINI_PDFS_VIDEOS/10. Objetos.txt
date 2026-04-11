@@ -1,0 +1,508 @@
+####
+**Visión del mundo real y programación orientada a objetos**
+
+El mundo real puede ser visto como un conjunto de entidades que poseen un estado y un comportamiento que controla o es controlado por un estado. Por ejemplo, los gatos pueden comer, hacer ruido, saltar y dormirse; dichas actividades son controladas por el estado actual en el que se encuentren, incluyendo qué tan hambrientos o cansados estén.
+
+La programación orientada a objetos es una tecnología útil para resolver el problema de mantener la consistencia de los estados y asegurar que las variables que constituyen dichos estados sean actualizadas de una manera coordinada a través de una interfaz.
+
+####
+**Definición de objetos, campos y métodos**
+
+En la programación orientada a objetos, un objeto consiste en campos (para almacenar estados) y métodos (para representar comportamientos) asociados que tienen acceso a los campos. La operación de llamado a un método es vista como el envío del nombre del método y sus argumentos al objeto a manera de mensaje.
+
+Muchas veces es necesario trabajar con objetos con comportamientos similares. Para facilitar el compartimiento (`sharing`) de métodos, la programación orientada a objetos provee `clases`, las cuales son estructuras que especifican los campos y métodos de cada objeto. Los objetos son instancias de alguna clase.
+
+####
+**Herencia y polimorfismo**
+
+A veces se necesita definir una nueva clase que tiene solo unas pequeñas modificaciones con respecto a una clase existente (la adición o cambio de un método o la adición o cambio de un campo). En este caso, se dice que la nueva clase hereda de o extiende la clase existente.
+
+Otra característica importante de los lenguajes orientados a objetos es el `polimorfismo`. Este concepto tiene varias acepciones:
+- En el contexto de herencia o subclases, `polimorfismo` significa que una instancia de una subclase pueda hacer el rol de un objeto de su superclase (clase de la cual hereda), de modo que pueda ser usada en los mismos lugares que una instancia de su superclase.
+- `Polimorfismo` también puede significar que un valor puede tener más de un tipo.
+
+####
+**Características generales de un lenguaje orientado a objetos**
+
+En general, las características de un lenguaje orientado a objetos son:
+- Los objetos encapsulan el comportamiento (`métodos`) y el estado (almacenado en los `campos`).
+- Las clases agrupan los objetos que difieren solo en su estado.
+- La herencia permite a nuevas clases ser derivadas de algunas clases existentes.
+- El `polimorfismo` permite que un mismo tipo de mensaje pueda ser enviado a objetos de diferentes clases.
+
+####
+**Gramática para la extensión orientada a objetos**
+
+El lenguaje del curso debe ser extendido mediante reglas de producción que permitan la programación orientada a objetos. Un programa será ahora una secuencia de declaraciones de clases seguida de una expresión:
+
+```racket
+<programa> ::= {<class-decl>}* <expresión>
+a-program (class-decls body)
+
+<class-decl> ::= class <identificador> extends <identificador> {field <identificador>}* {<method-decl>}*
+a-class-decl (class-name super-name fields-ids method-decls)
+
+<method-decl> ::= method <identificador> ({<identificador>}*(,)) <expresión>
+a-method-decl (method-name ids body)
+```
+
+####
+**Expresiones para objetos: creación, invocación y super llamados**
+
+Se deben agregar reglas de producción para las expresiones de modo que se puedan crear objetos, invocar métodos y hacer super llamados:
+
+```racket
+<expresión> ::= new <identificador> ({<expresión>}*(,))
+new-object-exp (class-name rands)
+
+<expresión> ::= send <expresión> <identificador> ({<expresión>}*(,))
+method-app-exp (obj-exp method-name rands)
+
+<expresión> ::= super <identificador> ({<expresión>}*(,))
+super-call-exp (method-name rands)
+```
+
+####
+**Valores expresados y denotados**
+
+Se extiende el conjunto de valores expresados y denotados del lenguaje de la siguiente manera:
+- Valor Denotado = Ref(Valor Expresado)
+- Valor Expresado = Número + ProcVal + Obj + Lista(Valores Expresados)
+
+####
+**Ejemplo de declaración de clase en el lenguaje extendido**
+
+El siguiente código declara una clase `c1` que hereda de `object`. Cada objeto de la clase `c1` contendrá dos campos llamados `i` y `j`, y tres métodos llamados `initialize`, `countup` y `getstate`. Los nombres de los métodos corresponden a los tipos de mensajes a los que las instancias de `c1` pueden responder.
+
+```racket
+class c1 extends object
+  field i
+  field j
+  method initialize (x)
+    begin
+      set i = x;
+      set j = -(0, x)
+    end
+  method countup (d)
+    begin
+      set i = +(i, d);
+      set j = -(j, d)
+    end
+  method getstate () list(i, j)
+```
+
+####
+**Uso de instancias y métodos**
+
+Las clases definidas se pueden usar de la siguiente manera:
+
+```racket
+let t1 = 0
+    t2 = 0
+    o1 = new c1(3)
+in begin
+  set t1 = send o1 getstate();
+  send o1 countup(2);
+  set t2 = send o1 getstate();
+  list(t1, t2)
+end
+```
+
+En la expresión anterior se crean dos variables `t1` y `t2` y un objeto de la clase `c1` llamado `o1`. Cuando un objeto es creado por medio de un `new`, su método `initialize` es invocado; en este caso, `initialize` iguala `i` a 3 y `j` a -3. Luego, el método `getstate` retorna la lista (3, -3). Después, `countup` cambia el valor de los campos a 5 y -5. Finalmente, el valor de `list(t1, t2)`, que es ((3 -3) (5 -5)), es retornado.
+
+####
+**Polimorfismo y despacho dinámico en estructuras de árbol**
+
+En el siguiente ejemplo se definen dos clases para representar nodos de un árbol: `interior_node` y `leaf_node`. Ambas aceptan el mensaje `sum` pero lo implementan de forma distinta.
+
+```racket
+class interior_node extends object
+  field left
+  field right
+  method initialize (l, r)
+    begin
+      set left = l;
+      set right = r
+    end
+  method sum () +(send left sum(), send right sum())
+
+class leaf_node extends object
+  field value
+  method initialize (v) set value v
+  method sum () value
+
+let o1 = new interior_node(
+           new interior_node(new leaf_node(3), new leaf_node(4)),
+           new leaf_node(5))
+in send o1 sum()
+```
+
+Para encontrar la suma de las hojas, se invoca el método `sum`. No se necesita conocer de antemano a cuál clase de nodo se envía el mensaje; cada nodo usa su propio método `sum`. Esto se denomina `despacho dinámico` y se usa para implementar el `polimorfismo` de subclases. En este caso, el programa retorna 12.
+
+####
+**El identificador self**
+
+Un método puede invocar otros métodos del mismo objeto usando el identificador `self`, el cual está ligado al objeto en el cual el método es invocado.
+
+```racket
+class oddeven extends object
+  method initialize () 1
+  method even (n)
+    if zero?(n) then 1 else send self odd(sub1(n))
+  method odd (n)
+    if zero?(n) then 0 else send self even(sub1(n))
+
+let o1 = new oddeven()
+in send o1 odd(13)
+```
+
+####
+**Jerarquía de herencia y la clase object**
+
+La herencia permite definir nuevas clases mediante la modificación incremental de clases existentes. Si una clase `c2` extiende una clase `c1`, se dice que `c1` es el padre de `c2`. Dado que la herencia define a `c2` como una extensión de `c1`, esta última debe estar definida antes. Por esto se introduce la clase `object` sin métodos ni campos, de la cual heredan todas las clases iniciales. Como `object` no tiene método `initialize`, es imposible crear una instancia directa de dicha clase.
+
+####
+**Sombreado de campos en la herencia**
+
+En el siguiente código, un objeto de clase `c2` tiene dos campos llamados `y`: uno declarado en `c1` y otro en `c2`.
+
+```racket
+class c1 extends object
+  field x
+  field y
+  method initialize () 1
+  method setx1 (v) set x = v
+  method sety1 (v) set y = v
+  method getx1 () x
+  method gety1 () y
+
+class c2 extends c1
+  field y
+  method sety2 (v) set y = v
+  method getx2 () x
+  method gety2 () y
+
+let o2 = new c2()
+in begin
+  send o2 setx1(101);
+  send o2 sety1(102);
+  send o2 sety2(999);
+  list(send o2 getx1(), send o2 gety1(), send o2 getx2(), send o2 gety2())
+end
+```
+
+Los métodos de `c1` acceden a los campos `x` y `y` de `c1`. En `c2`, la referencia a `x` en `getx2` se refiere al campo de `c1`, mientras que la referencia a `y` en `gety2` se refiere al campo `y` de `c2`. El programa retorna la lista (101, 102, 101, 999).
+
+####
+**Anulación de métodos y despacho dinámico**
+
+Si un método `m` de una clase `c1` es redeclarado en una subclase `c2`, se dice que el nuevo método anula (`override`) al anterior. Cuando el método a ejecutar no se determina sin conocer la clase real del objeto en tiempo de ejecución, se denomina `despacho dinámico`.
+
+```racket
+class c1 extends object
+  method initialize () 1
+  method m1 () 1
+  method m2 () 100
+  method m3 () send self m2()
+
+class c2 extends c1
+  method initialize () 1
+  method m2 () 2
+
+let o1 = new c1()
+    o2 = new c2()
+in list(send o1 m1(), send o1 m2(), send o1 m3(), 
+        send o2 m1(), send o2 m2(), send o2 m3())
+```
+
+En este ejemplo, cuando `o2` envía el mensaje `m3`, se evalúa el cuerpo definido en `c1` con `self` ligado a `o2`. Al llamar a `m2` mediante `self`, se ejecuta el `m2` de `c2`, resultando en que `send o2 m3()` retorne 2.
+
+####
+**Uso de super llamados**
+
+Los `super llamados` permiten invocar métodos de la superclase, como se muestra en el manejo de coordenadas de un punto:
+
+```racket
+class point extends object
+  field x
+  field y
+  method initialize (initx, inity)
+    begin
+      set x = initx;
+      set y = inity
+    end
+
+class colorpoint extends point
+  field color
+  method initialize (initx, inity, initcolor)
+    begin
+      super initialize (initx, inity);
+      set color = initcolor
+    end
+```
+
+####
+**Implementación del intérprete: Procesamiento de clases**
+
+Cuando un programa es evaluado, las declaraciones de clases son procesadas por `elaborate-class-decls!` para hacerlas accesibles. El procedimiento `eval-program` se define así:
+
+```racket
+(define eval-program
+  (lambda (pgm)
+    (cases program pgm
+      (a-program (c-decls exp)
+        (elaborate-class-decls! c-decls)
+        (eval-expression exp (init-env))))))
+```
+
+####
+**Implementación de la invocación de métodos (send)**
+
+Cuando se evalúa una expresión `send`, se evalúan los operandos y el objeto. Luego, `find-method-and-apply` localiza el método y lo aplica.
+
+```racket
+(method-app-exp (obj-exp method-name rands)
+  (let ((args (eval-rands rands env))
+        (obj (eval-expression obj-exp env)))
+    (find-method-and-apply
+      method-name (object->class-name obj) obj args)))
+```
+
+####
+**Búsqueda de métodos y super llamados**
+
+El procedimiento `find-method-and-apply` requiere el nombre del método, la clase donde inicia la búsqueda, el valor de `self` y los argumentos. Un `super llamado` busca el método específicamente en la superclase de la clase donde reside la expresión, utilizando la variable especial `%super`.
+
+```racket
+(super-call-exp (method-name rands)
+  (let ((args (eval-rands rands env))
+        (obj (apply-env env 'self)))
+    (find-method-and-apply
+      method-name (apply-env env '%super) obj args)))
+```
+
+####
+**Implementación de la creación de objetos (new)**
+
+Al evaluar una expresión `new`, se crea un objeto y se invoca automáticamente su método `initialize`. El objeto resultante es retornado.
+
+```racket
+(new-object-exp (class-name rands)
+  (let ((args (eval-rands rands env))
+        (obj (new-object class-name)))
+    (find-method-and-apply
+      'initialize class-name obj args)
+    obj))
+```
+
+####
+**Tipos de datos para clases y métodos**
+
+Para representar el repositorio de clases, se utilizan los siguientes tipos de datos:
+
+```racket
+(define-datatype class-decl class-decl?
+  (a-class-decl
+    (class-name symbol?)
+    (super-class-name symbol?)
+    (field-ids (list-of symbol?))
+    (methods-decls (list-of method-decl?))))
+
+(define-datatype method-decl method-decl?
+  (a-method-decl
+    (method-name symbol?)
+    (methods-args (list-of symbol?))
+    (body expression?)))
+```
+
+La variable global `the-class-env` almacena estas definiciones.
+
+####
+**Representación de objetos como lista de partes**
+
+Un objeto puede ser representado como una lista de partes, donde cada parte corresponde a una clase en la cadena de herencia. Cada parte incluye el nombre de la clase y un vector para su estado.
+
+```racket
+(define-datatype part part?
+  (a-part
+    (class-name symbol?)
+    (fields vector?)))
+```
+
+Para un objeto de una clase `c3` que hereda de `c2` y esta de `c1`, la representación sería una lista: `(a-part c3 [fields])`, `(a-part c2 [fields])`, `(a-part c1 [fields])`. La primera parte representa el nivel más bajo de la jerarquía.
+
+####
+**Construcción de objetos (new-object)**
+
+El procedimiento `new-object` construye recursivamente la lista de partes hasta alcanzar la clase `object`.
+
+```racket
+(define new-object
+  (lambda (class-name)
+    (if (eqv? class-name 'object)
+        '()
+        (let ((c-decl (lookup-class class-name)))
+          (cons
+            (make-first-part c-decl)
+            (new-object (class-decl->super-name c-decl)))))))
+
+(define make-first-part
+  (lambda (c-decl)
+    (a-part
+      (class-decl->class-name c-decl)
+      (make-vector (length (class-decl->field-ids c-decl))))))
+```
+
+####
+**Búsqueda y aplicación de métodos en representación por partes**
+
+`find-method-and-apply` recorre la cadena de herencia buscando el método. Al encontrarlo, `apply-method` ejecuta su cuerpo en un ambiente que liga `%super`, `self`, los parámetros formales y los campos visibles.
+
+```racket
+(define find-method-and-apply
+  (lambda (m-name host-name self args)
+    (if (eqv? host-name 'object)
+        (eopl:error 'find-method-and-apply "No method for name ~s" m-name)
+        (let ((m-decl (lookup-method-decl m-name (class-name->method-decls host-name))))
+          (if (method-decl? m-decl)
+              (apply-method m-decl host-name self args)
+              (find-method-and-apply m-name (class-name->super-name host-name) self args))))))
+```
+
+####
+**Ambiente de ejecución para métodos**
+
+Para aplicar un método, se genera una vista del objeto mediante `view-object-as` y se construye el ambiente de campos con `build-field-env`. El ambiente resultante incluye las ligaduras de los campos de cada parte del objeto visibles desde la clase huésped.
+
+```racket
+(define apply-method
+  (lambda (m-decl host-name self args)
+    (let ((ids (method-decl->ids m-decl))
+          (body (method-decl->body m-decl))
+          (super-name (class-name->super-name host-name)))
+      (eval-expression body
+        (extend-env
+          (cons '%super (cons 'self ids))
+          (cons super-name (cons self args))
+          (build-field-env (view-object-as self host-name)))))))
+```
+
+####
+**Representación de objetos planos (Vectores)**
+
+Para mayor eficiencia, el almacenamiento de un objeto puede representarse como un único vector en lugar de una lista de partes. Los campos se organizan cronológicamente (clase base primero).
+
+```racket
+(define-datatype object object?
+  (an-object
+    (class-name symbol?)
+    (fields vector?)))
+```
+
+En una jerarquía `c1 -> c2 -> c3`, un objeto de `c3` tendría un vector con los campos de `c1`, seguidos por los de `c2` y finalmente los de `c3`. Por ejemplo, si `c1` tiene `{x, y}`, `c2` tiene `{y}` y `c3` tiene `{x, z}`, el vector resultante para un objeto de `c3` sería `[x, y, y, x, z]`.
+
+####
+**Búsqueda de posición en objetos planos**
+
+Debido al sombreado de variables, se debe modificar la búsqueda en el ambiente para que utilice la ocurrencia de la variable que está más a la derecha en el vector (la más específica).
+
+```racket
+(define list-find-last-position
+  (lambda (sym los)
+    (let loop ((los los) (curpos 0) (lastpos #f))
+      (cond
+        ((null? los) lastpos)
+        ((eqv? sym (car los)) (loop (cdr los) (+ curpos 1) curpos))
+        (else (loop (cdr los) (+ curpos 1) lastpos))))))
+```
+
+####
+**Creación de objetos en representación plana**
+
+El procedimiento `new-object` calcula el tamaño total del vector sumando recursivamente los campos de la jerarquía mediante `roll-up-field-length`.
+
+```racket
+(define new-object
+  (lambda (class-name)
+    (an-object
+      class-name
+      (make-vector (roll-up-field-length class-name)))))
+
+(define roll-up-field-length
+  (lambda (class-name)
+    (if (eqv? class-name 'object)
+        0
+        (+ (roll-up-field-length (class-name->super-name class-name))
+           (length (class-name->field-ids class-name))))))
+```
+
+####
+**Optimización estática de clases y métodos**
+
+Es deseable no calcular la estructura de campos en cada llamado. Se puede almacenar información estática (independiente de los valores de ejecución) en nuevos tipos de datos para clases y métodos.
+
+```racket
+(define-datatype class class?
+  (a-class
+    (class-name symbol?)
+    (super-name symbol?)
+    (field-length integer?)
+    (field-ids (list-of symbol?))
+    (methods method-environment?)))
+
+(define-datatype method method?
+  (a-method
+    (method-decl method-decl?)
+    (super-name symbol?)
+    (field-ids (list-of symbol?))))
+```
+
+####
+**Elaboración optimizada de declaraciones de clase**
+
+El procedimiento `elaborate-class-decls!` precalcula la longitud de los campos, la lista completa de identificadores y transforma las declaraciones de métodos en estructuras optimizadas que ya conocen su jerarquía.
+
+```racket
+(define elaborate-class-decl!
+  (lambda (c-decl)
+    (let ((super-name (class-decl->super-name c-decl)))
+      (let ((field-ids (append
+                         (class-name->field-ids super-name)
+                         (class-decl->field-ids c-decl))))
+        (add-to-class-env!
+          (a-class
+            (class-decl->class-name c-decl)
+            super-name
+            (length field-ids)
+            field-ids
+            (roll-up-method-decls c-decl super-name field-ids)))))))
+```
+
+####
+**Aplicación de métodos con representación optimizada**
+
+Con la información precalculada, `apply-method` simplemente extrae los identificadores y el cuerpo del método, construyendo el ambiente de ejecución de forma directa.
+
+```racket
+(define apply-method
+  (lambda (method host-name self args)
+    (let ((ids (method->ids method))
+          (body (method->body method))
+          (super-name (method->super-name method))
+          (field-ids (method->field-ids method))
+          (fields (object->fields self)))
+      (eval-expression body
+        (extend-env
+          (cons '%super (cons 'self ids))
+          (cons super-name (cons self args))
+          (extend-env-refs field-ids fields (empty-env)))))))
+```
+
+--- METADATA ---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 10. Objetos

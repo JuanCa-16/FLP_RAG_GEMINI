@@ -1,0 +1,37 @@
+Vamos a utilizar gramáticas regulares. Los terminales se definen y procesan de izquierda a derecha. Considera el siguiente ejemplo de tokens:
+
+var
+x
+=
+10
+var
+y
+
+Estos tokens pueden producir un conflicto, porque 'var x' y 'var y' inician de la misma manera en la gramática, lo que requeriría una resolución clara.
+
+###
+Gramáticas en forma BNC se utilizan para definir estructuras. Un ejemplo de una gramática en forma BNC para una lista (que puede ser vacía o contener un entero seguido de otra lista) es:
+
+<lista> ::= <empty>
+        ::= <int> <lista>
+
+###
+Alternativamente, la misma estructura de lista puede ser definida de manera más concisa utilizando operadores de Kleene. Para una lista de cero o más enteros, se utiliza el asterisco (*):
+
+<lista> ::= <int>*
+
+Para una lista que contiene uno o más enteros, se utiliza el signo de más (+):
+
+<lista> ::= <int>+
+
+---
+METADATA
+---
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 1 Clase de repaso_Repso Gramaticas
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

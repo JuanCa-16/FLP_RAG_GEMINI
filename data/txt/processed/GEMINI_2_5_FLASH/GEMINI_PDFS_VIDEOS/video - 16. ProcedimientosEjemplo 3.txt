@@ -1,0 +1,46 @@
+Este análisis se centra en un ejemplo de evaluación de código que involucra clausuras y ambientes anidados. El ambiente inicial, o ambiente vacío, es el punto de partida. Sobre este, se define un ambiente cero (`env0`) que contiene las variables `x`, `y`, `z` con valores 4, 2 y 5 respectivamente, y una variable `f`. La variable `f` es una clausura, que es un procedimiento que encapsula su cuerpo y el ambiente léxico en el que fue definido. En este caso, `f` es un procedimiento que recibe un argumento `y` y almacena una referencia al ambiente vacío, lo que significa que cualquier invocación de `f` se ejecutará en un nuevo ambiente que extiende el ambiente vacío.
+
+####
+
+A partir del ambiente cero (`env0`), se define un primer ambiente anidado (`env1`) mediante una estructura `let`. Este `env1` introduce dos nuevas variables: `g` y `m`. La variable `m` tiene un valor de 6. La variable `g` es una clausura que representa un procedimiento que recibe un argumento `x`. Crucialmente, esta clausura `g` almacena o "captura" una referencia al ambiente en el que fue creada, es decir, `env0`. Esto determina el alcance de las variables a las que `g` podrá acceder cuando sea invocada.
+
+####
+
+Posteriormente, se crea un segundo ambiente anidado (`env2`) que extiende a `env1`. Este `env2` define tres variables: `g`, `h` y `q`. La variable `g` aquí es una nueva clausura que sombrea o redefine a la `g` de `env1`; esta nueva `g` espera dos argumentos (`x`, `y`) y captura el ambiente actual de su creación, `env1`. La variable `h` es una clausura sin argumentos que también captura el ambiente `env1`. Finalmente, la variable `q` se define con el valor 7.
+
+####
+
+La evaluación final se realiza sobre el ambiente `env2` y corresponde a la expresión `h() - q`. El primer paso es resolver las variables en esta expresión. La variable `q` se busca en `env2` y se encuentra su valor, que es 7. La expresión se simplifica a `h() - 7`. A continuación, se procede a evaluar la invocación del procedimiento `h`.
+
+####
+
+Para ejecutar `h()`, se busca `h` en el ambiente actual (`env2`), encontrando la clausura definida previamente. Esta clausura no recibe argumentos y tiene como cuerpo la expresión `g(m)`. Al ser una clausura, para su ejecución se crea un nuevo ambiente (`env_h`) que extiende el ambiente que `h` capturó en su definición, es decir, `env1`. Dentro de este `env_h`, se evalúa el cuerpo `g(m)`.
+
+####
+
+La evaluación de `g(m)` dentro de `env_h` requiere resolver `g` y `m`. La variable `m` se busca primero en `env_h` (no está), luego en `env1`, donde se encuentra con valor 6. La variable `g` se busca de la misma manera: no está en `env_h`, pero sí en `env1`. Es importante notar que la `g` que se encuentra es la primera que fue definida, la que espera un solo argumento (`x`) y capturó `env0`. No es la `g` de `env2` que esperaba dos argumentos. Por lo tanto, la expresión se convierte en la invocación de esta primera `g` con el argumento 6.
+
+####
+
+La invocación del procedimiento `g(6)` implica la creación de un nuevo ambiente (`env_g`). Este ambiente extiende el ambiente capturado por la clausura `g`, que es `env0`. En `env_g`, se enlaza la variable del procedimiento, `x`, con el valor del argumento, 6. Dentro de este `env_g`, se ejecuta el cuerpo de `g`, que es la expresión `y + f(x)`.
+
+####
+
+Dentro del ambiente `env_g`, se evalúa `y + f(x)`. La variable `y` no se encuentra en `env_g`, por lo que se busca en el ambiente que extiende, `env0`, donde se encuentra con valor 2. La variable `x` se encuentra directamente en `env_g` con valor 6. La expresión se convierte en `2 + f(6)`. Para resolver esto, se debe invocar al procedimiento `f` con el argumento 6.
+
+####
+
+La ejecución de `f(6)` crea un nuevo ambiente, `env_f`. Este ambiente extiende el ambiente capturado por la clausura `f`, que es el ambiente vacío. En `env_f`, se enlaza la variable `y` del procedimiento con el valor 6. El cuerpo de `f` es `y * (y - 1)`. Al evaluarse en `env_f`, se resuelve como `6 * (6 - 1)`, lo que da como resultado 30. Este valor, 30, es el retorno de la llamada `f(6)`.
+
+####
+
+El resultado de `f(6)`, que es 30, se utiliza para completar la evaluación pendiente en `env_g`. La expresión `2 + f(6)` se convierte en `2 + 30`, resultando en 32. Este valor es el resultado de la llamada `g(m)`. A su vez, `g(m)` era el cuerpo de `h()`, por lo que el resultado de `h()` es 32. Finalmente, la expresión original `h() - q` se resuelve como `32 - 7`, dando un resultado final de 25.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=JJcxJbQPn_U
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,83 @@
+####
+Implementación del predicado `occurs-free?` para determinar la presencia de variables libres en expresiones de cálculo lambda:
+
+```racket
+#lang racket
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp) (eqv? var exp))
+      ((eqv? (car exp) 'lambda) 
+       (and (not (eqv? (caadr exp) var))
+            (occurs-free? var (caddr exp))))
+      (else (or (occurs-free? var (car exp))
+                (occurs-free? var (cadr exp)))))))
+```
+
+**Conceptos clave**
+`ocurrencia libre`, `abstracción lambda`, `recursión estructural`, `predicados`
+
+**Aplicación**
+Esta función se utiliza en el análisis estático de lenguajes de programación para identificar si una variable depende de un entorno externo o si está ligada por un parámetro formal dentro de una abstracción.
+
+####
+Análisis de ocurrencia libre de la variable `x` en una expresión con lambdas anidados y múltiples parámetros:
+
+```racket
+(define exp1 '(lambda (x y) ((lambda (a) (x (a y))) x)))
+(occurs-free? 'x exp1)
+```
+
+**Conceptos clave**
+`parámetros múltiples`, `anidamiento`, `ligadura`, `alcance léxico`
+
+**Aplicación**
+Se aplica para verificar cómo el algoritmo de búsqueda de variables libres procesa identificadores cuando existen múltiples niveles de abstracción y parámetros definidos en la misma expresión.
+
+####
+Detección de una variable libre en una estructura de aplicación de funciones:
+
+```racket
+(define exp2 '((lambda (x) x) y))
+(occurs-free? 'y exp2)
+```
+
+**Conceptos clave**
+`aplicación`, `variable libre`, `identificadores`, `evaluación`
+
+**Aplicación**
+Este caso ilustra el comportamiento del predicado cuando una variable aparece fuera de cualquier abstracción lambda que la ligue, siendo identificada como una referencia externa o libre.
+
+####
+Evaluación de ligadura de variables en una expresión lambda con cuerpo complejo:
+
+```racket
+(define exp4 '(lambda (y) ((lambda (x) x) y)))
+(occurs-free? 'y exp4)
+```
+
+**Conceptos clave**
+`ligadura de variables`, `ámbito`, `abstracción`, `parámetros formales`
+
+**Aplicación**
+Permite demostrar que una variable capturada por un parámetro de función deja de ser considerada libre en el cuerpo de dicha función, validando las reglas de visibilidad del cálculo lambda.
+
+####
+Comprobación de una variable frente a una lista de parámetros múltiples y un cuerpo con símbolos distintos:
+
+```racket
+(define exp5 '(lambda (x y z) (a b)))
+(occurs-free? 'x exp5)
+```
+
+**Conceptos clave**
+`parámetros formales`, `símbolos`, `cuerpo de la expresión`, `predicado eqv?`
+
+**Aplicación**
+Se utiliza para validar la lógica de exclusión cuando una variable coincide con uno de los parámetros de la lista de una abstracción lambda, incluso si dicha variable no es referenciada posteriormente en el cuerpo.
+
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: 1. EspecificacionDatosProgramas/ocurreLibreLigada.scm
+LENGUAJE: scheme
+FUENTE: CODIGO

@@ -1,0 +1,38 @@
+####
+El estudio de la semántica de los lenguajes de programación requiere abordar los conceptos fundamentales de `interpretación` y `compilación`. Estos procesos son el paso previo al diseño de compiladores. El objetivo central de ambos es transformar el código fuente en un `árbol de sintaxis abstracta` (`AST`, por sus siglas en inglés). El `AST` permite dos funciones críticas: verificar que el código esté correctamente escrito según las reglas gramaticales del lenguaje y posibilitar su ejecución.
+
+####
+El proceso comienza con el `frontend`, el cual se encarga de estructurar el código fuente. Este componente realiza dos tareas principales:
+- `Escáner`: Analiza el código para identificar los elementos significantes. Durante esta etapa, se ignoran elementos que no aportan significado al programa, como los espacios en blanco, comentarios y ciertas marcaciones innecesarias.
+- `Parsing`: A partir de la información escaneada y basándose en la gramática del lenguaje, se construye el `árbol de sintaxis abstracta`.
+
+Una vez construido el `AST`, el sistema procede a realizar la validación de errores de sintaxis o escritura. Si la estructura es correcta, se procede a la ejecución de las acciones definidas en el código.
+
+####
+Un `interpretador` es un programa que toma un `AST` y lo convierte en una respuesta mediante su ejecución directa. El lenguaje en el cual está escrito el interpretador se denomina `lenguaje de implementación` o `lenguaje de definición`. Ejemplos comunes incluyen:
+- `Python`: Utiliza una máquina virtual escrita en `C++` que procesa el `AST` derivado del código fuente.
+- `Java`: Emplea un proceso intermedio donde el código se transforma en archivos `.class` (representación binaria). Posteriormente, la máquina virtual de `Java` (escrita en `C++`) genera el `AST` y lo ejecuta.
+- `JavaScript`: El motor de navegadores como `Chrome` o `Firefox` construye el `AST` internamente para producir una respuesta.
+
+####
+Los lenguajes interpretados suelen ser más lentos que los compilados debido al proceso de intermediación, ya que requieren transformar el código a una representación intermedia y luego al `AST` antes de la ejecución. Sin embargo, su ventaja principal es la facilidad de escritura y una sintaxis más sencilla. Debido a esta penalización en el rendimiento por la intermediación, no suelen recomendarse para tareas computacionalmente intensivas como `machine learning` o procesamiento de grandes volúmenes de datos, a menos que existan optimizaciones específicas como las presentes en `Python`.
+
+####
+En los lenguajes compilados, como `C++`, el proceso de compilación genera un `AST` que luego es transformado hacia un lenguaje de más bajo nivel. Por ejemplo, al ejecutar `g++ -c archivo.cpp`, se genera un archivo `.o` (binario) que contiene la representación del `AST` necesaria para la traducción final. Este proceso culmina con la creación de un archivo ejecutable que es interpretado directamente por el sistema operativo y la `CPU`. Durante este flujo, el compilador realiza tanto la validación gramatical como la traducción al lenguaje de máquina (o `assembly`).
+
+####
+El compilador se divide formalmente en dos partes:
+- `Analizador`: Su finalidad es deducir información útil sobre el programa, incluyendo la detección de errores y el descarte de elementos sin relevancia semántica, como los comentarios.
+- `Traductor`: Lleva a cabo la conversión del código fuente a un lenguaje que la máquina pueda entender, basándose en la información suministrada por el analizador.
+
+####
+Algunas implementaciones utilizan un lenguaje destino de propósito especial, más sencillo que el código fuente original, conocido como `bytecode`. Un caso clásico es `Java` con sus archivos `.class`, los cuales funcionan como un lenguaje intermedio interpretado por una máquina virtual. Este enfoque permite que un programa sea compilado una vez y ejecutado en diferentes plataformas, siempre que la versión de la máquina virtual sea compatible. Otros lenguajes que emplean este modelo de máquina virtual y `bytecode` incluyen `Scala`, `Haskell` y `Erlang`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=zL0zWJgVB2E
+CORTE: Corte 1
+TEMATICA: Interpretación y compilación
+COMPETENCIA: C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.3. Comprende las diferencias entre compilación e interpretación.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

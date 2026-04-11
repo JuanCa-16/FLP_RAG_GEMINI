@@ -1,0 +1,145 @@
+####
+**Definición y estructura de las ligaduras locales**
+
+Las ligaduras locales permiten introducir nuevas ligaduras dentro de un `alcance léxico` determinado. Se entiende que las ligaduras del ambiente inicial tienen alcance global; sin embargo, pueden ser ocultadas mediante el fenómeno de `shadowing` con ligaduras locales.
+
+El uso de `let` se divide en dos áreas principales:
+1. **Área de declaración**: Definida como `identifier = expression`. En esta parte se toma el ambiente anterior para evaluar las expresiones.
+2. **Área del let**: Ubicada después de la palabra reservada `in`. A partir de este punto empiezan a existir las ligaduras declaradas y pueden ser utilizadas.
+
+Ejemplo de sintaxis:
+```
+let
+  x = 8
+  y = 9
+  z = +(x, 1)
+in
+  +(x, y, z)
+```
+
+####
+**Concepto de extensión del ambiente en ligaduras locales**
+
+Al crear una ligadura local, el sistema debe extender el ambiente actual incluyendo las nuevas ligaduras definidas en el `let`. Este proceso se representa mediante una jerarquía de ambientes donde cada nuevo entorno apunta a su antecesor.
+
+**Diagrama de extensión de ambientes**
+```mermaid
+flowchart LR
+    E["Empty-env"]
+    B["env0
+    a,b,c
+    4,5,6"]
+    A["env1
+    x,y,z
+    1,2,3"]
+    C["env2
+    x,y,z
+    8,9,2"]
+
+    B --> E
+    A --> B
+    C --> A
+```
+
+En este diagrama, se observa cómo `env2` extiende a `env1`, el cual a su vez extiende a `env0` hasta llegar al `Empty-env`.
+
+####
+**Modificación a la gramática para soportar expresiones let**
+
+Para integrar las ligaduras locales en el lenguaje, se debe modificar la gramática añadiendo la variante `let-exp`. La estructura permite definir múltiples identificadores y sus respectivas expresiones mediante el uso de `arbno` (arbitrary number).
+
+**Definición gramatical**
+```
+(expression
+  ("let" (arbno identifier "=" expression) "in" expression)
+  let-exp)
+```
+
+####
+**Implementación de eval-expression para ligaduras locales**
+
+La función `eval-expression` debe actualizarse para procesar la variante `let-exp`. El procedimiento consiste en evaluar cada una de las expresiones definidas en el `let` utilizando el ambiente actual y luego extender dicho ambiente con los nuevos valores obtenidos antes de evaluar el cuerpo de la expresión.
+
+**Código de implementación en Racket**
+```racket
+(let-exp (lid lexpr expr)
+  (let ((vexpr (map (lambda (x) (eval-expression x env)) lexpr)))
+    (eval-expression expr (extend-env lid vexpr env))))
+```
+
+En este fragmento, `lid` representa la lista de identificadores, `lexpr` las expresiones asociadas, y `expr` es el cuerpo del `let` que se evalúa en el ambiente extendido por `extend-env`.
+
+####
+**Ejemplo de evaluación con ambientes anidados y shadowing**
+
+Considerando un ambiente inicial definido como:
+`(extend-env '(x,y,z) '(1,2,3) (extend-env '(a,b,c) '(4,5,6) (empty-env)))`
+
+Se analiza el siguiente código cuya evaluación resulta en 51:
+
+**Código de ejemplo**
+```
+let
+  x = let a = 3 b = 4 c = 5 in +(x, y, z)
+  y = +(y, x)
+  z = *(z, let p = x in +(p, z))
+in
+  let
+    m = let f = let f = +(x, y) in f in +(f, z)
+    n = +(a, b)
+  in
+    +(x, y, z, m, n)
+```
+
+**Diagrama de flujo de ambientes para el ejemplo**
+```mermaid
+flowchart LR
+    E["Empty-env"]
+    B["env0
+    a,b,c
+    4,5,6"]
+    A["env1
+    x,y,z
+    1,2,3"]
+    C["env2
+    x,y,z
+    6,3,12"]
+    D["envx
+    a,b,c
+    3,4,5"]
+    F["envp
+    p
+    1"]
+    G["env3
+    m,n
+    21,9"]
+    H["envf1
+    f
+    9"]
+    I["envf2
+    f
+    9"]
+
+    B --> E
+    A --> B
+    C --> A
+    D --> A
+    F --> A
+    G --> C
+    H --> C
+    I --> C
+```
+
+Este diagrama ilustra la creación de ambientes temporales (`envx`, `envp`, `envf1`, `envf2`) y cómo las ligaduras se resuelven dependiendo del `alcance léxico` y la extensión de `env2` hacia `env3`.
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 6 Ligadura, condicionales y procedimientos_Ligaduras locales
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%206/Ligaduras%20locales/

@@ -1,0 +1,67 @@
+La Forma Backus-Naur (BNF) es una notación utilizada para especificar las reglas sintácticas de los lenguajes de programación. En esta notación, los elementos sintácticos, conocidos como no terminales, se encierran entre los símbolos de menor que y mayor que (`< >`). Cada regla define cómo un no terminal puede ser reemplazado por una secuencia de otros no terminales y símbolos terminales (los caracteres literales del lenguaje). Esta formalidad permite describir gramáticas complejas, como las de contexto libre, donde un no terminal puede expandirse en una secuencia de otros no terminales, una característica que no está presente en gramáticas regulares más simples.
+
+####
+
+Para ilustrar el uso de BNF, se puede definir la gramática de un entero con signo. Las reglas serían las siguientes:
+1.  `<entero_con_signo> ::= <signo> <entero>`
+2.  `<signo> ::= + | -`
+3.  `<entero> ::= <digito> | <digito> <entero>`
+4.  `<digito> ::= 0 | 1 | 2 | ... | 9`
+
+Para generar el número `+560`, se sigue un proceso de derivación:
+- Se parte de `<entero_con_signo>`.
+- Se aplica la regla 1, reemplazándolo por `<signo> <entero>`.
+- `<signo>` se reemplaza por `+` usando la regla 2.
+- `<entero>` se reemplaza por `<digito> <entero>` (regla 3). El primer `<digito>` se convierte en `5`.
+- El `<entero>` restante se reemplaza de nuevo por `<digito> <entero>`. El `<digito>` se convierte en `6`.
+- Finalmente, el último `<entero>` se reemplaza por `<digito>` (regla 3), que se convierte en `0`, terminando la derivación.
+
+####
+
+Las gramáticas BNF utilizan la recursión para definir estructuras de datos de longitud variable, como las listas. Por ejemplo, una lista de números se puede especificar de la siguiente manera:
+`<lista_numeros> ::= vacía | <numero> <lista_numeros>`
+
+Esta regla establece que una `<lista_numeros>` puede ser vacía (caso base) o puede ser un `<numero>` seguido de otra `<lista_numeros>` (paso recursivo). Esta estructura recursiva es análoga al concepto de listas enlazadas en programación, donde cada elemento (el `car` o `head`) está seguido por el resto de la lista (el `cdr` o `tail`).
+
+####
+
+Los árboles, que son estructuras de datos jerárquicas, también se definen de forma natural mediante reglas recursivas en BNF. La principal diferencia con una lista es que la definición de un árbol contiene más de una llamada recursiva a sí misma.
+
+-   **Árbol binario:** `<arbol_binario> ::= <numero> | <simbolo> <arbol_binario> <arbol_binario>`
+    Esta regla define un árbol binario como una hoja (un número) o un nodo interno (un símbolo) seguido de dos subárboles binarios (hijo izquierdo y derecho).
+
+-   **Árbol ternario:** `<arbol_ternario> ::= <numero> | <simbolo> <arbol_ternario> <arbol_ternario> <arbol_ternario>`
+    De forma similar, un árbol ternario es una hoja o un nodo con tres subárboles.
+
+Un ejemplo válido de árbol ternario según esta regla sería `(P (T 1 2 3) (O 1 2 3) 3)`, donde `P`, `T` y `O` son símbolos y los números son las hojas.
+
+####
+
+La distinción fundamental entre una lista y un árbol en el contexto de las gramáticas formales radica en el número de llamadas recursivas presentes en su definición.
+
+-   **Lista:** Su definición contiene una única referencia recursiva a sí misma. Por ejemplo, en `<lista> ::= <elemento> <lista>`, solo hay una aparición de `<lista>` en el lado derecho de la regla.
+-   **Árbol:** Su definición contiene dos o más referencias recursivas a sí mismo. Por ejemplo, en `<arbol> ::= <nodo> <arbol> <arbol>`, la doble aparición de `<arbol>` en el lado derecho indica una estructura con ramificaciones, característica de los árboles.
+
+Esta diferencia estructural determina si la gramática genera una secuencia lineal (lista) o una estructura jerárquica (árbol).
+
+####
+
+La sintaxis de los lenguajes de programación se especifica formalmente mediante gramáticas. Muchos lenguajes utilizan variantes de la Forma Backus-Naur para este propósito. Por ejemplo, la especificación del lenguaje Java detalla cada construcción sintáctica, desde la estructura general de una `unidad de compilación` hasta las declaraciones de paquetes, importaciones y clases. Reglas como `<class_declaration> ::= <class_modifier> 'class' ...` definen con precisión qué secuencias de símbolos son válidas. Otros lenguajes como Python, C++ o Scala también poseen especificaciones gramaticales formales, aunque pueden usar notaciones alternativas como la Gramática de Expresión de Análisis (PEG) o BNF extendido (EBNF).
+
+####
+
+Es posible definir estructuras de datos personalizadas mediante BNF. Por ejemplo, una lista de parejas de enteros se puede especificar con las siguientes reglas:
+
+1.  `<lista_parejas> ::= vacía | <pareja> <lista_parejas>`
+2.  `<pareja> ::= <entero> <entero>`
+
+Siguiendo estas reglas, se pueden generar instancias válidas de listas de parejas. La regla 1 indica que una lista de parejas puede estar vacía o componerse de una pareja seguida por el resto de la lista. La regla 2 define que una pareja consiste en dos enteros consecutivos. Un ejemplo de una lista válida, representada como una lista de listas, sería `((1 2) (3 4))`, donde `(1 2)` es la primera pareja y `(3 4)` es la segunda, seguida de una lista vacía. La generación de cualquier estructura válida consiste en aplicar consistentemente estas reglas gramaticales.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=r_4ZQqPVoRU
+CORTE: Repaso
+TEMATICA: Repaso
+COMPETENCIA: C.E.1. Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC. / C.E.3. Seleccionar y utilizar diferente paradigmas y lenguajes de programación al construir sistemas basados en TIC. / C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: Revisión general de gramáticas, sintaxis, análisis semántico e interpretación.
+NIVEL_DIFICULTAD: Baja
+FUENTE: VIDEO

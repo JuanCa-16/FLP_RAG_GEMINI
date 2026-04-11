@@ -1,0 +1,119 @@
+####
+
+**Extensión del lenguaje con condicionales y ligadura local**
+
+El objetivo es extender el lenguaje actual para permitir el uso de condicionales y la creación de nuevas variables mediante ligaduras locales. Actualmente, el lenguaje solo permite realizar operaciones matemáticas bajo un conjunto predefinido de variables. Para esta extensión, se incorporará la asignación de `ligadura local` mediante el operador `let` y expresiones condicionales `if` y `else`. 
+
+En este nuevo lenguaje, el conjunto de `valores expresados` (aquellos que se utilizan en las expresiones) y `valores anotados` (aquellos que se almacenan en las variables) se extiende para incluir `booleanos`.
+
+####
+
+**Modificaciones a la gramática del lenguaje**
+
+Para soportar las nuevas funcionalidades, la gramática del lenguaje se modifica agregando constantes booleanas, expresiones condicionales y estructuras de ligadura. La especificación gramatical incluye:
+
+- **Booleanos:** Uso de `true` para verdadero y `false` para falso.
+- **Condicionales:** La estructura `if expression then expression else expression`.
+- **Ligaduras locales:** La estructura `let {identificador = expression}* in expression`, donde el asterisco indica la clausura de Kleene (la secuencia `identificador = expression` se puede repetir cero o más veces).
+- **Primitivas booleanas:** Se agregan operadores de comparación para la especificación de los condicionales.
+
+La especificación léxica se mantiene igual a la versión anterior, pero la gramática en el interpretador se actualiza de la siguiente manera:
+
+```racket
+;; Especificación de la gramática para condicionales y booleanos
+(true-exp ("true") true-exp)
+(false-exp ("false") false-exp)
+(if-exp ("if" expression "then" expression "else" expression) if-exp)
+```
+
+####
+
+**Implementación de booleanos en el interpretador**
+
+En la función de evaluación del interpretador, se deben agregar los casos correspondientes a las nuevas expresiones booleanas. Cuando el interpretador encuentra una expresión `true` o `false`, debe retornar su representación correspondiente en el lenguaje implementador (en este caso, Racket).
+
+```racket
+;; Casos para la evaluación de expresiones booleanas
+(true-exp () #t)
+(false-exp () #f)
+```
+
+En este caso, `true-exp` devuelve `#t` y `false-exp` devuelve `#f`, que representan los valores booleanos nativos en Racket.
+
+####
+
+**Implementación de expresiones condicionales**
+
+Para implementar el condicional `if` en nuestro lenguaje de programación, utilizamos el `if` nativo de Racket. La estructura del `if-exp` recibe tres componentes: una condición, la expresión a ejecutar si la condición es verdadera y la expresión a ejecutar si es falsa.
+
+La lógica de evaluación sigue este flujo:
+1. Evaluar la `condición` en el ambiente actual.
+2. Si el resultado es verdadero, evaluar la expresión del caso verdadero.
+3. Si el resultado es falso, evaluar la expresión del caso falso.
+
+```racket
+;; Implementación de la evaluación para if-exp
+(if-exp (condicion hace-verdadero hace-falso)
+  (if (eval-expression condicion env)
+      (eval-expression hace-verdadero env)
+      (eval-expression hace-falso env)))
+```
+
+####
+
+**Definición de primitivas booleanas**
+
+Las `primitivas booleanas` son operadores que realizan comparaciones numéricas y retornan un valor de verdad. Estas son esenciales para el funcionamiento de los condicionales. Se definen las siguientes primitivas:
+
+- `mayor-prim`: Mayor que (`>`)
+- `mayor-igual-prim`: Mayor o igual que (`>=`)
+- `menor-prim`: Menor que (`<`)
+- `menor-igual-prim`: Menor o igual que (`<=`)
+- `igual-prim`: Igualdad numérica (`==`)
+
+Estas primitivas requieren exactamente dos argumentos; si se recibe uno solo, el sistema arrojará un error, y si se reciben más de dos, los adicionales serán ignorados.
+
+####
+
+**Evaluación de primitivas booleanas**
+
+Para que el interpretador procese las comparaciones, se debe actualizar la función de evaluación de primitivas (`apply-primitive`). A continuación se presenta la implementación de la lógica de comparación para cada una de las nuevas primitivas añadidas:
+
+```racket
+;; Evaluación de primitivas booleanas en apply-primitive
+(mayor-prim () (> (car lval) (cadr lval)))
+(mayor-igual-prim () (>= (car lval) (cadr lval)))
+(menor-prim () (< (car lval) (cadr lval)))
+(menor-igual-prim () (<= (car lval) (cadr lval)))
+(igual-prim () (= (car lval) (cadr lval)))
+```
+
+Aquí, `lval` representa la lista de valores ya evaluados que se pasan a la primitiva.
+
+####
+
+**Ejemplos de ejecución de flujos condicionales**
+
+Una vez implementados los condicionales y las primitivas, es posible ejecutar expresiones que controlen el flujo del programa. Por ejemplo, si tenemos una variable `x` con valor 1:
+
+**Ejemplo 1: Verificación de mayor que**
+```racket
+if x > 2 then 4 else 3 + 2
+```
+En este caso, como `x` es 1 y 1 no es mayor que 2, el flujo toma el camino del `else` y el resultado es 5.
+
+**Ejemplo 2: Verificación de igualdad**
+```racket
+if x == 1 then 2 * (2 + 4) else -3
+```
+Aquí, como `x` es igual a 1, se evalúa la expresión `2 * (2 + 4)`, lo que resulta en `2 * 6`, devolviendo 12. Estos ejemplos demuestran que el flujo de ejecución condicional funciona correctamente en el interpretador. El siguiente paso será la implementación de las `ligaduras locales`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 8. Condicionales： su implementación en lenguajes.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=WCkgIVxDA1U
+CORTE: Corte 1
+TEMATICA: Condicionales, ligaduras y procedimientos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de análisis semántico en intérpretes para traducir programas.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

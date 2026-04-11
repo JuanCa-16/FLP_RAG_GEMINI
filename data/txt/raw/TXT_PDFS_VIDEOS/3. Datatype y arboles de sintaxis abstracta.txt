@@ -1,0 +1,370 @@
+Dos tipos no pueden tener el mismo nombre, tampoco dos
+variantes, aunque pertenezcan a tipos diferentes, pueden tener
+el mismo nombre.
+Para cada variante, un procedimiento constructor es creado.
+Si hay n campos en una variante, su constructor recibe n
+argumentos, prueba sí cada uno de ellos satisface el predicado
+asociado y retorna un nuevo valor de dicha variante del tipo
+de dato.
+El nombre nombre-predicado-tipo es ligado a un predicado.
+Este predicado determina sí su argumento es un valor
+perteneciente al tipo nombre-tipo .
+
+Expresiones cálculo λ
+( define-datatype
+lc − exp
+lc − exp ?
+( var − exp
+( i d
+i d e n t i f i e r ?) )
+( lambda − exp
+( i d
+i d e n t i f i e r ?)
+( body
+lc − exp ?) )
+( app − exp
+( r a t o r
+lc − exp ?)
+( rand
+lc − exp ?) ) ).
+
+Tipo de dato s-list
+( define-datatype
+s − l i s t
+s − l i s t ?
+( empty − s − list )
+( non − empty − s − list
+( first
+s − exp ?)
+( rest
+s − l i s t ?) ) )
+( define-datatype
+s − exp s − exp?
+( symbol − s − exp
+( sym symbol ?) )
+( s − list − s − exp
+( s l s t
+s − l i s t ?) ) ).
+
+Tipo de dato s-list
+( define-datatype
+s − l i s t
+s − l i s t ?
+( an − s − list
+( sexps
+( l i s t − o f
+s − exp ?) ) ) )
+( define
+l i s t − o f
+( lambda
+( pred )
+( lambda
+( v a l )
+( or
+( null ?
+v a l )
+( and
+( pair ?
+v a l )
+( pred
+( car
+v a l ) )
+( ( l i s t − o f
+pred )
+( cdr
+v a l ) ) ) ) ) ) ).
+
+Para determinar a que objeto de un tipo de dato pertenece
+una variante y extraer sus componentes, se usa la forma
+cases , la cual tiene la sintaxis general:
+(cases nombre-tipo expresion
+{ (nombre-variante ( { nombre-campo }∗ ) consecuente ) }∗
+(else por-defecto)).
+
+La expresión cases evalua expresion . Esto da como resultado
+un valor v de tipo nombre-tipo .
+Si v es una variante nombre-variante , cada uno de los campos
+nombre-campo son asociados al valor del correspondiente
+campo de v . Luego la expresión consecuente es evaluada y su
+valor es retornado.
+Si v no es una de las variantes y la cláusula else es
+específicada, la expresión por-defecto es evaluada y su valor
+retornado.
+Si no existe una cláusula else , entonces tiene que existir una
+variante para todos los tipos de dato.
+
+( define
+occurs − free ?
+( lambda
+( search − var
+exp )
+( cases
+lc − exp
+exp
+( var − exp
+( var )
+( eqv ?
+var
+search − var ) )
+( lambda − exp
+( bound − var body )
+( and
+( not
+( eqv ?
+search − var
+bound − var ) )
+( occurs − free ?
+search − var
+body ) ) )
+( app − exp
+( r a t o r
+rand )
+( or
+( occurs − free ?
+search − var
+r a t o r )
+( occurs − free ?
+search − var
+rand ) ) ) ) ) ).
+
+Tipo de dato bin-tree
+( define-datatype
+b i n t r e e
+b i n t r e e ?
+( leaf − node
+( datum number ?) )
+( i n t e r i o r − n o d e
+( key
+symbol ?)
+( l e f t
+b i n t r e e ?)
+( r i g h t
+b i n t r e e ?) ) ).
+
+Tipo de dato bin-tree
+Definir un procedimiento que permita encontrar la suma de los
+enteros en las hojas de un árbol. Usando cases se tiene:
+( define
+leaf − sum
+( lambda
+( t r e e )
+( cases
+b i n t r e e
+t r e e
+( leaf − node
+( datum )
+datum )
+( i n t e r i o r − n o d e
+( key
+l e f t
+r i g h t )
+(+ ( leaf − sum
+l e f t )
+( leaf − sum
+r i g h t ) ) ) ) ) ).
+
+Ambientes
+( define-datatype
+environment
+environment ?
+( empty − env − record )
+( extended − env − record
+( syms
+( l i s t − o f
+symbol ?) )
+( v a l s
+( l i s t − o f
+scheme − value ?) )
+( env
+environment ?) ) )
+( define
+scheme − value ?
+( lambda
+( v ) #t ) ).
+
+Ambientes
+( define
+apply − env
+( lambda
+( env sym )
+( cases
+environment
+env
+( empty − env − record
+()
+( eopl : error
+’ apply − env
+"No
+binding
+for ~s" sym ) )
+( extended − env − record
+( syms
+v a l s
+env )
+( let
+( ( pos
+( l i s t − f i n d − p o s i t i o n
+sym syms ) ) )
+( if
+( number ?
+pos )
+( l i s t − r e f
+v a l s
+pos )
+( apply − env
+env sym ) ) ) ) ) ) ).
+
+Dada la gramática de las expresiones del cálculo lambda:
+⟨ expresión ⟩
+::= ⟨ identificador ⟩
+::= ( lambda ( ⟨ identificador ⟩ ) ⟨ expresión ⟩ )
+::= ( ⟨ expresión ⟩⟨ expresión ⟩ )
+Se puede representar cada expresión del cálculo lambda
+usando el tipo de dato lc-exp definido anteriormente
+mediante define-datatype.
+
+Una BNF especifica una representación particular de un tipo
+de dato que usa los valores generados por la gramática
+Esta representación es llamada sintaxis concreta o
+representación externa
+Para procesar dichos datos, se requiere convertirlos a una
+representación interna o sintaxis abstracta , en la cual los
+símbolos terminales (como paréntesis) no necesiten ser
+almacenados ya que no llevan información.
+
+Para crear una sintaxis abstracta a partir de una sintaxis
+concreta, se debe nombrar cada regla de producción de la
+sintaxis concreta y cada ocurrencia de un símbolo no terminal
+Para la gramática de las expresiones del cálculo λ , se puede
+resumir las opciones (sintaxis concreta y abstracta) usando la
+siguiente notación:
+⟨ expresión ⟩
+::=
+⟨ identificador ⟩
+var-exp (id)
+::=
+( lambda ( ⟨ identificador ⟩ ) ⟨ expresión ⟩ )
+lambda-exp (id body)
+::=
+( ⟨ expresión ⟩⟨ expresión ⟩ )
+app-exp (rator rand).
+
+La sintaxis abstracta de una expresión es más fácil de
+comprender visualizándola como un árbol de sintaxis abstracta
+
+<CODIGO_BLOCK_START>
+El siguiente ejemplo muestra el árbol para la expresión
+(lambda (x) (f (f x))) :.
+<CODIGO_BLOCK_END>
+
+lambda−exp
+app−exp
+var−exp
+app−exp
+var−exp
+var−exp
+id
+body
+x
+rator
+rand
+id
+f
+rator
+rand
+id
+f
+id
+x.
+
+Los árboles de sintaxis son útiles en lenguajes de programación
+de procesamiento de sistemas ya que los programas que
+procesan otros programas (como los interpretadores o
+compiladores) son casi siempre dirigidos por sintaxis
+Esto es que cada parte de un programa es guiado por la regla
+gramatical asociada con dicha parte, y cualquier subparte
+correspondiente a un símbolo no terminal puede ser accedido
+con facilidad.
+
+Cuando se procesa la expresión (lambda (x) (f (f x))) ,
+primero se debe reconocer como una expresión del cálculo
+lambda, correspondiente a la regla:
+⟨ expresión ⟩ ::= ( lambda ( ⟨ identificador ⟩ ) ⟨ expresión ⟩ )
+El parámetro formal es x y el cuerpo es (f (f x)) . El cuerpo
+debe ser reconocido como una app-exp , y así sucesivamente.
+
+El problema de convertir un árbol de sintaxis abstracta a una
+representación lista-y-símbolo (con lo cual Scheme mostraría las
+expresiones en su sintaxis concreta), se resuelve con el
+procedimiento:
+( define
+unparse − expression
+( lambda
+( exp )
+( cases
+e x p r e s s i o n
+exp
+( var − exp
+( i d )
+i d )
+( lambda − exp
+( i d
+body )
+( list
+’ lambda
+( list
+i d )
+( unparse − expression
+body ) ) )
+( app − exp
+( r a t o r
+rand )
+( list
+( unparse − expression
+r a t o r )
+( unparse − expression
+rand ) ) ) ) ) ).
+
+La tarea de derivar el árbol de sintaxis abstracta a partir de
+una cadena de caracteres es denominado parsing , y es llevado
+a cabo por un programa llamado parser (analizador sintáctico)
+El siguiente procedimiento deriva la representación en sintaxis
+concreta a árboles de sintaxis abstracta:.
+
+( define
+p a r s e − e x p r e s s i o n
+( lambda
+( datum )
+( cond
+(( symbol ? datum )
+( var − exp datum ) )
+(( pair ? datum )
+( if
+( eqv ?
+( car datum )
+’ lambda )
+( lambda − exp
+( caadr
+datum )
+( p a r s e − e x p r e s s i o n
+( caddr datum ) ) )
+( app − exp
+( p a r s e − e x p r e s s i o n
+( car datum ) )
+( p a r s e − e x p r e s s i o n
+( cadr datum ) ) ) ) )
+( else
+( eopl : error
+’ p a r s e − e x p r e s s i o n
+"Invalid
+concrete
+syntax ~s" datum ) ) ) ) ).
+
+--- METADATA ---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 3. Datatype y arboles de sintaxis abstracta

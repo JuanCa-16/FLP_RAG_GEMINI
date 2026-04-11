@@ -1,0 +1,46 @@
+Al analizar la ejecución de un método sobre un objeto, se comienza con un ambiente vacío. Para la llamada `send O1 M1`, donde `O1` es una nueva instancia de la clase `C1`, primero se construye el objeto. La creación de `new C1` implica ejecutar su método `initialize`, que asigna los valores 1 y 2 a los campos `X` y `Y` respectivamente. El objeto `O1` se representa como una lista de partes; en este caso, una única parte correspondiente a `C1` con sus campos `X` y `Y`.
+
+####
+
+Cuando se invoca el método `send O1 M1`, se establece un ambiente de ejecución específico para esta llamada. Este ambiente contiene una referencia `super`, que apunta a la superclase (`Object`), y una referencia `self`, que apunta a la instancia del objeto `O1`. Dado que el método `M1` no tiene parámetros, el ambiente no contiene variables adicionales. Este ambiente de llamada se extiende sobre la "vista" del objeto `O1` desde la perspectiva de la clase `C1`. Esta vista incluye los campos `X` e `Y`, con sus valores actuales de 1 y 2, y extiende a su vez el ambiente de la superclase `Object`, que es un ambiente vacío.
+
+####
+
+La ejecución del cuerpo del método `M1` se realiza dentro del ambiente de llamada previamente establecido. El cuerpo de `M1` consiste en la expresión `X`, que busca el valor de la variable `X`. La búsqueda comienza en el ambiente de la vista del objeto, donde encuentra `X` con el valor 1. Por lo tanto, el resultado de la llamada `send O1 M1` es 1.
+
+####
+
+En un escenario más complejo con herencia, se considera un objeto `O2` de la clase `C2`, que hereda de `C1`. La representación interna de `O2` es una lista de partes. La primera parte corresponde a `C2` y contiene sus campos `X` y `Y`, inicializados con los valores 9 y 10. La segunda parte corresponde a la superclase `C1`, con sus propios campos `X` y `Y`, inicializados con 1 y 2 mediante una llamada a `super.initialize`. Finalmente, esta estructura se extiende desde la clase `Object`.
+
+####
+
+Al ejecutar `send O2 M2`, es crucial identificar la ubicación del método `M2`. En este caso, `M2` está definido en la clase `C1`. Por lo tanto, el ambiente de ejecución se construye con la "vista" de la clase `C1`. El ambiente de llamada para `M2` contiene `super` (que es `Object`, la superclase de `C1`) y `self` (que es el objeto `O2`). Este ambiente se extiende sobre la vista de `C1` dentro de `O2`, la cual contiene los campos `X` y `Y` con valores 1 y 2.
+
+####
+
+Dentro del cuerpo del método `M2`, se ejecuta la instrucción `send self M1`. Esto desencadena un despacho dinámico. El `self` en este contexto es el objeto `O2`. El sistema busca el método `M1` comenzando desde la clase del objeto `self`, es decir, `C2`. Aunque el llamado original (`M2`) se hizo desde la vista de `C1`, este nuevo llamado (`M1`) reinicia el proceso de búsqueda desde la clase real del objeto, `C2`.
+
+####
+
+Para la ejecución de `send O2 M1`, se crea un nuevo ambiente de llamada. La "vista" para esta ejecución es la de la clase `C2`, ya que es la clase del objeto `O2`. El ambiente de `M1` contiene `super` (que ahora es `C1`, la superclase de `C2`) y `self` (que sigue siendo `O2`). Este ambiente se extiende sobre la estructura completa de `O2`, comenzando por la parte de `C2` (con `X=9`, `Y=10`), que a su vez se extiende sobre la parte de `C1` (con `X=1`, `Y=2`) y finalmente `Object`. El cuerpo de `M1`, que es `X`, se ejecuta en este nuevo ambiente. La búsqueda de `X` comienza en la primera capa de la vista (la de `C2`), donde encuentra el valor 9. Por lo tanto, el resultado final es 9.
+
+####
+
+Para ilustrar la mutación del estado de un objeto, se considera una instancia `O1` de la clase `C1` con campos `I` y `J`, inicializados con los valores 3 y -3. La primera operación, `send O1 get_state`, crea un ambiente de llamada con `self` apuntando a `O1` y `super` a `Object`. El método devuelve una lista con los valores actuales de `I` y `J`, es decir, `[3, -3]`. Este resultado se asigna a una variable `T1`. Es importante destacar que cada llamada a un método crea su propio ambiente encapsulado.
+
+####
+
+La segunda operación es `send O1 con_app 2`, que modifica el estado del objeto. El método `con_app` recibe un parámetro `D`, que en este caso es 2. Se crea un ambiente para esta llamada que incluye `super`, `self` y la variable `D=2`. El cuerpo del método ejecuta las operaciones `I = I + D` y `J = J - D`. Los campos `I` y `J` del objeto `O1` se actualizan a `5` (3+2) y `-5` (-3-2), respectivamente. Este cambio es persistente en el objeto `O1` porque los objetos se manipulan por referencia.
+
+####
+
+La tercera operación, `send O1 get_state`, se ejecuta sobre el objeto `O1` ya modificado. Se crea un nuevo ambiente de llamada para `get_state`, que accede a los valores actuales de `I` y `J`. Como el estado del objeto ha cambiado, el método ahora devuelve la lista `[5, -5]`. Este resultado se asigna a una variable `T2`. La ejecución finaliza construyendo una lista que contiene los valores de `T1` y `T2`, resultando en `[[3, -3], [5, -5]]`.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=LpBRO1CbfZA
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

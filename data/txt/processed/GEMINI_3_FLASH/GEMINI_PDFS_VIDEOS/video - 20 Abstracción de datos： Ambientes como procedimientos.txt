@@ -1,0 +1,107 @@
+####
+**Representación basada en procedimientos**
+
+En la representación basada en procedimientos, se define el tipo de datos de modo que las funciones devuelvan la información requerida mediante el uso de señales. Para el caso de un ambiente vacío `empty-env`, se define como una función que no recibe argumentos y retorna un procedimiento. Este procedimiento interno recibe una `signal` para determinar la respuesta.
+
+```racket
+(define empty-env
+  (lambda ()
+    (lambda (signal)
+      (if (= signal 0)
+          'empty-env
+          (error "Señal no válida")))))
+```
+
+Al utilizar esta representación, el tipo de dato se convierte en un proceso que no se puede visualizar directamente como una lista, pero que permite manejar la lógica del ambiente de forma funcional.
+
+####
+**Definición de ambiente extendido con procedimientos**
+
+Para representar un ambiente extendido `extend-env`, se mapean los componentes (identificador, valor y ambiente anterior) utilizando un condicional que reacciona a diferentes señales numéricas. La función recibe un identificador `id`, un valor `val` y un ambiente `env`, y retorna un procedimiento que acepta una señal `signal`.
+
+```racket
+(define extend-env
+  (lambda (id val env)
+    (lambda (signal)
+      (cond
+        [(= signal 0) 'extend-env]
+        [(= signal 1) id]
+        [(= signal 2) val]
+        [(= signal 3) env]
+        [else (error "Señal no válida")]))))
+```
+
+En esta codificación:
+- La señal `0` se utiliza para identificar que se trata de un `extend-env`.
+- La señal `1` permite extraer el identificador `id`.
+- La señal `2` permite extraer el valor `val`.
+- La señal `3` permite recuperar el ambiente anterior o `ambiente antiguo`.
+
+####
+**Observadores: Predicados**
+
+Los predicados son observadores que permiten verificar el tipo de ambiente. En la representación basada en procedimientos, esto se logra enviando la señal `0` al ambiente y comparando el resultado.
+
+```racket
+(define empty-env?
+  (lambda (env)
+    (eqv? (env 0) 'empty-env)))
+
+(define extend-env?
+  (lambda (env)
+    (eqv? (env 0) 'extend-env)))
+```
+
+Si al evaluar `(env 0)` el resultado es igual a `'empty-env`, se confirma que es un ambiente vacío. De igual forma, si es igual a `'extend-env`, se confirma que es un ambiente extendido.
+
+####
+**Observadores: Extractores**
+
+Los extractores permiten obtener los elementos almacenados en un ambiente extendido. Su implementación se facilita al invocar el procedimiento `environment` con las señales correspondientes (`1`, `2` o `3`) de acuerdo a cómo fueron codificadas en el constructor.
+
+```racket
+(define env->id
+  (lambda (env)
+    (env 1)))
+
+(define env->val
+  (lambda (env)
+    (env 2)))
+
+(define env->env
+  (lambda (env)
+    (env 3)))
+```
+
+Por ejemplo, si tenemos un ambiente con la variable `x` y el valor `3`:
+- `env->id` devolverá `x`.
+- `env->val` devolverá `3`.
+- `env->env` devolverá un `procedure`, ya que el ambiente anterior es, a su vez, una representación procedimental.
+
+####
+**Abstracción de datos e independencia de la representación**
+
+Uno de los principales objetivos de la `abstracción` es que el cambio en la representación interna de los datos no afecte las funciones que los utilizan. Al haber definido correctamente los constructores, predicados y extractores, una función de alto nivel como `apply-env` funciona exactamente igual tanto para representaciones basadas en listas como para representaciones basadas en procedimientos.
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cond
+      [(empty-env? env) (error "El símbolo no se encuentra en el ambiente")]
+      [(extend-env? env)
+       (if (eqv? (env->id env) sym)
+           (env->val env)
+           (apply-env (env->env env) sym))])))
+```
+
+Esta filosofía permite que, aunque se modifique la estructura interna del tipo de dato, las funciones del área del programador permanezcan inalteradas, preservando la lógica del sistema independientemente de si se utiliza una implementación de `script` o de `procedimiento`.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 20 Abstracción de datos： Ambientes como procedimientos.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=5ymi1j8FQuI
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,103 @@
+####
+**Instanciación de objetos simples y su representación**
+
+A continuación, se presenta un ejemplo de instanciación de objetos y su funcionamiento en el contexto de objetos simples. Se define la clase `c1` que extiende a `object`:
+
+```racket
+(class c1 extends object
+  (field x)
+  (field y)
+  (method initialize (v1 v2)
+    (begin
+      (set x v1)
+      (set y v2)))
+  (method m1 () ...)
+  (method m2 () ...))
+```
+
+Al evaluar un `let` donde se instancia el objeto `o1` y se aplica un método, la representación interna del objeto `o1` utiliza un `datatype` llamado `object`. Para la clase `c1`, los campos se almacenan en un vector que contiene `x` y `y` con los valores instanciados en el `initialize` (en este caso, 1 y 2).
+
+**Representación de o1:**
+- Clase actual: `c1`
+- Campos (vector): `[1, 2]` (correspondientes a `x` y `y`)
+
+####
+**Invocación de métodos y ambiente de ejecución**
+
+Al realizar la invocación del método `m1` sobre el objeto `o1` mediante `(send o1 m1)`, se construye un ambiente de ejecución. El proceso sigue esta lógica:
+
+1. Se parte de un ambiente vacío (`empty-env`).
+2. Se incluye la representación del objeto con sus campos `x` y `y` (valores 1 y 2).
+3. Se definen las variables especiales del método:
+   - `self`: Referencia al objeto actual `o1`.
+   - `super`: Referencia a la clase padre donde está ubicado el método (en este caso, `object`).
+
+Esta estructura permite que el método `m1` acceda tanto a los campos del objeto como a las referencias de jerarquía necesarias para la ejecución.
+
+####
+**Herencia y el alcance de refine-position**
+
+En un sistema con dos clases, `c1` y `c2` (donde `c2` extiende a `c1`), se puede observar el alcance de la función `refine-position`. Consideremos la siguiente estructura:
+
+- Clase `c1`: Campos `x`, `y`. Métodos `m1`, `m2`.
+- Clase `c2`: Campos `x`, `y`. Métodos `m1`, `m2`.
+
+Cuando se instancia `o2` como un objeto de clase `c2`, su representación interna debe manejar los campos de ambas clases. El vector de campos contendrá:
+`[x_c1, y_c1, x_c2, y_c2]`
+
+Si en el `initialize` se asignan valores, los campos de `c1` podrían ser 1 y 2, mientras que los de `c2` podrían ser 9 y 10. Es fundamental llamar al `initialize` de la superclase; de lo contrario, los campos heredados quedarían en 0.
+
+####
+**Ejecución de métodos heredados y búsqueda de campos**
+
+Al ejecutar `(send o2 m2)`, si el método `m2` no está definido en `c2`, se busca y ejecuta en la clase padre `c1`. Durante esta ejecución en `c1`, la función `refine-position` determina qué parte del vector de campos es visible.
+
+Aunque el objeto completo tiene los campos de `c1` y `c2`, al estar ejecutándose un código que "vive" en `c1`, el sistema identifica los identificadores correspondientes a ese nivel. Sin embargo, en la búsqueda dinámica (cuando se usa `self`), si el método invoca `(send self m1)`, se utiliza el objeto `o2`. 
+
+Si el método `m1` en la ejecución realiza una búsqueda de `x`, se debe asegurar que encuentre el valor más específico según la jerarquía. Por ejemplo, si se busca `x` en el contexto de `o2`, el resultado devuelto será 9 (el valor en `c2`), mientras que en una instancia de `c1` el resultado sería 1.
+
+####
+**Gestión de estado y actualización de campos**
+
+En el tercer caso, se analiza un objeto con campos `i` y `j` que soporta cambios de estado a través de sus métodos:
+
+```racket
+(class c1 extends object
+  (field i)
+  (field j)
+  (method initialize (v1 v2)
+    (begin
+      (set i v1)
+      (set j v2)))
+  (method get-state () (list i j))
+  (method count-up (d)
+    (begin
+      (set i (+ i d))
+      (set j (- j d)))))
+```
+
+1. **Instanciación:** `(new c1 3 -3)` crea el objeto `o1` con `i = 3` y `j = -3`.
+2. **Primer get-state:** `(send o1 get-state)` construye un ambiente con `self = o1` y `super = object`. Al evaluar `(list i j)`, devuelve `(3 -3)`.
+3. **Actualización:** `(send o1 count-up 2)` accede a los campos. Suma 2 a `i` y resta 2 a `j`. Los campos en el vector se actualizan a `5` y `-5` respectivamente. Esta modificación es persistente porque los campos están contenidos en un vector de celdas referenciadas.
+4. **Segundo get-state:** Una nueva llamada a `(send o1 get-state)` ahora devuelve `(5 -5)`, reflejando el cambio de estado.
+
+####
+**Verificación de resultados en el intérprete**
+
+Los resultados obtenidos en los tres casos de estudio han sido verificados en el intérprete de lenguajes de programación:
+
+- **Caso 1:** La ejecución del método sobre el objeto simple devuelve `1`.
+- **Caso 2:** En la jerarquía de clases con campos duplicados por herencia, la ejecución de `(send o2 m2)` que invoca internamente a `m1` devuelve `9`, confirmando que se accede al campo de la clase más específica.
+- **Caso 3:** El manejo de estado mediante `get-state` y `count-up` devuelve la secuencia de listas `(3 -3)` y `(5 -5)`.
+
+Es importante destacar que el ambiente generado para el método debe tener accesibles los campos de la clase desde el nivel más cercano en la jerarquía de herencia.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - Video 55 Objetos planos Ejemplos.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=nL5i_K0OV_4
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

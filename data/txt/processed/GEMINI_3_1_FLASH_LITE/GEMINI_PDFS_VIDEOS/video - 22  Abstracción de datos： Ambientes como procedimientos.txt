@@ -1,0 +1,81 @@
+####
+**Definición de constructores basados en procedimientos**
+
+Para implementar los ambientes como procedimientos, definimos las estructuras de datos utilizando funciones que reciben una `signal` (señal) para determinar qué operación realizar. Cada constructor devuelve una función que encapsula los datos y responde a señales específicas:
+
+```racket
+(define (var-expression id)
+  (lambda (signal)
+    (cond ((= signal 0) 'var-expression)
+          ((= signal 1) id)
+          (else (error "señal no vale")))))
+
+(define (lambda-expression id expression)
+  (lambda (signal)
+    (cond ((= signal 0) 'lambda-expression)
+          ((= signal 1) id)
+          ((= signal 2) expression)
+          (else (error "señal no vale")))))
+
+(define (app-expression rator rand)
+  (lambda (signal)
+    (cond ((= signal 0) 'app-expression)
+          ((= signal 1) rator)
+          ((= signal 2) rand)
+          (else (error "señal no vale")))))
+```
+
+####
+**Implementación de predicados (observadores)**
+
+Los predicados permiten verificar el tipo de una expresión dada. Dado que nuestras estructuras son procedimientos, el predicado consiste en aplicar la expresión a la señal `0` para obtener su etiqueta identificativa:
+
+```racket
+(define (var-expression? expression)
+  (eqv? (expression 0) 'var-expression))
+
+(define (lambda-expression? expression)
+  (eqv? (expression 0) 'lambda-expression))
+
+(define (app-expression? expression)
+  (eqv? (expression 0) 'app-expression))
+```
+
+####
+**Implementación de extractores**
+
+Los extractores permiten obtener los componentes internos de cada expresión. Al igual que con los predicados, utilizamos la señal correspondiente para acceder a los valores almacenados en el procedimiento:
+
+```racket
+(define (var-expression-id expression)
+  (expression 1))
+
+(define (lambda-expression-id expression)
+  (expression 1))
+
+(define (lambda-expression-body expression)
+  (expression 2))
+
+(define (app-expression-rator expression)
+  (expression 1))
+
+(define (app-expression-rand expression)
+  (expression 2))
+```
+
+####
+**Transparencia de representación para el programador**
+
+Un aspecto fundamental de esta metodología es que, independientemente de si la representación interna utiliza listas o procedimientos, el nivel del programador permanece constante. Al proveer los mismos constructores, predicados y extractores, la lógica de las funciones desarrolladas (como `occurs-free`) no requiere modificaciones:
+
+- La abstracción de datos permite que el programador interactúe con las expresiones sin conocer su implementación subyacente.
+- Si la representación cambia, el código que utiliza estos observadores y constructores funciona exactamente igual, garantizando la modularidad y la independencia de la implementación.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=UykkUdFKMNg
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

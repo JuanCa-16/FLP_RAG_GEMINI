@@ -1,0 +1,269 @@
+####
+**Reglas de definición de tipos de datos y variantes**
+
+En el diseño de lenguajes, dos tipos no pueden tener el mismo nombre. De igual manera, dos variantes no pueden compartir el mismo nombre, incluso si pertenecen a tipos de datos diferentes.
+
+Para cada variante se crea automáticamente un procedimiento constructor. Si una variante posee `n` campos, su constructor recibe `n` argumentos, verifica que cada uno de ellos satisfaga el predicado asociado y retorna un nuevo valor de dicha variante perteneciente al tipo de dato definido.
+
+Asimismo, el nombre `nombre-predicado-tipo` se liga a un predicado que determina si su argumento es un valor perteneciente al tipo `nombre-tipo`.
+
+####
+**Representación de expresiones del cálculo lambda**
+
+El siguiente bloque de código define el tipo de dato `lc-exp` para representar expresiones del cálculo lambda, incluyendo variables, abstracciones y aplicaciones:
+
+```racket
+(define-datatype lc-exp lc-exp?
+  (var-exp
+    (id identifier?))
+  (lambda-exp
+    (id identifier?)
+    (body lc-exp?))
+  (app-exp
+    (rator lc-exp?)
+    (rand lc-exp?)))
+```
+
+Esta definición técnica establece la estructura necesaria para manipular la sintaxis abstracta de este modelo de computación.
+
+####
+**Tipo de dato para listas de símbolos (s-list)**
+
+El tipo de dato `s-list` se define de forma recursiva junto con `s-exp` (expresiones simbólicas). Una `s-list` puede estar vacía o contener una expresión seguida de otra lista.
+
+```racket
+(define-datatype s-list s-list?
+  (empty-s-list)
+  (non-empty-s-list
+    (first s-exp?)
+    (rest s-list?)))
+
+(define-datatype s-exp s-exp?
+  (symbol-s-exp
+    (sym symbol?))
+  (s-list-s-exp
+    (slst s-list?)))
+```
+
+####
+**Uso de list-of en tipos de datos**
+
+Es posible definir el tipo `s-list` de forma más compacta utilizando una construcción de orden superior denominada `list-of`. A continuación, se presenta la definición del tipo de dato y la implementación del predicado `list-of`:
+
+```racket
+(define-datatype s-list s-list?
+  (an-s-list
+    (sexps (list-of s-exp?))))
+
+(define list-of
+  (lambda (pred)
+    (lambda (val)
+      (or (null? val)
+          (and (pair? val)
+               (pred (car val))
+               ((list-of pred) (cdr val)))))))
+```
+
+####
+**La forma fundamental cases**
+
+Para determinar a qué objeto de un tipo de dato pertenece una variante y extraer sus componentes, se utiliza la forma `cases`, cuya sintaxis general es:
+
+`(cases nombre-tipo expresion { (nombre-variante ( { nombre-campo }* ) consecuente ) }* (else por-defecto))`
+
+El funcionamiento de `cases` es el siguiente:
+- Se evalúa la `expresion`, resultando en un valor `v` de tipo `nombre-tipo`.
+- Si `v` pertenece a `nombre-variante`, los campos `nombre-campo` se asocian a los valores correspondientes de `v`. Luego, se evalúa y retorna el `consecuente`.
+- Si `v` no coincide con ninguna variante y existe una cláusula `else`, se evalúa y retorna el valor `por-defecto`.
+- Si no existe una cláusula `else`, se debe especificar una opción para cada variante del tipo de dato.
+
+####
+**Implementación de la función occurs-free?**
+
+Utilizando la forma `cases`, se puede definir el procedimiento `occurs-free?` para determinar si una variable ocurre libre en una expresión del cálculo lambda:
+
+```racket
+(define occurs-free?
+  (lambda (search-var exp)
+    (cases lc-exp exp
+      (var-exp (var)
+        (eqv? var search-var))
+      (lambda-exp (bound-var body)
+        (and
+          (not (eqv? search-var bound-var))
+          (occurs-free? search-var body)))
+      (app-exp (rator rand)
+        (or
+          (occurs-free? search-var rator)
+          (occurs-free? search-var rand))))))
+```
+
+####
+**Tipo de dato para árboles binarios (bin-tree)**
+
+La estructura de un árbol binario puede definirse mediante el tipo de dato `bintree`, que distingue entre nodos hoja (leaf) y nodos interiores:
+
+```racket
+(define-datatype bintree bintree?
+  (leaf-node
+    (datum number?))
+  (interior-node
+    (key symbol?)
+    (left bintree?)
+    (right bintree?)))
+```
+
+####
+**Suma de hojas en un árbol binario**
+
+El siguiente procedimiento utiliza la forma `cases` para recorrer un `bintree` y calcular la suma de los valores enteros almacenados en sus hojas:
+
+```racket
+(define leaf-sum
+  (lambda (tree)
+    (cases bintree tree
+      (leaf-node (datum)
+        datum)
+      (interior-node (key left right)
+        (+ (leaf-sum left)
+           (leaf-sum right))))))
+```
+
+####
+**Representación de ambientes (environments)**
+
+Los ambientes se utilizan para gestionar las asociaciones entre símbolos y valores. Se definen técnicamente como un tipo de dato recursivo:
+
+```racket
+(define-datatype environment environment?
+  (empty-env-record)
+  (extended-env-record
+    (syms (list-of symbol?))
+    (vals (list-of scheme-value?))
+    (env environment?)))
+
+(define scheme-value?
+  (lambda (v) #t))
+```
+
+####
+**Procedimiento de búsqueda en ambientes (apply-env)**
+
+Para recuperar el valor asociado a un símbolo dentro de un ambiente, se utiliza el procedimiento `apply-env`, el cual recorre la estructura de registros:
+
+```racket
+(define apply-env
+  (lambda (env sym)
+    (cases environment env
+      (empty-env-record ()
+        (eopl:error 'apply-env "No binding for ~s" sym))
+      (extended-env-record (syms vals env)
+        (let ((pos (list-find-position sym syms)))
+          (if (number? pos)
+              (list-ref vals pos)
+              (apply-env env sym)))))))
+```
+
+####
+**Sintaxis concreta y sintaxis abstracta**
+
+Dada la gramática de las expresiones del cálculo lambda:
+- < expresión > ::= < identificador >
+- < expresión > ::= ( lambda ( < identificador > ) < expresión > )
+- < expresión > ::= ( < expresión > < expresión > )
+
+Se puede representar cada expresión usando el tipo de dato `lc-exp` definido anteriormente. Una BNF (Backus-Naur Form) especifica una representación particular llamada **sintaxis concreta** (representación externa). Para procesar estos datos, se convierten a una representación interna denominada **sintaxis abstracta**, donde los símbolos terminales (como paréntesis) se omiten al no aportar información semántica adicional.
+
+####
+**Mapeo entre sintaxis concreta y abstracta**
+
+Para derivar una sintaxis abstracta desde una concreta, se nombra cada regla de producción y cada ocurrencia de un símbolo no terminal. Para el cálculo lambda, la relación es:
+
+- < expresión > ::= < identificador > 
+  **var-exp (id)**
+- < expresión > ::= ( lambda ( < identificador > ) < expresión > )
+  **lambda-exp (id body)**
+- < expresión > ::= ( < expresión > < expresión > )
+  **app-exp (rator rand)**
+
+####
+**Visualización de árboles de sintaxis abstracta**
+
+La sintaxis abstracta de una expresión se comprende mejor visualizándola como un árbol (AST). A continuación se representa la estructura lógica para la expresión `(lambda (x) (f (f x)))`:
+
+```mermaid
+graph TD
+    A[lambda-exp] --> B[id: x]
+    A --> C[body]
+    C --> D[app-exp]
+    D --> E[rator]
+    E --> F[var-exp]
+    F --> G[id: f]
+    D --> H[rand]
+    H --> I[app-exp]
+    I --> J[rator]
+    J --> K[var-exp]
+    K --> L[id: f]
+    I --> M[rand]
+    M --> N[var-exp]
+    N --> O[id: x]
+```
+
+####
+**Utilidad de los árboles de sintaxis**
+
+Los árboles de sintaxis son fundamentales en el procesamiento de lenguajes, ya que programas como intérpretes o compiladores suelen estar dirigidos por la sintaxis. Esto significa que el procesamiento de cada parte del programa es guiado por su regla gramatical asociada, permitiendo acceder fácilmente a cualquier subparte que corresponda a un símbolo no terminal.
+
+Por ejemplo, al procesar `(lambda (x) (f (f x)))`, el sistema la reconoce primero como una `lambda-exp`, identifica a `x` como el parámetro formal y al cuerpo `(f (f x))` como una `app-exp`, continuando el proceso recursivamente.
+
+####
+**Conversión de sintaxis abstracta a concreta (unparse)**
+
+El problema de convertir un árbol de sintaxis abstracta a una representación de listas y símbolos (la sintaxis concreta que Scheme puede mostrar) se resuelve con el procedimiento `unparse-expression`:
+
+```racket
+(define unparse-expression
+  (lambda (exp)
+    (cases lc-exp exp
+      (var-exp (id)
+        id)
+      (lambda-exp (id body)
+        (list 'lambda (list id)
+          (unparse-expression body)))
+      (app-exp (rator rand)
+        (list
+          (unparse-expression rator)
+          (unparse-expression rand))))))
+```
+
+####
+**Análisis sintáctico (parsing)**
+
+La tarea de derivar el árbol de sintaxis abstracta a partir de una cadena de caracteres o una representación externa se denomina **parsing**, y es realizada por un programa llamado **parser**. El siguiente procedimiento convierte la sintaxis concreta en árboles de sintaxis abstracta:
+
+```racket
+(define parse-expression
+  (lambda (datum)
+    (cond
+      ((symbol? datum)
+       (var-exp datum))
+      ((pair? datum)
+       (if (eqv? (car datum) 'lambda)
+           (lambda-exp
+             (caadr datum)
+             (parse-expression (caddr datum)))
+           (app-exp
+             (parse-expression (car datum))
+             (parse-expression (cadr datum)))))
+      (else
+       (eopl:error 'parse-expression "Invalid concrete syntax ~s" datum)))))
+```
+
+--- METADATA ---
+CORTE: Corte 1
+TEMATICA: Sintaxis y árboles de sintaxis abstracta
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas y analizadores sintácticos para construir intérpretes.
+NIVEL_DIFICULTAD: Media
+FUENTE: PDF
+NOMBRE_DOCUMENTO: 3. Datatype y arboles de sintaxis abstracta

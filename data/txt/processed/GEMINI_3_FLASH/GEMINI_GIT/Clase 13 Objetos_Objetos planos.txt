@@ -1,0 +1,281 @@
+####
+**Concepto de objetos planos**
+
+Los `objetos planos` son la representación que utiliza Java. Básicamente consisten en un vector de campos, donde las primeras posiciones corresponden a las clases de mayor jerarquía y las últimas a las de menor jerarquía.
+
+```racket
+class c1 extends object
+  field x
+  field y
+  method initialize() 1
+
+class c2 extends c1
+  field z
+  field w
+  method initialize() 1
+
+let o1 = new c1()
+    o2 = new c2()
+in ...
+```
+
+Cuando se crea la instancia `o1`, su representación interna es:
+`#(struct:an-object c1 #(0 0))`
+
+Una parte contiene el nombre de la clase y la otra los valores de los campos. En el caso de `c2`, la representación es:
+`#(struct:an-object c2 #(0 0 0 0))`
+
+El primer elemento identifica la clase `c2` y el segundo es el vector de campos. Se asume `object` como la lista vacía en la jerarquía.
+
+####
+**Jerarquía de clases y representación en vectores**
+
+En un sistema de objetos planos, los campos se acumulan siguiendo la jerarquía de herencia. Los primeros elementos del vector representan la clase de mayor jerarquía y los últimos la de menor jerarquía.
+
+```racket
+class c1 extends object
+  field x
+  field y
+  method initialize() 1
+
+class c2 extends c1
+  field z
+  field w
+  method initialize() 1
+
+class c3 extends c2
+  field a
+  field b
+  method initialize() 1
+
+let o3 = new c3()
+in o3
+```
+
+Para la instancia `o3`, la representación resultante es:
+`#(struct:an-object c3 #(0 0 0 0 0 0))`
+
+Esta estructura se puede visualizar de la siguiente manera:
+
+```mermaid
+graph TD
+    A["C3 (0 0 0 0 0 0)"]
+```
+
+En este vector de seis posiciones, los elementos correspondientes a `c1` ocupan las primeras posiciones, seguidos por los de `c2`, y finalmente los de `c3`. Esta implementación es la que utiliza Java para representar los objetos.
+
+####
+**Ejemplo complejo de jerarquía con métodos y super**
+
+A continuación se presenta una implementación con tres niveles de jerarquía (`p1`, `p2`, `p3`) que incluye manipulación de estados y llamadas a `super`.
+
+```racket
+class p1 extends object
+  field a
+  field b
+  method initialize(x, y)
+    begin
+      set a = x;
+      set b = y
+    end
+  method sum(x)
+    begin
+      set a = +(a, 1);
+      +(a, b, x, send self m1())
+    end
+  method m1() 1
+
+class p2 extends p1
+  field c
+  field d
+  field e
+  method initialize(x, y, z)
+    begin
+      super initialize(x, y);
+      set c = +(x, 1);
+      set d = +(y, 2);
+      set e = z
+    end
+  method sum(s)
+    +(c, d, e, send self m1())
+
+class p3 extends p2
+  field f
+  field g
+  method initialize(u)
+    begin
+      set f = u;
+      set g = +(u, 1);
+      super initialize(u, +(u, 1), +(u, 2))
+    end
+  method sum(a)
+    +(a, super sum(+(a, 2)))
+  method m1() 10
+
+let o1 = new p1(2, 3)
+    o2 = new p2(3, 4, 5)
+    o3 = new p3(6)
+in list(send o1 sum(2), send o2 sum(3), send o3 sum(4))
+```
+
+El resultado de esta ejecución es `(9 16 38)`.
+
+####
+**Representación de ambientes de objetos en memoria**
+
+Al instanciar objetos en un sistema de objetos planos, el vector resultante consolida todos los campos de la jerarquía.
+
+Para `o1 = new p1(2, 3)`:
+```mermaid
+graph TD
+    A["p1 (2,3)"]
+```
+`#(struct:an-object p1 #(2 3))`
+
+Para `o2 = new p2(3, 4, 5)`:
+```mermaid
+graph TD
+    A["p2 (3 4 4 6 5)"]
+```
+`#(struct:an-object p2 #(3 4 4 6 5))`
+
+Para `o3 = new p3(6)`:
+```mermaid
+graph TD
+    A["p3 (6 7 7 9 8 6 7)"]
+```
+`#(struct:an-object p3 #(6 7 7 9 8 6 7))`
+
+En el caso de `o3`, los valores `6, 7` pertenecen a `p1`; `7, 9, 8` pertenecen a `p2`; y `6, 7` pertenecen a `p3`.
+
+####
+**Ejecución de métodos y encapsulación de ambientes**
+
+Cuando se invoca un método, se genera un diagrama de ambientes independiente para cada llamado. Debido a la propiedad de `encapsulación`, los llamados no se afectan entre sí, a menos que uno de ellos modifique explícitamente los campos del objeto.
+
+Para el llamado `send o1 sum(2)`:
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:2, b:3)"]
+    C["envsum (x:2, super:object, self:o1)"]
+    A --> B
+    B --> C
+```
+
+Al ejecutar el cuerpo del método:
+```racket
+begin
+  set a = +(a, 1);
+  +(a, b, x, send self m1())
+end
+```
+
+La instrucción `set a = +(a, 1)` modifica la representación del objeto a `p1 (3, 3)`. El ambiente actualizado queda de la siguiente forma:
+
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:3, b:3)"]
+    C["envsum (x:2, super:object, self:o1)"]
+    A --> B
+    B --> C
+```
+
+La evaluación final es `+(3, 3, 2, send o1 m1())`. Como `send o1 m1()` retorna `1`, el resultado es `9`.
+
+####
+**Análisis del llamado al método sum en p2**
+
+Para el llamado `send o2 sum(3)`, se crea una cadena de ambientes que incluye los campos heredados y los propios de la clase `p2`.
+
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:3, b:4)"]
+    C["env2 (c:4, d:6, e:5)"]
+    D["envsum (s:3, super:p1, self:o2)"]
+    A --> B
+    B --> C
+    C --> D
+```
+
+Se ejecuta el cuerpo definido en `p2`:
+`+(c, d, e, send self m1())`
+`+(4, 6, 5, send o2 m1())`
+
+Para resolver `send o2 m1()`, se utiliza el siguiente ambiente:
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:3, b:4)"]
+    C["envm1 (super:p1, self:o2)"]
+    A --> B
+    B --> C
+```
+Como el método `m1` en `p1` retorna `1`, la operación final es `+(4, 6, 5, 1)`, lo que resulta en `16`.
+
+####
+**Invocación de métodos con super y despacho dinámico**
+
+En el llamado `send o3 sum(4)`, el diagrama de ambientes para `sum` en `o3` integra todos los niveles de la jerarquía:
+
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:6, b:7)"]
+    C["env2 (c:7, d:9, e:8)"]
+    D["env3 (f:6, g:7)"]
+    E["envsum (a:4, super:p2, self:o3)"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+```
+
+El cuerpo del método en `p3` es:
+`+(a, super sum(+(a, 2)))`
+`+(4, super sum(6))`
+
+La llamada `super sum(6)` invoca el método `sum` de `p2`. El ambiente para este nuevo llamado es:
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:6, b:7)"]
+    C["env2 (c:7, d:9, e:8)"]
+    D["envsum (s:6, super:p1, self:o3)"]
+    A --> B
+    B --> C
+    C --> D
+```
+
+Dentro de este `sum`, se evalúa `+(c, d, e, send self m1())`. Debido al despacho dinámico, `send o3 m1()` busca la implementación en `p3`:
+
+```mermaid
+flowchart LR
+    A["empty-env"]
+    B["env1 (a:6, b:7)"]
+    C["env2 (c:7, d:9, e:8)"]
+    D["env3 (f:6, g:7)"]
+    E["envm1 (super:p2, self:o3)"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+```
+
+La ejecución de `m1` en `p3` retorna `10`. Por lo tanto:
+1. `super sum(6)` resulta en `+(7, 9, 8, 10) = 34`.
+2. El resultado final es `+(4, 34) = 38`.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 13 Objetos_Objetos planos
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2013/Objetos%20planos/

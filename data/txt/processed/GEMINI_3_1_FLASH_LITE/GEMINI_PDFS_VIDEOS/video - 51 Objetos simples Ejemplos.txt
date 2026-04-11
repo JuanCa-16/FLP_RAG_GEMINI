@@ -1,0 +1,40 @@
+####
+
+Para iniciar con el análisis de los lenguajes basados en objetos, consideremos un ejemplo de declaración y ejecución. Al realizar una llamada `send O1 de M1`, donde `M1` no requiere argumentos, se crea un nuevo ambiente de ejecución. Este ambiente contiene el `super`, que hace referencia a `object`, y el `self`, que representa la lista de partes del objeto.
+
+En este caso, `self` es una lista de partes donde la primera parte contiene la clase `C1` y sus valores iniciales, junto con la lista vacía (`a8`), que representa la ausencia de más partes. El ambiente se extiende para incluir la visibilidad de las variables `aX` y `aY`, las cuales tienen valores iniciales de `0` y `0`.
+
+####
+
+Al construir el objeto con `new C1`, se ejecuta el método `inicializar`, que asigna valores a `aX` y `aY`. Siendo `1` y `2` los valores asignados, la vista del objeto reflejará estas actualizaciones. Al ejecutar `M1` sobre este ambiente, el método busca la variable `X`. Al encontrarla, retorna `1`, que es el valor correspondiente almacenado en el estado del objeto.
+
+####
+
+Consideremos ahora un ejemplo más elaborado con dos objetos, `O1` y `O2`, y dos clases, `C1` y `C2`. La representación de `O1` es una lista de partes con la clase `C1`, la cual contiene `aX` y `aY` inicializados en `1` y `2`.
+
+Por otro lado, la representación de `O2` incluye `C2` (con `aX` y `aY` inicializados en `9` y `10`) y `C1` (con `aX` y `aY` en `1` y `2`), extendiendo de la clase `object`. Es fundamental notar que si `inicializar` no está definido, se usarán valores predeterminados de `0`.
+
+####
+
+Cuando ejecutamos `O2` de `M2`, donde `M2` es un método de `C1`, el ambiente de ejecución incluye el `super` (que es `object`), el `self` (el objeto `O2`) y los parámetros del método. Este ambiente extiende otro que contiene los valores de `aX` y `aY` (`1` y `2`).
+
+Al invocar internamente `send self de M1` desde `M2`, el sistema realiza un nuevo despacho dinámico. En este caso, la vista cambia: el `super` para `M1` es `C1` y el `self` sigue siendo `O2`. Como el estado está compartido mediante vectores, al buscar `X` en este nuevo contexto, el buscador accede a los valores de `C2` (`9` y `10`), retornando `9`.
+
+####
+
+En un ejemplo más complejo, analizamos la ejecución de `send O1 get-state`. Aquí, cada llamado a un método encapsula sus propios ambientes, manteniendo la propiedad de aislamiento de los objetos. En el primer llamado (`get-state`), se genera un ambiente con `super` (`object`) y `self` (`O1`), y se recuperan los valores de `i` y `j`, los cuales se asignan a `T1`.
+
+Posteriormente, al ejecutar `add(2)`, se modifica el estado interno de `i` y `j`. Debido a que los objetos están conectados mediante vectores, si el estado cambia dentro de un método, el cambio se refleja globalmente en el objeto `O1`. Por tanto, si `i` y `j` eran `3` y `-3`, tras sumar `2`, los nuevos valores son `5` y `-5`.
+
+####
+
+Finalmente, al realizar un segundo llamado a `get-state` para `T2`, el ambiente ahora observa los valores actualizados (`5` y `-5`). La respuesta final del sistema será una lista que combina los resultados de `T1` y `T2`, resultando en `(3, -3)` y `(5, -5)`. Este comportamiento demuestra cómo los objetos gestionan el estado compartido y la persistencia de los valores a través de distintas llamadas a métodos.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=LpBRO1CbfZA
+CORTE: Corte 2
+TEMATICA: Objetos
+COMPETENCIA: C.G.2. Utilizar un pensamiento crítico y creativo que le permite aprender de forma autónoma y permanente.
+RESULTADO_APRENDIZAJE: R.A.4. Construye un intérprete que maneje objetos, clases y herencia.
+NIVEL_DIFICULTAD: Alta
+FUENTE: VIDEO

@@ -1,0 +1,111 @@
+El siguiente código, escrito en un lenguaje personalizado, ilustra una expresión que utiliza `let`, definición de procedimientos (`proc`) y aplicación de funciones, y sirve de base para la inferencia de tipos.
+
+```
+let
+  func = proc(? f, ? x) (f +(x,1) >(x,0))
+in
+  (func proc (? a, ? b) a 10)
+```
+
+###
+El primer paso en el proceso de inferencia de tipos es establecer las variables de tipo para cada subexpresión y variable dentro del código. Esto permite rastrear los tipos a medida que se unifican y restringen.
+
+Variable          Expresión                      Tipo Inferido
+t0                let .. in ...                  int
+tfunc             proc(? f, ? x) ...             (int*bool-> int)*int -> int
+tf                f                              int*bool-> int
+tx                x                              int
+t1                (f +(x,1) >(x,0)               int
+t2                +(x,1)                         int
+t3                >(x,0)                         bool
+t4                (func proc (? a, ? b) a 10)    int
+t5                proc (? a, ? b) a              int*bool-> int
+ta                a                              int
+tb                b                              bool
+
+La variable final `t0` representa el tipo de toda la expresión `let`.
+
+###
+El siguiente paso consiste en observar las declaraciones y las unificaciones de tipos que se producen basándose en la estructura del código y el uso de las variables.
+
+//Declaraciones de proc
+tfunc = tf * tx -> t1
+
+//Evaluaciones de subexpresiones
+tf = t2*t3 -> t1
+tx*int -> t2   (El resultado de `+(x,1)` es `int`, lo que implica `x` es `int` y `t2` es `int`)
+tx*int -> t3   (El resultado de `>(x,0)` es `bool`, lo que implica `x` es `int` y `t3` es `bool`)
+
+//Unificación de la aplicación de `func`
+tfunc = t5*int -> t4
+
+//Correspondencias y unificaciones finales
+t5 = tf
+tx = int
+t4 = t1
+t5 = ta*tb -> ta
+ta = t2
+tb = t3
+ta = t1
+
+//Resultado de la expresión `let`
+t0 = t4
+
+###
+Para verificar la inferencia de tipos, se puede utilizar la función `type-of-expression` en Racket. El siguiente código demuestra que la expresión `let...in res` completa se infiere como de tipo `int`.
+
+```racket
+(type-of-expression
+  (cases program
+    (scan&parse
+      " let
+        func = proc(? f, ? x) (f +(x,1) >(x,0))
+        in  let
+        res = (func
+                proc (? a, ? b)  a
+                10
+              ) in res "
+    )
+    (a-program (exp) exp))
+  (empty-tenv))
+```
+
+El resultado de esta evaluación es:
+`#(struct:tvar-type 16 #(struct:atomic-type int))`
+Lo que confirma que el tipo de la expresión completa es `int`.
+
+###
+Además, podemos utilizar `type-of-expression` junto con `type-to-external-form` para inferir y mostrar el tipo específico de la función `func` que se define dentro del bloque `let`. Al modificar la expresión final a `in func`, el sistema devuelve el tipo de la propia función `func`.
+
+```racket
+(type-to-external-form
+  (type-of-expression
+    (cases program
+      (scan&parse
+        " let
+          func = proc(? f, ? x) (f +(x,1) >(x,0))
+          in  let
+          res = (func
+                  proc (? a, ? b)  a
+                  10
+                ) in func "
+      )
+      (a-program (exp) exp))
+    (empty-tenv)))
+```
+
+El tipo resultante para `func` es:
+`((int * bool -> int) * int -> int)`
+Esto indica que `func` es una función que acepta dos argumentos: el primero es una función de `int` y `bool` a `int`, y el segundo es un `int`. La función `func` misma retorna un `int`.
+
+---
+METADATA
+---
+CORTE: Corte 2
+TEMATICA: Inferencia de tipos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Implementa inferencia de tipos en lenguajes tipados.
+NIVEL_DIFICULTAD: Media
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 12. Interpretador tipos e inferencia_Ejemplo 1 Inferencia
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%2012/Ejemplo%201%20Inferencia/

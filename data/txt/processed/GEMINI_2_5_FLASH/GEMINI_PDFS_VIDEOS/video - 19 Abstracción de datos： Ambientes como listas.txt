@@ -1,0 +1,53 @@
+Para representar ambientes computacionales se utilizan listas como estructura de datos subyacente. La manipulación de este tipo de dato se gestiona a través de tres categorías de funciones:
+1.  **Constructoras**: Permiten crear instancias del tipo de dato.
+2.  **Observadoras**: Permiten extraer información de una instancia del tipo de dato. Se subdividen en:
+    *   **Predicados**: Verifican si un dato pertenece a una variante específica del tipo. Responden verdadero o falso.
+    *   **Extractores**: Acceden a los componentes internos de una instancia del tipo de dato.
+
+####
+Las funciones constructoras para el tipo de dato "ambiente" son `empty-env` y `extend-env`.
+*   `empty-env`: Crea un ambiente vacío, representado por una lista que contiene únicamente el símbolo `'empty-env` como una etiqueta de tipo.
+*   `extend-env`: Recibe un identificador (símbolo), un valor y un ambiente existente. Devuelve un nuevo ambiente que extiende el anterior con el nuevo par identificador-valor. Su representación es una lista con la etiqueta `'extend-env`, seguida del identificador, el valor y el ambiente anidado.
+
+Ejemplo de construcción de un ambiente anidado:
+`(define an-env
+  (extend-env 'x 3
+    (extend-env 'y 4
+      (extend-env 'j 9
+        (extend-env 'x 4
+          (extend-env 'w 9
+            (empty-env)))))))`
+
+####
+Las funciones predicado permiten identificar el tipo de ambiente.
+*   `empty-env?`: Recibe un ambiente y devuelve verdadero si es un ambiente vacío. Esto se comprueba verificando si el primer elemento de la lista (`car`) es el símbolo `'empty-env`.
+*   `extend-env?`: Recibe un ambiente y devuelve verdadero si es un ambiente extendido. Se verifica si el primer elemento de la lista (`car`) es el símbolo `'extend-env`.
+
+Estas funciones son fundamentales en la lógica condicional para procesar los ambientes, permitiendo diferenciar entre el caso base (ambiente vacío) y el caso recursivo (ambiente extendido).
+
+####
+Las funciones extractoras se definen para los ambientes extendidos (`extend-env`) y permiten acceder a sus componentes individuales: el identificador, el valor y el ambiente anidado.
+*   `extend-env-id`: Extrae el identificador de la variable, que corresponde al segundo elemento de la lista (`cadr`).
+*   `extend-env-val`: Extrae el valor asociado al identificador, que corresponde al tercer elemento de la lista (`caddr`).
+*   `extend-env-env`: Extrae el ambiente anidado sobre el cual se realizó la extensión, que corresponde al cuarto elemento de la lista (`cadddr`).
+
+No se definen extractores para el ambiente vacío (`empty-env`), ya que no contiene información que extraer.
+
+####
+La función `apply-env` busca el valor asociado a un símbolo (variable) dentro de un ambiente. Su lógica es recursiva y se basa en los predicados y extractores definidos.
+1.  **Caso Base**: Si el ambiente es vacío (`empty-env?` es verdadero), el símbolo no se encuentra y la función reporta un error.
+2.  **Caso Recursivo**: Si el ambiente es extendido (`extend-env?` es verdadero), la función compara el símbolo buscado con el identificador de la capa actual del ambiente (`extend-env-id`).
+    *   Si coinciden, devuelve el valor correspondiente (`extend-env-val`).
+    *   Si no coinciden, realiza una llamada recursiva a `apply-env` sobre el ambiente anidado (`extend-env-env`), continuando la búsqueda en la siguiente capa.
+
+####
+El comportamiento de la función `apply-env` demuestra el concepto de **variable shadowing** (ocultamiento de variables). En un ambiente con múltiples asignaciones para el mismo identificador, como en el ejemplo donde `x` se define primero con valor 3 y luego con valor 4, `apply-env` siempre encontrará la primera ocurrencia desde el inicio de la búsqueda (la más interna). Al buscar `x` en el ambiente de ejemplo, la función devolverá `3`, ya que esta es la primera vinculación que encuentra. La vinculación posterior de `x` a `4` queda "oculta" o "ensombrecida" por la más reciente.
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=hsHRvKwYGU8
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

@@ -1,0 +1,38 @@
+####
+**Definición de gramáticas regulares y conflictos de prefijos**
+
+Se utilizan `gramáticas regulares` para la definición de lenguajes. Los `terminales` se encuentran posicionados a la izquierda. Un ejemplo de conflicto en el análisis sintáctico ocurre con las siguientes expresiones:
+
+```text
+var x = 10
+var y
+```
+
+Estas estructuras producen un conflicto porque ambas inician con el mismo prefijo (`var`), lo que genera ambigüedad al momento de procesar la entrada.
+
+####
+**Gramáticas en forma BNF y representaciones equivalentes**
+
+La forma `BNF` (Backus-Naur Form) se utiliza para describir la sintaxis de los lenguajes. A continuación, se presenta una definición recursiva de una `lista` de enteros:
+
+```text
+<lista> ::= <empty>
+        ::= <int> <lista>
+```
+
+Esta misma estructura puede representarse utilizando notación simplificada de `expresiones regulares` (metasintaxis):
+
+- `lista` como cero o más enteros: `<lista> ::= <int>*`
+- `lista` como uno o más enteros: `<lista> ::= <int>+`
+
+---
+METADATA
+---
+CORTE: Corte 1
+TEMATICA: Especificación recursiva de datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.1. Utiliza gramáticas independientes del contexto y analizadores léxicos y sintácticos.
+NIVEL_DIFICULTAD: Alta
+FUENTE: GIT
+NOMBRE_DOCUMENTO: Clase 2 Especificación recursiva de datos y programas_Repso Gramaticas
+URL: https://cardel.github.io/notasUniversidad/2025-II/FLP/Clase%201/Gramaticas/

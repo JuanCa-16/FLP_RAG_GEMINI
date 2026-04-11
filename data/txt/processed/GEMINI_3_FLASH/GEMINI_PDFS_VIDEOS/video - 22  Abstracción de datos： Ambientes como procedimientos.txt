@@ -1,0 +1,136 @@
+####
+**Implementación de constructores como procedimientos**
+
+En este enfoque, vamos a tratar los ambientes y las expresiones como procedimientos. Utilizaremos señales para determinar qué valor debe retornar la función. El área del programador utilizará estos constructores para definir la estructura de los datos.
+
+**Constructor para `var-expression`**
+El constructor recibe un `id` y retorna un procedimiento que acepta una `signal`. Si la señal es 0, retorna el tipo de expresión; si es 1, retorna el identificador.
+
+```racket
+(define var-expression
+  (lambda (id)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'var-expression)
+        ((= signal 1) id)
+        (else (eopl:error "signal no vale"))))))
+```
+
+**Constructor para `lambda-expression`**
+Este constructor recibe un `id` y una expresión interna (`body`). Dependiendo de la `signal`, retorna el tipo, el identificador o la expresión.
+
+```racket
+(define lambda-expression
+  (lambda (id body)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'lambda-expression)
+        ((= signal 1) id)
+        ((= signal 2) body)
+        (else (eopl:error "signal no vale"))))))
+```
+
+**Constructor para `app-expression`**
+Recibe el `rator` (operador) y el `rand` (operando). Retorna los valores correspondientes según la señal recibida.
+
+```racket
+(define app-expression
+  (lambda (rator rand)
+    (lambda (signal)
+      (cond
+        ((= signal 0) 'app-expression)
+        ((= signal 1) rator)
+        ((= signal 2) rand)
+        (else (eopl:error "signal no vale"))))))
+```
+
+####
+**Implementación de observadores: Predicados**
+
+Los observadores de tipo predicado permiten identificar qué tipo de expresión estamos procesando. Bajo el enfoque de representación por procedimientos, esto se logra enviando la señal `0` a la expresión.
+
+**Predicado `var-exp?`**
+Verifica si la expresión es de tipo `var-expression`.
+```racket
+(define var-exp?
+  (lambda (exp)
+    (eqv? (exp 0) 'var-expression)))
+```
+
+**Predicado `lambda-exp?`**
+Verifica si la expresión es de tipo `lambda-expression`.
+```racket
+(define lambda-exp?
+  (lambda (exp)
+    (eqv? (exp 0) 'lambda-expression)))
+```
+
+**Predicado `app-exp?`**
+Verifica si la expresión es de tipo `app-expression`.
+```racket
+(define app-exp?
+  (lambda (exp)
+    (eqv? (exp 0) 'app-expression)))
+```
+
+####
+**Implementación de observadores: Extractores**
+
+Los extractores permiten obtener los componentes internos de una expresión. En la representación procedimental, simplemente invocamos la expresión con la señal numérica correspondiente al campo deseado.
+
+**Extractores para `var-expression`**
+Para obtener el identificador de una expresión de variable:
+```racket
+(define var-exp->id
+  (lambda (exp)
+    (exp 1)))
+```
+
+**Extractores para `lambda-expression`**
+Para obtener el identificador (parámetro) y el cuerpo de la función:
+```racket
+(define lambda-exp->id
+  (lambda (exp)
+    (exp 1)))
+
+(define lambda-exp->body
+  (lambda (exp)
+    (exp 2)))
+```
+
+**Extractores para `app-expression`**
+Para obtener el operador (`rator`) y el operando (`rand`):
+```racket
+(define app-exp->rator
+  (lambda (exp)
+    (exp 1)))
+
+(define app-exp->rand
+  (lambda (exp)
+    (exp 2)))
+```
+
+####
+**Independencia de la representación y abstracción de datos**
+
+La clave de utilizar constructores, predicados y extractores es que el programador no percibe diferencia alguna entre una representación basada en listas y una basada en procedimientos. Aunque la implementación interna cambie radicalmente al usar `lambda` y señales en lugar de estructuras de lista, las funciones de alto nivel como `occurs-free` funcionan exactamente igual.
+
+Por ejemplo, al ejecutar `occurs-free` sobre una expresión construida con procedimientos, los resultados son consistentes con la implementación previa:
+
+```racket
+; Ejemplo de uso que retorna los mismos resultados independientemente de la representación
+(occurs-free 'x (var-expression 'y)) ; Retorna falso
+(occurs-free 'x (var-expression 'x)) ; Retorna verdadero
+```
+
+Lo importante es proveer al programador los elementos de la interfaz: los constructores y los observadores (predicados y extractores). Con esto, se garantiza que si la representación cambia, el código que utiliza estos datos puede emplearse exactamente de la misma forma, preservando la lógica pedagógica y técnica del sistema.
+
+--- METADATA ---
+NOMBRE_DOCUMENTO: video - 22  Abstracción de datos： Ambientes como procedimientos.txt
+LINK_VIDEO: https://www.youtube.com/watch?v=UykkUdFKMNg
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO

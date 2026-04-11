@@ -1,0 +1,58 @@
+######## RESUMEN ########
+Define un sistema simple para gestionar ambientes de ejecución que ligan variables a valores.
+
+######## CONCEPTOS ########
+ambientes de ejecución, ligadura de variables, alcance léxico, estructuras recursivas, abstracción de datos
+
+######## EXPLICACION ########
+El código implementa un modelo fundamental para la gestión de **ambientes de ejecución** en lenguajes de programación.
+Permite simular cómo un intérprete resuelve la búsqueda de variables o mantiene un registro de ligaduras.
+Demuestra la creación (`extend-env`) y consulta (`apply-env`) de contextos de variables, ilustrando el **alcance léxico**.
+Emplea **listas enlazadas** para construir el ambiente, mostrando una **abstracción de datos** básica de esta estructura.
+La función `apply-env` encapsula la lógica recursiva para hallar el valor más reciente de una **ligadura de variable**.
+Este modelo es esencial para comprender la semántica de la evaluación de expresiones y la implementación de intérpretes.
+
+######## METADATA ########
+NOMBRE_DOCUMENTO: 2. AbstraccionDatos/ambientes-listas.scm
+FUENTE: CODIGO
+lenguaje: Racket
+
+######## CODIGO ########
+#lang eopl
+
+;;;; Ambientes - Representación como listas ;;;;;;;;;;;;;;;;;;;;
+
+;; empty-env
+(define empty-env
+  (lambda () (list 'empty-env)))
+
+;; extend-env
+(define extend-env
+  (lambda (var val env)
+    (list 'extend-env var val env)))
+
+;; apply-env
+(define apply-env
+  (lambda (env search-var)
+    (cond ((eqv? (car env) 'empty-env)
+           (eopl:error 'apply-env "No binding for ~s" search-var))
+          ((eqv? (car env) 'extend-env)
+           (let ((saved-var (cadr env))
+                 (saved-val (caddr env))
+                 (saved-env (cadddr env)))
+             (if (eqv? search-var saved-var)
+                 saved-val
+                 (apply-env saved-env search-var))))
+          (else (eopl:error 'apply-env "Expecting an environment, given ~s" env)))))
+
+;; Ejemplos
+; (define e
+;   (extend-env 'd 6
+;               (extend-env 'y 8
+;                           (extend-env 'x 7
+;                                       (extend-env 'y 14
+;                                                   (empty-env))))))
+; 
+; (apply-env e 'd)
+; (apply-env e 'y)
+; (apply-env e 'c)

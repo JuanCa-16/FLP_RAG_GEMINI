@@ -1,0 +1,72 @@
+####
+**Representación posicional de números**
+
+La `representación vigno` permite representar números en una base específica utilizando vectores o listas. En este sistema, la posición de cada elemento en la estructura corresponde a una potencia de la base. Por ejemplo, en base 16:
+- El vector `(1, 2)` representa $1 \times 16^0 + 2 \times 16^1$.
+- El vector `(2, 0, 1)` representa $2 \times 16^0 + 0 \times 16^1 + 1 \times 16^2$.
+
+Esta representación es consistente y permite que las funciones aritméticas operen de manera estándar, independientemente de la longitud de la lista.
+
+####
+**Implementación de la función sucesor**
+
+Para calcular el `sucesor` de un número en esta representación, debemos gestionar el `acarreo` cuando un dígito alcanza el valor de `base - 1`. Si el dígito es igual a `base - 1`, se convierte en `0` y se incrementa el siguiente nivel. El `0` se representa como una lista vacía.
+
+```racket
+(define base 16)
+
+(define (sucesor n)
+  (cond
+    [(null? n) (list 1)]
+    [(= (car n) (- base 1))
+     (cons 0 (sucesor (cdr n)))]
+    [else (cons (+ (car n) 1) (cdr n))]))
+```
+
+Ejemplos de comportamiento:
+- `(sucesor '(1))` resulta en `'(2)`
+- `(sucesor '(15))` resulta in `'(0 1)`
+- `(sucesor '(15 15 15))` resulta en `'(0 0 0 1)`
+
+####
+**Implementación de la función predecesor**
+
+El `predecesor` realiza la operación inversa, aplicando el `acarreo` negativo cuando el dígito es `0`. Se debe manejar el caso base donde el número es `1` (que resulta en una lista vacía `()`) y el caso donde el `car` del número es `0`.
+
+```racket
+(define (predecesor n)
+  (cond
+    [(null? n) (error "No existe el predecesor de 0")]
+    [(equal? n '(1)) '()]
+    [(= (car n) 0)
+     (cons (- base 1) (predecesor (cdr n)))]
+    [else (cons (- (car n) 1) (cdr n))]))
+```
+
+Ejemplos de comportamiento:
+- `(predecesor '(1))` resulta en `'()`
+- `(predecesor '(15 15 15))` resulta en `'(14 15 15)`
+- `(predecesor '(15 15 0))` resulta en `'(14 14 0)`
+
+####
+**Independencia de la representación**
+
+Al implementar operaciones aritméticas como la suma (`plus`), observamos que el comportamiento es consistente independientemente de la base utilizada o de cómo se represente el número internamente. Las funciones diseñadas conservan la lógica matemática necesaria para los números naturales:
+
+```racket
+(define (plus n m)
+  (if (null? n)
+      m
+      (sucesor (plus (cdr n) m))))
+```
+
+Al sumar dos números representados como listas, el resultado es equivalente al esperado en aritmética decimal. Esta propiedad demuestra que las funciones son `independientes de la representación`, siempre que se respeten las reglas de construcción y las operaciones básicas de acceso a los elementos de la lista (`car` y `cdr`).
+
+--- METADATA ---
+LINK_VIDEO: https://www.youtube.com/watch?v=z_uAWdqChmk
+CORTE: Corte 1
+TEMATICA: Estrategias para representar datos
+COMPETENCIA: C.E.1.  Utilizarlos conocimientos fundamentales en teoría de la computación (v.gr.estructuras discretas, complejidad de algoritmos, máquinas abstractas,lógica) en la construcción de sistemas basados en TIC.
+RESULTADO_APRENDIZAJE: R.A.2. Aplica técnicas de representación de programas y análisis semántico.
+NIVEL_DIFICULTAD: Media
+FUENTE: VIDEO
