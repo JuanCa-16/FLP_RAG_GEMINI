@@ -782,4 +782,13 @@ def root():
     }
 
 
+@app.get("/health", tags=["ℹ️ Info"])
+def health():
+    """Verifica que el servicio está activo y funcionando."""
+    return {
+        "status": "ok",
+        "mensaje": "✅ Servicio backend activo"
+    }
+
+
 # uvicorn app:app --reload
